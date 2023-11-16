@@ -14,7 +14,7 @@ from db import create_connection
 
 
 class ScrapeJob:
-    def __init__(self, url, target_dataset, columns_to_drop):
+    def __init__(self, url, target_dataset=False, columns_to_drop=[]):
         self.url = url
         self.margin_type = None
         self.prefix = None
