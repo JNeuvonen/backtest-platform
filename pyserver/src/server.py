@@ -3,10 +3,19 @@ import uvicorn
 import os
 from fastapi import FastAPI, Response, status, HTTPException, Path
 from db import create_connection, get_column_names, get_tables
+from pydantic import BaseModel
+from load_data import ScrapeJob
+from typing import Optional, List
 from constants import DATASETS_DB
 
 app = FastAPI()
 APP_DATA_PATH = os.getenv("APP_DATA_PATH")
+
+
+class ScrapeJobModel(BaseModel):
+    url: str
+    target_dataset: Optional[bool] = False
+    columns_to_drop: Optional[List[str]] = None
 
 
 @app.get("/", response_class=Response)
@@ -27,6 +36,20 @@ def read_tables():
     except sqlite3.Error as e:
         error_detail = {"error": str(e), "db_path": db_path}
         raise HTTPException(status_code=500, detail=error_detail)
+
+
+@app.post("/create_scrape_job")
+def create_scrape_job(scrape_job: ScrapeJobModel):
+    # Instantiate a ScrapeJob object from the provided data
+    job = ScrapeJob(
+        url=scrape_job.url,
+        target_dataset=False
+        if scrape_job.target_dataset is None
+        else scrape_job.target_dataset,
+        columns_to_drop=scrape_job.columns_to_drop,
+    )
+
+    return {"message": "ScrapeJob created successfully", "scrape_job": job}
 
 
 @app.get("/tables/{table_name}/columns")
