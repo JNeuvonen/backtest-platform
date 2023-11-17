@@ -1,15 +1,35 @@
+import logging
 import sqlite3
 import uvicorn
 import os
 from fastapi import FastAPI, Response, status, HTTPException, Path
-from db import create_connection, get_column_names, get_tables
+from db import (
+    create_connection,
+    get_column_names,
+    get_tables,
+    insert_binance_scrape_job,
+    poll_scrape_jobs,
+)
 from pydantic import BaseModel
 from load_data import ScrapeJob
 from typing import Optional, List
-from constants import DATASETS_DB
+from constants import DB_DATASETS, DB_WORKER_QUEUE, LOG_FILE
+import threading
+from log import Logger
 
 app = FastAPI()
 APP_DATA_PATH = os.getenv("APP_DATA_PATH")
+logger = Logger(
+    os.path.join(APP_DATA_PATH if APP_DATA_PATH is not None else "", LOG_FILE),
+    logging.INFO,
+)
+
+
+def get_path(relative_to_app_data: str):
+    if APP_DATA_PATH is None:
+        return relative_to_app_data
+
+    return os.path.join(APP_DATA_PATH, relative_to_app_data)
 
 
 class ScrapeJobModel(BaseModel):
@@ -27,7 +47,7 @@ def read_root():
 
 @app.get("/tables")
 def read_tables():
-    db_path = os.path.join(APP_DATA_PATH, DATASETS_DB) if APP_DATA_PATH else DATASETS_DB
+    db_path = get_path(DB_DATASETS)
     try:
         db = create_connection(db_path)
         tables = get_tables(db)
@@ -41,6 +61,7 @@ def read_tables():
 @app.post("/create_scrape_job")
 def create_scrape_job(scrape_job: ScrapeJobModel):
     # Instantiate a ScrapeJob object from the provided data
+
     job = ScrapeJob(
         url=scrape_job.url,
         target_dataset=False
@@ -49,7 +70,43 @@ def create_scrape_job(scrape_job: ScrapeJobModel):
         columns_to_drop=scrape_job.columns_to_drop,
     )
 
-    return {"message": "ScrapeJob created successfully", "scrape_job": job}
+    if job.path is None:
+        return {"message": "invalid URL provided"}
+
+    db_worker_queue_path = get_path(DB_WORKER_QUEUE)
+    worker_queue_conn = create_connection(db_worker_queue_path)
+    insert_success = insert_binance_scrape_job(worker_queue_conn, job)
+
+    if insert_success:
+        return {"message": "ScrapeJob created successfully", "scrape_job": job}
+
+    return Response(
+        content="ScrapeJob was not created succesfully",
+        media_type="text/plain",
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+@app.post("/poll_scrape_jobs")
+def poll_scrape_jobs_endpoint():
+    if APP_DATA_PATH is None:
+        return Response(
+            content="No APP_DATA_PATH provided to the environment",
+            media_type="text/plain",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    logger.info("Started worker thread for polling scrape jobs.")
+    worker_thread = threading.Thread(
+        target=poll_scrape_jobs, args=(APP_DATA_PATH, logger)
+    )
+    worker_thread.start()
+
+    return Response(
+        content="Initiated worker queue poll",
+        media_type="text/plain",
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @app.get("/tables/{table_name}/columns")
@@ -59,7 +116,7 @@ def read_table_columns(table_name: str = Path(..., title="The name of the table"
             status_code=500, detail="Application data path is not configured"
         )
 
-    db_path = os.path.join(APP_DATA_PATH, DATASETS_DB)
+    db_path = os.path.join(APP_DATA_PATH, DB_DATASETS)
     db_connection = create_connection(db_path)
 
     try:
