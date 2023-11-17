@@ -13,6 +13,8 @@ BINANCE_DATA_COLS = [
     "ignore",
 ]
 
+LOG_FILE = "logs"
+
 DB_DATASETS = "datasets.db"
 DB_WORKER_QUEUE = "binance_scrape_worker_queue.db"
 DB_LOGS = "logs.db"
