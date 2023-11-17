@@ -13,6 +13,7 @@ dist-ssr
 *.local
 *.cpython*
 src-tauri/binaries
+pyserver/build
 venv
 .vscode
 
