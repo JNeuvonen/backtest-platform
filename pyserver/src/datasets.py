@@ -1,7 +1,6 @@
 from sqlite3 import Connection
 import pandas as pd
-from db import create_connection
-from constants import BINANCE_DATA_COLS, DATASETS_DB
+from constants import BINANCE_DATA_COLS, DB_DATASETS
 import shutil
 import os
 
@@ -43,15 +42,3 @@ def combine(
     table_name = pair + "_" + dataseries_interval + "_" + spot + "_" + candle_interval
     table_name = table_name.lower()
     result.to_sql(table_name, conn, if_exists="replace", index=False)
-
-
-if __name__ == "__main__":
-    conn = create_connection(DATASETS_DB)
-    combine(
-        conn,
-        "../../../data/spot/klines/IOTAUSDT/1h/",
-        "IOTAUSDT",
-        "spot",
-        "monthly",
-        "1h",
-    )
