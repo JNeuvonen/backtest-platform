@@ -8,11 +8,13 @@ from db_statements import (
     CREATE_SCRAPE_JOB_TABLE,
     DELETE_SCRAPE_JOB,
     INSERT_SCRAPE_JOB,
+    UPDATE_SCRAPE_JOB_ONGOING,
     UPDATE_SCRAPE_JOB_TRIES,
 )
 
 from load_data import ScrapeJob, load_data
 from db_models import RowScrapeJob
+from log import Logger
 
 
 def create_connection(db_file: str):
@@ -33,8 +35,9 @@ def create_binance_scrape_job_table(cursor: sqlite3.Cursor):
     cursor.execute(CREATE_SCRAPE_JOB_TABLE)
 
 
-def poll_scrape_jobs(app_data_path: str):
+def poll_scrape_jobs(app_data_path: str, logger: Logger):
     cursor = None
+    logger.info("Polling for binance scrape jobs")
     db_worker_queue_conn = create_connection(
         os.path.join(app_data_path, DB_WORKER_QUEUE)
     )
@@ -59,32 +62,31 @@ def poll_scrape_jobs(app_data_path: str):
 
         if ongoing_jobs is False:
             for job in jobs:
+                print(job)
                 if job.finished == 0:
-                    job.tries += 1
-                    cursor.execute(
-                        UPDATE_SCRAPE_JOB_TRIES,
-                        (
-                            job.tries,
-                            job.id,
-                        ),
-                    )
+                    cursor.execute(DELETE_SCRAPE_JOB, (job.id,))
+                    db_worker_queue_conn.commit()
                     load_data(
-                        app_data_path, job, db_datasets_conn, db_worker_queue_conn
+                        logger,
+                        app_data_path,
+                        job,
+                        db_datasets_conn,
+                        db_worker_queue_conn,
                     )
         db_worker_queue_conn.commit()
         cursor.close()
 
     except sqlite3.IntegrityError as e:
-        print(f"An integrity error occurred: {e}")
+        logger.error(f"An integrity error occurred: {e}")
         return False
     except sqlite3.ProgrammingError as e:
-        print(f"A programming error occurred: {e}")
+        logger.error(f"A programming error occurred: {e}")
         return False
     except sqlite3.DatabaseError as e:
-        print(f"A database error occurred: {e}")
+        logger.error(f"A database error occurred: {e}")
         return False
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")
         return False
     finally:
         if cursor:
