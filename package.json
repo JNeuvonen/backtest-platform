@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "vite && npx kill-port 8000",
+    "build": "npx kill-port 8000 && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
   },
