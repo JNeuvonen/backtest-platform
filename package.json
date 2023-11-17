@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite && npx kill-port 8000",
-    "build": "npx kill-port 8000 && tsc && vite build",
+    "build": "chmod +x ./build.sh && ./build.sh && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
   },
