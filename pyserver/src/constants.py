@@ -13,4 +13,9 @@ BINANCE_DATA_COLS = [
     "ignore",
 ]
 
-DATASETS_DB = "datasets"
+DB_DATASETS = "datasets.db"
+DB_WORKER_QUEUE = "binance_scrape_worker_queue.db"
+DB_LOGS = "logs.db"
+
+BINANCE_TEMP_SCRAPE_PATH = "binance_scraped_data"
+BINANCE_UNZIPPED_TEMP_PATH = "binance_unzip_data"
