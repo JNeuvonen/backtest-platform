@@ -1,8 +1,16 @@
 import React from "react";
-import "./App.css";
+import { AppRoutes } from "./Routes";
+import { BrowserRouter as Router } from "react-router-dom";
+import { Layout } from "./Components/Layout";
 
 function App() {
-  return <div className="container"></div>;
+  return (
+    <Router>
+      <Layout>
+        <AppRoutes />
+      </Layout>
+    </Router>
+  );
 }
 
 export default App;

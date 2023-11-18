@@ -1,0 +1,33 @@
+.side-nav {
+  background-color: #262626;
+  width: 110px;
+  height: 100vh;
+  position: fixed;
+  padding: 8px;
+
+  &__nav-items {
+    margin-top: 30px;
+  }
+
+  &__item {
+    padding: 16px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 32px;
+  }
+
+  &__item-active {
+    background-color: rgb(59, 59, 59);
+  }
+}
+
+.layout {
+  &__content {
+    margin-left: 110px;
+    padding: 16px;
+    background-color: #212121;
+  }
+}
