@@ -12,7 +12,7 @@ from db_statements import (
     UPDATE_SCRAPE_JOB_TRIES,
 )
 
-from load_data import ScrapeJob, load_data
+from bina_load_data import ScrapeJob, load_data
 from db_models import RowScrapeJob
 from log import Logger
 
