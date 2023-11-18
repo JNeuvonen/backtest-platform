@@ -1,17 +1,22 @@
 import React from "react";
 import { BsDatabase } from "react-icons/bs";
-import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { LINKS, PATHS } from "../../utils/constants";
+import { getNthPathSegment } from "../../hooks/useTab";
+
+export interface SideNavItem {
+  link: string;
+  icon?: JSX.Element;
+  path: string;
+}
 
 const SIDE_NAV_ITEMS = [
-  { link: LINKS.datasets, icon: BsDatabase, path: PATHS.datasets },
-  { link: LINKS.simulate, icon: BsDatabase, path: PATHS.simulate },
+  { link: LINKS.datasets, icon: BsDatabase, path: PATHS.datasets.index },
+  { link: LINKS.simulate, icon: BsDatabase, path: PATHS.simulate.index },
 ];
 
 export const SideNav = () => {
-  const location = useLocation();
-  const currentPath = location.pathname;
+  const activePath = getNthPathSegment(1);
   return (
     <div className="side-nav">
       <div className="side-nav__nav-items">
@@ -19,10 +24,9 @@ export const SideNav = () => {
           const Icon = item.icon;
           return (
             <Link to={item.path}>
-              {" "}
               <div
                 className={
-                  currentPath === item.path
+                  item.path.includes(activePath)
                     ? "side-nav__item side-nav__item-active"
                     : "side-nav__item"
                 }

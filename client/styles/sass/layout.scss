@@ -1,6 +1,9 @@
+$side-nav-width: 110px;
+$inner-side-nav: 140px;
+
 .side-nav {
   background-color: #262626;
-  width: 110px;
+  width: $side-nav-width;
   height: 100vh;
   position: fixed;
   padding: 8px;
@@ -26,8 +29,32 @@
 
 .layout {
   &__content {
-    margin-left: 110px;
+    margin-left: $side-nav-width;
     padding: 16px;
     background-color: #212121;
+  }
+
+  &__page-side-nav {
+    padding: 8px;
+    height: 100vh;
+    position: fixed;
+    background-color: black;
+    left: $side-nav-width;
+    top: 0;
+    width: $inner-side-nav;
+  }
+
+  &__container-inner-side-nav {
+    margin-left: $inner-side-nav;
+
+    &__item {
+      text-align: center;
+      padding: 16px;
+      margin-top: 32px;
+    }
+
+    &__item-active {
+      background-color: red;
+    }
   }
 }

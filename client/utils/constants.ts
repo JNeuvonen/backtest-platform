@@ -1,6 +1,18 @@
 export const PATHS = {
-  datasets: "/datasets",
-  simulate: "/simulate",
+  datasets: {
+    index: "datasets",
+    subpaths: {
+      binance: {
+        index: "binance",
+      },
+      available: {
+        index: "available",
+      },
+    },
+  },
+  simulate: {
+    index: "simulate",
+  },
 };
 
 export const LINKS = {
