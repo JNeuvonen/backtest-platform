@@ -16,6 +16,7 @@ src-tauri/binaries
 pyserver/build
 venv
 .vscode
+.wdm
 
 # Editor directories and files
 .vscode/*
