@@ -24,7 +24,6 @@ def install_web_driver(app_data_path):
     options = Options()
     options.add_argument("--headless")
 
-    # Create a Service instance using ChromeDriverManager
     service = Service(ChromeDriverManager().install())
 
     return webdriver.Chrome(service=service, options=options)
@@ -139,9 +138,7 @@ def load_data(
             db_datasets_conn,
             db_worker_queue_conn,
         )
-    except (
-        Exception
-    ) as e:  # note that 'as e' is used to capture the exception into the variable 'e'
+    except Exception as e:
         logger.error(f"Exception running scrape on: {job.url}: {e}")
 
 
