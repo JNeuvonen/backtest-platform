@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite && npx kill-port 8000",
+    "dev": "vite & npm run sass",
     "build": "chmod +x ./build.sh && ./build.sh && tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "sass": "sass --watch client/styles/sass/styles.scss:client/styles/css/styles.css"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -17,7 +19,10 @@
     "@tauri-apps/api": "^1.5.1",
     "framer-motion": "^10.16.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.12.0",
+    "react-router-dom": "^6.19.0",
+    "sass": "^1.69.5"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.6",
