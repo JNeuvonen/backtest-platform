@@ -11,14 +11,14 @@ from db import (
     poll_scrape_jobs,
 )
 from pydantic import BaseModel
-from load_data import ScrapeJob
+from bina_load_data import ScrapeJob
 from typing import Optional, List
 from constants import DB_DATASETS, DB_WORKER_QUEUE, LOG_FILE
 import threading
 from log import Logger
 
 app = FastAPI()
-APP_DATA_PATH = os.getenv("APP_DATA_PATH")
+APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 logger = Logger(
     os.path.join(APP_DATA_PATH if APP_DATA_PATH is not None else "", LOG_FILE),
     logging.INFO,
@@ -26,9 +26,6 @@ logger = Logger(
 
 
 def get_path(relative_to_app_data: str):
-    if APP_DATA_PATH is None:
-        return relative_to_app_data
-
     return os.path.join(APP_DATA_PATH, relative_to_app_data)
 
 
@@ -60,8 +57,6 @@ def read_tables():
 
 @app.post("/create_scrape_job")
 def create_scrape_job(scrape_job: ScrapeJobModel):
-    # Instantiate a ScrapeJob object from the provided data
-
     job = ScrapeJob(
         url=scrape_job.url,
         target_dataset=False
@@ -89,13 +84,6 @@ def create_scrape_job(scrape_job: ScrapeJobModel):
 
 @app.post("/poll_scrape_jobs")
 def poll_scrape_jobs_endpoint():
-    if APP_DATA_PATH is None:
-        return Response(
-            content="No APP_DATA_PATH provided to the environment",
-            media_type="text/plain",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
     logger.info("Started worker thread for polling scrape jobs.")
     worker_thread = threading.Thread(
         target=poll_scrape_jobs, args=(APP_DATA_PATH, logger)
@@ -111,11 +99,6 @@ def poll_scrape_jobs_endpoint():
 
 @app.get("/tables/{table_name}/columns")
 def read_table_columns(table_name: str = Path(..., title="The name of the table")):
-    if APP_DATA_PATH is None:
-        raise HTTPException(
-            status_code=500, detail="Application data path is not configured"
-        )
-
     db_path = os.path.join(APP_DATA_PATH, DB_DATASETS)
     db_connection = create_connection(db_path)
 
