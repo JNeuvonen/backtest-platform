@@ -22,6 +22,8 @@ export const InnerSideNav = ({
     currentPath = !currentPath ? fallbackPath : currentPath;
     setActivePath(currentPath);
   }, [location, pathActiveItemDepth, fallbackPath]);
+
+  console.log(window.location.pathname);
   return (
     <div className="layout__page-side-nav">
       {sideNavItems.map((item) => {
