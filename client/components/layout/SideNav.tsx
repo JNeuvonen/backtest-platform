@@ -2,7 +2,7 @@ import React from "react";
 import { BsDatabase } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { LINKS, PATHS } from "../../utils/constants";
-import { getNthPathSegment } from "../../hooks/useTab";
+import { useActivePath } from "../../hooks/useActivePath";
 
 export interface SideNavItem {
   link: string;
@@ -11,12 +11,12 @@ export interface SideNavItem {
 }
 
 const SIDE_NAV_ITEMS = [
-  { link: LINKS.datasets, icon: BsDatabase, path: PATHS.datasets.index },
-  { link: LINKS.simulate, icon: BsDatabase, path: PATHS.simulate.index },
+  { link: LINKS.datasets, icon: BsDatabase, path: PATHS.datasets.path },
+  { link: LINKS.simulate, icon: BsDatabase, path: PATHS.simulate.path },
 ];
 
 export const SideNav = () => {
-  const activePath = getNthPathSegment(1);
+  const { activePath } = useActivePath({ tabPathDepth: 1 });
   return (
     <div className="side-nav">
       <div className="side-nav__nav-items">
