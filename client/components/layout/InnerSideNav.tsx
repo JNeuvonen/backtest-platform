@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { SideNavItem } from "./SideNav";
-import { Link, useLocation } from "react-router-dom";
-import { getNthPathSegment } from "../../hooks/useTab";
+import { Link } from "react-router-dom";
+import { useActivePath } from "../../hooks/useActivePath";
 
 interface Props {
   sideNavItems: SideNavItem[];
@@ -9,21 +9,8 @@ interface Props {
   fallbackPath: string;
 }
 
-export const InnerSideNav = ({
-  sideNavItems,
-  pathActiveItemDepth,
-  fallbackPath,
-}: Props) => {
-  const location = useLocation();
-  const [activePath, setActivePath] = React.useState("");
-
-  useEffect(() => {
-    let currentPath = getNthPathSegment(pathActiveItemDepth);
-    currentPath = !currentPath ? fallbackPath : currentPath;
-    setActivePath(currentPath);
-  }, [location, pathActiveItemDepth, fallbackPath]);
-
-  console.log(window.location.pathname);
+export const InnerSideNav = ({ sideNavItems, pathActiveItemDepth }: Props) => {
+  const { activePath } = useActivePath({ tabPathDepth: pathActiveItemDepth });
   return (
     <div className="layout__page-side-nav">
       {sideNavItems.map((item) => {

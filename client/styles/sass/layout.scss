@@ -1,12 +1,16 @@
+@import "colors";
+
 $side-nav-width: 110px;
-$inner-side-nav: 140px;
+$inner-side-nav: 120px;
 
 .side-nav {
-  background-color: #262626;
+  background-color: $bg-primary;
   width: $side-nav-width;
   height: 100vh;
   position: fixed;
   padding: 8px;
+  padding-right: 9px;
+  border-right: 1px solid $bg-primary-shade-two;
 
   &__nav-items {
     margin-top: 30px;
@@ -23,7 +27,7 @@ $inner-side-nav: 140px;
   }
 
   &__item-active {
-    background-color: rgb(59, 59, 59);
+    background-color: $bg-secondary-shade-one;
   }
 }
 
@@ -35,13 +39,14 @@ $inner-side-nav: 140px;
   }
 
   &__page-side-nav {
-    padding: 8px;
+    padding: 4px;
     height: 100vh;
     position: fixed;
-    background-color: black;
+    background-color: #262626;
     left: $side-nav-width;
     top: 0;
     width: $inner-side-nav;
+    border-right: 1px solid $bg-primary-shade-two;
   }
 
   &__container-inner-side-nav {
@@ -49,12 +54,13 @@ $inner-side-nav: 140px;
 
     &__item {
       text-align: center;
-      padding: 16px;
+      padding: 8px;
       margin-top: 32px;
+      border-radius: 10px;
     }
 
     &__item-active {
-      background-color: red;
+      background-color: $bg-secondary-shade-one;
     }
   }
 }

@@ -3,24 +3,23 @@ import { Route, Routes } from "react-router-dom";
 import { Home } from "./Pages";
 import { PATHS } from "./utils/constants";
 import { DatasetsPage } from "./pages/Datasets";
-import { AvailablePage } from "./pages/Available";
 import { BinancePage } from "./pages/BinancePage";
 
 export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path={PATHS.datasets.index} element={<DatasetsPage />}>
+      <Route path={PATHS.datasets.path} element={<DatasetsPage />}>
         <Route
-          path={PATHS.datasets.subpaths.available.index}
-          element={<AvailablePage />}
+          path={PATHS.datasets.subpaths.stock_market.path}
+          element={<DatasetsPage />}
         />
         <Route
-          path={PATHS.datasets.subpaths.binance.index}
+          path={PATHS.datasets.subpaths.binance.path}
           element={<BinancePage />}
         />
       </Route>
-      <Route path={PATHS.simulate.index} element={<Home />} />
+      <Route path={PATHS.simulate.path} element={<Home />} />
     </Routes>
   );
 };

@@ -1,12 +1,12 @@
 import React from "react";
 import { InnerSideNav } from "../components/layout/InnerSideNav";
-import { SideNavItem } from "../Components/Layout/SideNav";
+import { SideNavItem } from "../components/Layout/SideNav";
 import { PATHS } from "../utils/constants";
 import { Outlet } from "react-router-dom";
 
 const SIDE_NAV_ITEMS: SideNavItem[] = [
-  { link: "Available", path: PATHS.datasets.subpaths.available.index },
-  { link: "Binance", path: PATHS.datasets.subpaths.binance.index },
+  { link: "Stock Market", path: PATHS.datasets.subpaths.stock_market.path },
+  { link: "Binance", path: PATHS.datasets.subpaths.binance.path },
 ];
 
 export const DatasetsPage = () => {
@@ -15,9 +15,10 @@ export const DatasetsPage = () => {
       <InnerSideNav
         sideNavItems={SIDE_NAV_ITEMS}
         pathActiveItemDepth={2}
-        fallbackPath={PATHS.datasets.subpaths.available.index}
+        fallbackPath={PATHS.datasets.subpaths.stock_market.path}
       />
       <Outlet />
+      <h1>Current available datasets</h1>
     </div>
   );
 };

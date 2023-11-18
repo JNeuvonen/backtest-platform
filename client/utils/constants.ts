@@ -1,17 +1,17 @@
 export const PATHS = {
   datasets: {
-    index: "/datasets",
+    path: "/datasets",
     subpaths: {
       binance: {
-        index: "binance",
+        path: "binance",
       },
-      available: {
-        index: "available",
+      stock_market: {
+        path: "stock-market",
       },
     },
   },
   simulate: {
-    index: "/simulate",
+    path: "/simulate",
   },
 };
 
