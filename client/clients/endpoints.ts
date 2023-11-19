@@ -1,13 +1,12 @@
-import { ENV } from "../utils/constants";
-import { retrieveEnvVar } from "../utils/tauri";
+import { CONSTANTS } from "../utils/constants";
 
 const API = {
   tables: "/tables",
 };
 
+const BASE_URL = CONSTANTS.base_url;
+
 export async function tablesUrl() {
-  const baseUrl = await retrieveEnvVar(ENV.base_url);
-  console.log(baseUrl);
-  const url = baseUrl + API.tables;
+  const url = BASE_URL + API.tables;
   return url;
 }

@@ -8,8 +8,6 @@ from db_statements import (
     CREATE_SCRAPE_JOB_TABLE,
     DELETE_SCRAPE_JOB,
     INSERT_SCRAPE_JOB,
-    UPDATE_SCRAPE_JOB_ONGOING,
-    UPDATE_SCRAPE_JOB_TRIES,
 )
 
 from bina_load_data import ScrapeJob, load_data
@@ -27,8 +25,30 @@ def get_tables(conn: sqlite3.Connection):
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
+
+    tables_data = []
+    for table in tables:
+        table_name = table[0]
+
+        cursor.execute(f"PRAGMA table_info({table_name});")
+        columns = [column_info[1] for column_info in cursor.fetchall()]
+
+        cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID ASC LIMIT 1;")
+        first_row = cursor.fetchone()
+        cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 1;")
+        last_row = cursor.fetchone()
+
+        tables_data.append(
+            {
+                "table_name": table_name,
+                "columns": columns,
+                "start_date": first_row[0],
+                "end_date": last_row[0],
+            }
+        )
+
     cursor.close()
-    return [table[0] for table in tables]
+    return tables_data
 
 
 def create_binance_scrape_job_table(cursor: sqlite3.Cursor):
