@@ -1,8 +1,7 @@
+import { tablesUrl } from "./endpoints";
 import { buildRequest } from "./fetch";
 
-const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-
-export function fetchDatasets() {
-  const url = BASE_URL + "/tables";
+export async function fetchDatasets() {
+  const url = await tablesUrl();
   return buildRequest({ method: "GET", url });
 }
