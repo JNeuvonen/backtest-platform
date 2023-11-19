@@ -1,11 +1,6 @@
 import React from "react";
 import { Box, Button, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import { DatasetMetadata } from "../../clients/queries";
-import {
-  COLOR_BG_SECONDARY,
-  COLOR_BG_TERTIARY,
-  COLOR_HAIRLINE_REGULAR,
-} from "../../utils/colors";
 
 interface Props {
   tables: DatasetMetadata[];
@@ -16,7 +11,7 @@ const COLUMNS = ["Name", "Start date", "End date", "Columns", ""];
 export const DatasetTable = ({ tables }: Props) => {
   return (
     <Box overflow="auto">
-      <Table variant="simple">
+      <Table variant="simple" className="basic-table">
         <Thead>
           <Tr>
             {COLUMNS.map((item) => {
