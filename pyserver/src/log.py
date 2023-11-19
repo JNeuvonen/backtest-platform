@@ -1,6 +1,8 @@
 import logging
 import os
 
+from constants import LOG_FILE
+
 
 class Logger:
     def __init__(self, log_file, log_level=logging.INFO):
@@ -37,3 +39,16 @@ class Logger:
     def debug(self, message):
         """Log a debug message."""
         self.logger.debug(message)
+
+
+APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
+
+
+logger = Logger(
+    os.path.join(APP_DATA_PATH, LOG_FILE),
+    logging.INFO,
+)
+
+
+def get_logger():
+    return logger

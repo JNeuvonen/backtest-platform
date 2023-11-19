@@ -15,9 +15,9 @@ from pydantic import BaseModel
 from bina_load_data import ScrapeJob
 from typing import Optional, List
 from constants import DB_DATASETS, DB_WORKER_QUEUE, LOG_FILE
+from log import get_logger
 from routes_binance import router as binance_router
 import threading
-from log import Logger
 
 app = FastAPI()
 app.include_router(binance_router, prefix="/binance")
@@ -30,10 +30,6 @@ app.add_middleware(
 )
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
-logger = Logger(
-    os.path.join(APP_DATA_PATH if APP_DATA_PATH is not None else "", LOG_FILE),
-    logging.INFO,
-)
 
 
 def get_path(relative_to_app_data: str):
@@ -95,6 +91,7 @@ def create_scrape_job(scrape_job: ScrapeJobModel):
 
 @app.post("/poll_scrape_jobs")
 def poll_scrape_jobs_endpoint():
+    logger = get_logger()
     logger.info("Started worker thread for polling scrape jobs.")
     worker_thread = threading.Thread(
         target=poll_scrape_jobs, args=(APP_DATA_PATH, logger)
