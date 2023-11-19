@@ -2,6 +2,9 @@ export const PATHS = {
   datasets: {
     path: "/datasets",
     subpaths: {
+      available: {
+        path: "all",
+      },
       binance: {
         path: "binance",
       },
