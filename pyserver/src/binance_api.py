@@ -4,7 +4,7 @@ import pandas as pd
 
 from constants import BINANCE_DATA_COLS, DB_DATASETS
 from db import create_connection
-from server import get_logger
+from log import get_logger
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")

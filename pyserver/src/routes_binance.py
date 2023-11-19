@@ -1,10 +1,8 @@
 import threading
-import os
 from fastapi import APIRouter
 from pydantic import BaseModel
 
 from binance_api import save_historical_klines
-from log import get_logger
 
 router = APIRouter()
 

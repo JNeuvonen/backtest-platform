@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 import uvicorn
 import os
@@ -14,7 +13,7 @@ from db import (
 from pydantic import BaseModel
 from bina_load_data import ScrapeJob
 from typing import Optional, List
-from constants import DB_DATASETS, DB_WORKER_QUEUE, LOG_FILE
+from constants import DB_DATASETS, DB_WORKER_QUEUE
 from log import get_logger
 from routes_binance import router as binance_router
 import threading
