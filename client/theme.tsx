@@ -47,6 +47,26 @@ const buttonTheme = {
   },
 };
 
+const tableTheme = {
+  Table: {
+    baseStyle: {
+      // You can also style td or other parts of the table if required
+      bgColor: "red",
+    },
+    variants: {
+      default: {
+        th: {
+          borderColor: "red",
+          borderBottom: "1px solid",
+        },
+      },
+    },
+    defaultProps: {
+      variant: "default",
+    },
+  },
+};
+
 export const customChakraTheme = extendTheme({
   styles: {
     global: {
@@ -58,5 +78,6 @@ export const customChakraTheme = extendTheme({
   },
   components: {
     ...buttonTheme,
+    ...tableTheme,
   },
 });
