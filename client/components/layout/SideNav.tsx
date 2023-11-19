@@ -11,7 +11,11 @@ export interface SideNavItem {
 }
 
 const SIDE_NAV_ITEMS = [
-  { link: LINKS.datasets, icon: BsDatabase, path: PATHS.datasets.path },
+  {
+    link: LINKS.datasets,
+    icon: BsDatabase,
+    path: PATHS.datasets.path + "/" + PATHS.datasets.subpaths.available.path,
+  },
   { link: LINKS.simulate, icon: BsDatabase, path: PATHS.simulate.path },
 ];
 
@@ -23,7 +27,7 @@ export const SideNav = () => {
         {SIDE_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           return (
-            <Link to={item.path}>
+            <Link to={item.path} key={item.path}>
               <div
                 className={
                   item.path.includes(activePath)

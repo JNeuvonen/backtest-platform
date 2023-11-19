@@ -5,6 +5,7 @@ import { PATHS } from "../utils/constants";
 import { Outlet } from "react-router-dom";
 
 const SIDE_NAV_ITEMS: SideNavItem[] = [
+  { link: "All", path: PATHS.datasets.subpaths.available.path },
   { link: "Stock Market", path: PATHS.datasets.subpaths.stock_market.path },
   { link: "Binance", path: PATHS.datasets.subpaths.binance.path },
 ];
@@ -18,7 +19,6 @@ export const DatasetsPage = () => {
         fallbackPath={PATHS.datasets.subpaths.stock_market.path}
       />
       <Outlet />
-      <h1>Current available datasets</h1>
     </div>
   );
 };
