@@ -22,3 +22,11 @@ export const LINKS = {
   datasets: "Datasets",
   simulate: "Simulate",
 };
+
+export const CONSTANTS = {
+  base_url: "http://localhost:8000",
+};
+
+export const TAURI_COMMANDS = {
+  fetch_env: "fetch_env",
+};

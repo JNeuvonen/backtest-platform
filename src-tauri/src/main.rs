@@ -5,11 +5,12 @@ use std::{
 };
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn fetch_env(key: String) -> Option<String> {
+    std::env::var(key).ok()
 }
 
 fn main() {
+    dotenv::dotenv().ok();
     tauri::Builder::default()
         .setup(|app| {
             let app_data_path = app
@@ -55,7 +56,7 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![fetch_env])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

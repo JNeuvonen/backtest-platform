@@ -1,0 +1,32 @@
+module.exports = {
+  parser: "@typescript-eslint/parser",
+  extends: [
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier",
+    "prettier/@typescript-eslint",
+  ],
+  plugins: [
+    "react",
+    "@typescript-eslint",
+    "jsx-a11y",
+    "react-hooks",
+    "prettier",
+  ],
+  env: {
+    browser: true,
+    es2021: true,
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
+  rules: {
+    "prettier/prettier": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "react/prop-types": "off",
+  },
+};

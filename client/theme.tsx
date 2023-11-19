@@ -1,34 +1,23 @@
 import { extendTheme } from "@chakra-ui/react";
-
-const COLORS = {
-  action_button_blue: {
-    default: "#167BED",
-    hover: "#024ca1",
-    text_color: "white",
-  },
-  button_grey: {
-    default: "#3B3B3B",
-    hover: "#525252",
-    text_color: "white",
-  },
-  body: {
-    bg: "#212121",
-  },
-};
+import {
+  COLOR_BG_PRIMARY,
+  COLOR_BG_PRIMARY_SHADE_THREE,
+  COLOR_CONTENT_PRIMARY,
+} from "./utils/colors";
 
 const buttonCtaVariant = () => ({
-  bg: COLORS.action_button_blue.default,
-  color: COLORS.action_button_blue.text_color,
+  bg: COLOR_BG_PRIMARY,
+  color: COLOR_BG_PRIMARY,
   _hover: {
-    bg: COLORS.action_button_blue.hover,
+    bg: COLOR_BG_PRIMARY,
   },
 });
 
 const buttonGreyVarint = () => ({
-  bg: COLORS.button_grey.default,
-  color: COLORS.button_grey.text_color,
+  bg: COLOR_BG_PRIMARY,
+  color: COLOR_CONTENT_PRIMARY,
   _hover: {
-    bg: COLORS.button_grey.hover,
+    bg: COLOR_BG_PRIMARY_SHADE_THREE,
   },
 });
 
@@ -51,8 +40,8 @@ export const customChakraTheme = extendTheme({
   styles: {
     global: {
       body: {
-        bg: COLORS.body.bg,
-        color: "#f0f0f0",
+        bg: COLOR_BG_PRIMARY,
+        color: COLOR_CONTENT_PRIMARY,
       },
     },
   },

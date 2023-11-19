@@ -12,6 +12,9 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "http": {
+        "all": true
+      },
       "shell": {
         "all": false,
         "open": true
@@ -40,7 +43,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": ["binaries/**/*"]
+      "resources": ["binaries/**/*", ".env"]
     },
     "security": {
       "csp": null
@@ -51,7 +54,9 @@
         "resizable": true,
         "title": "backtest-engine",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "minWidth": 800,
+        "minHeight": 600
       }
     ]
   }

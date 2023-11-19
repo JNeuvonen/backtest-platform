@@ -51,6 +51,23 @@
   background-color: #3a3a3a;
 }
 
+.data-sets-container {
+  margin-top: 32px;
+}
+
+.basic-table {
+  border: 1px solid #3c3c3c;
+  background-color: #323232;
+}
+.basic-table th {
+  border-bottom: 1px solid #3c3c3c;
+  color: #f0f0f0;
+}
+.basic-table td {
+  border-bottom: 1px solid #3c3c3c;
+  color: #f0f0f0;
+}
+
 *,
 *::before,
 *::after {

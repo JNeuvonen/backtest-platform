@@ -1,0 +1,18 @@
+@import "colors";
+
+.data-sets-container {
+  margin-top: 32px;
+}
+
+.basic-table {
+  border: 1px solid $bg-primary-shade-two;
+  background-color: $bg-primary-shade-one;
+  th {
+    border-bottom: 1px solid $bg-primary-shade-two;
+    color: $content-primary;
+  }
+  td {
+    border-bottom: 1px solid $bg-primary-shade-two;
+    color: $content-primary;
+  }
+}

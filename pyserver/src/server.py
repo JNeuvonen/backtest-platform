@@ -3,6 +3,7 @@ import sqlite3
 import uvicorn
 import os
 from fastapi import FastAPI, Response, status, HTTPException, Path
+from fastapi.middleware.cors import CORSMiddleware
 from db import (
     create_connection,
     get_column_names,
@@ -18,6 +19,14 @@ import threading
 from log import Logger
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 logger = Logger(
     os.path.join(APP_DATA_PATH if APP_DATA_PATH is not None else "", LOG_FILE),
