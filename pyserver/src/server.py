@@ -15,10 +15,12 @@ from pydantic import BaseModel
 from bina_load_data import ScrapeJob
 from typing import Optional, List
 from constants import DB_DATASETS, DB_WORKER_QUEUE, LOG_FILE
+from routes_binance import router as binance_router
 import threading
 from log import Logger
 
 app = FastAPI()
+app.include_router(binance_router, prefix="/binance")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
