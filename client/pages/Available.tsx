@@ -1,11 +1,30 @@
 import React, { useState } from "react";
-import { useDatasetsQuery } from "../clients/queries";
-import { Box, Button, Spinner, Text } from "@chakra-ui/react";
+import {
+  BinanceBasicTicker,
+  useBinanceTickersQuery,
+  useDatasetsQuery,
+} from "../clients/queries";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Select,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
 import { DatasetTable } from "../components/tables/Dataset";
 import { useModal } from "../hooks/useOpen";
 import { ChakraModal } from "../components/chakra/modal";
 import { AddIcon } from "@chakra-ui/icons";
 import { BasicCard } from "../components/Card";
+import { Formik, Form, Field } from "formik";
+import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
+import { BINANCE, GET_KLINE_OPTIONS } from "../utils/constants";
+import { MultiValue } from "react-select";
+import { ResponseType, buildRequest } from "../clients/fetch";
+import { URLS } from "../clients/endpoints";
+import { useToast } from "@chakra-ui/react";
 
 const DATA_PROVIDERS = [
   {
@@ -47,10 +66,111 @@ const FormStateSelectProvider = ({
   );
 };
 
-const FormStateBinance = () => {
-  return <Box></Box>;
+export const binanceTickSelectOptions = (tickers: BinanceBasicTicker[]) => {
+  return tickers.map((item) => {
+    return {
+      value: item.symbol,
+      label: item.symbol,
+    };
+  });
 };
 
+interface BinanceFormValues {
+  selectedTickers: OptionType[];
+  interval: string;
+}
+const FormStateBinance = () => {
+  const toast = useToast();
+  const { data, isLoading } = useBinanceTickersQuery();
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (!data || data?.status !== 200) {
+    return <div>Binance API is not working currently</div>;
+  }
+
+  const submitForm = async (values: BinanceFormValues) => {
+    const interval = values.interval;
+    const symbols = values.selectedTickers;
+
+    const promises: Promise<ResponseType>[] = [];
+    const url = URLS.binance_fetch_klines;
+
+    symbols.map((item) => {
+      const payload = {
+        symbol: item.value,
+        interval,
+      };
+      const req = buildRequest({ method: "POST", url, payload });
+      promises.push(req);
+    });
+
+    try {
+      await Promise.all(promises);
+      toast({
+        title: "Initiated fetch on all of the pairs",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+  return (
+    <Formik
+      initialValues={{ selectedTickers: [], interval: "1h" }}
+      onSubmit={(values: BinanceFormValues, actions) => {
+        actions.setSubmitting(true);
+        submitForm(values);
+        actions.setSubmitting(false);
+      }}
+    >
+      {({ setFieldValue }) => (
+        <Form>
+          <Box>
+            <FormControl>
+              <FormLabel fontSize={"x-large"}>Pairs to be downloaded</FormLabel>
+              <Field
+                name="selectedTickers"
+                as={SelectWithTextFilter}
+                options={binanceTickSelectOptions(data.res.pairs)}
+                onChange={(selectedOptions: MultiValue<OptionType>) =>
+                  setFieldValue("selectedTickers", selectedOptions)
+                }
+                isMulti={true}
+                closeMenuOnSelect={false}
+              />
+            </FormControl>
+
+            <FormControl marginTop={"8px"}>
+              <FormLabel fontSize={"x-large"}>Candle interval</FormLabel>
+              <Field name="interval" as={Select}>
+                {GET_KLINE_OPTIONS().map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </Field>
+            </FormControl>
+
+            <Button mt={4} type="submit">
+              Submit
+            </Button>
+          </Box>
+        </Form>
+      )}
+    </Formik>
+  );
+};
 const FormStateStocks = () => {
   return <Box></Box>;
 };
@@ -68,8 +188,8 @@ const GetNewDatasetModal = () => {
 
   return (
     <div style={{ width: "100%" }}>
-      <div style={{ margin: "0 auto", width: "max-content" }}>
-        {formState === STEP_1 && dataProvider === "Stocks" && (
+      <div>
+        {formState === STEP_1 && (
           <FormStateSelectProvider advanceFormState={advanceStepOne} />
         )}
         {formState === STEP_2 && dataProvider === "Binance" && (
@@ -116,7 +236,7 @@ export const AvailablePage = () => {
         isOpen={isOpen}
         title="New dataset"
         onClose={modalClose}
-        modalContentStyle={{ maxWidth: "50%", paddingBottom: "100px" }}
+        modalContentStyle={{ maxWidth: "50%" }}
       >
         {jsxContent}
       </ChakraModal>

@@ -1,6 +1,6 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
-import { FETCH_DATASETS } from "../utils/query-keys";
-import { fetchDatasets } from "./requests";
+import { FETCH_DATASETS, QUERY_KEYS } from "../utils/query-keys";
+import { fetchAllTickers, fetchDatasets } from "./requests";
 
 export interface DatasetMetadata {
   columns: string[];
@@ -16,9 +16,31 @@ interface DatasetsResponse {
   status: number;
 }
 
+export interface BinanceBasicTicker {
+  symbol: string;
+  price: number;
+}
+
+interface BinanceTickersResponse {
+  res: {
+    pairs: BinanceBasicTicker[];
+  };
+  status: number;
+}
+
 export function useDatasetsQuery(): UseQueryResult<DatasetsResponse, unknown> {
   return useQuery<DatasetsResponse, unknown>({
-    queryKey: [FETCH_DATASETS],
+    queryKey: [QUERY_KEYS.fetch_datasets],
     queryFn: fetchDatasets,
+  });
+}
+
+export function useBinanceTickersQuery(): UseQueryResult<
+  BinanceTickersResponse,
+  unknown
+> {
+  return useQuery<BinanceTickersResponse, unknown>({
+    queryKey: [QUERY_KEYS.fetch_binance_tickers],
+    queryFn: fetchAllTickers,
   });
 }
