@@ -38,12 +38,16 @@ def get_tables(conn: sqlite3.Connection):
         cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 1;")
         last_row = cursor.fetchone()
 
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+        row_count = cursor.fetchone()[0]
+
         tables_data.append(
             {
                 "table_name": table_name,
                 "columns": columns,
                 "start_date": first_row[0],
                 "end_date": last_row[0],
+                "row_count": row_count,
             }
         )
 

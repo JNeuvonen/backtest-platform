@@ -1,6 +1,8 @@
 import React from "react";
 import { Box, Button, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import { DatasetMetadata } from "../../clients/queries";
+import { ChakraModal, Modal } from "../chakra/modal";
+import { useModal } from "../../hooks/useOpen";
 
 interface Props {
   tables: DatasetMetadata[];
@@ -8,9 +10,23 @@ interface Props {
 
 const COLUMNS = ["Name", "Start date", "End date", "Columns", ""];
 
+const ColumnsModalContent = ({ columns }: { columns: string[] }) => {
+  return (
+    <div>
+      {columns.map((item) => {
+        return <div key={item}>{item}</div>;
+      })}
+    </div>
+  );
+};
+
 export const DatasetTable = ({ tables }: Props) => {
+  const { isOpen, setContent, modalClose, jsxContent } = useModal(false);
   return (
     <Box overflow="auto">
+      <ChakraModal isOpen={isOpen} onClose={modalClose} title={"Table columns"}>
+        {jsxContent}
+      </ChakraModal>
       <Table variant="simple" className="basic-table">
         <Thead>
           <Tr>
@@ -27,7 +43,16 @@ export const DatasetTable = ({ tables }: Props) => {
                 <Td>{new Date(item.start_date).toLocaleDateString()}</Td>
                 <Td>{new Date(item.end_date).toLocaleDateString()}</Td>
                 <Td>
-                  <Button variant="grey">View</Button>
+                  <Button
+                    variant="grey"
+                    onClick={() => {
+                      setContent(
+                        <ColumnsModalContent columns={item.columns} />
+                      );
+                    }}
+                  >
+                    View
+                  </Button>
                 </Td>
                 <Td></Td>
               </Tr>

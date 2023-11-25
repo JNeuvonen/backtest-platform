@@ -1,6 +1,6 @@
 import React from "react";
 import { useDatasetsQuery } from "../clients/queries";
-import { Spinner } from "@chakra-ui/react";
+import { Button, Spinner } from "@chakra-ui/react";
 import { DatasetTable } from "../components/tables/Dataset";
 
 export const AvailablePage = () => {
@@ -32,6 +32,7 @@ export const AvailablePage = () => {
   return (
     <div>
       <h1>Available datasets</h1>
+      <Button>Build new</Button>
       {renderDatasetsContainer()}
     </div>
   );
