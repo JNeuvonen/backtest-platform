@@ -69,7 +69,7 @@ const GetNewDatasetModal = () => {
   return (
     <div style={{ width: "100%" }}>
       <div style={{ margin: "0 auto", width: "max-content" }}>
-        {formState === STEP_1 && dataProvider === "Stocks" && (
+        {formState === STEP_1 && (
           <FormStateSelectProvider advanceFormState={advanceStepOne} />
         )}
         {formState === STEP_2 && dataProvider === "Binance" && (
