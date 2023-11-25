@@ -7,15 +7,16 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  ModalProps,
+  ModalContentProps,
 } from "@chakra-ui/react";
 import { COLOR_BG_PRIMARY } from "../../utils/colors";
 
-interface CustomModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CustomModalProps extends ModalProps {
   title: string;
   children: ReactNode;
   footerContent?: ReactNode;
+  modalContentStyle?: ModalContentProps;
 }
 
 export const ChakraModal: React.FC<CustomModalProps> = ({
@@ -24,15 +25,13 @@ export const ChakraModal: React.FC<CustomModalProps> = ({
   title,
   children,
   footerContent,
+  modalContentStyle,
+  ...props
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} {...props}>
       <ModalOverlay />
-      <ModalContent
-        className={"chakra-modal"}
-        bg={COLOR_BG_PRIMARY}
-        padding={"8px"}
-      >
+      <ModalContent bg={COLOR_BG_PRIMARY} padding="8px" {...modalContentStyle}>
         <ModalHeader>{title}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>{children}</ModalBody>
