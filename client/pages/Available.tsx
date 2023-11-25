@@ -22,6 +22,9 @@ import { Formik, Form, Field } from "formik";
 import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
 import { BINANCE, GET_KLINE_OPTIONS } from "../utils/constants";
 import { MultiValue } from "react-select";
+import { ResponseType, buildRequest } from "../clients/fetch";
+import { URLS } from "../clients/endpoints";
+import { useToast } from "@chakra-ui/react";
 
 const DATA_PROVIDERS = [
   {
@@ -77,6 +80,7 @@ interface BinanceFormValues {
   interval: string;
 }
 const FormStateBinance = () => {
+  const toast = useToast();
   const { data, isLoading } = useBinanceTickersQuery();
 
   if (isLoading) {
@@ -87,16 +91,44 @@ const FormStateBinance = () => {
     return <div>Binance API is not working currently</div>;
   }
 
-  const isButtonValid = (values: BinanceFormValues) => {
-    const isValid = values.selectedTickers.length > 0 && values.interval !== "";
-    return isValid;
-  };
+  const submitForm = async (values: BinanceFormValues) => {
+    const interval = values.interval;
+    const symbols = values.selectedTickers;
 
-  const submitForm = async (values: BinanceFormValues) => {};
+    const promises: Promise<ResponseType>[] = [];
+    const url = URLS.binance_fetch_klines;
+
+    symbols.map((item) => {
+      const payload = {
+        symbol: item.value,
+        interval,
+      };
+      const req = buildRequest({ method: "POST", url, payload });
+      promises.push(req);
+    });
+
+    try {
+      await Promise.all(promises);
+      toast({
+        title: "Initiated fetch on all of the pairs",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
   return (
     <Formik
-      initialValues={{ selectedTickers: [], interval: "" }}
-      onSubmit={(values, actions) => {
+      initialValues={{ selectedTickers: [], interval: "1h" }}
+      onSubmit={(values: BinanceFormValues, actions) => {
         actions.setSubmitting(true);
         submitForm(values);
         actions.setSubmitting(false);
