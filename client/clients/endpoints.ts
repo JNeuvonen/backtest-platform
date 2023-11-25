@@ -6,7 +6,7 @@ const API = {
 
 const BASE_URL = CONSTANTS.base_url;
 
-export async function tablesUrl() {
+export function tablesUrl() {
   const url = BASE_URL + API.tables;
   return url;
 }
