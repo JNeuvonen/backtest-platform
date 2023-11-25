@@ -24,7 +24,7 @@ async def get_binance_klines(request: FetchKlinesRequest):
     return {"symbol": request.symbol}
 
 
-@router.get("/exchange-info")
+@router.get("/get-all-tickers")
 async def get_binance_exchange_info():
     tickers = get_all_tickers()
     return {"pairs": tickers}
