@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { Home } from "./Pages";
+import { Home } from "./pages";
 import { PATHS } from "./utils/constants";
 import { DatasetsPage } from "./pages/Datasets";
 import { BinancePage } from "./pages/BinancePage";

@@ -1,8 +1,8 @@
 import React from "react";
-import { InnerSideNav } from "../components/layout/InnerSideNav";
-import { SideNavItem } from "../components/Layout/SideNav";
-import { PATHS } from "../utils/constants";
 import { Outlet } from "react-router-dom";
+import { SideNavItem } from "../components/layout/SideNav";
+import { InnerSideNav } from "../components/layout/InnerSideNav";
+import { PATHS } from "../utils/constants";
 
 const SIDE_NAV_ITEMS: SideNavItem[] = [
   { link: "All", path: PATHS.datasets.subpaths.available.path },
