@@ -1,5 +1,5 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
-import { FETCH_DATASETS, QUERY_KEYS } from "../utils/query-keys";
+import { QUERY_KEYS } from "../utils/query-keys";
 import { fetchAllTickers, fetchDatasets } from "./requests";
 
 export interface DatasetMetadata {

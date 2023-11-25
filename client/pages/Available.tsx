@@ -1,9 +1,4 @@
-import React, { useState } from "react";
-import {
-  BinanceBasicTicker,
-  useBinanceTickersQuery,
-  useDatasetsQuery,
-} from "../clients/queries";
+import { AddIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -12,19 +7,24 @@ import {
   Select,
   Spinner,
   Text,
+  useToast,
 } from "@chakra-ui/react";
+import { Field, Form, Formik } from "formik";
+import React, { useState } from "react";
+import { MultiValue } from "react-select";
+import { URLS } from "../clients/endpoints";
+import { ResponseType, buildRequest } from "../clients/fetch";
+import {
+  BinanceBasicTicker,
+  useBinanceTickersQuery,
+  useDatasetsQuery,
+} from "../clients/queries";
+import { BasicCard } from "../components/Card";
+import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
+import { ChakraModal } from "../components/chakra/modal";
 import { DatasetTable } from "../components/tables/Dataset";
 import { useModal } from "../hooks/useOpen";
-import { ChakraModal } from "../components/chakra/modal";
-import { AddIcon } from "@chakra-ui/icons";
-import { BasicCard } from "../components/Card";
-import { Formik, Form, Field } from "formik";
-import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
-import { BINANCE, GET_KLINE_OPTIONS } from "../utils/constants";
-import { MultiValue } from "react-select";
-import { ResponseType, buildRequest } from "../clients/fetch";
-import { URLS } from "../clients/endpoints";
-import { useToast } from "@chakra-ui/react";
+import { GET_KLINE_OPTIONS } from "../utils/constants";
 
 const DATA_PROVIDERS = [
   {

@@ -1,8 +1,8 @@
-import React from "react";
 import { Box, Button, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
+import React from "react";
 import { DatasetMetadata } from "../../clients/queries";
-import { ChakraModal, Modal } from "../chakra/modal";
 import { useModal } from "../../hooks/useOpen";
+import { ChakraModal } from "../chakra/modal";
 
 interface Props {
   tables: DatasetMetadata[];
