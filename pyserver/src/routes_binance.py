@@ -2,7 +2,10 @@ import threading
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from binance_api import save_historical_klines
+from binance_api import (
+    get_all_tickers,
+    save_historical_klines,
+)
 
 router = APIRouter()
 
@@ -19,3 +22,9 @@ async def get_binance_klines(request: FetchKlinesRequest):
     )
     worker_thread.start()
     return {"symbol": request.symbol}
+
+
+@router.get("/exchange-info")
+async def get_binance_exchange_info():
+    tickers = get_all_tickers()
+    return {"pairs": tickers}

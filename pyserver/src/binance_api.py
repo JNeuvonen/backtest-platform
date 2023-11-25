@@ -44,3 +44,9 @@ def save_historical_klines(symbol, interval):
     klines = get_historical_klines(symbol, interval)
     klines.to_sql(symbol + interval, conn, if_exists="replace", index=False)
     logger.info(f"Succesfully fetched klines on {symbol} with {interval} interval")
+
+
+def get_all_tickers():
+    client = Client()
+    data = client.get_all_tickers()
+    return data
