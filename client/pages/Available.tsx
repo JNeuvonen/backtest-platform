@@ -242,7 +242,7 @@ export const AvailablePage = () => {
       </ChakraModal>
       <h1>Available datasets</h1>
       <Button onClick={() => setContent(<GetNewDatasetModal />)}>
-        Build new
+        Add from API
       </Button>
       {renderDatasetsContainer()}
     </div>
