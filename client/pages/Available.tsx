@@ -10,7 +10,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { MultiValue } from "react-select";
 import { URLS } from "../clients/endpoints";
 import { ResponseType, buildRequest } from "../clients/fetch";
@@ -80,7 +80,11 @@ interface BinanceFormValues {
   selectedTickers: OptionType[];
   interval: string;
 }
-const FormStateBinance = () => {
+
+interface FormStateBinanceProps {
+  modalClose: () => void;
+}
+const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
   const toast = useToast();
   const { data, isLoading } = useBinanceTickersQuery();
 
@@ -111,11 +115,12 @@ const FormStateBinance = () => {
     try {
       await Promise.all(promises);
       toast({
-        title: "Initiated fetch on all of the pairs",
+        title: "Initiated background download on all of the pairs",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
+      modalClose();
     } catch (error) {
       toast({
         title: "Error",
@@ -178,7 +183,10 @@ const FormStateStocks = () => {
 
 const STEP_1 = "select-provider";
 const STEP_2 = "select-data";
-const GetNewDatasetModal = () => {
+interface GetNewDatasetModalProps {
+  modalClose: () => void;
+}
+const GetNewDatasetModal = ({ modalClose }: GetNewDatasetModalProps) => {
   const [formState, setFormState] = useState(STEP_1);
   const [dataProvider, setDataProvider] = useState("");
 
@@ -194,7 +202,7 @@ const GetNewDatasetModal = () => {
           <FormStateSelectProvider advanceFormState={advanceStepOne} />
         )}
         {formState === STEP_2 && dataProvider === "Binance" && (
-          <FormStateBinance />
+          <FormStateBinance modalClose={modalClose} />
         )}
         {formState === STEP_2 && dataProvider === "Stocks" && (
           <FormStateStocks />
@@ -250,7 +258,11 @@ export const AvailablePage = () => {
         {jsxContent}
       </ChakraModal>
       <h1>Available datasets</h1>
-      <Button onClick={() => setContent(<GetNewDatasetModal />)}>
+      <Button
+        onClick={() =>
+          setContent(<GetNewDatasetModal modalClose={modalClose} />)
+        }
+      >
         Add from API
       </Button>
       {renderDatasetsContainer()}

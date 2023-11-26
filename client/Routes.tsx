@@ -5,6 +5,7 @@ import { PATHS } from "./utils/constants";
 import { DatasetsPage } from "./pages/Datasets";
 import { BinancePage } from "./pages/BinancePage";
 import { AvailablePage } from "./pages/Available";
+import { DatasetDetailPage } from "./pages/Available/Dataset";
 
 export const AppRoutes = () => {
   return (
@@ -12,9 +13,13 @@ export const AppRoutes = () => {
       <Route path="/" element={<Home />} />
       <Route path={PATHS.datasets.path} element={<DatasetsPage />}>
         <Route
+          path={PATHS.datasets.subpaths.available.path + "/:datasetName"}
+          element={<DatasetDetailPage />}
+        />
+        <Route
           path={PATHS.datasets.subpaths.available.path}
           element={<AvailablePage />}
-        />
+        ></Route>
         <Route
           path={PATHS.datasets.subpaths.stock_market.path}
           element={<DatasetsPage />}

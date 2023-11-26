@@ -2,7 +2,6 @@ import React from "react";
 import { SideNavItem } from "./SideNav";
 import { Link } from "react-router-dom";
 import { useActivePath } from "../../hooks/useActivePath";
-import { replaceNthPathSegment } from "../../hooks/useTab";
 
 interface Props {
   sideNavItems: SideNavItem[];
@@ -18,10 +17,7 @@ export const InnerSideNav = ({ sideNavItems, pathActiveItemDepth }: Props) => {
         const styleClassName = "layout__container-inner-side-nav__item";
         const activeClassName = "layout__container-inner-side-nav__item-active";
         return (
-          <Link
-            to={replaceNthPathSegment(pathActiveItemDepth, item.path)}
-            key={item.link}
-          >
+          <Link to={item.path} key={item.link}>
             <div
               className={
                 activePath === item.path

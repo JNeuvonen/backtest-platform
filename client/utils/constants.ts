@@ -3,13 +3,13 @@ export const PATHS = {
     path: "/datasets",
     subpaths: {
       available: {
-        path: "all",
+        path: "/datasets/all",
       },
       binance: {
-        path: "binance",
+        path: "/datasets/binance",
       },
       stock_market: {
-        path: "stock-market",
+        path: "/datasets/stock-market",
       },
     },
   },

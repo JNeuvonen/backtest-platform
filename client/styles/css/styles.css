@@ -51,6 +51,10 @@
   background-color: #3a3a3a;
 }
 
+.link-default {
+  color: #097bed;
+}
+
 .data-sets-container {
   margin-top: 32px;
 }

@@ -3,6 +3,7 @@ import React from "react";
 import { DatasetMetadata } from "../../clients/queries";
 import { useModal } from "../../hooks/useOpen";
 import { ChakraModal } from "../chakra/modal";
+import { Link } from "react-router-dom";
 
 interface Props {
   tables: DatasetMetadata[];
@@ -39,7 +40,14 @@ export const DatasetTable = ({ tables }: Props) => {
           {tables.map((item) => {
             return (
               <Tr key={item.table_name}>
-                <Td>{item.table_name}</Td>
+                <Td>
+                  <Link
+                    to={`/datasets/all/${item.table_name}`}
+                    className="link-default"
+                  >
+                    {item.table_name}
+                  </Link>
+                </Td>
                 <Td>{new Date(item.start_date).toLocaleDateString()}</Td>
                 <Td>{new Date(item.end_date).toLocaleDateString()}</Td>
                 <Td>
