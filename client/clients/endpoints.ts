@@ -21,8 +21,11 @@ export const URLS = {
 };
 
 export const STREAMS_LOG = {
-  error: "[UI-ERROR]: ",
-  warning: "[UI-WARNING]: ",
-  info: "[UI-DEBUG]: ",
-  debug: "[UI-INFO]: ",
+  error: "[UI-ERROR]",
+  warning: "[UI-WARNING]",
+  info: "[UI-INFO]",
+  debug: "[UI-DEBUG]",
+  UTILS: {
+    should_refetch: "[REFETCH]",
+  },
 };

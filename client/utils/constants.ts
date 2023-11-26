@@ -58,3 +58,7 @@ export const GET_KLINE_OPTIONS = () => {
   }
   return klineOptions;
 };
+
+export const DOM_MESSAGES = {
+  refetch: "refetch",
+};

@@ -1,4 +1,4 @@
-import threading
+import asyncio
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -17,10 +17,7 @@ class FetchKlinesRequest(BaseModel):
 
 @router.post("/fetch-klines")
 async def get_binance_klines(request: FetchKlinesRequest):
-    worker_thread = threading.Thread(
-        target=save_historical_klines, args=(request.symbol, request.interval)
-    )
-    worker_thread.start()
+    asyncio.create_task(save_historical_klines(request.symbol, request.interval))
     return {"symbol": request.symbol}
 
 

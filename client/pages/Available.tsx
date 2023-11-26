@@ -10,7 +10,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MultiValue } from "react-select";
 import { URLS } from "../clients/endpoints";
 import { ResponseType, buildRequest } from "../clients/fetch";
@@ -24,7 +24,8 @@ import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
 import { ChakraModal } from "../components/chakra/modal";
 import { DatasetTable } from "../components/tables/Dataset";
 import { useModal } from "../hooks/useOpen";
-import { GET_KLINE_OPTIONS } from "../utils/constants";
+import { DOM_MESSAGES, GET_KLINE_OPTIONS } from "../utils/constants";
+import { useMessageListener } from "../hooks/useMessageListener";
 
 const DATA_PROVIDERS = [
   {
@@ -204,8 +205,16 @@ const GetNewDatasetModal = () => {
 };
 
 export const AvailablePage = () => {
-  const { data, isLoading } = useDatasetsQuery();
+  const { data, isLoading, refetch } = useDatasetsQuery();
   const { isOpen, jsxContent, setContent, modalClose } = useModal(false);
+
+  const refetchTables = () => {
+    refetch();
+  };
+  useMessageListener({
+    messageName: DOM_MESSAGES.refetch,
+    messageCallback: refetchTables,
+  });
 
   if (isLoading) {
     return <Spinner />;

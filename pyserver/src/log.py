@@ -32,19 +32,21 @@ class Logger:
         """Remove a WebSocket connection."""
         self.websocket_connections.remove(websocket)
 
-    async def log(self, message, log_level, display_in_ui=False):
+    async def log(self, message, log_level, display_in_ui=False, should_refetch=False):
         """Send a message to all WebSocket connections before logging."""
         disconnected_sockets = []
+        refetch_indicator = "[REFETCH]" if should_refetch else ""
+
         for websocket in self.websocket_connections:
             try:
                 if display_in_ui and log_level == logging.ERROR:
-                    message = f"[UI-ERROR]: {message}"
+                    message = f"[UI-ERROR]{refetch_indicator}:{message}"
                 elif display_in_ui and log_level == logging.INFO:
-                    message = f"[UI-INFO]: {message}"
+                    message = f"[UI-INFO]{refetch_indicator}:{message}"
                 elif display_in_ui and log_level == logging.DEBUG:
-                    message = f"[UI-DEBUG]: {message}"
+                    message = f"[UI-DEBUG]{refetch_indicator}:{message}"
                 elif display_in_ui and log_level == logging.WARNING:
-                    message = f"[UI-WARNING]: {message}"
+                    message = f"[UI-WARNING]{refetch_indicator}:{message}"
                 await websocket.send_text(message)
             except Exception as _:
                 disconnected_sockets.append(websocket)

@@ -55,7 +55,7 @@ def read_root():
 @app.get("/tables")
 async def read_tables():
     logger = get_logger()
-    await logger.log("Request on /tables", logging.INFO)
+    await logger.log("Request on /tables", logging.INFO, True)
     db_path = get_path(DB_DATASETS)
     try:
         db = create_connection(db_path)

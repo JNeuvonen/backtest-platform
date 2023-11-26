@@ -1,6 +1,7 @@
 import os
 from binance import Client
 import pandas as pd
+import logging
 
 from constants import BINANCE_DATA_COLS, DB_DATASETS
 from db import create_connection
@@ -8,7 +9,6 @@ from log import get_logger
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
-logger = get_logger()
 
 
 def get_historical_klines(symbol, interval):
@@ -37,13 +37,17 @@ def get_historical_klines(symbol, interval):
     return df
 
 
-def save_historical_klines(symbol, interval):
+async def save_historical_klines(symbol, interval):
     logger = get_logger()
-    logger.info(f"Initiating downloading klines on {symbol} with {interval} interval")
     conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
     klines = get_historical_klines(symbol, interval)
     klines.to_sql(symbol + interval, conn, if_exists="replace", index=False)
-    logger.info(f"Succesfully fetched klines on {symbol} with {interval} interval")
+    await logger.log(
+        f"Succesfully fetched klines on {symbol} with {interval} interval",
+        logging.INFO,
+        True,
+        True,
+    )
 
 
 def get_all_tickers():
