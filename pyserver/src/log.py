@@ -11,6 +11,7 @@ class Logger:
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(log_level)
+        self.websocket_connections = []
 
         # Check if the logger already has a FileHandler
         if not any(isinstance(h, logging.FileHandler) for h in self.logger.handlers):
@@ -21,8 +22,44 @@ class Logger:
             )
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
+        self.logger.info("Application launched")
 
-        self.info("Application booted")
+    def add_websocket_connection(self, websocket):
+        """Add a new WebSocket connection."""
+        self.websocket_connections.append(websocket)
+
+    def remove_websocket_connection(self, websocket):
+        """Remove a WebSocket connection."""
+        self.websocket_connections.remove(websocket)
+
+    async def log(self, message, log_level, display_in_ui=False):
+        """Send a message to all WebSocket connections before logging."""
+        disconnected_sockets = []
+        for websocket in self.websocket_connections:
+            try:
+                if display_in_ui and log_level == logging.ERROR:
+                    message = f"[UI-ERROR]: {message}"
+                elif display_in_ui and log_level == logging.INFO:
+                    message = f"[UI-INFO]: {message}"
+                elif display_in_ui and log_level == logging.DEBUG:
+                    message = f"[UI-DEBUG]: {message}"
+                elif display_in_ui and log_level == logging.WARNING:
+                    message = f"[UI-WARNING]: {message}"
+                await websocket.send_text(message)
+            except Exception as _:
+                disconnected_sockets.append(websocket)
+
+        for websocket in disconnected_sockets:
+            self.remove_websocket_connection(websocket)
+
+        if log_level == logging.INFO:
+            self.info(message)
+        elif log_level == logging.WARNING:
+            self.warning(message)
+        elif log_level == logging.ERROR:
+            self.error(message)
+        elif log_level == logging.DEBUG:
+            self.debug(message)
 
     def info(self, message):
         """Log an info message."""

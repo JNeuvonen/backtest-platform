@@ -1,4 +1,5 @@
 import sqlite3
+from binance.depthcache import logging
 import uvicorn
 import os
 from fastapi import FastAPI, Response, status, HTTPException, Path
@@ -16,10 +17,12 @@ from typing import Optional, List
 from constants import DB_DATASETS, DB_WORKER_QUEUE
 from log import get_logger
 from routes_binance import router as binance_router
+from streams import router as streams_router
 import threading
 
 app = FastAPI()
 app.include_router(binance_router, prefix="/binance")
+app.include_router(streams_router, prefix="/streams")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,6 +30,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 
@@ -49,7 +53,9 @@ def read_root():
 
 
 @app.get("/tables")
-def read_tables():
+async def read_tables():
+    logger = get_logger()
+    await logger.log("Request on /tables", logging.INFO)
     db_path = get_path(DB_DATASETS)
     try:
         db = create_connection(db_path)
