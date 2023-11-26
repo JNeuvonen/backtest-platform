@@ -1,5 +1,4 @@
 import sqlite3
-from binance.depthcache import logging
 import uvicorn
 import os
 from fastapi import FastAPI, Response, status, HTTPException, Path
@@ -17,12 +16,14 @@ from typing import Optional, List
 from constants import DB_DATASETS, DB_WORKER_QUEUE
 from log import get_logger
 from routes_binance import router as binance_router
+from route_datasets import router as datasets_router
 from streams import router as streams_router
 import threading
 
 app = FastAPI()
 app.include_router(binance_router, prefix="/binance")
 app.include_router(streams_router, prefix="/streams")
+app.include_router(datasets_router, prefix="/dataset")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
