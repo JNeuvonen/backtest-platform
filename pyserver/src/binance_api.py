@@ -42,7 +42,10 @@ async def save_historical_klines(symbol, interval):
     logger = get_logger()
     conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
     klines = await get_historical_klines(symbol, interval)
-    klines.to_sql(symbol + interval, conn, if_exists="replace", index=False)
+    interval = "1mo" if interval == "1M" else interval
+    klines.to_sql(
+        symbol.lower() + "_" + interval, conn, if_exists="replace", index=False
+    )
     await logger.log(
         f"Downloaded klines on {symbol} with {interval} interval",
         logging.INFO,
