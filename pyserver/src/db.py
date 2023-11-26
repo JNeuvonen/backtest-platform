@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import statistics
 from typing import List
 
 from pandas.io.parquet import json
@@ -12,7 +13,7 @@ from db_statements import (
 
 from bina_load_data import ScrapeJob, load_data
 from db_models import RowScrapeJob
-from log import Logger
+from log import Logger, get_logger
 
 
 def create_connection(db_file: str):
@@ -53,6 +54,93 @@ def get_tables(conn: sqlite3.Connection):
 
     cursor.close()
     return tables_data
+
+
+def get_col_null_count(
+    cursor: sqlite3.Cursor, table_name: str, column_name: str
+) -> int:
+    query = f"SELECT COUNT(*) FROM {table_name} WHERE {column_name} IS NULL"
+    cursor.execute(query)
+    return cursor.fetchone()[0]
+
+
+def get_table_row_count(cursor: sqlite3.Cursor, table_name: str) -> int:
+    query = f"SELECT COUNT(*) FROM {table_name}"
+    cursor.execute(query)
+    return cursor.fetchone()[0]
+
+
+def get_col_stats(cursor: sqlite3.Cursor, table_name: str, column_name: str):
+    cursor.execute(
+        f"SELECT {column_name} FROM {table_name} WHERE {column_name} IS NOT NULL"
+    )
+    values = [row[0] for row in cursor.fetchall()]
+
+    if not values:
+        return None
+
+    return {
+        "mean": statistics.mean(values),
+        "median": statistics.median(values),
+        "min": min(values),
+        "max": max(values),
+        "std_dev": statistics.stdev(values) if len(values) > 1 else 0,
+    }
+
+
+def get_table_disk_size_bytes(cursor: sqlite3.Cursor, table_name: str) -> int:
+    cursor.execute(f"SELECT SUM(pgsize) FROM dbstat WHERE name='{table_name}'")
+    size = cursor.fetchone()[0]
+    return size if size is not None else 0
+
+
+def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
+    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+    row_count = cursor.fetchone()[0]
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+    first_five = cursor.fetchall()
+    last_five = []
+    if row_count > 5:
+        offset = max(0, row_count - 5)
+        cursor.execute(f"SELECT * FROM {table_name} LIMIT 5 OFFSET {offset}")
+        last_five = cursor.fetchall()
+
+    return first_five, last_five
+
+
+def get_dataset_table(conn: sqlite3.Connection, table_name: str):
+    logger = get_logger()
+    try:
+        logger.info("Called get_dataset_table")
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns_info = cursor.fetchall()
+        columns = [row[1] for row in columns_info]
+        numerical_columns = [
+            row[1] for row in columns_info if row[2] in ("INTEGER", "REAL", "NUMERIC")
+        ]
+
+        head, tail = get_first_last_five_rows(cursor, table_name)
+        null_counts = {
+            column: get_col_null_count(cursor, table_name, column) for column in columns
+        }
+        row_count = get_table_row_count(cursor, table_name)
+        numerical_stats = {
+            column: get_col_stats(cursor, table_name, column)
+            for column in numerical_columns
+        }
+
+        return {
+            "columns": columns,
+            "head": head,
+            "tail": tail,
+            "null_counts": null_counts,
+            "row_count": row_count,
+            "stats_by_col": numerical_stats,
+        }
+    except Exception as e:
+        logger.info(f"{e}")
+        return None
 
 
 def create_binance_scrape_job_table(cursor: sqlite3.Cursor):
