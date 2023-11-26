@@ -20,7 +20,7 @@ export const InnerSideNav = ({ sideNavItems, pathActiveItemDepth }: Props) => {
           <Link to={item.path} key={item.link}>
             <div
               className={
-                activePath === item.path
+                item.path.includes(activePath)
                   ? styleClassName + " " + activeClassName
                   : styleClassName
               }
