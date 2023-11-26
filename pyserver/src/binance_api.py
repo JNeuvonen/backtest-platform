@@ -6,19 +6,20 @@ import logging
 from constants import BINANCE_DATA_COLS, DB_DATASETS
 from db import create_connection
 from log import get_logger
+import asyncio
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 
 
-def get_historical_klines(symbol, interval):
+async def get_historical_klines(symbol, interval):
     client = Client()
     start_time = "1 Jan, 2017"
     klines = []
 
     while True:
-        new_klines = client.get_historical_klines(
-            symbol, interval, start_time, limit=1000
+        new_klines = await asyncio.to_thread(
+            client.get_historical_klines, symbol, interval, start_time, limit=1000
         )
         if not new_klines:
             break
@@ -40,10 +41,10 @@ def get_historical_klines(symbol, interval):
 async def save_historical_klines(symbol, interval):
     logger = get_logger()
     conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
-    klines = get_historical_klines(symbol, interval)
+    klines = await get_historical_klines(symbol, interval)
     klines.to_sql(symbol + interval, conn, if_exists="replace", index=False)
     await logger.log(
-        f"Succesfully fetched klines on {symbol} with {interval} interval",
+        f"Downloaded klines on {symbol} with {interval} interval",
         logging.INFO,
         True,
         True,
