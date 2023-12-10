@@ -1,8 +1,14 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../../utils/query-keys";
-import { fetchAllTickers, fetchDataset, fetchDatasets } from "../requests";
+import {
+  fetchAllTickers,
+  fetchColumn,
+  fetchDataset,
+  fetchDatasets,
+} from "../requests";
 import {
   BinanceTickersResponse,
+  ColumnResponse,
   DatasetResponse,
   DatasetsResponse,
 } from "./response-types";
@@ -30,5 +36,15 @@ export function useDatasetQuery(
   return useQuery<DatasetResponse, unknown>({
     queryKey: [QUERY_KEYS.fetch_datasets, datasetName],
     queryFn: () => fetchDataset(datasetName),
+  });
+}
+
+export function useColumnQuery(
+  datasetName: string,
+  columnName: string
+): UseQueryResult<ColumnResponse, unknown> {
+  return useQuery<ColumnResponse, unknown>({
+    queryKey: [QUERY_KEYS.fetch_column, datasetName, columnName],
+    queryFn: () => fetchColumn(datasetName, columnName),
   });
 }
