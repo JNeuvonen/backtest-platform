@@ -15,10 +15,9 @@ import { MultiValue } from "react-select";
 import { URLS } from "../clients/endpoints";
 import { ResponseType, buildRequest } from "../clients/fetch";
 import {
-  BinanceBasicTicker,
   useBinanceTickersQuery,
   useDatasetsQuery,
-} from "../clients/queries";
+} from "../clients/queries/queries";
 import { BasicCard } from "../components/Card";
 import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
 import { ChakraModal } from "../components/chakra/modal";
@@ -26,6 +25,7 @@ import { DatasetTable } from "../components/tables/Dataset";
 import { useModal } from "../hooks/useOpen";
 import { DOM_MESSAGES, GET_KLINE_OPTIONS } from "../utils/constants";
 import { useMessageListener } from "../hooks/useMessageListener";
+import { BinanceBasicTicker } from "../clients/queries/response-types";
 
 const DATA_PROVIDERS = [
   {
