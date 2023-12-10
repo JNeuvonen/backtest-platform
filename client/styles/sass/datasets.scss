@@ -16,3 +16,8 @@
     color: $content-primary;
   }
 }
+
+.table-th-hover:hover {
+  background-color: $bg-primary-shade-two;
+  cursor: pointer;
+}
