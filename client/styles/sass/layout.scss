@@ -36,6 +36,7 @@ $inner-side-nav: 120px;
     margin-left: $side-nav-width;
     padding: 16px;
     background-color: #212121;
+    min-height: 100vh;
   }
 
   &__page-side-nav {
@@ -63,4 +64,20 @@ $inner-side-nav: 120px;
       background-color: $bg-secondary-shade-one;
     }
   }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px; /* Width of the scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Track color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888; /* Handle color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Handle color on hover */
 }
