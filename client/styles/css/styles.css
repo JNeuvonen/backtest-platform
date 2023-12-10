@@ -27,6 +27,7 @@
   margin-left: 110px;
   padding: 16px;
   background-color: #212121;
+  min-height: 100vh;
 }
 .layout__page-side-nav {
   padding: 4px;
@@ -51,6 +52,22 @@
   background-color: #3a3a3a;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px; /* Width of the scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Track color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888; /* Handle color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Handle color on hover */
+}
+
 .link-default {
   color: #097bed;
 }
@@ -70,6 +87,11 @@
 .basic-table td {
   border-bottom: 1px solid #3c3c3c;
   color: #f0f0f0;
+}
+
+.table-th-hover:hover {
+  background-color: #3c3c3c;
+  cursor: pointer;
 }
 
 *,
