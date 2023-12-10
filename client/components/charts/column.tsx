@@ -2,10 +2,15 @@ import React from "react";
 import { Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import { getDateStr } from "../../utils/date";
 
+interface LineItem {
+  stroke: string;
+  dataKey: string;
+}
+
 interface Props {
   data: Object[];
   xAxisDataKey: string;
-  lines: Object[];
+  lines: LineItem[];
 }
 
 export const ColumnChart = ({ data, xAxisDataKey, lines }: Props) => {
@@ -23,7 +28,7 @@ export const ColumnChart = ({ data, xAxisDataKey, lines }: Props) => {
       />
       <Legend />
 
-      {lines.map((item: any, i: number) => {
+      {lines.map((item, i: number) => {
         return (
           <Line
             key={i}
