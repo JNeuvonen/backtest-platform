@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useColumnQuery, useDatasetQuery } from "../../clients/queries/queries";
-import { Box, Spinner } from "@chakra-ui/react";
+import { Box, Button, Spinner } from "@chakra-ui/react";
 import { GenericTable } from "../../components/tables/GenericTable";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useModal } from "../../hooks/useOpen";
 import { Dataset } from "../../clients/queries/response-types";
 import { ColumnChart } from "../../components/charts/column";
-import { kMaxLength } from "buffer";
-import { skip } from "node:test";
+import { BUTTON_VARIANTS } from "../../theme";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -17,12 +16,10 @@ type DatasetDetailParams = {
 interface ColumnModalContentProps {
   datasetName: string;
   columnName: string;
-  dataset: Dataset;
 }
 
 const ColumnModalContent = ({
   columnName,
-  dataset,
   datasetName,
 }: ColumnModalContentProps) => {
   const { data, isLoading } = useColumnQuery(datasetName, columnName);
@@ -77,6 +74,7 @@ export const DatasetDetailPage = () => {
   const { isOpen, modalClose, setIsOpen } = useModal(false);
   const { data, isLoading } = useDatasetQuery(datasetName);
   const [selectedColumn, setSelectedColumn] = useState("");
+  const [showHead, setShowHead] = useState(false);
   const columnOnClickFunction = (selectedColumn: string) => {
     setSelectedColumn(selectedColumn);
     setIsOpen(true);
@@ -104,20 +102,20 @@ export const DatasetDetailPage = () => {
       >
         <ColumnModalContent
           columnName={selectedColumn}
-          dataset={dataset}
           datasetName={datasetName}
         />
       </ChakraModal>
-      <Box>{datasetName}</Box>
-      <Box marginTop={"16px"}>
-        <Box>Head</Box>
-        <GenericTable
-          columns={columns}
-          rows={dataset.head}
-          columnOnClickFunc={columnOnClickFunction}
-        />
+      <Box
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Box>{datasetName}</Box>
+        <Box display={"flex"} gap={"16px"}>
+          <Button variant={BUTTON_VARIANTS.grey}>Add dataset</Button>
+          <Button variant={BUTTON_VARIANTS.grey}>Add columns</Button>
+        </Box>
       </Box>
-
       <Box marginTop={"16px"}>
         <Box>Tail</Box>
         <GenericTable
@@ -125,6 +123,21 @@ export const DatasetDetailPage = () => {
           rows={dataset.tail}
           columnOnClickFunc={columnOnClickFunction}
         />
+      </Box>
+      <Box marginTop={"16px"}>
+        <Button
+          onClick={() => setShowHead(!showHead)}
+          variant={BUTTON_VARIANTS.nofill}
+        >
+          {showHead ? "Hide head" : "Show head"}
+        </Button>
+        {showHead && (
+          <GenericTable
+            columns={columns}
+            rows={dataset.head}
+            columnOnClickFunc={columnOnClickFunction}
+          />
+        )}
       </Box>
     </div>
   );
