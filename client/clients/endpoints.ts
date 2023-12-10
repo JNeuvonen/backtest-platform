@@ -2,6 +2,7 @@ import { CONSTANTS } from "../utils/constants";
 
 const API = {
   tables: "/tables",
+  dataset: "/dataset",
   binance: {
     get_all_tickers: "/binance/get-all-tickers",
     fetch_klines: "/binance/fetch-klines",
@@ -15,6 +16,8 @@ const BASE_URL = CONSTANTS.base_url;
 
 export const URLS = {
   get_tables: BASE_URL + API.tables,
+  get_table: (datasetName: string) =>
+    BASE_URL + API.dataset + `/${datasetName}`,
   binance_get_all_tickers: BASE_URL + API.binance.get_all_tickers,
   binance_fetch_klines: BASE_URL + API.binance.fetch_klines,
   ws_streams_log: API.streams.log,
