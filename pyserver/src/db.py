@@ -143,6 +143,29 @@ def get_dataset_table(conn: sqlite3.Connection, table_name: str):
         return None
 
 
+def get_column_detailed_info(conn: sqlite3.Connection, table_name: str, col_name: str):
+    logger = get_logger()
+    try:
+        logger.info("Called get_column_detailed_info")
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT {col_name} from {table_name}")
+        rows = cursor.fetchall()
+        null_count = get_col_null_count(cursor, table_name, col_name)
+        stats = get_col_stats(cursor, table_name, col_name)
+        cursor.execute(f"SELECT kline_open_time from {table_name}")
+        kline_open_time = cursor.fetchall()
+        return {
+            "rows": rows,
+            "null_count": null_count,
+            "stats": stats,
+            "kline_open_time": kline_open_time,
+        }
+
+    except Exception as e:
+        logger.info(f"{e}")
+        return None
+
+
 def create_binance_scrape_job_table(cursor: sqlite3.Cursor):
     cursor.execute(CREATE_SCRAPE_JOB_TABLE)
 
