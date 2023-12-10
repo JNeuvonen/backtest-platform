@@ -7,6 +7,12 @@ import {
   COLOR_CONTENT_PRIMARY,
 } from "./utils/colors";
 
+export const BUTTON_VARIANTS = {
+  cta: "cta",
+  grey: "grey",
+  nofill: "noFill",
+};
+
 const buttonCtaVariant = () => ({
   bg: COLOR_BRAND_SECONDARY_SHADE_ONE,
   color: COLOR_CONTENT_PRIMARY,
@@ -23,6 +29,16 @@ const buttonGreyVarint = () => ({
   },
 });
 
+const buttonNoFillVariant = () => ({
+  color: COLOR_BRAND_SECONDARY_SHADE_ONE,
+  bg: "transparent",
+  padding: "0px !important",
+  _hover: {
+    bg: "transparent",
+    color: COLOR_BRAND_SECONDARY_HIGHLIGHT,
+  },
+});
+
 const buttonTheme = {
   Button: {
     baseStyle: {
@@ -31,6 +47,7 @@ const buttonTheme = {
     variants: {
       cta: () => buttonCtaVariant(),
       grey: () => buttonGreyVarint(),
+      noFill: () => buttonNoFillVariant(),
     },
     defaultProps: {
       variant: "cta",
