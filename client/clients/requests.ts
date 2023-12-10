@@ -11,6 +11,11 @@ export async function fetchDataset(datasetName: string) {
   return buildRequest({ method: "GET", url });
 }
 
+export async function fetchColumn(datasetName: string, columnName: string) {
+  const url = URLS.get_column(datasetName, columnName);
+  return buildRequest({ method: "GET", url });
+}
+
 export async function fetchAllTickers() {
   const url = URLS.binance_get_all_tickers;
   return buildRequest({ method: "GET", url });
