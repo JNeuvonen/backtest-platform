@@ -73,3 +73,17 @@ export interface StatsCol {
   max: number;
   std_dev: number;
 }
+
+export interface ColumnResponse {
+  res: {
+    column: Column;
+  };
+  status: number;
+}
+
+export interface Column {
+  rows: Array<number[]>;
+  null_count: number;
+  stats: StatsCol;
+  kline_open_time: Array<number[]>;
+}
