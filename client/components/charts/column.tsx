@@ -1,5 +1,13 @@
 import React from "react";
-import { Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  ResponsiveContainer,
+  Legend,
+  Line,
+  LineChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { getDateStr } from "../../utils/date";
 
 interface LineItem {
@@ -15,30 +23,32 @@ interface Props {
 
 export const ColumnChart = ({ data, xAxisDataKey, lines }: Props) => {
   return (
-    <LineChart width={1000} height={300} data={data}>
-      <XAxis dataKey={xAxisDataKey} tickFormatter={getDateStr} />
-      <YAxis />
-      <Tooltip
-        labelFormatter={getDateStr}
-        contentStyle={{
-          color: "white",
-          background: "black",
-          border: "1px solid black",
-        }}
-      />
-      <Legend />
-
-      {lines.map((item, i: number) => {
-        return (
-          <Line
-            key={i}
-            type="monotone"
-            dataKey={item.dataKey}
-            stroke={item.stroke}
-            dot={false}
+    <div style={{ height: "400px", width: "100%" }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <XAxis dataKey={xAxisDataKey} tickFormatter={getDateStr} />
+          <YAxis />
+          <Tooltip
+            labelFormatter={getDateStr}
+            contentStyle={{
+              color: "white",
+              background: "black",
+              border: "1px solid black",
+            }}
           />
-        );
-      })}
-    </LineChart>
+          <Legend />
+
+          {lines.map((item, i) => (
+            <Line
+              key={i}
+              type="monotone"
+              dataKey={item.dataKey}
+              stroke={item.stroke}
+              dot={false}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
