@@ -21,3 +21,11 @@
   background-color: $bg-primary-shade-two;
   cursor: pointer;
 }
+
+.column-modal {
+  &__toolbar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+}

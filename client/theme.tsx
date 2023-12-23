@@ -2,6 +2,7 @@ import { extendTheme } from "@chakra-ui/react";
 import {
   COLOR_BG_PRIMARY,
   COLOR_BG_PRIMARY_SHADE_THREE,
+  COLOR_BG_TERTIARY,
   COLOR_BRAND_SECONDARY_HIGHLIGHT,
   COLOR_BRAND_SECONDARY_SHADE_ONE,
   COLOR_CONTENT_PRIMARY,
@@ -11,6 +12,7 @@ export const BUTTON_VARIANTS = {
   cta: "cta",
   grey: "grey",
   nofill: "noFill",
+  grey2: "grey2",
 };
 
 const buttonCtaVariant = () => ({
@@ -21,8 +23,16 @@ const buttonCtaVariant = () => ({
   },
 });
 
-const buttonGreyVarint = () => ({
+const buttonGreyVariant = () => ({
   bg: COLOR_BG_PRIMARY,
+  color: COLOR_CONTENT_PRIMARY,
+  _hover: {
+    bg: COLOR_BG_PRIMARY_SHADE_THREE,
+  },
+});
+
+const buttonGrey2Variant = () => ({
+  bg: COLOR_BG_TERTIARY,
   color: COLOR_CONTENT_PRIMARY,
   _hover: {
     bg: COLOR_BG_PRIMARY_SHADE_THREE,
@@ -46,8 +56,9 @@ const buttonTheme = {
     },
     variants: {
       cta: () => buttonCtaVariant(),
-      grey: () => buttonGreyVarint(),
+      grey: () => buttonGreyVariant(),
       noFill: () => buttonNoFillVariant(),
+      grey2: () => buttonGrey2Variant(),
     },
     defaultProps: {
       variant: "cta",

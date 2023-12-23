@@ -3,3 +3,9 @@
 .link-default {
   color: $brand-secondary;
 }
+
+.form-submit-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}

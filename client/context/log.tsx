@@ -40,7 +40,6 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
       const websocket = websocketRef.current;
       websocket.onmessage = (event) => {
         let message = event.data;
-
         let messageParts = message.split(":");
         let msgMetadata = messageParts[0];
         let msgData = messageParts[1];
@@ -57,7 +56,6 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         if (msgMetadata.includes(STREAMS_LOG.error)) {
         } else if (msgMetadata.includes(STREAMS_LOG.warning)) {
         } else if (msgMetadata.includes(STREAMS_LOG.info)) {
-          console.log("Executing here");
           message = message.replace(STREAMS_LOG.info, "");
           toast({
             title: msgData,

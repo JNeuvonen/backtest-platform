@@ -23,6 +23,8 @@ export const URLS = {
   binance_get_all_tickers: BASE_URL + API.binance.get_all_tickers,
   binance_fetch_klines: BASE_URL + API.binance.fetch_klines,
   ws_streams_log: API.streams.log,
+  rename_column: (datasetName: string) =>
+    BASE_URL + API.dataset + `/${datasetName}/rename-column`,
 };
 
 export const STREAMS_LOG = {

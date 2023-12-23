@@ -20,3 +20,16 @@ export async function fetchAllTickers() {
   const url = URLS.binance_get_all_tickers;
   return buildRequest({ method: "GET", url });
 }
+
+export async function renameColumnName(
+  datasetName: string,
+  oldName: string,
+  newName: string
+) {
+  const url = URLS.rename_column(datasetName);
+  return buildRequest({
+    method: "POST",
+    url,
+    payload: { old_col_name: oldName, new_col_name: newName },
+  });
+}

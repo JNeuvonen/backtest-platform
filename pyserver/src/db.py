@@ -166,6 +166,36 @@ def get_column_detailed_info(conn: sqlite3.Connection, table_name: str, col_name
         return None
 
 
+def rename_column(
+    conn: sqlite3.Connection, table_name: str, old_col_name: str, new_col_name: str
+):
+    logger = get_logger()
+    try:
+        logger.info("Called rename_column")
+        cursor = conn.cursor()
+        cursor.execute(
+            f"ALTER TABLE {table_name} RENAME COLUMN {old_col_name} TO {new_col_name}"
+        )
+        conn.commit()
+        logger.info(f"Column renamed from {old_col_name} to {new_col_name}")
+    except Exception as e:
+        logger.error(f"Error renaming column: {e}")
+        return False
+    return True
+
+
+def get_columns_by_table(conn: sqlite3.Connection):
+    logger = get_logger()
+    try:
+        logger.info("Called get_columns_by_table")
+        cursor = conn.cursor()
+        return {}
+
+    except Exception as e:
+        logger.info(f"{e}")
+        return None
+
+
 def create_binance_scrape_job_table(cursor: sqlite3.Cursor):
     cursor.execute(CREATE_SCRAPE_JOB_TABLE)
 

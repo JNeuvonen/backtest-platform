@@ -10,12 +10,17 @@ export interface ResponseType {
   status: number;
 }
 
+interface ApiResponse {
+  res: any;
+  status: number;
+}
+
 export const buildRequest = async ({
   url,
   method,
   options,
   payload,
-}: RequestProps) => {
+}: RequestProps): Promise<ApiResponse> => {
   try {
     if (
       payload &&

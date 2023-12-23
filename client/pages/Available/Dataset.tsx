@@ -42,9 +42,17 @@ export const DatasetDetailPage = () => {
         isOpen={isOpen}
         title={`Column ${selectedColumn}`}
         onClose={modalClose}
-        modalContentStyle={{ minWidth: "max-content", maxWidth: "80%" }}
+        modalContentStyle={{
+          minWidth: "max-content",
+          maxWidth: "80%",
+          marginTop: "10%",
+        }}
       >
-        <ColumnModal columnName={selectedColumn} datasetName={datasetName} />
+        <ColumnModal
+          columnName={selectedColumn}
+          datasetName={datasetName}
+          close={modalClose}
+        />
       </ChakraModal>
       <Box
         display={"flex"}

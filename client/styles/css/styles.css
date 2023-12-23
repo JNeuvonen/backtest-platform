@@ -72,6 +72,12 @@
   color: #097bed;
 }
 
+.form-submit-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
 .data-sets-container {
   margin-top: 32px;
 }
@@ -92,6 +98,12 @@
 .table-th-hover:hover {
   background-color: #3c3c3c;
   cursor: pointer;
+}
+
+.column-modal__toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 *,
