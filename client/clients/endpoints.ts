@@ -26,13 +26,3 @@ export const URLS = {
   rename_column: (datasetName: string) =>
     BASE_URL + API.dataset + `/${datasetName}/rename-column`,
 };
-
-export const STREAMS_LOG = {
-  error: "[UI-ERROR]",
-  warning: "[UI-WARNING]",
-  info: "[UI-INFO]",
-  debug: "[UI-DEBUG]",
-  UTILS: {
-    should_refetch: "[REFETCH]",
-  },
-};
