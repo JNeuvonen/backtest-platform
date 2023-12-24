@@ -8,11 +8,7 @@ import React, {
   useRef,
   MutableRefObject,
 } from "react";
-import { STREAMS_LOG, URLS } from "../clients/endpoints";
-import { useSendMessage } from "../hooks/useSendMessage";
-import { DOM_MESSAGES } from "../utils/constants";
-
-type LogMessage = string;
+import { URLS } from "../clients/endpoints";
 
 interface LogContextType {
   logs: LogMessage[];
@@ -26,45 +22,63 @@ interface LogProviderProps {
   children: ReactNode;
 }
 
+interface LogMessage {
+  msg: string;
+  log_level: number;
+  display: boolean;
+  refetch: boolean;
+  dom_event: string;
+}
+
+interface DispatchDomEventProps {
+  channel: string;
+  data: string;
+}
+
+const dispatchDomEvent = ({ channel, data }: DispatchDomEventProps) => {
+  const message = new CustomEvent(channel, { detail: data });
+  window.dispatchEvent(message);
+};
+
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
   const [logs, setLogs] = useState<LogMessage[]>([]);
   const toast = useToast();
   const websocketRef: MutableRefObject<WebSocket | null> = useRef(null);
-  const { sendMessage } = useSendMessage({
-    messageChannel: DOM_MESSAGES.refetch,
-  });
+
+  const getToastStatus = (
+    logLevel: number
+  ): "info" | "warning" | "error" | "success" => {
+    if (logLevel === 20) {
+      return "info";
+    }
+    if (logLevel === 30) {
+      return "warning";
+    }
+
+    if (logLevel === 40) {
+      return "error";
+    }
+    return "success";
+  };
 
   useEffect(() => {
     if (!websocketRef.current) {
       websocketRef.current = new WebSocket(URLS.ws_streams_log);
       const websocket = websocketRef.current;
       websocket.onmessage = (event) => {
-        let message = event.data;
-        let messageParts = message.split(":");
-        let msgMetadata = messageParts[0];
-        let msgData = messageParts[1];
-
-        const shouldRefetch = msgMetadata.includes(
-          STREAMS_LOG.UTILS.should_refetch
-        );
-        addLog(message);
-
-        if (shouldRefetch) {
-          sendMessage({});
+        const data: LogMessage = JSON.parse(event.data);
+        if (data.dom_event) {
+          dispatchDomEvent({ channel: data.dom_event, data: data.msg });
         }
-
-        if (msgMetadata.includes(STREAMS_LOG.error)) {
-        } else if (msgMetadata.includes(STREAMS_LOG.warning)) {
-        } else if (msgMetadata.includes(STREAMS_LOG.info)) {
-          message = message.replace(STREAMS_LOG.info, "");
+        if (data.display) {
           toast({
-            title: msgData,
-            status: "success",
+            title: data.msg,
+            status: getToastStatus(data.log_level),
             duration: 5000,
             isClosable: true,
           });
-        } else if (msgMetadata.includes(STREAMS_LOG.debug)) {
         }
+        addLog(data);
       };
 
       websocket.onerror = (error) => {
