@@ -3,7 +3,7 @@ from binance import Client
 import pandas as pd
 import logging
 
-from constants import BINANCE_DATA_COLS, DB_DATASETS
+from constants import BINANCE_DATA_COLS, DB_DATASETS, DomEventChannels
 from db import create_connection
 from log import get_logger
 import asyncio
@@ -51,6 +51,7 @@ async def save_historical_klines(symbol, interval):
         logging.INFO,
         True,
         True,
+        DomEventChannels.REFETCH_ALL_DATASETS.value,
     )
 
 
