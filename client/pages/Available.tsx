@@ -23,7 +23,7 @@ import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
 import { ChakraModal } from "../components/chakra/modal";
 import { DatasetTable } from "../components/tables/Dataset";
 import { useModal } from "../hooks/useOpen";
-import { DOM_MESSAGES, GET_KLINE_OPTIONS } from "../utils/constants";
+import { DOM_EVENT_CHANNELS, GET_KLINE_OPTIONS } from "../utils/constants";
 import { useMessageListener } from "../hooks/useMessageListener";
 import { BinanceBasicTicker } from "../clients/queries/response-types";
 
@@ -219,8 +219,9 @@ export const AvailablePage = () => {
   const refetchTables = () => {
     refetch();
   };
+
   useMessageListener({
-    messageName: DOM_MESSAGES.refetch,
+    messageName: DOM_EVENT_CHANNELS.refetch_all_datasets,
     messageCallback: refetchTables,
   });
 
