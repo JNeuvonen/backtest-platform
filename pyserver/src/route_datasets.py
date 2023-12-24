@@ -39,7 +39,7 @@ async def route_rename_column(
     dataset_name: str, old_col_name: str = Body(...), new_col_name: str = Body(...)
 ):
     conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
-    is_success = rename_column(conn, dataset_name, old_col_name, new_col_name)
+    is_success = await rename_column(conn, dataset_name, old_col_name, new_col_name)
     if is_success:
         return {"is_success": is_success}
     else:
