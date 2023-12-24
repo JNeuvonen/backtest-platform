@@ -1,3 +1,5 @@
+from enum import Enum
+
 BINANCE_DATA_COLS = [
     "kline_open_time",
     "open_price",
@@ -21,3 +23,7 @@ DB_LOGS = "logs.db"
 
 BINANCE_TEMP_SCRAPE_PATH = "binance_scraped_data"
 BINANCE_UNZIPPED_TEMP_PATH = "binance_unzip_data"
+
+
+class DomEventChannels(Enum):
+    REFETCH_ALL_DATASETS = "refetch_all_datasets"
