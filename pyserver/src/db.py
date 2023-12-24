@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 import os
 import statistics
@@ -166,10 +167,14 @@ def get_column_detailed_info(conn: sqlite3.Connection, table_name: str, col_name
         return None
 
 
-def rename_column(
+async def rename_column(
     conn: sqlite3.Connection, table_name: str, old_col_name: str, new_col_name: str
 ):
     logger = get_logger()
+    await logger.log(
+        f"Renamed column on table: {table_name} from {old_col_name} to {new_col_name}       ",
+        logging.INFO,
+    )
     try:
         logger.info("Called rename_column")
         cursor = conn.cursor()
