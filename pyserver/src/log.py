@@ -1,4 +1,5 @@
 import logging
+import json
 import os
 
 from constants import LOG_FILE
@@ -32,22 +33,34 @@ class Logger:
         """Remove a WebSocket connection."""
         self.websocket_connections.remove(websocket)
 
-    async def log(self, message, log_level, display_in_ui=False, should_refetch=False):
+    def build_stream_msg(
+        self, message, log_level, display_in_ui, should_refetch, ui_dom_event
+    ):
+        return {
+            "msg": message,
+            "log_level": log_level,
+            "display": display_in_ui,
+            "refetch": should_refetch,
+            "dom_event": ui_dom_event,
+        }
+
+    async def log(
+        self,
+        message,
+        log_level,
+        display_in_ui=False,
+        should_refetch=False,
+        ui_dom_event="",
+    ):
         """Send a message to all WebSocket connections before logging."""
         disconnected_sockets = []
-        refetch_indicator = "[REFETCH]" if should_refetch else ""
+        stream_msg_body = self.build_stream_msg(
+            message, log_level, display_in_ui, should_refetch, ui_dom_event
+        )
 
         for websocket in self.websocket_connections:
             try:
-                if display_in_ui and log_level == logging.ERROR:
-                    message = f"[UI-ERROR]{refetch_indicator}:{message}"
-                elif display_in_ui and log_level == logging.INFO:
-                    message = f"[UI-INFO]{refetch_indicator}:{message}"
-                elif display_in_ui and log_level == logging.DEBUG:
-                    message = f"[UI-DEBUG]{refetch_indicator}:{message}"
-                elif display_in_ui and log_level == logging.WARNING:
-                    message = f"[UI-WARNING]{refetch_indicator}:{message}"
-                await websocket.send_text(message)
+                await websocket.send_text(json.dumps(stream_msg_body))
             except Exception as _:
                 disconnected_sockets.append(websocket)
 
