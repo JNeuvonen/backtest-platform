@@ -59,6 +59,6 @@ export const GET_KLINE_OPTIONS = () => {
   return klineOptions;
 };
 
-export const DOM_MESSAGES = {
-  refetch: "refetch",
+export const DOM_EVENT_CHANNELS = {
+  refetch_all_datasets: "refetch_all_datasets",
 };
