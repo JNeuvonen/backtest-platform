@@ -32,10 +32,13 @@ interface LogMessage {
 
 interface DispatchDomEventProps {
   channel: string;
-  data: string;
+  data?: string;
 }
 
-const dispatchDomEvent = ({ channel, data }: DispatchDomEventProps) => {
+export const dispatchDomEvent = ({
+  channel,
+  data = "",
+}: DispatchDomEventProps) => {
   const message = new CustomEvent(channel, { detail: data });
   window.dispatchEvent(message);
 };
