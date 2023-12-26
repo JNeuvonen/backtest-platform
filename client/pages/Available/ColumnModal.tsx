@@ -12,18 +12,21 @@ interface ColumnModalContentProps {
   datasetName: string;
   columnName: string;
   close: () => void;
+  setColumnName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface RenameColumnModalProps {
   datasetName: string;
   columnName: string;
   close: () => void;
+  setColumnName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const RenameColumnModal = ({
   datasetName,
   columnName,
   close,
+  setColumnName,
 }: RenameColumnModalProps) => {
   const toast = useToast();
   const [inputValue, setInputValue] = useState(columnName);
@@ -39,7 +42,6 @@ const RenameColumnModal = ({
         duration: 5000,
         isClosable: true,
       });
-      close();
     } else {
       toast({
         title: "Failed to rename column",
@@ -48,8 +50,10 @@ const RenameColumnModal = ({
         duration: 5000,
         isClosable: true,
       });
-      close();
     }
+
+    setColumnName(inputValue);
+    close();
   };
 
   return (
@@ -92,8 +96,12 @@ const RenameColumnModal = ({
 export const ColumnModal = ({
   columnName,
   datasetName,
+  setColumnName,
 }: ColumnModalContentProps) => {
-  const { data, isLoading } = useColumnQuery(datasetName, columnName);
+  const { data, isLoading, refetch, isFetching } = useColumnQuery(
+    datasetName,
+    columnName
+  );
   const {
     isOpen: renameIsOpen,
     modalClose: renameModalClose,
@@ -121,7 +129,7 @@ export const ColumnModal = ({
     return ret;
   };
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div>
         <Spinner />
@@ -129,8 +137,8 @@ export const ColumnModal = ({
     );
   }
 
-  const rows = data?.res.column.rows;
-  const kline_open_time = data?.res.column.kline_open_time;
+  const rows = data?.res.column?.rows;
+  const kline_open_time = data?.res.column?.kline_open_time;
   if (!rows || !kline_open_time) return null;
   return (
     <>
@@ -144,6 +152,7 @@ export const ColumnModal = ({
           columnName={columnName}
           close={renameModalClose}
           datasetName={datasetName}
+          setColumnName={setColumnName}
         />
       </ChakraModal>
 
