@@ -50,6 +50,7 @@ export const DatasetDetailPage = () => {
       >
         <ColumnModal
           columnName={selectedColumn}
+          setColumnName={setSelectedColumn}
           datasetName={datasetName}
           close={modalClose}
         />
