@@ -2,7 +2,7 @@ import asyncio
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from binance_api import (
+from api_binance import (
     get_all_tickers,
     save_historical_klines,
 )
