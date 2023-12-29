@@ -1,5 +1,6 @@
-from fastapi import APIRouter, WebSocket
 import asyncio
+
+from fastapi import APIRouter, WebSocket
 from log import get_logger
 
 logger = get_logger()
