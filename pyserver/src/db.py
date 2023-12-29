@@ -2,7 +2,7 @@ import logging
 import sqlite3
 import statistics
 from typing import List
-from constants import DATASET_UTIL_TABLE_NAME, DB_DATASETS_UTIL, DatasetUtilsColumns
+from constants import DATASET_UTIL_TABLE_NAME, DatasetUtilsColumns
 from log import get_logger
 
 
@@ -138,7 +138,8 @@ async def create_db_utils_entry(
 ):
     cursor = conn.cursor()
     cursor.execute(
-        f"INSERT INTO {DATASET_UTIL_TABLE_NAME} ({DatasetUtilsColumns.DATASET_NAME.value}, {DatasetUtilsColumns.TIMESERIES_COLUMN.value}) VALUES (?, ?)",
+        f"""INSERT INTO {DATASET_UTIL_TABLE_NAME} ({DatasetUtilsColumns.DATASET_NAME.value}, 
+                        {DatasetUtilsColumns.TIMESERIES_COLUMN.value}) VALUES (?, ?)""",
         (
             dataset_name,
             timeseries_column,
@@ -148,10 +149,10 @@ async def create_db_utils_entry(
 
 
 def get_timeseries_col(conn: sqlite3.Connection, dataset_name: str):
-    COL_TIMESERIES = DatasetUtilsColumns.TIMESERIES_COLUMN.value
-    COL_DATASET_NAME = DatasetUtilsColumns.DATASET_NAME.value
+    col_timeseries = DatasetUtilsColumns.TIMESERIES_COLUMN.value
+    col_dataset_name = DatasetUtilsColumns.DATASET_NAME.value
     cursor = conn.cursor()
-    query = f"SELECT {COL_TIMESERIES} FROM {DATASET_UTIL_TABLE_NAME} WHERE {COL_DATASET_NAME} = ?;"
+    query = f"SELECT {col_timeseries} FROM {DATASET_UTIL_TABLE_NAME} WHERE {col_dataset_name} = ?;"
     cursor.execute(query, (dataset_name,))
     rows = cursor.fetchall()
     cursor.close()
@@ -166,9 +167,10 @@ def get_timeseries_col(conn: sqlite3.Connection, dataset_name: str):
 def update_timeseries_col(
     conn: sqlite3.Connection, dataset_name: str, new_timeseries_col: str | None
 ) -> bool:
-    COL_TIMESERIES = DatasetUtilsColumns.TIMESERIES_COLUMN.value
-    COL_DATASET_NAME = DatasetUtilsColumns.DATASET_NAME.value
-    query = f"UPDATE {DATASET_UTIL_TABLE_NAME} SET {COL_TIMESERIES} = ? WHERE {COL_DATASET_NAME} = ?;"
+    col_timeseries = DatasetUtilsColumns.TIMESERIES_COLUMN.value
+    col_dataset_name = DatasetUtilsColumns.DATASET_NAME.value
+    query = f"""UPDATE {DATASET_UTIL_TABLE_NAME} SET {col_timeseries} = ?
+    WHERE {col_dataset_name} = ?;"""
     try:
         cursor = conn.cursor()
         cursor.execute(query, (new_timeseries_col, dataset_name))
@@ -239,18 +241,6 @@ async def rename_column(
         logger.error(f"Error renaming column: {e}")
         return False
     return True
-
-
-def get_columns_by_table(conn: sqlite3.Connection):
-    logger = get_logger()
-    try:
-        logger.info("Called get_columns_by_table")
-        cursor = conn.cursor()
-        return {}
-
-    except Exception as e:
-        logger.info(f"{e}")
-        return None
 
 
 def get_column_names(conn: sqlite3.Connection, table_name: str) -> List[str]:
