@@ -12,10 +12,11 @@ async def websocket_endpoint(websocket: WebSocket):
     logger.add_websocket_connection(websocket)
     try:
         while True:
-            await asyncio.sleep(1500)
+            await asyncio.sleep(1)
             await websocket.send_text("health")
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
     finally:
         logger.remove_websocket_connection(websocket)
+        await websocket.close()
         logger.info("WebSocket connection closed")
