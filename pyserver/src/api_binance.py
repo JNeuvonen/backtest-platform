@@ -1,12 +1,12 @@
 import os
-from binance import Client
-import pandas as pd
 import logging
+import asyncio
+import pandas as pd
 
+from binance import Client
 from constants import BINANCE_DATA_COLS, DB_DATASETS, DB_DATASETS_UTIL, DomEventChannels
 from db import create_connection, create_db_utils_entry
 from log import get_logger
-import asyncio
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
