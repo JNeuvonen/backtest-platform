@@ -103,7 +103,6 @@
 .column-modal__toolbar {
   display: flex;
   gap: 16px;
-  margin-bottom: 32px;
 }
 
 *,
