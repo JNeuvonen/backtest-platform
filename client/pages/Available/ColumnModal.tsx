@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useColumnQuery } from "../../clients/queries/queries";
 import { ColumnChart } from "../../components/charts/column";
 import { Button, Checkbox, Input, Spinner, useToast } from "@chakra-ui/react";
@@ -7,6 +7,9 @@ import { ChakraModal } from "../../components/chakra/modal";
 import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 import { ConfirmModal } from "../../components/form/confirm";
 import { renameColumnName } from "../../clients/requests";
+import { ConfirmSwitch } from "../../components/charts/confirm-switch";
+import { buildRequest } from "../../clients/fetch";
+import { URLS } from "../../clients/endpoints";
 
 interface ColumnModalContentProps {
   datasetName: string;
@@ -102,6 +105,14 @@ export const ColumnModal = ({
     datasetName,
     columnName
   );
+  const [isTimeseriesCol, setIsTimeseriesCol] = useState<boolean>(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (data?.res.timeseries_col) {
+      setIsTimeseriesCol(columnName === data.res.timeseries_col);
+    }
+  }, [data]);
 
   const {
     isOpen: renameIsOpen,
@@ -130,6 +141,50 @@ export const ColumnModal = ({
     return ret;
   };
 
+  const changeTimeseriesColumn = async (newValue: boolean) => {
+    setIsTimeseriesCol(newValue);
+
+    const url = URLS.set_time_column(datasetName);
+    const request = fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        new_timeseries_col: newValue ? columnName : null,
+      }),
+      method: "PUT",
+    });
+
+    request
+      .then((res) => {
+        if (res.status === 200) {
+          toast({
+            title: "Initiated background download on all of the pairs",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Changing the time series column was not succesful",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      })
+      .catch((error) => {
+        toast({
+          title: "Error",
+          description: error?.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+  };
+
   if (isLoading || isFetching) {
     return (
       <div>
@@ -140,7 +195,26 @@ export const ColumnModal = ({
 
   const rows = data?.res.column?.rows;
   const kline_open_time = data?.res.column?.kline_open_time;
-  if (!rows || !kline_open_time) return null;
+  if (!rows) return null;
+
+  const getColumnChart = () => {
+    if (!kline_open_time) {
+      return (
+        <div>
+          Currently, there is no selected time column for the dataset. Please
+          select a time column in order for charts to be visible.
+        </div>
+      );
+    }
+    return (
+      <ColumnChart
+        data={massageDataForChart(rows, kline_open_time)}
+        xAxisDataKey={"kline_open_time"}
+        lines={[{ dataKey: columnName, stroke: "red" }]}
+      />
+    );
+  };
+
   return (
     <>
       <ChakraModal
@@ -163,14 +237,33 @@ export const ColumnModal = ({
           <Button>Edit</Button>
           <Button>Delete</Button>
         </div>
-        <div style={{ marginBottom: "32px", marginTop: "16px" }}>
-          <Checkbox defaultChecked>Use as the dataset's time column</Checkbox>
+        <div
+          style={{
+            marginBottom: "32px",
+            marginTop: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+          }}
+        >
+          {
+            <ConfirmSwitch
+              isChecked={isTimeseriesCol}
+              confirmTitle="Confirm"
+              confirmText="Confirm"
+              cancelText="Cancel"
+              message={
+                <span>
+                  Are you sure you want to use the column <b>{columnName}</b> as
+                  the datasets time series column?
+                </span>
+              }
+              setNewToggleValue={changeTimeseriesColumn}
+            />
+          }
+          <span>Use as the datasets time column</span>
         </div>
-        <ColumnChart
-          data={massageDataForChart(rows, kline_open_time)}
-          xAxisDataKey={"kline_open_time"}
-          lines={[{ dataKey: columnName, stroke: "red" }]}
-        />
+        {getColumnChart()}
       </div>
     </>
   );
