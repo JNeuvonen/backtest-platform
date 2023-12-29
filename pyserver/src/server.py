@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import sqlite3
 import uvicorn
 import os
@@ -5,17 +6,24 @@ from fastapi import FastAPI, Response, status, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 from db import (
     create_connection,
+    exec_sql,
     get_column_names,
     get_tables,
 )
-from pydantic import BaseModel
-from typing import Optional, List
-from constants import DB_DATASETS
+from constants import DB_DATASETS, DB_DATASETS_UTIL
 from routes_binance import router as binance_router
 from route_datasets import router as datasets_router
+from sql_statements import CREATE_DATASET_UTILS_TABLE
 from streams import router as streams_router
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    exec_sql(os.path.join(APP_DATA_PATH, DB_DATASETS_UTIL), CREATE_DATASET_UTILS_TABLE)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(binance_router, prefix="/binance")
 app.include_router(streams_router, prefix="/streams")
 app.include_router(datasets_router, prefix="/dataset")
@@ -33,12 +41,6 @@ APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 
 def get_path(relative_to_app_data: str):
     return os.path.join(APP_DATA_PATH, relative_to_app_data)
-
-
-class ScrapeJobModel(BaseModel):
-    url: str
-    target_dataset: Optional[bool] = False
-    columns_to_drop: Optional[List[str]] = None
 
 
 @app.get("/", response_class=Response)
