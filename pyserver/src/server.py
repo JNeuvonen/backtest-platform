@@ -11,7 +11,7 @@ from db import (
     get_tables,
 )
 from constants import DB_DATASETS, DB_DATASETS_UTIL
-from routes_binance import router as binance_router
+from route_binance import router as binance_router
 from route_datasets import router as datasets_router
 from sql_statements import CREATE_DATASET_UTILS_TABLE
 from streams import router as streams_router
