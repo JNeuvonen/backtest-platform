@@ -2,6 +2,7 @@ import logging
 import sqlite3
 import statistics
 from typing import List
+from constants import DATASET_UTIL_TABLE_NAME, DatasetUtilsColumns
 from log import get_logger
 
 
@@ -130,6 +131,32 @@ def get_dataset_table(conn: sqlite3.Connection, table_name: str):
     except Exception as e:
         logger.info(f"{e}")
         return None
+
+
+async def create_db_utils_entry(
+    conn: sqlite3.Connection, table_name: str, timeseries_column: str
+):
+    cursor = conn.cursor()
+    cursor.execute(
+        f"INSERT INTO {DATASET_UTIL_TABLE_NAME} ({DatasetUtilsColumns.TABLE_NAME.value}, {DatasetUtilsColumns.TIMESERIES_COLUMN.value}) VALUES (?, ?)",
+        (
+            table_name,
+            timeseries_column,
+        ),
+    )
+    conn.commit()
+
+
+def get_table_utils_info(conn: sqlite3.Connection, table_name: str):
+    pass
+
+
+def exec_sql(db_path: str, sql_statement: str):
+    db = create_connection(db_path)
+    cursor = db.cursor()
+    cursor.execute(sql_statement)
+    db.commit()
+    db.close()
 
 
 def get_column_detailed_info(conn: sqlite3.Connection, table_name: str, col_name: str):
