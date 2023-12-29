@@ -3,8 +3,8 @@ from binance import Client
 import pandas as pd
 import logging
 
-from constants import BINANCE_DATA_COLS, DB_DATASETS, DomEventChannels
-from db import create_connection
+from constants import BINANCE_DATA_COLS, DB_DATASETS, DB_DATASETS_UTIL, DomEventChannels
+from db import create_connection, create_db_utils_entry
 from log import get_logger
 import asyncio
 
@@ -40,12 +40,14 @@ async def get_historical_klines(symbol, interval):
 
 async def save_historical_klines(symbol, interval):
     logger = get_logger()
-    conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
+    datasets_conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
+    utils_conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS_UTIL))
     klines = await get_historical_klines(symbol, interval)
     interval = "1mo" if interval == "1M" else interval
-    klines.to_sql(
-        symbol.lower() + "_" + interval, conn, if_exists="replace", index=False
-    )
+
+    table_name = symbol.lower() + "_" + interval
+    klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
+    await create_db_utils_entry(utils_conn, table_name, "kline_open_time")
     await logger.log(
         f"Downloaded klines on {symbol} with {interval} interval",
         logging.INFO,
