@@ -101,7 +101,7 @@ export const ColumnModal = ({
   datasetName,
   setColumnName,
 }: ColumnModalContentProps) => {
-  const { data, isLoading, isFetching } = useColumnQuery(
+  const { data, isLoading, isFetching, refetch } = useColumnQuery(
     datasetName,
     columnName
   );
@@ -164,6 +164,7 @@ export const ColumnModal = ({
             duration: 5000,
             isClosable: true,
           });
+          refetch();
         } else {
           toast({
             title: "Error",
