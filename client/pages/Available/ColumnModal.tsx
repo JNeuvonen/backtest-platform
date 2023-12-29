@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useColumnQuery } from "../../clients/queries/queries";
 import { ColumnChart } from "../../components/charts/column";
-import { Button, Input, Spinner, useToast } from "@chakra-ui/react";
+import { Button, Checkbox, Input, Spinner, useToast } from "@chakra-ui/react";
 import { useModal } from "../../hooks/useOpen";
 import { ChakraModal } from "../../components/chakra/modal";
 import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
@@ -98,10 +98,11 @@ export const ColumnModal = ({
   datasetName,
   setColumnName,
 }: ColumnModalContentProps) => {
-  const { data, isLoading, refetch, isFetching } = useColumnQuery(
+  const { data, isLoading, isFetching } = useColumnQuery(
     datasetName,
     columnName
   );
+
   const {
     isOpen: renameIsOpen,
     modalClose: renameModalClose,
@@ -161,6 +162,9 @@ export const ColumnModal = ({
           <Button onClick={() => renameSetIsOpen(true)}>Rename</Button>
           <Button>Edit</Button>
           <Button>Delete</Button>
+        </div>
+        <div style={{ marginBottom: "32px", marginTop: "16px" }}>
+          <Checkbox defaultChecked>Use as the dataset's time column</Checkbox>
         </div>
         <ColumnChart
           data={massageDataForChart(rows, kline_open_time)}
