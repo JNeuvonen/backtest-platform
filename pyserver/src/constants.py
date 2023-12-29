@@ -16,14 +16,16 @@ BINANCE_DATA_COLS = [
 ]
 
 LOG_FILE = "logs"
-
 DB_DATASETS = "datasets.db"
-DB_WORKER_QUEUE = "binance_scrape_worker_queue.db"
+DB_DATASETS_UTIL = "datasets_util.db"
 DB_LOGS = "logs.db"
-
-BINANCE_TEMP_SCRAPE_PATH = "binance_scraped_data"
-BINANCE_UNZIPPED_TEMP_PATH = "binance_unzip_data"
+DATASET_UTIL_TABLE_NAME = "dataset_util"
 
 
 class DomEventChannels(Enum):
     REFETCH_ALL_DATASETS = "refetch_all_datasets"
+
+
+class DatasetUtilsColumns(Enum):
+    TABLE_NAME = "table_name"
+    TIMESERIES_COLUMN = "timeseries_column"
