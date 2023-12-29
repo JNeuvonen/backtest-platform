@@ -1,7 +1,8 @@
-from contextlib import asynccontextmanager
-import sqlite3
-import uvicorn
 import os
+import sqlite3
+from contextlib import asynccontextmanager
+import uvicorn
+
 from fastapi import FastAPI, Response, status, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 from db import (
@@ -18,7 +19,9 @@ from streams import router as streams_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(
+    app: FastAPI,
+):  # pylint: disable=unused-argument, redefined-outer-name
     exec_sql(os.path.join(APP_DATA_PATH, DB_DATASETS_UTIL), CREATE_DATASET_UTILS_TABLE)
     yield
 
@@ -60,7 +63,7 @@ async def read_tables():
         return {"tables": tables}
     except sqlite3.Error as e:
         error_detail = {"error": str(e), "db_path": db_path}
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail=error_detail) from e
 
 
 @app.get("/tables/{table_name}/columns")
@@ -78,7 +81,7 @@ def read_table_columns(table_name: str = Path(..., title="The name of the table"
             "app_data_path": APP_DATA_PATH,
             "db_path": db_path,
         }
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail=error_detail) from e
 
     db_connection.close()
     return {"table": table_name, "columns": columns}
