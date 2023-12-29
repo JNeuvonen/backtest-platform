@@ -20,6 +20,8 @@ export const URLS = {
     BASE_URL + API.dataset + `/${datasetName}`,
   get_column: (datasetName: string, columnName: string) =>
     BASE_URL + API.dataset + `/${datasetName}/col-info/${columnName}`,
+  set_time_column: (datasetName: string) =>
+    BASE_URL + API.dataset + `/${datasetName}/update-timeseries-col`,
   binance_get_all_tickers: BASE_URL + API.binance.get_all_tickers,
   binance_fetch_klines: BASE_URL + API.binance.fetch_klines,
   ws_streams_log: API.streams.log,
