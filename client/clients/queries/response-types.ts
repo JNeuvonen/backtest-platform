@@ -77,6 +77,7 @@ export interface StatsCol {
 export interface ColumnResponse {
   res: {
     column: Column;
+    timeseries_col: string | null;
   };
   status: number;
 }
