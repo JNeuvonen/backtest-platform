@@ -27,5 +27,5 @@ class DomEventChannels(Enum):
 
 
 class DatasetUtilsColumns(Enum):
-    TABLE_NAME = "table_name"
+    DATASET_NAME = "dataset_name"
     TIMESERIES_COLUMN = "timeseries_column"
