@@ -1,8 +1,8 @@
 import os
+
 from fastapi import APIRouter, Body, HTTPException
 from constants import DB_DATASETS, DB_DATASETS_UTIL
 from pydantic import BaseModel
-
 from db import (
     create_connection,
     get_column_detailed_info,
@@ -45,13 +45,11 @@ async def route_update_timeseries_col(dataset_name: str, body: TimeseriesColumn)
     success = update_timeseries_col(utils_conn, dataset_name, body.new_timeseries_col)
     if success:
         return {"message": "Update successful"}
-    else:
-        raise HTTPException(status_code=400, detail="Update failed")
+    raise HTTPException(status_code=400, detail="Update failed")
 
 
 @router.get("/all-columns")
 async def route_all_columns():
-    conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
     return {"columns": "hello world"}
 
 
@@ -63,5 +61,4 @@ async def route_rename_column(
     is_success = await rename_column(conn, dataset_name, old_col_name, new_col_name)
     if is_success:
         return {"is_success": is_success}
-    else:
-        raise HTTPException(status_code=400, detail="Failed to rename the column")
+    raise HTTPException(status_code=400, detail="Failed to rename the column")
