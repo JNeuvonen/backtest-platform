@@ -6,6 +6,7 @@ from db import (
     create_connection,
     get_column_detailed_info,
     get_dataset_table,
+    get_table_utils_info,
     rename_column,
 )
 
@@ -25,6 +26,7 @@ async def route_get_dataset_by_name(dataset_name: str) -> dict:
 async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dict:
     conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
     col_info = get_column_detailed_info(conn, dataset_name, column_name)
+    table_utils = get_table_utils_info(conn, dataset_name)
     return {"column": col_info}
 
 
