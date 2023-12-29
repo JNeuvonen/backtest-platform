@@ -2,7 +2,7 @@ import logging
 import sqlite3
 import statistics
 from typing import List
-from constants import DATASET_UTIL_TABLE_NAME, DatasetUtilsColumns
+from constants import DATASET_UTIL_TABLE_NAME, DB_DATASETS_UTIL, DatasetUtilsColumns
 from log import get_logger
 
 
@@ -134,21 +134,49 @@ def get_dataset_table(conn: sqlite3.Connection, table_name: str):
 
 
 async def create_db_utils_entry(
-    conn: sqlite3.Connection, table_name: str, timeseries_column: str
+    conn: sqlite3.Connection, dataset_name: str, timeseries_column: str
 ):
     cursor = conn.cursor()
     cursor.execute(
-        f"INSERT INTO {DATASET_UTIL_TABLE_NAME} ({DatasetUtilsColumns.TABLE_NAME.value}, {DatasetUtilsColumns.TIMESERIES_COLUMN.value}) VALUES (?, ?)",
+        f"INSERT INTO {DATASET_UTIL_TABLE_NAME} ({DatasetUtilsColumns.DATASET_NAME.value}, {DatasetUtilsColumns.TIMESERIES_COLUMN.value}) VALUES (?, ?)",
         (
-            table_name,
+            dataset_name,
             timeseries_column,
         ),
     )
     conn.commit()
 
 
-def get_table_utils_info(conn: sqlite3.Connection, table_name: str):
-    pass
+def get_timeseries_col(conn: sqlite3.Connection, dataset_name: str):
+    COL_TIMESERIES = DatasetUtilsColumns.TIMESERIES_COLUMN.value
+    COL_DATASET_NAME = DatasetUtilsColumns.DATASET_NAME.value
+    cursor = conn.cursor()
+    query = f"SELECT {COL_TIMESERIES} FROM {DATASET_UTIL_TABLE_NAME} WHERE {COL_DATASET_NAME} = ?;"
+    cursor.execute(query, (dataset_name,))
+    rows = cursor.fetchall()
+    cursor.close()
+    timeseries_col = None
+    try:
+        timeseries_col = rows[0][0]
+    except Exception as e:
+        print(f"An error occured {e}")
+    return timeseries_col
+
+
+def update_timeseries_col(
+    conn: sqlite3.Connection, dataset_name: str, new_timeseries_col: str | None
+) -> bool:
+    COL_TIMESERIES = DatasetUtilsColumns.TIMESERIES_COLUMN.value
+    COL_DATASET_NAME = DatasetUtilsColumns.DATASET_NAME.value
+    query = f"UPDATE {DATASET_UTIL_TABLE_NAME} SET {COL_TIMESERIES} = ? WHERE {COL_DATASET_NAME} = ?;"
+    try:
+        cursor = conn.cursor()
+        cursor.execute(query, (new_timeseries_col, dataset_name))
+        conn.commit()
+        cursor.close()
+        return True
+    except sqlite3.Error:
+        return False
 
 
 def exec_sql(db_path: str, sql_statement: str):
@@ -159,7 +187,12 @@ def exec_sql(db_path: str, sql_statement: str):
     db.close()
 
 
-def get_column_detailed_info(conn: sqlite3.Connection, table_name: str, col_name: str):
+def get_column_detailed_info(
+    conn: sqlite3.Connection,
+    table_name: str,
+    col_name: str,
+    timeseries_col_name: str | None,
+):
     logger = get_logger()
     try:
         logger.info("Called get_column_detailed_info")
@@ -168,8 +201,12 @@ def get_column_detailed_info(conn: sqlite3.Connection, table_name: str, col_name
         rows = cursor.fetchall()
         null_count = get_col_null_count(cursor, table_name, col_name)
         stats = get_col_stats(cursor, table_name, col_name)
-        cursor.execute(f"SELECT kline_open_time from {table_name}")
-        kline_open_time = cursor.fetchall()
+
+        if timeseries_col_name is not None:
+            cursor.execute(f"SELECT {timeseries_col_name} from {table_name}")
+            kline_open_time = cursor.fetchall()
+        else:
+            kline_open_time = None
         return {
             "rows": rows,
             "null_count": null_count,
