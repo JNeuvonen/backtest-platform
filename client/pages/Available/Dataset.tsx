@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDatasetQuery } from "../../clients/queries/queries";
-import { Box, Button, Spinner } from "@chakra-ui/react";
+import { Box, Button, Spinner, useToast } from "@chakra-ui/react";
 import { GenericTable } from "../../components/tables/GenericTable";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useModal } from "../../hooks/useOpen";
 import { BUTTON_VARIANTS } from "../../theme";
 import { ColumnModal } from "./ColumnModal";
+import { ConfirmInput } from "../../components/form/confirm-input";
+import { buildRequest } from "../../clients/fetch";
+import { URLS } from "../../clients/endpoints";
+import { replaceNthPathItem } from "../../utils/path";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -14,11 +18,14 @@ type DatasetDetailParams = {
 
 export const DatasetDetailPage = () => {
   const params = useParams<DatasetDetailParams>();
+  const toast = useToast();
   const datasetName = params.datasetName || "";
   const { isOpen, modalClose, setIsOpen } = useModal(false);
   const { data, isLoading } = useDatasetQuery(datasetName);
   const [selectedColumn, setSelectedColumn] = useState("");
   const [showHead, setShowHead] = useState(false);
+  const navigate = useNavigate();
+  const [inputDatasetName, setInputDatasetName] = useState(datasetName);
   const columnOnClickFunction = (selectedColumn: string) => {
     setSelectedColumn(selectedColumn);
     setIsOpen(true);
@@ -33,6 +40,44 @@ export const DatasetDetailPage = () => {
   if (!dataset) {
     return <Box>Page is not available</Box>;
   }
+
+  const renameDataset = (newDatasetName: string) => {
+    const res = buildRequest({
+      url: URLS.set_dataset_name(datasetName),
+      method: "PUT",
+      payload: { new_dataset_name: newDatasetName },
+    });
+
+    res
+      .then((res) => {
+        if (res?.status === 200) {
+          toast({
+            title: "Changed the datasets name",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+          setInputDatasetName(newDatasetName);
+          navigate(replaceNthPathItem(0, newDatasetName));
+        } else {
+          toast({
+            title: "Failed to change the datasets name",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      })
+      .catch((error) => {
+        toast({
+          title: "Error",
+          description: error?.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+  };
 
   const columns = dataset.columns;
 
@@ -60,7 +105,22 @@ export const DatasetDetailPage = () => {
         justifyContent={"space-between"}
         alignItems={"center"}
       >
-        <Box>{datasetName}</Box>
+        <Box>
+          <ConfirmInput
+            inputCurrent={inputDatasetName}
+            setInputCurrent={setInputDatasetName}
+            defaultValue={datasetName}
+            newInputCallback={renameDataset}
+            message={
+              <>
+                <span>
+                  Are you sure you want to rename dataset to{" "}
+                  <b>{inputDatasetName}</b>?
+                </span>
+              </>
+            }
+          />
+        </Box>
         <Box display={"flex"} gap={"16px"}>
           <Button variant={BUTTON_VARIANTS.grey}>Add dataset</Button>
           <Button variant={BUTTON_VARIANTS.grey}>Add columns</Button>
