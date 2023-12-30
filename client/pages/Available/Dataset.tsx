@@ -11,6 +11,8 @@ import { ConfirmInput } from "../../components/form/confirm-input";
 import { buildRequest } from "../../clients/fetch";
 import { URLS } from "../../clients/endpoints";
 import { replaceNthPathItem } from "../../utils/path";
+import { useMessageListener } from "../../hooks/useMessageListener";
+import { DOM_EVENT_CHANNELS } from "../../utils/constants";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -21,7 +23,7 @@ export const DatasetDetailPage = () => {
   const toast = useToast();
   const datasetName = params.datasetName || "";
   const { isOpen, modalClose, setIsOpen } = useModal(false);
-  const { data, isLoading } = useDatasetQuery(datasetName);
+  const { data, isLoading, refetch } = useDatasetQuery(datasetName);
   const [selectedColumn, setSelectedColumn] = useState("");
   const [showHead, setShowHead] = useState(false);
   const navigate = useNavigate();
@@ -30,6 +32,11 @@ export const DatasetDetailPage = () => {
     setSelectedColumn(selectedColumn);
     setIsOpen(true);
   };
+
+  useMessageListener({
+    messageName: DOM_EVENT_CHANNELS.refetch_dataset,
+    messageCallback: refetch,
+  });
 
   if (isLoading) {
     return <Spinner />;
