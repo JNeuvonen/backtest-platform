@@ -11,6 +11,7 @@ interface ConfirmProps {
   message?: string | React.ReactNode;
   confirmText?: string;
   cancelText?: string;
+  cancelCallback?: () => void;
 }
 
 export const ConfirmModal: React.FC<ConfirmProps> = ({
@@ -21,6 +22,7 @@ export const ConfirmModal: React.FC<ConfirmProps> = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   onConfirm,
+  cancelCallback,
 }) => {
   return (
     <ChakraModal
@@ -32,7 +34,11 @@ export const ConfirmModal: React.FC<ConfirmProps> = ({
       }}
       footerContent={
         <>
-          <Button variant={BUTTON_VARIANTS.grey2} mr={3} onClick={onClose}>
+          <Button
+            variant={BUTTON_VARIANTS.grey2}
+            mr={3}
+            onClick={cancelCallback ? cancelCallback : onClose}
+          >
             {cancelText}
           </Button>
           <Button colorScheme="blue" onClick={onConfirm}>
