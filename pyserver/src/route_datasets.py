@@ -1,3 +1,4 @@
+import logging
 import os
 
 
@@ -12,6 +13,7 @@ from db import (
     rename_column,
     rename_table,
 )
+from log import get_logger
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -68,12 +70,33 @@ async def route_all_columns():
     return {"columns": "hello world"}
 
 
+class BodyRenameColumn(BaseModel):
+    old_col_name: str
+    new_col_name: str
+    is_timeseries_col: bool
+
+
 @router.post("/{dataset_name}/rename-column")
-async def route_rename_column(
-    dataset_name: str, old_col_name: str = Body(...), new_col_name: str = Body(...)
-):
-    conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
-    is_success = await rename_column(conn, dataset_name, old_col_name, new_col_name)
-    if is_success:
-        return {"is_success": is_success}
+async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
+    rename_is_success = rename_column(
+        os.path.join(APP_DATA_PATH, DB_DATASETS),
+        dataset_name,
+        body.old_col_name,
+        body.new_col_name,
+    )
+
+    timeseries_col_update_success = True
+
+    if body.is_timeseries_col is True:
+        timeseries_col_update_success = DatasetUtils.update_timeseries_col(
+            dataset_name, body.new_col_name
+        )
+
+    if rename_is_success and timeseries_col_update_success:
+        logger = get_logger()
+        await logger.log(
+            f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}",
+            logging.INFO,
+        )
+        return {"message": "OK"}
     raise HTTPException(status_code=400, detail="Failed to rename the column")
