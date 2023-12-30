@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useColumnQuery } from "../../clients/queries/queries";
 import { ColumnChart } from "../../components/charts/column";
-import { Button, Checkbox, Input, Spinner, useToast } from "@chakra-ui/react";
+import { Button, Input, Spinner, useToast } from "@chakra-ui/react";
 import { useModal } from "../../hooks/useOpen";
 import { ChakraModal } from "../../components/chakra/modal";
 import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
@@ -121,7 +121,7 @@ export const ColumnModal = ({
     if (data?.res.timeseries_col) {
       setIsTimeseriesCol(columnName === data.res.timeseries_col);
     }
-  }, [data]);
+  }, [data, columnName]);
 
   const {
     isOpen: renameIsOpen,
@@ -135,7 +135,7 @@ export const ColumnModal = ({
   ) => {
     const itemCount = rows.length;
     const skipItems = Math.max(1, Math.floor(itemCount / 1000));
-    const ret: Object[] = [];
+    const ret: object[] = [];
 
     for (let i = 0; i < itemCount; i++) {
       if (i % skipItems === 0) {
