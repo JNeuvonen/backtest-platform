@@ -141,21 +141,6 @@ export const DatasetDetailPage = () => {
           columnOnClickFunc={columnOnClickFunction}
         />
       </Box>
-      <Box marginTop={"16px"}>
-        <Button
-          onClick={() => setShowHead(!showHead)}
-          variant={BUTTON_VARIANTS.nofill}
-        >
-          {showHead ? "Hide head" : "Show head"}
-        </Button>
-        {showHead && (
-          <GenericTable
-            columns={columns}
-            rows={dataset.head}
-            columnOnClickFunc={columnOnClickFunction}
-          />
-        )}
-      </Box>
     </div>
   );
 };
