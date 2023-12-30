@@ -88,7 +88,7 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         console.error("WebSocket Error:", error);
       };
     }
-  }, []);
+  }, [toast]);
 
   const addLog = (newLog: LogMessage) => {
     setLogs((prevLogs) => {
