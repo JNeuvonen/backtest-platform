@@ -5,8 +5,6 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
-  useRef,
-  MutableRefObject,
 } from "react";
 import { URLS } from "../clients/endpoints";
 
@@ -35,6 +33,8 @@ interface DispatchDomEventProps {
   data?: string;
 }
 
+let socket: WebSocket | null;
+
 export const dispatchDomEvent = ({
   channel,
   data = "",
@@ -46,7 +46,6 @@ export const dispatchDomEvent = ({
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
   const [logs, setLogs] = useState<LogMessage[]>([]);
   const toast = useToast();
-  const websocketRef: MutableRefObject<WebSocket | null> = useRef(null);
 
   const getToastStatus = (
     logLevel: number
@@ -65,10 +64,10 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!websocketRef.current) {
-      websocketRef.current = new WebSocket(URLS.ws_streams_log);
-      const websocket = websocketRef.current;
-      websocket.onmessage = (event) => {
+    const timerId = setTimeout(() => {
+      socket = new WebSocket(URLS.ws_streams_log);
+      socket.onmessage = (event) => {
+        if (event.data === "health") return;
         const data: LogMessage = JSON.parse(event.data);
         if (data.dom_event) {
           dispatchDomEvent({ channel: data.dom_event, data: data.msg });
@@ -84,10 +83,11 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         addLog(data);
       };
 
-      websocket.onerror = (error) => {
+      socket.onerror = (error) => {
         console.error("WebSocket Error:", error);
       };
-    }
+    }, 1000);
+    return () => clearTimeout(timerId);
   }, [toast]);
 
   const addLog = (newLog: LogMessage) => {
