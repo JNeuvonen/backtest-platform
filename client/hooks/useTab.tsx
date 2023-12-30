@@ -16,7 +16,7 @@ interface Props {
 
 export const useTab = ({ pathActiveItemDepth }: Props) => {
   const [activePathItem, setActivePathItem] = useState(
-    getNthPathSegment(pathActiveItemDepth),
+    getNthPathSegment(pathActiveItemDepth)
   );
 
   const setNewTab = (tab: string) => {
