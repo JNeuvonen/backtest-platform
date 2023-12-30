@@ -10,7 +10,7 @@ export const useActivePath = ({ tabPathDepth }: { tabPathDepth: number }) => {
     let currentPath = getNthPathSegment(tabPathDepth);
     currentPath = !currentPath ? "/" : currentPath;
     setActivePath(currentPath);
-  }, [location]);
+  }, [location, tabPathDepth]);
 
   return { activePath };
 };
