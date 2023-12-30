@@ -4,7 +4,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 interface Props {
   columns: string[];
   columnOnClickFunc?: (item: string) => void;
-  rows: any[];
+  rows: string[][];
 }
 
 export const GenericTable = ({ columns, rows, columnOnClickFunc }: Props) => {
@@ -33,7 +33,7 @@ export const GenericTable = ({ columns, rows, columnOnClickFunc }: Props) => {
           {rows.map((item, i) => {
             return (
               <Tr key={i}>
-                {item.map((rowItem: any, j: number) => {
+                {item.map((rowItem, j: number) => {
                   return <Td key={`${i}-${j}`}>{rowItem}</Td>;
                 })}
               </Tr>
