@@ -25,7 +25,6 @@ export const DatasetDetailPage = () => {
   const { isOpen, modalClose, setIsOpen } = useModal(false);
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
   const [selectedColumn, setSelectedColumn] = useState("");
-  const [showHead, setShowHead] = useState(false);
   const navigate = useNavigate();
   const [inputDatasetName, setInputDatasetName] = useState(datasetName);
   const columnOnClickFunction = (selectedColumn: string) => {
