@@ -6,12 +6,13 @@ import uvicorn
 from fastapi import FastAPI, Response, status, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 from db import (
+    DatasetUtils,
     create_connection,
     exec_sql,
     get_column_names,
     get_tables,
 )
-from constants import DB_DATASETS, DB_DATASETS_UTIL
+from constants import DB_DATASETS
 from route_binance import router as binance_router
 from route_datasets import router as datasets_router
 from sql_statements import CREATE_DATASET_UTILS_TABLE
@@ -22,7 +23,7 @@ from streams import router as streams_router
 async def lifespan(
     app: FastAPI,
 ):  # pylint: disable=unused-argument, redefined-outer-name
-    exec_sql(os.path.join(APP_DATA_PATH, DB_DATASETS_UTIL), CREATE_DATASET_UTILS_TABLE)
+    exec_sql(DatasetUtils.get_path(), CREATE_DATASET_UTILS_TABLE)
     yield
 
 
