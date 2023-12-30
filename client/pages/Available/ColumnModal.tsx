@@ -8,8 +8,9 @@ import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 import { ConfirmModal } from "../../components/form/confirm";
 import { renameColumnName } from "../../clients/requests";
 import { ConfirmSwitch } from "../../components/charts/confirm-switch";
-import { buildRequest } from "../../clients/fetch";
 import { URLS } from "../../clients/endpoints";
+import { DOM_EVENT_CHANNELS } from "../../utils/constants";
+import { dispatchDomEvent } from "../../context/log";
 
 interface ColumnModalContentProps {
   datasetName: string;
@@ -23,6 +24,7 @@ interface RenameColumnModalProps {
   columnName: string;
   close: () => void;
   setColumnName: React.Dispatch<React.SetStateAction<string>>;
+  isTimeseriesCol: boolean;
 }
 
 const RenameColumnModal = ({
@@ -30,13 +32,19 @@ const RenameColumnModal = ({
   columnName,
   close,
   setColumnName,
+  isTimeseriesCol,
 }: RenameColumnModalProps) => {
   const toast = useToast();
   const [inputValue, setInputValue] = useState(columnName);
   const { isOpen, modalClose, setIsOpen } = useModal(false);
 
   const onSubmit = async () => {
-    const res = await renameColumnName(datasetName, columnName, inputValue);
+    const res = await renameColumnName(
+      datasetName,
+      columnName,
+      inputValue,
+      isTimeseriesCol
+    );
 
     if (res?.status === 200) {
       toast({
@@ -45,6 +53,7 @@ const RenameColumnModal = ({
         duration: 5000,
         isClosable: true,
       });
+      dispatchDomEvent({ channel: DOM_EVENT_CHANNELS.refetch_dataset });
     } else {
       toast({
         title: "Failed to rename column",
@@ -229,6 +238,7 @@ export const ColumnModal = ({
           close={renameModalClose}
           datasetName={datasetName}
           setColumnName={setColumnName}
+          isTimeseriesCol={isTimeseriesCol}
         />
       </ChakraModal>
 
