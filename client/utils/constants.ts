@@ -52,10 +52,7 @@ export const BINANCE = {
 };
 
 export const GET_KLINE_OPTIONS = () => {
-  const klineOptions: string[] = [];
-  for (const [_, value] of Object.entries(BINANCE.kline_options)) {
-    klineOptions.push(value);
-  }
+  const klineOptions: string[] = Object.values(BINANCE.kline_options);
   return klineOptions;
 };
 
