@@ -184,26 +184,21 @@ def get_column_detailed_info(
         return None
 
 
-async def rename_column(
-    conn: sqlite3.Connection, table_name: str, old_col_name: str, new_col_name: str
-):
-    logger = get_logger()
-    await logger.log(
-        f"Renamed column on table: {table_name} from {old_col_name} to {new_col_name}",
-        logging.INFO,
-    )
-    try:
-        logger.info("Called rename_column")
-        cursor = conn.cursor()
-        cursor.execute(
-            f"ALTER TABLE {table_name} RENAME COLUMN {old_col_name} TO {new_col_name}"
-        )
-        conn.commit()
-        logger.info(f"Column renamed from {old_col_name} to {new_col_name}")
-    except Exception as e:
-        logger.error(f"Error renaming column: {e}")
-        return False
-    return True
+def rename_column(path: str, table_name: str, old_col_name: str, new_col_name: str):
+    with sqlite3.connect(path) as conn:
+        logger = get_logger()
+        try:
+            logger.info("Called rename_column")
+            cursor = conn.cursor()
+            cursor.execute(
+                f"ALTER TABLE {table_name} RENAME COLUMN {old_col_name} TO {new_col_name}"
+            )
+            conn.commit()
+            logger.info(f"Column renamed from {old_col_name} to {new_col_name}")
+        except Exception as e:
+            logger.error(f"Error renaming column: {e}")
+            return False
+        return True
 
 
 def get_column_names(conn: sqlite3.Connection, table_name: str) -> List[str]:
@@ -274,7 +269,8 @@ class DatasetUtils:
                 conn.commit()
                 cursor.close()
                 return True
-            except sqlite3.Error:
+            except sqlite3.Error as e:
+                print(e)
                 return False
 
     @staticmethod
