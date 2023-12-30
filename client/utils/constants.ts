@@ -61,5 +61,6 @@ export const GET_KLINE_OPTIONS = () => {
 
 export const DOM_EVENT_CHANNELS = {
   refetch_all_datasets: "refetch_all_datasets",
+  refetch_dataset: "refetch_dataset",
   refetch_dataset_columns: "refetch_dataset_columns",
 };
