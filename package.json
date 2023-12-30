@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite & npm run sass",
-    "build": "chmod +x ./build.sh && ./build.sh && tsc && vite build",
+    "build": "npm run lint && chmod +x ./build.sh && ./build.sh && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "sass": "sass --watch client/styles/sass/styles.scss:client/styles/css/styles.css"
+    "sass": "sass --watch client/styles/sass/styles.scss:client/styles/css/styles.css",
+    "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
