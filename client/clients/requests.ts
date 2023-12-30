@@ -24,12 +24,17 @@ export async function fetchAllTickers() {
 export async function renameColumnName(
   datasetName: string,
   oldName: string,
-  newName: string
+  newName: string,
+  isTimeseriesCol: boolean
 ) {
   const url = URLS.rename_column(datasetName);
   return buildRequest({
     method: "POST",
     url,
-    payload: { old_col_name: oldName, new_col_name: newName },
+    payload: {
+      old_col_name: oldName,
+      new_col_name: newName,
+      is_timeseries_col: isTimeseriesCol,
+    },
   });
 }
