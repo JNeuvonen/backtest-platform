@@ -16,7 +16,7 @@ interface LineItem {
 }
 
 interface Props {
-  data: Object[];
+  data: object[];
   xAxisDataKey: string;
   lines: LineItem[];
 }
