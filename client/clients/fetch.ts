@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 interface RequestProps {
   url: string;
   method: "GET" | "POST" | "PUT" | "DELETE";
   options?: RequestInit;
-  payload?: any;
+  payload?: object;
 }
 
 export interface ResponseType {
@@ -10,7 +12,7 @@ export interface ResponseType {
   status: number;
 }
 
-interface ApiResponse {
+export interface ApiResponse {
   res: any;
   status: number;
 }
