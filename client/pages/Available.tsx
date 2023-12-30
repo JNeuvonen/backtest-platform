@@ -13,7 +13,7 @@ import { Field, Form, Formik } from "formik";
 import React, { useState } from "react";
 import { MultiValue } from "react-select";
 import { URLS } from "../clients/endpoints";
-import { ResponseType, buildRequest } from "../clients/fetch";
+import { ApiResponse, buildRequest } from "../clients/fetch";
 import {
   useBinanceTickersQuery,
   useDatasetsQuery,
@@ -100,7 +100,7 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
     const interval = values.interval;
     const symbols = values.selectedTickers;
 
-    const promises: Promise<ResponseType>[] = [];
+    const promises: Promise<ApiResponse>[] = [];
     const url = URLS.binance_fetch_klines;
 
     symbols.map((item) => {
@@ -108,7 +108,11 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
         symbol: item.value,
         interval,
       };
-      const req = buildRequest({ method: "POST", url, payload });
+      const req = buildRequest({
+        method: "POST",
+        url,
+        payload,
+      });
       promises.push(req);
     });
 
