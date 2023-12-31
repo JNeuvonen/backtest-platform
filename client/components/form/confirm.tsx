@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@chakra-ui/react";
 import { ChakraModal } from "../chakra/modal";
 import { BUTTON_VARIANTS } from "../../theme";
+import { useKeyListener } from "../../hooks/useKeyListener";
 
 interface ConfirmProps {
   isOpen: boolean;
@@ -24,6 +25,14 @@ export const ConfirmModal: React.FC<ConfirmProps> = ({
   onConfirm,
   cancelCallback,
 }) => {
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if (event.key === "Enter" && isOpen) {
+      onConfirm();
+    }
+  };
+
+  useKeyListener({ eventAction: handleKeyPress, addToDom: isOpen });
+
   return (
     <ChakraModal
       isOpen={isOpen}
