@@ -23,6 +23,7 @@ from streams import router as streams_router
 async def lifespan(
     app: FastAPI,
 ):  # pylint: disable=unused-argument, redefined-outer-name
+    """The code before the yield statement will be executed on boot. The code after the yield statement will be executed as a cleanup on application close."""
     exec_sql(DatasetUtils.get_path(), CREATE_DATASET_UTILS_TABLE)
     yield
 
