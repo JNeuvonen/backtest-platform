@@ -105,6 +105,33 @@
   gap: 16px;
 }
 
+.combine-datasets {
+  display: flex;
+  gap: 32px;
+}
+.combine-datasets__base {
+  width: 30%;
+  height: max-content;
+  background-color: #3c3c3c;
+  padding: 16px;
+  border-radius: 3px;
+}
+.combine-datasets__all-columns {
+  width: 70%;
+  height: max-content;
+  background-color: #3c3c3c;
+  padding: 16px;
+  border-radius: 3px;
+}
+
+.dataset-item__header {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 7px;
+}
+
 *,
 *::before,
 *::after {
