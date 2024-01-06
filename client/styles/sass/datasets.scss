@@ -28,3 +28,33 @@
     gap: 16px;
   }
 }
+
+.combine-datasets {
+  display: flex;
+  gap: 32px;
+  &__base {
+    width: 30%;
+    height: max-content;
+    background-color: $bg-primary-shade-two;
+    padding: 16px;
+    border-radius: 3px;
+  }
+
+  &__all-columns {
+    width: 70%;
+    height: max-content;
+    background-color: $bg-primary-shade-two;
+    padding: 16px;
+    border-radius: 3px;
+  }
+}
+
+.dataset-item {
+  &__header {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 7px;
+  }
+}
