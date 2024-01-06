@@ -13,6 +13,7 @@ import { URLS } from "../../clients/endpoints";
 import { replaceNthPathItem } from "../../utils/path";
 import { useMessageListener } from "../../hooks/useMessageListener";
 import { DOM_EVENT_CHANNELS } from "../../utils/constants";
+import { CombineDataset } from "../../components/CombineDataset";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -22,14 +23,23 @@ export const DatasetDetailPage = () => {
   const params = useParams<DatasetDetailParams>();
   const toast = useToast();
   const datasetName = params.datasetName || "";
-  const { isOpen, modalClose, setIsOpen } = useModal(false);
+  const {
+    isOpen: columnModalOpen,
+    modalClose: columnModalClose,
+    setIsOpen: columnModalSetOpen,
+  } = useModal(false);
+  const {
+    isOpen: combineModalOpen,
+    modalClose: combineModalClose,
+    setIsOpen: combineModalSetOpen,
+  } = useModal(false);
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
   const [selectedColumn, setSelectedColumn] = useState("");
   const navigate = useNavigate();
   const [inputDatasetName, setInputDatasetName] = useState(datasetName);
   const columnOnClickFunction = (selectedColumn: string) => {
     setSelectedColumn(selectedColumn);
-    setIsOpen(true);
+    columnModalSetOpen(true);
   };
 
   useMessageListener({
@@ -90,20 +100,38 @@ export const DatasetDetailPage = () => {
   return (
     <div>
       <ChakraModal
-        isOpen={isOpen}
-        title={`Column ${selectedColumn}`}
-        onClose={modalClose}
+        isOpen={columnModalOpen}
+        title={selectedColumn}
+        onClose={columnModalClose}
         modalContentStyle={{
           minWidth: "max-content",
-          maxWidth: "80%",
-          marginTop: "10%",
+          minHeight: "80%",
+          maxWidth: "70%",
+          marginTop: "10vh",
         }}
       >
         <ColumnModal
           columnName={selectedColumn}
           setColumnName={setSelectedColumn}
           datasetName={datasetName}
-          close={modalClose}
+          close={columnModalClose}
+        />
+      </ChakraModal>
+
+      <ChakraModal
+        isOpen={combineModalOpen}
+        title="Combine datasets"
+        onClose={combineModalClose}
+        modalContentStyle={{
+          minWidth: "max-content",
+          minHeight: "80vh",
+          maxWidth: "80vw",
+          marginTop: "10vh",
+        }}
+      >
+        <CombineDataset
+          baseDataset={datasetName}
+          baseDatasetColumns={columns}
         />
       </ChakraModal>
       <Box
@@ -129,7 +157,12 @@ export const DatasetDetailPage = () => {
         </Box>
         <Box display={"flex"} gap={"16px"}>
           <Button variant={BUTTON_VARIANTS.grey}>Add dataset</Button>
-          <Button variant={BUTTON_VARIANTS.grey}>Add columns</Button>
+          <Button
+            variant={BUTTON_VARIANTS.grey}
+            onClick={() => combineModalSetOpen(true)}
+          >
+            Add columns
+          </Button>
         </Box>
       </Box>
       <Box marginTop={"16px"}>
