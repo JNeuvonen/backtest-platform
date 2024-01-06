@@ -1,5 +1,4 @@
 from enum import Enum
-import logging
 import os
 import sqlite3
 import statistics
@@ -107,6 +106,24 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
         last_five = cursor.fetchall()
 
     return first_five, last_five
+
+
+def get_all_tables_and_columns(db_path: str):
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = cursor.fetchall()
+
+            table_dict = {}
+            for table in tables:
+                cursor.execute(f"PRAGMA table_info({table[0]})")
+                columns = [column[1] for column in cursor.fetchall()]
+                table_dict[table[0]] = columns
+
+        return table_dict
+    except sqlite3.Error:
+        return {}
 
 
 def get_dataset_table(conn: sqlite3.Connection, table_name: str):
