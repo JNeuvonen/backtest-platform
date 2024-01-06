@@ -8,6 +8,7 @@ from constants import DB_DATASETS
 from db import (
     DatasetUtils,
     create_connection,
+    get_all_tables_and_columns,
     get_column_detailed_info,
     get_dataset_table,
     rename_column,
@@ -65,9 +66,10 @@ async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetNa
     return {"message": "Update successful"}
 
 
-@router.get("/all-columns")
+@router.get("/")
 async def route_all_columns():
-    return {"columns": "hello world"}
+    db_datasets_path = os.path.join(APP_DATA_PATH, DB_DATASETS)
+    return {"table_col_map": get_all_tables_and_columns(db_datasets_path)}
 
 
 class BodyRenameColumn(BaseModel):
