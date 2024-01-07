@@ -29,6 +29,7 @@ export const CONSTANTS = {
 
 export const TAURI_COMMANDS = {
   fetch_env: "fetch_env",
+  fetch_platform: "fetch_platform",
 };
 
 export const BINANCE = {
