@@ -31,7 +31,7 @@ const CONTAINERS = {
 export type SelectedDatasetColumns = { [key: string]: boolean | null };
 type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
-export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
+export const CombineDataset = ({ baseDatasetColumns }: Props) => {
   const { data } = useDatasetsQuery();
   const allColumnsData = useRef<ColumnsDict>({});
   const filteredColumns = useRef<ColumnsDict>({});
