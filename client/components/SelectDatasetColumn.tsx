@@ -15,6 +15,7 @@ interface Props {
   dataset: DatasetMetadata;
   style?: CSSProperties;
   selectedColumns: SelectedDatasetColumns;
+  defaultOpen?: boolean;
   selectColumn: (
     tableName: string,
     columnName: string,
@@ -27,8 +28,9 @@ export const SelectDatasetColumn = ({
   style,
   selectedColumns,
   selectColumn,
+  defaultOpen = false,
 }: Props) => {
-  const [expand, setExpand] = useState(false);
+  const [expand, setExpand] = useState(defaultOpen);
   return (
     <div className={CONTAINERS.dataset_item} style={style}>
       <div
