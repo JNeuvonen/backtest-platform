@@ -39,6 +39,9 @@ export const SelectDatasetColumn = ({
           CONTAINERS.header,
         ])}
         onClick={() => setExpand(!expand)}
+        onKeyDown={(e) => e.key === "Enter" && setExpand(!expand)}
+        role="button"
+        tabIndex={0}
       >
         {expand ? (
           <AiFillCaretLeft
