@@ -13,6 +13,7 @@ import { ChakraDivider } from "./Divider";
 import {
   areAllNestedValuesNull,
   areAllValuesNull,
+  getNonnullEntriesCount,
   isObjectEmpty,
   isOneNestedValueTrue,
 } from "../utils/object";
@@ -20,6 +21,8 @@ import { useKeyListener } from "../hooks/useKeyListener";
 import { useAppContext } from "../context/app";
 import { KEYBIND_MSGS } from "../utils/content";
 import { ChakraTooltip } from "./Tooltip";
+import { ConfirmModal } from "./form/confirm";
+import { useModal } from "../hooks/useOpen";
 
 interface Props {
   baseDataset: string;
@@ -38,6 +41,8 @@ type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 export const CombineDataset = ({ baseDatasetColumns }: Props) => {
   const { data } = useDatasetsQuery();
   const { platform } = useAppContext();
+  const { isOpen, modalClose, setIsOpen } = useModal(false);
+
   const allColumnsData = useRef<ColumnsDict>({});
   const filteredColumns = useRef<ColumnsDict>({});
   const selectedColumns = useRef<ColumnsDict>({});
@@ -48,6 +53,7 @@ export const CombineDataset = ({ baseDatasetColumns }: Props) => {
   const handleKeyPress = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && event.key === "s") {
       event.preventDefault();
+      setIsOpen(true);
     }
   };
 
@@ -88,6 +94,10 @@ export const CombineDataset = ({ baseDatasetColumns }: Props) => {
   ) => {
     selectedColumns.current[tableName][columnName] = newValue;
     forceUpdate();
+  };
+
+  const onSubmit = async () => {
+    console.log(selectedColumns);
   };
 
   const onDatasetSearch = (searchTerm: string) => {
@@ -170,10 +180,26 @@ export const CombineDataset = ({ baseDatasetColumns }: Props) => {
 
   return (
     <div>
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={modalClose}
+        title="Confirm"
+        message={
+          <span>
+            Are you sure you want to add{" "}
+            {getNonnullEntriesCount(selectedColumns.current)} column(s) to the
+            dataset?
+          </span>
+        }
+        confirmText="Submit"
+        cancelText="Cancel"
+        onConfirm={onSubmit}
+      />
       <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
         <Button
           style={{ height: "35px", marginBottom: "16px" }}
           isDisabled={isSaveDisabled()}
+          onClick={() => setIsOpen(true)}
         >
           Save
         </Button>
