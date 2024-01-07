@@ -16,6 +16,10 @@ import {
   isObjectEmpty,
   isOneNestedValueTrue,
 } from "../utils/object";
+import { useKeyListener } from "../hooks/useKeyListener";
+import { useAppContext } from "../context/app";
+import { KEYBIND_MSGS } from "../utils/content";
+import { ChakraTooltip } from "./Tooltip";
 
 interface Props {
   baseDataset: string;
@@ -33,12 +37,21 @@ type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
 export const CombineDataset = ({ baseDatasetColumns }: Props) => {
   const { data } = useDatasetsQuery();
+  const { platform } = useAppContext();
   const allColumnsData = useRef<ColumnsDict>({});
   const filteredColumns = useRef<ColumnsDict>({});
   const selectedColumns = useRef<ColumnsDict>({});
 
   const [componentReady, setComponentReady] = useState(false);
   const forceUpdate = useForceUpdate();
+
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "s") {
+      event.preventDefault();
+    }
+  };
+
+  useKeyListener({ eventAction: handleKeyPress });
 
   useEffect(() => {
     if (data) {
@@ -148,8 +161,23 @@ export const CombineDataset = ({ baseDatasetColumns }: Props) => {
     );
   };
 
+  const isSaveDisabled = () => {
+    return (
+      isObjectEmpty(selectedColumns.current) ||
+      areAllNestedValuesNull(selectedColumns.current)
+    );
+  };
+
   return (
     <div>
+      <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
+        <Button
+          style={{ height: "35px", marginBottom: "16px" }}
+          isDisabled={isSaveDisabled()}
+        >
+          Save
+        </Button>
+      </ChakraTooltip>
       <div className={CONTAINERS.combine_datasets}>
         <div
           className={createScssClassName([
