@@ -14,6 +14,7 @@ import {
   areAllNestedValuesNull,
   areAllValuesNull,
   isObjectEmpty,
+  isOneNestedValueTrue,
 } from "../utils/object";
 
 interface Props {
@@ -195,6 +196,7 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
                 return null;
               return (
                 <SelectDatasetColumn
+                  defaultOpen={true}
                   dataset={item}
                   key={i}
                   style={i !== 0 ? { marginTop: 16 } : undefined}
@@ -217,6 +219,7 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
               height="32px"
               variant={BUTTON_VARIANTS.grey}
               onClick={moveColumnsToBase}
+              isDisabled={!isOneNestedValueTrue(filteredColumns.current)}
             >
               Add
             </Button>
