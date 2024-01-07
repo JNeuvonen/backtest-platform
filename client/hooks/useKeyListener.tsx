@@ -5,7 +5,7 @@ interface Props {
   addToDom?: boolean;
 }
 
-export const useKeyListener = ({ eventAction, addToDom }: Props) => {
+export const useKeyListener = ({ eventAction, addToDom = true }: Props) => {
   useEffect(() => {
     if (addToDom) {
       window.addEventListener("keydown", eventAction);
