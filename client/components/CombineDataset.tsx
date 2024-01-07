@@ -5,9 +5,16 @@ import { SelectDatasetColumn } from "./SelectDatasetColumn";
 import { useForceUpdate } from "../hooks/useForceUpdate";
 import { Search } from "./Search";
 import cloneDeep from "lodash/cloneDeep";
-import { AiOutlineLeft } from "react-icons/ai";
+import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 import { Button } from "@chakra-ui/react";
 import { BUTTON_VARIANTS } from "../theme";
+import Title from "./Title";
+import { ChakraDivider } from "./Divider";
+import {
+  areAllNestedValuesNull,
+  areAllValuesNull,
+  isObjectEmpty,
+} from "../utils/object";
 
 interface Props {
   baseDataset: string;
@@ -20,12 +27,13 @@ const CONTAINERS = {
   all_columns: "all-columns",
 };
 
-export type SelectedDatasetColumns = { [key: string]: boolean };
+export type SelectedDatasetColumns = { [key: string]: boolean | null };
 type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
 export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
   const { data } = useDatasetsQuery();
-  const columnsData = useRef<ColumnsDict>({});
+  const allColumnsData = useRef<ColumnsDict>({});
+  const filteredColumns = useRef<ColumnsDict>({});
   const selectedColumns = useRef<ColumnsDict>({});
 
   const [componentReady, setComponentReady] = useState(false);
@@ -33,14 +41,14 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
 
   useEffect(() => {
     if (data) {
-      columnsData.current = {};
+      allColumnsData.current = {};
       data.res.tables.map((item) => {
-        columnsData.current[item.table_name] = {};
+        allColumnsData.current[item.table_name] = {};
         item.columns.map((col) => {
-          columnsData.current[item.table_name][col] = false;
+          allColumnsData.current[item.table_name][col] = false;
         });
       });
-      selectedColumns.current = cloneDeep(columnsData.current);
+      filteredColumns.current = cloneDeep(allColumnsData.current);
       setComponentReady(true);
     }
   }, [data, setComponentReady]);
@@ -49,28 +57,96 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
     return <div>No datasets available</div>;
   }
 
-  const selectColumn = (
+  const selectFromNew = (
+    tableName: string,
+    columnName: string,
+    newValue: boolean
+  ) => {
+    filteredColumns.current[tableName][columnName] = newValue;
+    allColumnsData.current[tableName][columnName] = newValue;
+    forceUpdate();
+  };
+
+  const selectFromAdded = (
     tableName: string,
     columnName: string,
     newValue: boolean
   ) => {
     selectedColumns.current[tableName][columnName] = newValue;
-    columnsData.current[tableName][columnName] = newValue;
     forceUpdate();
   };
 
   const onDatasetSearch = (searchTerm: string) => {
-    selectedColumns.current = cloneDeep(columnsData.current);
+    filteredColumns.current = cloneDeep(allColumnsData.current);
     if (!searchTerm) return forceUpdate();
-    Object.keys(selectedColumns.current).forEach((key) => {
+    Object.keys(filteredColumns.current).forEach((key) => {
       if (!key.includes(searchTerm)) {
-        delete selectedColumns.current[key];
+        delete filteredColumns.current[key];
       }
     });
     forceUpdate();
   };
 
+  const insertToColumnsStateDict = (
+    stateDictRef: React.MutableRefObject<ColumnsDict>,
+    tableName: string,
+    columnName: string
+  ) => {
+    if (stateDictRef.current[tableName]) {
+      stateDictRef.current[tableName][columnName] = true;
+    } else {
+      stateDictRef.current[tableName] = {};
+      stateDictRef.current[tableName][columnName] = true;
+    }
+  };
+
+  const moveColumnsToBase = () => {
+    for (const [key, value] of Object.entries(allColumnsData.current)) {
+      for (const [colName, colValue] of Object.entries(value)) {
+        if (colValue) {
+          insertToColumnsStateDict(selectedColumns, key, colName);
+          allColumnsData.current[key][colName] = null;
+          filteredColumns.current[key][colName] = null;
+        }
+      }
+    }
+    forceUpdate();
+  };
+
+  const moveColumnsBackToNew = () => {
+    for (const [key, value] of Object.entries(selectedColumns.current)) {
+      for (const [colName, colValue] of Object.entries(value)) {
+        if (colValue) {
+          insertToColumnsStateDict(allColumnsData, key, colName);
+          insertToColumnsStateDict(filteredColumns, key, colName);
+          selectedColumns.current[key][colName] = null;
+        }
+      }
+    }
+    forceUpdate();
+  };
+
   const allDatasets = data.res.tables;
+
+  const removeFromBaseButton = () => {
+    if (
+      isObjectEmpty(selectedColumns.current) ||
+      areAllNestedValuesNull(selectedColumns.current)
+    )
+      return null;
+    return (
+      <Button
+        rightIcon={<AiOutlineRight />}
+        height="32px"
+        variant={BUTTON_VARIANTS.grey}
+        onClick={moveColumnsBackToNew}
+        style={{ marginTop: "8px" }}
+      >
+        Remove
+      </Button>
+    );
+  };
+
   return (
     <div>
       <div className={CONTAINERS.combine_datasets}>
@@ -80,9 +156,54 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
             CONTAINERS.base_dataset,
           ])}
         >
-          {baseDatasetColumns.map((item) => {
-            return <div key={item}>{item}</div>;
-          })}
+          <div>
+            <Title
+              style={{
+                fontWeight: 600,
+                fontSize: 17,
+              }}
+            >
+              Base columns
+            </Title>
+            <ChakraDivider />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            {baseDatasetColumns.map((item) => {
+              return <div key={item}>{item}</div>;
+            })}
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <Title
+              style={{
+                fontWeight: 600,
+                fontSize: 17,
+              }}
+            >
+              New columns
+            </Title>
+            <ChakraDivider />
+          </div>
+          {removeFromBaseButton()}
+          <div>
+            {allDatasets.map((item, i) => {
+              const columns = selectedColumns.current[item.table_name];
+
+              if (
+                !columns ||
+                Object.values(columns).every((value) => value === null)
+              )
+                return null;
+              return (
+                <SelectDatasetColumn
+                  dataset={item}
+                  key={i}
+                  style={i !== 0 ? { marginTop: 16 } : undefined}
+                  selectedColumns={columns}
+                  selectColumn={selectFromAdded}
+                />
+              );
+            })}
+          </div>
         </div>
         <div
           className={createScssClassName([
@@ -95,8 +216,9 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
               leftIcon={<AiOutlineLeft />}
               height="32px"
               variant={BUTTON_VARIANTS.grey}
+              onClick={moveColumnsToBase}
             >
-              Add selected
+              Add
             </Button>
             <Search
               onSearch={onDatasetSearch}
@@ -112,15 +234,15 @@ export const CombineDataset = ({ baseDataset, baseDatasetColumns }: Props) => {
           </div>
           <div>
             {allDatasets.map((item, i) => {
-              const columns = selectedColumns.current[item.table_name];
-              if (!columns) return null;
+              const columns = filteredColumns.current[item.table_name];
+              if (!columns || areAllValuesNull(columns)) return null;
               return (
                 <SelectDatasetColumn
                   dataset={item}
                   key={i}
                   style={i !== 0 ? { marginTop: 16 } : undefined}
-                  selectedColumns={selectedColumns.current[item.table_name]}
-                  selectColumn={selectColumn}
+                  selectedColumns={filteredColumns.current[item.table_name]}
+                  selectColumn={selectFromNew}
                 />
               );
             })}
