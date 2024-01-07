@@ -3,7 +3,7 @@ import { DatasetMetadata } from "../clients/queries/response-types";
 import { createScssClassName } from "../utils/css";
 import { AiFillCaretLeft } from "react-icons/ai";
 import { COLOR_CONTENT_PRIMARY } from "../utils/colors";
-import { Button, Checkbox } from "@chakra-ui/react";
+import { Checkbox } from "@chakra-ui/react";
 import { SelectedDatasetColumns } from "./CombineDataset";
 
 const CONTAINERS = {
