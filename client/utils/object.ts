@@ -16,3 +16,14 @@ export function areAllNestedValuesNull<T extends Record<string, any>>(
       areAllValuesNull(nestedObj)
   );
 }
+
+export function isOneNestedValueTrue<T extends Record<string, any>>(
+  obj: T
+): boolean {
+  return Object.values(obj).some(
+    (nestedObj) =>
+      typeof nestedObj === "object" &&
+      nestedObj !== null &&
+      Object.values(nestedObj).some((value) => value === true)
+  );
+}
