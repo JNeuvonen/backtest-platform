@@ -50,29 +50,35 @@ export const SelectDatasetColumn = ({
       </div>
       {expand && (
         <div>
-          {dataset.columns.map((column, index) => (
-            <div
-              key={index}
-              style={{
-                marginLeft: "32px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <Checkbox
-                isChecked={selectedColumns[column]}
-                onChange={() =>
-                  selectColumn(
-                    dataset.table_name,
-                    column,
-                    !selectedColumns[column]
-                  )
-                }
-              />
-              {column}
-            </div>
-          ))}
+          {dataset.columns.map((column, index) => {
+            const colValue = selectedColumns[column];
+            if (colValue === null || colValue === undefined) {
+              return null;
+            }
+            return (
+              <div
+                key={index}
+                style={{
+                  marginLeft: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <Checkbox
+                  isChecked={colValue}
+                  onChange={() =>
+                    selectColumn(
+                      dataset.table_name,
+                      column,
+                      !selectedColumns[column]
+                    )
+                  }
+                />
+                {column}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
