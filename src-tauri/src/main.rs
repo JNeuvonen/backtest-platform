@@ -9,6 +9,19 @@ fn fetch_env(key: String) -> Option<String> {
     std::env::var(key).ok()
 }
 
+#[tauri::command]
+fn fetch_platform() -> String {
+    if cfg!(target_os = "windows") {
+        "windows".to_string()
+    } else if cfg!(target_os = "macos") {
+        "macos".to_string()
+    } else if cfg!(target_os = "linux") {
+        "linux".to_string()
+    } else {
+        "unknown".to_string()
+    }
+}
+
 fn main() {
     dotenv::dotenv().ok();
     tauri::Builder::default()
@@ -56,7 +69,7 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![fetch_env])
+        .invoke_handler(tauri::generate_handler![fetch_env, fetch_platform])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
