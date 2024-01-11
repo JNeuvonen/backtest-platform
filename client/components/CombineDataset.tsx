@@ -6,7 +6,7 @@ import { useForceUpdate } from "../hooks/useForceUpdate";
 import { Search } from "./Search";
 import cloneDeep from "lodash/cloneDeep";
 import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
-import { Button } from "@chakra-ui/react";
+import { Button, useToast } from "@chakra-ui/react";
 import { BUTTON_VARIANTS } from "../theme";
 import Title from "./Title";
 import { ChakraDivider } from "./Divider";
@@ -23,6 +23,7 @@ import { KEYBIND_MSGS } from "../utils/content";
 import { ChakraTooltip } from "./Tooltip";
 import { ConfirmModal } from "./form/confirm";
 import { useModal } from "../hooks/useOpen";
+import { addColumnsToDataset } from "../clients/requests";
 
 interface Props {
   baseDataset: string;
@@ -36,9 +37,10 @@ const CONTAINERS = {
 };
 
 export type SelectedDatasetColumns = { [key: string]: boolean | null };
+export type AddColumnsReqPayload = { table_name: string; columns: string[] }[];
 type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
-export const CombineDataset = ({ baseDatasetColumns }: Props) => {
+export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
   const { data } = useDatasetsQuery();
   const { platform } = useAppContext();
   const { isOpen, modalClose, setIsOpen } = useModal(false);
@@ -49,6 +51,7 @@ export const CombineDataset = ({ baseDatasetColumns }: Props) => {
 
   const [componentReady, setComponentReady] = useState(false);
   const forceUpdate = useForceUpdate();
+  const toast = useToast();
 
   const handleKeyPress = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && event.key === "s") {
@@ -97,7 +100,32 @@ export const CombineDataset = ({ baseDatasetColumns }: Props) => {
   };
 
   const onSubmit = async () => {
-    console.log(selectedColumns);
+    const reqPayload: AddColumnsReqPayload = [];
+    for (const [key, value] of Object.entries(selectedColumns.current)) {
+      reqPayload.push({
+        table_name: key,
+        columns: Object.keys(value),
+      });
+    }
+    const res = await addColumnsToDataset(baseDataset, reqPayload);
+
+    if (res.status === 200) {
+      toast({
+        title: `Added new columns to dataset ${baseDataset}`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      modalClose();
+    } else {
+      toast({
+        title: "Error",
+        description: `Could not add columns to dataset ${baseDataset}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const onDatasetSearch = (searchTerm: string) => {
