@@ -3,6 +3,11 @@ import os
 import sqlite3
 import statistics
 from typing import List
+from dataset import (
+    combine_datasets,
+    read_columns_to_mem,
+    read_dataset_to_mem,
+)
 from log import get_logger
 
 
@@ -106,6 +111,37 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
         last_five = cursor.fetchall()
 
     return first_five, last_five
+
+
+def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
+    try:
+        base_df = read_dataset_to_mem(db_path, dataset_name)
+
+        if base_df is None:
+            return False
+
+        base_df_timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
+
+        with sqlite3.connect(db_path) as conn:
+            for item in new_cols_arr:
+                timeseries_col = DatasetUtils.get_timeseries_col(item.table_name)
+                df = read_columns_to_mem(
+                    db_path, item.table_name, item.columns + [timeseries_col]
+                )
+                if df is not None:
+                    base_df = combine_datasets(
+                        base_df,
+                        df,
+                        item.table_name,
+                        base_df_timeseries_col,
+                        timeseries_col,
+                    )
+
+            base_df.to_sql(dataset_name, conn, if_exists="replace", index=False)
+
+        return True
+    except sqlite3.Error:
+        return False
 
 
 def get_all_tables_and_columns(db_path: str):
