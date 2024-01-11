@@ -29,4 +29,6 @@ export const URLS = {
   ws_streams_log: API.streams.log,
   rename_column: (datasetName: string) =>
     BASE_URL + API.dataset + `/${datasetName}/rename-column`,
+  add_columns: (datasetName: string) =>
+    BASE_URL + API.dataset + `/${datasetName}/add-columns`,
 };
