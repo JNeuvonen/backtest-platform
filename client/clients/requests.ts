@@ -1,3 +1,4 @@
+import { AddColumnsReqPayload } from "../components/CombineDataset";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 
@@ -9,6 +10,14 @@ export async function fetchDatasets() {
 export async function fetchDataset(datasetName: string) {
   const url = URLS.get_table(datasetName);
   return buildRequest({ method: "GET", url });
+}
+
+export async function addColumnsToDataset(
+  datasetName: string,
+  payload: AddColumnsReqPayload
+) {
+  const url = URLS.add_columns(datasetName);
+  return buildRequest({ method: "POST", url, payload: payload });
 }
 
 export async function fetchColumn(datasetName: string, columnName: string) {
