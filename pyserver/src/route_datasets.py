@@ -1,12 +1,14 @@
 import logging
 import os
+from typing import List
 
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from constants import DB_DATASETS
 from db import (
     DatasetUtils,
+    add_columns_to_table,
     create_connection,
     get_all_tables_and_columns,
     get_column_detailed_info,
@@ -36,6 +38,21 @@ async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dic
         datasets_conn, dataset_name, column_name, timeseries_col
     )
     return {"column": col_info, "timeseries_col": timeseries_col}
+
+
+class ColumnsToDataset(BaseModel):
+    table_name: str
+    columns: List[str]
+
+
+@router.post("/{dataset_name}/add-columns")
+async def route_post_dataset_add_columns(
+    dataset_name: str, payload: List[ColumnsToDataset]
+):
+    add_columns_to_table(
+        os.path.join(APP_DATA_PATH, DB_DATASETS), dataset_name, payload
+    )
+    return payload
 
 
 class BodyUpdateTimeseriesCol(BaseModel):
