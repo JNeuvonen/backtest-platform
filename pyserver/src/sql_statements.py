@@ -1,3 +1,4 @@
+from typing import List
 from db import DatasetUtils
 
 DB_UTIL_COLS = DatasetUtils.Columns
