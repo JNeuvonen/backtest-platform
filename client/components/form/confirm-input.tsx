@@ -12,6 +12,7 @@ interface Props {
   newInputCallback: (newInput: string) => void;
   inputCurrent: string;
   setInputCurrent: React.Dispatch<React.SetStateAction<string>>;
+  disallowedCharsRegex?: RegExp;
 }
 
 export const ConfirmInput = ({
@@ -23,6 +24,7 @@ export const ConfirmInput = ({
   newInputCallback,
   inputCurrent,
   setInputCurrent,
+  disallowedCharsRegex,
 }: Props) => {
   const { isOpen, modalClose, setIsOpen } = useModal(false);
   const handleToggle = () => {
@@ -35,11 +37,17 @@ export const ConfirmInput = ({
     newInputCallback(inputCurrent);
     handleClose();
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disallowedCharsRegex && !disallowedCharsRegex.test(e.target.value)) {
+      setInputCurrent(e.target.value);
+    }
+  };
   return (
     <>
       <Input
         onBlur={handleToggle}
-        onChange={(e) => setInputCurrent(e.target.value)}
+        onChange={handleInputChange}
         value={inputCurrent}
         onKeyDown={(e) => {
           if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
