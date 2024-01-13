@@ -26,6 +26,7 @@ interface LogMessage {
   display: boolean;
   refetch: boolean;
   dom_event: string;
+  notification_duration?: number;
 }
 
 interface DispatchDomEventProps {
@@ -76,7 +77,7 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
           toast({
             title: data.msg,
             status: getToastStatus(data.log_level),
-            duration: 5000,
+            duration: data.notification_duration ?? 5000,
             isClosable: true,
           });
         }
