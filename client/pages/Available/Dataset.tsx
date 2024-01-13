@@ -130,8 +130,11 @@ export const DatasetDetailPage = () => {
         }}
       >
         <CombineDataset
-          baseDataset={datasetName}
-          baseDatasetColumns={columns}
+          dataset={{
+            name: datasetName,
+            columns: columns,
+            timeseries_col: data.res.dataset.timeseries_col,
+          }}
           refetchParent={refetch}
         />
       </ChakraModal>
