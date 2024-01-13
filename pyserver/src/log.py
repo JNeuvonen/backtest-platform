@@ -8,14 +8,29 @@ import os
 from constants import LOG_FILE
 
 
+def create_init_log_msg(func_name, params):
+    param_str = ", ".join(f"{key}={value}" for key, value in params.items())
+    return f"Function {func_name} called with parameters: {param_str}"
+
+
 @contextmanager
 def LogExceptionContext(
     custom_handler=None,
     logging_level=logging.INFO,
     ui_dom_event="",
     notification_duration=5000,
+    re_raise=True,
+    context_init_log="",
 ):
     logger = get_logger()
+
+    if context_init_log != "":
+        logger.log(
+            context_init_log,
+            logging_level,
+            False,
+            False,
+        )
     """
     A context manager for logging exceptions.
 
@@ -36,7 +51,8 @@ def LogExceptionContext(
         logger.log(
             f"{str(e)}", logging_level, True, True, ui_dom_event, notification_duration
         )
-        raise
+        if re_raise:
+            raise
 
 
 class Logger:
@@ -92,7 +108,7 @@ class Logger:
         display_in_ui=False,
         should_refetch=False,
         ui_dom_event="",
-        notification_duration=None,
+        notification_duration=5000,
     ):
         """Send a message to all WebSocket connections before logging."""
         stream_msg_body = self.build_stream_msg(
