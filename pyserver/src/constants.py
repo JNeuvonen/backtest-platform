@@ -1,4 +1,5 @@
 from enum import Enum
+from config import append_app_data_path
 
 BINANCE_DATA_COLS = [
     "kline_open_time",
@@ -22,3 +23,7 @@ DB_LOGS = "logs.db"
 
 class DomEventChannels(Enum):
     REFETCH_ALL_DATASETS = "refetch_all_datasets"
+
+
+class AppConstants:
+    DB_DATASETS = append_app_data_path(DB_DATASETS)
