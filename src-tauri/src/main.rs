@@ -46,6 +46,7 @@ fn main() {
                     .arg("server:app") // Replace 'server:app' with your actual module and app name
                     .arg("--reload")
                     .env("APP_DATA_PATH", &app_data_path)
+                    .env("ENV", "DEV")
                     .spawn()
                     .expect("Failed to start FastAPI server");
             } else {
@@ -61,6 +62,7 @@ fn main() {
                 let _fastapi_server = Command::new(binary_path)
                     .stdout(Stdio::piped())
                     .env("APP_DATA_PATH", &app_data_path)
+                    .env("ENV", "PROD")
                     .spawn()
                     .expect("Failed to start FastAPI server");
             }
