@@ -5,7 +5,7 @@ import statistics
 from typing import List
 
 from config import append_app_data_path
-from constants import AppConstants
+from constants import AppConstants, DomEventChannels
 from dataset import (
     combine_datasets,
     read_columns_to_mem,
@@ -149,6 +149,7 @@ async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
                 display_in_ui=True,
                 should_refetch=True,
                 notification_duration=5000,
+                ui_dom_event=DomEventChannels.REFETCH_ALL_DATASETS.value,
             )
 
 
