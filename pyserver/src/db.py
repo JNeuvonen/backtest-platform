@@ -1,5 +1,4 @@
 from enum import Enum
-import os
 import sqlite3
 import statistics
 from typing import List
