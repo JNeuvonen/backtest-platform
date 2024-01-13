@@ -75,6 +75,9 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
     if (data) {
       allColumnsData.current = {};
       data.res.tables.map((item) => {
+        if (item.table_name === baseDataset) {
+          return;
+        }
         allColumnsData.current[item.table_name] = {};
         item.columns.map((col) => {
           if (item.timeseries_col !== col) {
