@@ -108,7 +108,7 @@ export const CombineDataset = ({
       setComponentReady(true);
       forceUpdate();
     }
-  }, [data, setComponentReady, baseDatasetColumns]);
+  }, [data, setComponentReady, baseDatasetColumns, baseDataset, forceUpdate]);
 
   if (!data || !componentReady) {
     return <div>No datasets available</div>;
