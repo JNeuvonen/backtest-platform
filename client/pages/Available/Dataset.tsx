@@ -145,6 +145,7 @@ export const DatasetDetailPage = () => {
             setInputCurrent={setInputDatasetName}
             defaultValue={datasetName}
             newInputCallback={renameDataset}
+            disallowedCharsRegex={/\s/}
             message={
               <>
                 <span>
