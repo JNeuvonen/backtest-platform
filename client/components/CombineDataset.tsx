@@ -111,21 +111,14 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
 
     if (res.status === 200) {
       toast({
-        title: `Added new columns to dataset ${baseDataset}`,
+        title: `Adding columns to {baseDataset} on the background`,
         status: "success",
         duration: 5000,
         isClosable: true,
       });
       modalClose();
-    } else {
-      toast({
-        title: "Error",
-        description: `Could not add columns to dataset ${baseDataset}`,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
     }
+    //error case is handled by log messages
   };
 
   const onDatasetSearch = (searchTerm: string) => {
