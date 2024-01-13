@@ -1,8 +1,8 @@
 import logging
 import os
+import asyncio
+
 from typing import List
-
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from constants import DB_DATASETS
@@ -16,7 +16,7 @@ from db import (
     rename_column,
     rename_table,
 )
-from log import LogExceptionContext, get_logger
+from log import get_logger
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -49,13 +49,12 @@ class ColumnsToDataset(BaseModel):
 async def route_post_dataset_add_columns(
     dataset_name: str, payload: List[ColumnsToDataset]
 ):
-    try:
+    asyncio.create_task(
         add_columns_to_table(
             os.path.join(APP_DATA_PATH, DB_DATASETS), dataset_name, payload
         )
-        return {"message": "OK"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    )
+    return {"message": "OK"}
 
 
 class BodyUpdateTimeseriesCol(BaseModel):
