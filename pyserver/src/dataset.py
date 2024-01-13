@@ -2,8 +2,7 @@ import logging
 import sqlite3
 import pandas as pd
 from typing import List
-from constants import DomEventChannels
-from log import get_logger
+from log import LogExceptionContext, get_logger
 
 
 def get_select_columns_str(columns: List[str]):
@@ -32,15 +31,13 @@ def combine_datasets(
     base_join_column,
     join_df_column,
     use_prefix=True,
-    retry_prefix_char="_",
 ):
-    logger = get_logger()
     if use_prefix:
-        prefix = join_table_name + retry_prefix_char
+        prefix = join_table_name + "_"
         join_df = join_df.add_prefix(prefix)
         join_df_column = prefix + join_df_column
 
-    try:
+    with LogExceptionContext(notification_duration=60000, logging_level=logging.ERROR):
         merged_df = pd.merge(
             base_df,
             join_df,
@@ -50,26 +47,6 @@ def combine_datasets(
         )
         merged_df.drop([join_df_column], axis=1, inplace=True)
         return merged_df
-    except Exception as e:
-        if "duplicate columns" in str(e):
-            return combine_datasets(
-                base_df,
-                join_df,
-                join_table_name,
-                base_join_column,
-                join_df_column,
-                use_prefix,
-                retry_prefix_char + "_",
-            )
-        else:
-            print("error", str(e))
-            # await logger.log(
-            #     str(e),
-            #     logging.INFO,
-            #     True,
-            #     True,
-            # )
-            return base_df
 
 
 def read_dataset_to_mem(db_path: str, dataset_name: str):
