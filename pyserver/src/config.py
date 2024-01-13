@@ -10,3 +10,7 @@ def is_prod():
 
 def is_dev():
     return ENV == "DEV"
+
+
+def append_app_data_path(appended_path):
+    return os.path.join(APP_DATA_PATH, appended_path)
