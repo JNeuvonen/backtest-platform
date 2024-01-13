@@ -1,4 +1,5 @@
 import asyncio
+from context import HttpResponseContext
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -17,11 +18,13 @@ class FetchKlinesRequest(BaseModel):
 
 @router.post("/fetch-klines")
 async def get_binance_klines(request: FetchKlinesRequest):
-    asyncio.create_task(save_historical_klines(request.symbol, request.interval))
-    return {"symbol": request.symbol}
+    with HttpResponseContext():
+        asyncio.create_task(save_historical_klines(request.symbol, request.interval))
+        return {"symbol": request.symbol}
 
 
 @router.get("/get-all-tickers")
 async def get_binance_exchange_info():
-    tickers = get_all_tickers()
-    return {"pairs": tickers}
+    with HttpResponseContext():
+        tickers = get_all_tickers()
+        return {"pairs": tickers}
