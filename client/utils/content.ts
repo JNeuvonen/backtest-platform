@@ -13,3 +13,7 @@ export const KEYBIND_MSGS = {
     return OS_NOT_RECOGNIZED_MSG;
   },
 };
+
+export const getParenthesisSize = (size: number, fallbackValue = null) => {
+  return size ? `(${size})` : fallbackValue;
+};
