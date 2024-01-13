@@ -3,12 +3,14 @@ import os
 import sqlite3
 import statistics
 from typing import List
+
+from binance.depthcache import logging
 from dataset import (
     combine_datasets,
     read_columns_to_mem,
     read_dataset_to_mem,
 )
-from log import get_logger
+from log import LogExceptionContext, create_init_log_msg, get_logger
 
 
 def create_connection(db_file: str):
@@ -113,15 +115,22 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
     return first_five, last_five
 
 
-def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
-    try:
+async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
+    with LogExceptionContext(
+        notification_duration=60000,
+        logging_level=logging.ERROR,
+        context_init_log=create_init_log_msg(
+            "add_columns_to_table",
+            {
+                "dataset_name": dataset_name,
+                "new_cols_arr": new_cols_arr,
+            },
+        ),
+    ):
         base_df = read_dataset_to_mem(db_path, dataset_name)
-
         if base_df is None:
             return False
-
         base_df_timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
-
         with sqlite3.connect(db_path) as conn:
             for item in new_cols_arr:
                 timeseries_col = DatasetUtils.get_timeseries_col(item.table_name)
@@ -138,10 +147,14 @@ def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
                     )
 
             base_df.to_sql(dataset_name, conn, if_exists="replace", index=False)
-
-        return True
-    except sqlite3.Error:
-        return False
+            logger = get_logger()
+            logger.log(
+                message=f"Succesfully added new columns to dataset {dataset_name}",
+                log_level=logging.INFO,
+                display_in_ui=True,
+                should_refetch=True,
+                notification_duration=5000,
+            )
 
 
 def get_all_tables_and_columns(db_path: str):
