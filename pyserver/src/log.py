@@ -1,8 +1,42 @@
+import asyncio
+from contextlib import contextmanager
 import logging
 import json
+import threading
 import os
 
 from constants import LOG_FILE
+
+
+@contextmanager
+def LogExceptionContext(
+    custom_handler=None,
+    logging_level=logging.INFO,
+    ui_dom_event="",
+    notification_duration=5000,
+):
+    logger = get_logger()
+    """
+    A context manager for logging exceptions.
+
+    Args:
+    - custom_handler: A function that takes an exception as an argument and handles it.
+                      If the handler returns truthy value, the exception is considered handled
+                      and no further action is taken. If it returns falsy, standard logging is performed.
+
+    This context manager simplifies exception handling by automatically logging exceptions
+    that occur within its context. If a custom handler is provided, it allows for specific
+    exception handling logic before falling back to the default logging behavior.
+    """
+    try:
+        yield
+    except Exception as e:
+        if custom_handler and custom_handler(e):
+            return
+        logger.log(
+            f"{str(e)}", logging_level, True, True, ui_dom_event, notification_duration
+        )
+        raise
 
 
 class Logger:
@@ -34,7 +68,13 @@ class Logger:
         self.websocket_connections.remove(websocket)
 
     def build_stream_msg(
-        self, message, log_level, display_in_ui, should_refetch, ui_dom_event
+        self,
+        message,
+        log_level,
+        display_in_ui,
+        should_refetch,
+        ui_dom_event,
+        notification_duration,
     ):
         return {
             "msg": message,
@@ -42,27 +82,47 @@ class Logger:
             "display": display_in_ui,
             "refetch": should_refetch,
             "dom_event": ui_dom_event,
+            "notification_duration": notification_duration,
         }
 
-    async def log(
+    def log(
         self,
         message,
         log_level,
         display_in_ui=False,
         should_refetch=False,
         ui_dom_event="",
+        notification_duration=None,
     ):
         """Send a message to all WebSocket connections before logging."""
-        disconnected_sockets = []
         stream_msg_body = self.build_stream_msg(
-            message, log_level, display_in_ui, should_refetch, ui_dom_event
+            message,
+            log_level,
+            display_in_ui,
+            should_refetch,
+            ui_dom_event,
+            notification_duration,
         )
 
-        for websocket in self.websocket_connections:
+        async def send_message_async(websocket):
             try:
                 await websocket.send_text(json.dumps(stream_msg_body))
             except Exception as _:
-                disconnected_sockets.append(websocket)
+                return websocket
+
+        def send_message_sync(websocket):
+            return asyncio.run(send_message_async(websocket))
+
+        disconnected_sockets = []
+        threads = []
+
+        for websocket in self.websocket_connections:
+            thread = threading.Thread(target=send_message_sync, args=(websocket,))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
 
         for websocket in disconnected_sockets:
             self.remove_websocket_connection(websocket)
