@@ -2,10 +2,10 @@ import os
 import asyncio
 
 from typing import List
+from constants import AppConstants
 from context import HttpResponseContext
 from fastapi import APIRouter
 from pydantic import BaseModel
-from constants import DB_DATASETS
 from db import (
     DatasetUtils,
     add_columns_to_table,
@@ -25,7 +25,7 @@ router = APIRouter()
 @router.get("/{dataset_name}")
 async def route_get_dataset_by_name(dataset_name: str) -> dict:
     with HttpResponseContext():
-        conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
+        conn = create_connection(AppConstants.DB_DATASETS)
         table_info = get_dataset_table(conn, dataset_name)
         return {"dataset": table_info}
 
@@ -33,7 +33,7 @@ async def route_get_dataset_by_name(dataset_name: str) -> dict:
 @router.get("/{dataset_name}/col-info/{column_name}")
 async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dict:
     with HttpResponseContext():
-        datasets_conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
+        datasets_conn = create_connection(AppConstants.DB_DATASETS)
         timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
         col_info = get_column_detailed_info(
             datasets_conn, dataset_name, column_name, timeseries_col
@@ -52,9 +52,7 @@ async def route_post_dataset_add_columns(
 ):
     with HttpResponseContext():
         asyncio.create_task(
-            add_columns_to_table(
-                os.path.join(APP_DATA_PATH, DB_DATASETS), dataset_name, payload
-            )
+            add_columns_to_table(AppConstants.DB_DATASETS, dataset_name, payload)
         )
         return {"message": "OK"}
 
@@ -77,8 +75,7 @@ class BodyUpdateDatasetName(BaseModel):
 @router.put("/{dataset_name}/update-dataset-name")
 async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetName):
     with HttpResponseContext():
-        db_datasets_path = os.path.join(APP_DATA_PATH, DB_DATASETS)
-        rename_table(db_datasets_path, dataset_name, body.new_dataset_name)
+        rename_table(AppConstants.DB_DATASETS, dataset_name, body.new_dataset_name)
         DatasetUtils.update_dataset_name(dataset_name, body.new_dataset_name)
         return {"message": "OK"}
 
@@ -86,8 +83,7 @@ async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetNa
 @router.get("/")
 async def route_all_columns():
     with HttpResponseContext():
-        db_datasets_path = os.path.join(APP_DATA_PATH, DB_DATASETS)
-        return {"table_col_map": get_all_tables_and_columns(db_datasets_path)}
+        return {"table_col_map": get_all_tables_and_columns(AppConstants.DB_DATASETS)}
 
 
 class BodyRenameColumn(BaseModel):
@@ -102,7 +98,7 @@ async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
         f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}"
     ):
         rename_column(
-            os.path.join(APP_DATA_PATH, DB_DATASETS),
+            AppConstants.DB_DATASETS,
             dataset_name,
             body.old_col_name,
             body.new_col_name,
