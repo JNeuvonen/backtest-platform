@@ -9,11 +9,10 @@ from pydantic import BaseModel
 from db import (
     DatasetUtils,
     add_columns_to_table,
-    create_connection,
     get_all_tables_and_columns,
     get_column_detailed_info,
     get_dataset_table,
-    get_tables,
+    get_dataset_tables,
     rename_column,
     rename_table,
 )
@@ -26,29 +25,20 @@ router = APIRouter()
 @router.get("/tables")
 async def route_all_tables():
     with HttpResponseContext():
-        db_path = AppConstants.DB_DATASETS
-        db = create_connection(db_path)
-        tables = get_tables(db)
-        db.close()
-        return {"tables": tables}
+        return {"tables": get_dataset_tables()}
 
 
 @router.get("/{dataset_name}")
 async def route_get_dataset_by_name(dataset_name: str) -> dict:
     with HttpResponseContext():
-        conn = create_connection(AppConstants.DB_DATASETS)
-        table_info = get_dataset_table(conn, dataset_name)
-        return {"dataset": table_info}
+        return {"dataset": get_dataset_table(dataset_name)}
 
 
 @router.get("/{dataset_name}/col-info/{column_name}")
 async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dict:
     with HttpResponseContext():
-        datasets_conn = create_connection(AppConstants.DB_DATASETS)
         timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
-        col_info = get_column_detailed_info(
-            datasets_conn, dataset_name, column_name, timeseries_col
-        )
+        col_info = get_column_detailed_info(dataset_name, column_name, timeseries_col)
         return {"column": col_info, "timeseries_col": timeseries_col}
 
 
