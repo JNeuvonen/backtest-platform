@@ -1,8 +1,8 @@
-import logging
 import sqlite3
 import pandas as pd
 from typing import List
-from log import LogExceptionContext, get_logger
+
+from constants import AppConstants
 
 
 def get_select_columns_str(columns: List[str]):
@@ -48,8 +48,8 @@ def combine_datasets(
     return merged_df
 
 
-def read_dataset_to_mem(db_path: str, dataset_name: str):
-    with sqlite3.connect(db_path) as conn:
+def read_dataset_to_mem(dataset_name: str):
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
         query = f"SELECT * FROM {dataset_name}"
         df = pd.read_sql_query(query, conn)
         return df
