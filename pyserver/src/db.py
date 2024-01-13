@@ -1,9 +1,9 @@
 from enum import Enum
+import logging
 import sqlite3
 import statistics
 from typing import List
 
-from binance.depthcache import logging
 from config import append_app_data_path
 from dataset import (
     combine_datasets,
@@ -42,6 +42,7 @@ def get_tables(conn: sqlite3.Connection):
             tables_data.append(
                 {
                     "table_name": table_name,
+                    "timeseries_col": DatasetUtils.get_timeseries_col(table_name),
                     "columns": columns,
                     "start_date": first_row[0],
                     "end_date": last_row[0],
