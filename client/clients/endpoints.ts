@@ -34,4 +34,6 @@ export const URLS = {
     BASE_URL + API.dataset.root + `/${datasetName}/rename-column`,
   add_columns: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/add-columns`,
+  delete_dataset_cols: (datasetName: string) =>
+    BASE_URL + API.dataset.root + `/${datasetName}/delete-cols`,
 };
