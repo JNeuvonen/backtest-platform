@@ -54,9 +54,18 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
   const toast = useToast();
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === "s") {
-      event.preventDefault();
-      setIsOpen(true);
+    if (!isSaveDisabled()) {
+      if (platform === "macos") {
+        if (event.metaKey && event.key === "s") {
+          event.preventDefault();
+          setIsOpen(true);
+        }
+      } else {
+        if (event.ctrlKey && event.key === "s") {
+          event.preventDefault();
+          setIsOpen(true);
+        }
+      }
     }
   };
 
@@ -68,7 +77,9 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
       data.res.tables.map((item) => {
         allColumnsData.current[item.table_name] = {};
         item.columns.map((col) => {
-          allColumnsData.current[item.table_name][col] = false;
+          if (item.timeseries_col !== col) {
+            allColumnsData.current[item.table_name][col] = false;
+          }
         });
       });
       filteredColumns.current = cloneDeep(allColumnsData.current);
