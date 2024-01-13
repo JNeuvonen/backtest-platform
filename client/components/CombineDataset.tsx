@@ -5,8 +5,13 @@ import { SelectDatasetColumn } from "./SelectDatasetColumn";
 import { useForceUpdate } from "../hooks/useForceUpdate";
 import { Search } from "./Search";
 import cloneDeep from "lodash/cloneDeep";
-import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
-import { Button } from "@chakra-ui/react";
+import {
+  AiFillDelete,
+  AiOutlineClose,
+  AiOutlineLeft,
+  AiOutlineRight,
+} from "react-icons/ai";
+import { Button, Checkbox } from "@chakra-ui/react";
 import { BUTTON_VARIANTS } from "../theme";
 import Title from "./Title";
 import { ChakraDivider } from "./Divider";
@@ -19,7 +24,7 @@ import {
 } from "../utils/object";
 import { useKeyListener } from "../hooks/useKeyListener";
 import { useAppContext } from "../context/app";
-import { KEYBIND_MSGS } from "../utils/content";
+import { KEYBIND_MSGS, getParenthesisSize } from "../utils/content";
 import { ChakraTooltip } from "./Tooltip";
 import { ConfirmModal } from "./form/confirm";
 import { useModal } from "../hooks/useOpen";
@@ -28,10 +33,15 @@ import { useMessageListener } from "../hooks/useMessageListener";
 import { DOM_EVENT_CHANNELS } from "../utils/constants";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { DatasetResponse } from "../clients/queries/response-types";
+import { buildRequest } from "../clients/fetch";
+import { URLS } from "../clients/endpoints";
 
 interface Props {
-  baseDataset: string;
-  baseDatasetColumns: string[];
+  dataset: {
+    name: string;
+    columns: string[];
+    timeseries_col: string;
+  };
   refetchParent?: (
     options?: RefetchOptions | undefined
   ) => Promise<QueryObserverResult<DatasetResponse, unknown>>;
@@ -47,18 +57,21 @@ export type SelectedDatasetColumns = { [key: string]: boolean | null };
 export type AddColumnsReqPayload = { table_name: string; columns: string[] }[];
 type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
-export const CombineDataset = ({
-  baseDatasetColumns,
-  baseDataset,
-  refetchParent,
-}: Props) => {
+export const CombineDataset = ({ dataset, refetchParent }: Props) => {
   const { data, refetch } = useDatasetsQuery();
   const { platform } = useAppContext();
-  const { isOpen, modalClose, setIsOpen } = useModal(false);
+  const {
+    isOpen: addModalIsOpen,
+    modalClose: addModalClose,
+    setIsOpen: addModalSetOpen,
+  } = useModal(false);
 
   const allColumnsData = useRef<ColumnsDict>({});
   const filteredColumns = useRef<ColumnsDict>({});
   const selectedColumns = useRef<ColumnsDict>({});
+
+  const [isDelMode, setIsDelMode] = useState(false);
+  const [deleteColumns, setDeleteColumns] = useState<string[]>([]);
 
   const [componentReady, setComponentReady] = useState(false);
   const forceUpdate = useForceUpdate();
@@ -68,12 +81,12 @@ export const CombineDataset = ({
       if (platform === "macos") {
         if (event.metaKey && event.key === "s") {
           event.preventDefault();
-          setIsOpen(true);
+          addModalSetOpen(true);
         }
       } else {
         if (event.ctrlKey && event.key === "s") {
           event.preventDefault();
-          setIsOpen(true);
+          addModalSetOpen(true);
         }
       }
     }
@@ -94,7 +107,7 @@ export const CombineDataset = ({
       filteredColumns.current = {};
       selectedColumns.current = {};
       data.res.tables.map((item) => {
-        if (item.table_name === baseDataset) {
+        if (item.table_name === dataset.name) {
           return;
         }
         allColumnsData.current[item.table_name] = {};
@@ -107,7 +120,7 @@ export const CombineDataset = ({
       filteredColumns.current = cloneDeep(allColumnsData.current);
       setComponentReady(true);
     }
-  }, [data, setComponentReady, baseDatasetColumns, baseDataset]);
+  }, [data, setComponentReady, dataset]);
 
   if (!data || !componentReady) {
     return <div>No datasets available</div>;
@@ -140,12 +153,11 @@ export const CombineDataset = ({
         columns: Object.keys(value),
       });
     }
-    const res = await addColumnsToDataset(baseDataset, reqPayload);
+    const res = await addColumnsToDataset(dataset.name, reqPayload);
 
     if (res.status === 200) {
-      modalClose();
+      addModalClose();
     }
-    //error case is handled by log messages
   };
 
   const onDatasetSearch = (searchTerm: string) => {
@@ -226,11 +238,27 @@ export const CombineDataset = ({
     );
   };
 
+  const isDeleteDisabled = () => {
+    return deleteColumns.length === 0;
+  };
+
+  const submitDeleteCols = () => {
+    buildRequest({
+      url: URLS.delete_dataset_cols(dataset.name),
+      payload: {
+        cols: deleteColumns,
+      },
+      method: "POST",
+    }).then(() => {
+      if (refetchParent) refetchParent();
+    });
+  };
+
   return (
     <div>
       <ConfirmModal
-        isOpen={isOpen}
-        onClose={modalClose}
+        isOpen={addModalIsOpen}
+        onClose={addModalClose}
         title="Confirm"
         message={
           <span>
@@ -243,15 +271,30 @@ export const CombineDataset = ({
         cancelText="Cancel"
         onConfirm={onSubmit}
       />
-      <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
-        <Button
-          style={{ height: "35px", marginBottom: "16px" }}
-          isDisabled={isSaveDisabled()}
-          onClick={() => setIsOpen(true)}
-        >
-          Save
-        </Button>
-      </ChakraTooltip>
+      <div style={{ display: "flex", gap: "8px" }}>
+        <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
+          <Button
+            style={{ height: "35px", marginBottom: "16px" }}
+            isDisabled={isSaveDisabled()}
+            onClick={() => addModalSetOpen(true)}
+          >
+            Save
+          </Button>
+        </ChakraTooltip>
+
+        {isDelMode && (
+          <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
+            <Button
+              style={{ height: "35px", marginBottom: "16px" }}
+              isDisabled={isDeleteDisabled()}
+              onClick={submitDeleteCols}
+              variant={BUTTON_VARIANTS.grey2}
+            >
+              Delete {getParenthesisSize(deleteColumns.length)}
+            </Button>
+          </ChakraTooltip>
+        )}
+      </div>
       <div className={CONTAINERS.combine_datasets}>
         <div
           className={createScssClassName([
@@ -260,19 +303,75 @@ export const CombineDataset = ({
           ])}
         >
           <div>
-            <Title
+            <div
               style={{
-                fontWeight: 600,
-                fontSize: 17,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              Base columns
-            </Title>
+              <Title
+                style={{
+                  fontWeight: 600,
+                  fontSize: 17,
+                }}
+              >
+                Base columns {getParenthesisSize(dataset.columns.length)}
+              </Title>
+              {!isDelMode ? (
+                <Button
+                  variant={BUTTON_VARIANTS.grey}
+                  height={"30px"}
+                  padding="10px"
+                  onClick={() => {
+                    setIsDelMode(true);
+                    setDeleteColumns([]);
+                  }}
+                >
+                  <AiFillDelete size={18} />
+                </Button>
+              ) : (
+                <Button
+                  variant={BUTTON_VARIANTS.grey}
+                  height={"30px"}
+                  padding="10px"
+                  onClick={() => setIsDelMode(false)}
+                >
+                  <AiOutlineClose />
+                </Button>
+              )}
+            </div>
             <ChakraDivider />
           </div>
           <div style={{ marginTop: 8 }}>
-            {baseDatasetColumns.map((item) => {
-              return <div key={item}>{item}</div>;
+            {dataset.columns.map((item) => {
+              return (
+                <div
+                  key={item}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {isDelMode && (
+                    <Checkbox
+                      isChecked={deleteColumns.includes(item)}
+                      onChange={() => {
+                        if (deleteColumns.includes(item)) {
+                          const arr = deleteColumns.filter(
+                            (col) => col !== item
+                          );
+                          setDeleteColumns(arr);
+                          forceUpdate();
+                        } else {
+                          const arr = deleteColumns;
+                          arr.push(item);
+                          setDeleteColumns(arr);
+                          forceUpdate();
+                        }
+                      }}
+                    />
+                  )}
+                  {item}
+                </div>
+              );
             })}
           </div>
           <div style={{ marginTop: 16 }}>
@@ -282,7 +381,10 @@ export const CombineDataset = ({
                 fontSize: 17,
               }}
             >
-              New columns
+              New columns{" "}
+              {getParenthesisSize(
+                getNonnullEntriesCount(selectedColumns.current)
+              )}
             </Title>
             <ChakraDivider />
           </div>
