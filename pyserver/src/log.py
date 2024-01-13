@@ -5,7 +5,7 @@ import json
 import threading
 import inspect
 import os
-from config import APP_DATA_PATH, append_app_data_path, is_dev
+from config import append_app_data_path, is_dev
 
 from constants import LOG_FILE
 
