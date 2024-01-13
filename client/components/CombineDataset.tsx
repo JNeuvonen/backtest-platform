@@ -11,7 +11,7 @@ import {
   AiOutlineLeft,
   AiOutlineRight,
 } from "react-icons/ai";
-import { Button, Checkbox } from "@chakra-ui/react";
+import { Button, Checkbox, useToast } from "@chakra-ui/react";
 import { BUTTON_VARIANTS } from "../theme";
 import Title from "./Title";
 import { ChakraDivider } from "./Divider";
@@ -65,16 +65,23 @@ export const CombineDataset = ({ dataset, refetchParent }: Props) => {
     modalClose: addModalClose,
     setIsOpen: addModalSetOpen,
   } = useModal(false);
+  const {
+    isOpen: delModalIsOpen,
+    modalClose: delModalClose,
+    setIsOpen: delModalSetOpen,
+  } = useModal(false);
 
   const allColumnsData = useRef<ColumnsDict>({});
   const filteredColumns = useRef<ColumnsDict>({});
   const selectedColumns = useRef<ColumnsDict>({});
 
   const [isDelMode, setIsDelMode] = useState(false);
+  const [deleteIsLoading, setDeleteIsLoading] = useState(false);
   const [deleteColumns, setDeleteColumns] = useState<string[]>([]);
 
   const [componentReady, setComponentReady] = useState(false);
   const forceUpdate = useForceUpdate();
+  const toast = useToast();
 
   const handleKeyPress = (event: KeyboardEvent) => {
     if (!isSaveDisabled()) {
@@ -243,15 +250,41 @@ export const CombineDataset = ({ dataset, refetchParent }: Props) => {
   };
 
   const submitDeleteCols = () => {
+    setDeleteIsLoading(true);
+    delModalSetOpen(false);
+    setIsDelMode(false);
+
     buildRequest({
       url: URLS.delete_dataset_cols(dataset.name),
       payload: {
         cols: deleteColumns,
       },
       method: "POST",
-    }).then(() => {
-      if (refetchParent) refetchParent();
-    });
+    })
+      .then((res) => {
+        toast({
+          title: `Deleted ${deleteColumns.length} column(s)`,
+          status: "info",
+          duration: 5000,
+          isClosable: true,
+        });
+        if (res.status === 200) {
+          setDeleteColumns([]);
+          if (refetchParent) refetchParent();
+        }
+
+        setDeleteIsLoading(false);
+      })
+      .catch((error) => {
+        toast({
+          title: "Error",
+          description: error?.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        setDeleteIsLoading(false);
+      });
   };
 
   return (
@@ -271,6 +304,21 @@ export const CombineDataset = ({ dataset, refetchParent }: Props) => {
         cancelText="Cancel"
         onConfirm={onSubmit}
       />
+
+      <ConfirmModal
+        isOpen={delModalIsOpen}
+        onClose={delModalClose}
+        title="Warning"
+        message={
+          <span>
+            Are you sure you want to delete {deleteColumns.length} column(s)
+            from the dataset?
+          </span>
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={submitDeleteCols}
+      />
       <div style={{ display: "flex", gap: "8px" }}>
         <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
           <Button
@@ -287,8 +335,9 @@ export const CombineDataset = ({ dataset, refetchParent }: Props) => {
             <Button
               style={{ height: "35px", marginBottom: "16px" }}
               isDisabled={isDeleteDisabled()}
-              onClick={submitDeleteCols}
+              onClick={() => delModalSetOpen(true)}
               variant={BUTTON_VARIANTS.grey2}
+              isLoading={deleteIsLoading}
             >
               Delete {getParenthesisSize(deleteColumns.length)}
             </Button>
