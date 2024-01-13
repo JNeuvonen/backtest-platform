@@ -5,6 +5,7 @@ import { AiFillCaretLeft } from "react-icons/ai";
 import { COLOR_CONTENT_PRIMARY } from "../utils/colors";
 import { Checkbox } from "@chakra-ui/react";
 import { SelectedDatasetColumns } from "./CombineDataset";
+import { getParenthesisSize } from "../utils/content";
 
 const CONTAINERS = {
   dataset_item: "dataset-item",
@@ -51,7 +52,8 @@ export const SelectDatasetColumn = ({
         ) : (
           <AiFillCaretLeft fill={COLOR_CONTENT_PRIMARY} />
         )}
-        {dataset.table_name}
+        {dataset.table_name}{" "}
+        {expand ? getParenthesisSize(dataset.columns.length) : null}
       </div>
       {expand && (
         <div>
