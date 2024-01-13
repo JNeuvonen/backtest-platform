@@ -13,6 +13,7 @@ from db import (
     get_all_tables_and_columns,
     get_column_detailed_info,
     get_dataset_table,
+    get_tables,
     rename_column,
     rename_table,
 )
@@ -20,6 +21,16 @@ from db import (
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 router = APIRouter()
+
+
+@router.get("/tables")
+async def route_all_tables():
+    with HttpResponseContext():
+        db_path = AppConstants.DB_DATASETS
+        db = create_connection(db_path)
+        tables = get_tables(db)
+        db.close()
+        return {"tables": tables}
 
 
 @router.get("/{dataset_name}")
