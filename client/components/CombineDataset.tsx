@@ -106,9 +106,8 @@ export const CombineDataset = ({
       });
       filteredColumns.current = cloneDeep(allColumnsData.current);
       setComponentReady(true);
-      forceUpdate();
     }
-  }, [data, setComponentReady, baseDatasetColumns, baseDataset, forceUpdate]);
+  }, [data, setComponentReady, baseDatasetColumns, baseDataset]);
 
   if (!data || !componentReady) {
     return <div>No datasets available</div>;
