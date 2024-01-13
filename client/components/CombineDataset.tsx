@@ -6,7 +6,7 @@ import { useForceUpdate } from "../hooks/useForceUpdate";
 import { Search } from "./Search";
 import cloneDeep from "lodash/cloneDeep";
 import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
-import { Button, useToast } from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
 import { BUTTON_VARIANTS } from "../theme";
 import Title from "./Title";
 import { ChakraDivider } from "./Divider";
