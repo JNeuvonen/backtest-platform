@@ -5,7 +5,7 @@ import json
 import threading
 import inspect
 import os
-from config import is_dev
+from config import APP_DATA_PATH, append_app_data_path, is_dev
 
 from constants import LOG_FILE
 
@@ -191,11 +191,8 @@ class Logger:
         self.logger.debug(message)
 
 
-APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
-
-
 logger = Logger(
-    os.path.join(APP_DATA_PATH, LOG_FILE),
+    append_app_data_path(LOG_FILE),
     logging.INFO,
 )
 
