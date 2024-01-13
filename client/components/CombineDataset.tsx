@@ -24,10 +24,17 @@ import { ChakraTooltip } from "./Tooltip";
 import { ConfirmModal } from "./form/confirm";
 import { useModal } from "../hooks/useOpen";
 import { addColumnsToDataset } from "../clients/requests";
+import { useMessageListener } from "../hooks/useMessageListener";
+import { DOM_EVENT_CHANNELS } from "../utils/constants";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
+import { DatasetResponse } from "../clients/queries/response-types";
 
 interface Props {
   baseDataset: string;
   baseDatasetColumns: string[];
+  refetchParent?: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<DatasetResponse, unknown>>;
 }
 
 const CONTAINERS = {
@@ -40,8 +47,12 @@ export type SelectedDatasetColumns = { [key: string]: boolean | null };
 export type AddColumnsReqPayload = { table_name: string; columns: string[] }[];
 type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
-export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
-  const { data } = useDatasetsQuery();
+export const CombineDataset = ({
+  baseDatasetColumns,
+  baseDataset,
+  refetchParent,
+}: Props) => {
+  const { data, refetch } = useDatasetsQuery();
   const { platform } = useAppContext();
   const { isOpen, modalClose, setIsOpen } = useModal(false);
 
@@ -51,7 +62,6 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
 
   const [componentReady, setComponentReady] = useState(false);
   const forceUpdate = useForceUpdate();
-  const toast = useToast();
 
   const handleKeyPress = (event: KeyboardEvent) => {
     if (!isSaveDisabled()) {
@@ -69,11 +79,20 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
     }
   };
 
+  useMessageListener({
+    messageName: DOM_EVENT_CHANNELS.refetch_all_datasets,
+    messageCallback: () => {
+      if (refetchParent) refetchParent();
+      refetch();
+    },
+  });
   useKeyListener({ eventAction: handleKeyPress });
 
   useEffect(() => {
     if (data) {
       allColumnsData.current = {};
+      filteredColumns.current = {};
+      selectedColumns.current = {};
       data.res.tables.map((item) => {
         if (item.table_name === baseDataset) {
           return;
@@ -87,8 +106,9 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
       });
       filteredColumns.current = cloneDeep(allColumnsData.current);
       setComponentReady(true);
+      forceUpdate();
     }
-  }, [data, setComponentReady]);
+  }, [data, setComponentReady, baseDatasetColumns]);
 
   if (!data || !componentReady) {
     return <div>No datasets available</div>;
@@ -124,12 +144,6 @@ export const CombineDataset = ({ baseDatasetColumns, baseDataset }: Props) => {
     const res = await addColumnsToDataset(baseDataset, reqPayload);
 
     if (res.status === 200) {
-      toast({
-        title: `Adding columns to {baseDataset} on the background`,
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
       modalClose();
     }
     //error case is handled by log messages
