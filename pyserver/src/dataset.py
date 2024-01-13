@@ -37,27 +37,22 @@ def combine_datasets(
         join_df = join_df.add_prefix(prefix)
         join_df_column = prefix + join_df_column
 
-    with LogExceptionContext(notification_duration=60000, logging_level=logging.ERROR):
-        merged_df = pd.merge(
-            base_df,
-            join_df,
-            left_on=base_join_column,
-            right_on=join_df_column,
-            how="left",
-        )
-        merged_df.drop([join_df_column], axis=1, inplace=True)
-        return merged_df
+    merged_df = pd.merge(
+        base_df,
+        join_df,
+        left_on=base_join_column,
+        right_on=join_df_column,
+        how="left",
+    )
+    merged_df.drop([join_df_column], axis=1, inplace=True)
+    return merged_df
 
 
 def read_dataset_to_mem(db_path: str, dataset_name: str):
-    try:
-        with sqlite3.connect(db_path) as conn:
-            query = f"SELECT * FROM {dataset_name}"
-            df = pd.read_sql_query(query, conn)
-            return df
-    except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
-        return None
+    with sqlite3.connect(db_path) as conn:
+        query = f"SELECT * FROM {dataset_name}"
+        df = pd.read_sql_query(query, conn)
+        return df
 
 
 def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str]):
