@@ -5,6 +5,7 @@ import statistics
 from typing import List
 
 from binance.depthcache import logging
+from config import append_app_data_path
 from dataset import (
     combine_datasets,
     read_columns_to_mem,
@@ -255,8 +256,7 @@ class DatasetUtils:
 
     @staticmethod
     def get_path():
-        APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
-        return os.path.join(APP_DATA_PATH, DatasetUtils.DB_PATH)
+        return append_app_data_path(DatasetUtils.DB_PATH)
 
     @staticmethod
     def update_dataset_name(old_name, new_name):
