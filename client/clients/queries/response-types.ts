@@ -1,5 +1,6 @@
 export interface DatasetMetadata {
   columns: string[];
+  timeseries_col: string | null;
   start_date: number;
   end_date: number;
   table_name: string;
