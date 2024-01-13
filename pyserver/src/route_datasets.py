@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from db import (
     DatasetUtils,
     add_columns_to_table,
+    delete_dataset_cols,
     get_all_tables_and_columns,
     get_column_detailed_info,
     get_dataset_table,
@@ -107,4 +108,15 @@ async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
         if body.is_timeseries_col:
             DatasetUtils.update_timeseries_col(dataset_name, body.new_col_name)
 
+        return {"message": "OK"}
+
+
+class PayloadDeleteColumns(BaseModel):
+    cols: List[str]
+
+
+@router.post("/{dataset_name}/delete-cols")
+async def route_del_cols(dataset_name: str, delete_cols: PayloadDeleteColumns):
+    with HttpResponseContext():
+        delete_dataset_cols(dataset_name, delete_cols.cols)
         return {"message": "OK"}
