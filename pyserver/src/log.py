@@ -3,53 +3,70 @@ from contextlib import contextmanager
 import logging
 import json
 import threading
+import inspect
 import os
+from config import is_dev
 
 from constants import LOG_FILE
 
 
-def create_init_log_msg(func_name, params):
-    param_str = ", ".join(f"{key}={value}" for key, value in params.items())
-    return f"Function {func_name} called with parameters: {param_str}"
+def capture_stack_frame(func_name, params):
+    param_str = (
+        ", ".join(f"{key}={value}" for key, value in params.items())
+        if params
+        else "none"
+    )
+    return f"function {func_name} called with parameters: {param_str}"
+
+
+def get_frame_params(frame):
+    params = inspect.getargvalues(frame)
+    return {arg: params.locals[arg] for arg in params.args if arg != "self"}
+
+
+def get_context_frame_params():
+    frame = inspect.stack()[3].frame
+    return get_frame_params(frame)
 
 
 @contextmanager
 def LogExceptionContext(
     custom_handler=None,
-    logging_level=logging.INFO,
+    logging_level=logging.ERROR,
     ui_dom_event="",
     notification_duration=5000,
     re_raise=True,
-    context_init_log="",
+    success_log_msg="",
 ):
     logger = get_logger()
-
-    if context_init_log != "":
+    if is_dev():
+        stack_frame = capture_stack_frame(
+            inspect.stack()[2].function, get_context_frame_params()
+        )
         logger.log(
-            context_init_log,
-            logging_level,
+            stack_frame,
+            logging.INFO,
             False,
             False,
         )
-    """
-    A context manager for logging exceptions.
-
-    Args:
-    - custom_handler: A function that takes an exception as an argument and handles it.
-                      If the handler returns truthy value, the exception is considered handled
-                      and no further action is taken. If it returns falsy, standard logging is performed.
-
-    This context manager simplifies exception handling by automatically logging exceptions
-    that occur within its context. If a custom handler is provided, it allows for specific
-    exception handling logic before falling back to the default logging behavior.
-    """
     try:
         yield
+        if success_log_msg != "":
+            logger.log(success_log_msg, logging.INFO)
     except Exception as e:
         if custom_handler and custom_handler(e):
             return
+        stack_frame = capture_stack_frame(
+            inspect.stack()[2].function, get_context_frame_params()
+        )
+        logger.save_exception_stackframe(stack_frame, str(e))
         logger.log(
-            f"{str(e)}", logging_level, True, True, ui_dom_event, notification_duration
+            f"{str(e)}",
+            logging_level,
+            True,
+            True,
+            ui_dom_event,
+            notification_duration,
         )
         if re_raise:
             raise
@@ -100,6 +117,11 @@ class Logger:
             "dom_event": ui_dom_event,
             "notification_duration": notification_duration,
         }
+
+    def save_exception_stackframe(self, stack_frame, error_msg):
+        self.logger.error(
+            f"exception was raised: {error_msg}\nstack frame: {stack_frame}"
+        )
 
     def log(
         self,
