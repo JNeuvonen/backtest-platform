@@ -4,7 +4,7 @@ import asyncio
 import pandas as pd
 
 from binance import Client
-from constants import BINANCE_DATA_COLS, DB_DATASETS, DomEventChannels
+from constants import BINANCE_DATA_COLS, DB_DATASETS, AppConstants, DomEventChannels
 from db import DatasetUtils, create_connection
 from log import LogExceptionContext, get_logger
 
@@ -41,7 +41,7 @@ async def get_historical_klines(symbol, interval):
 async def save_historical_klines(symbol, interval):
     with LogExceptionContext(notification_duration=60000):
         logger = get_logger()
-        datasets_conn = create_connection(os.path.join(APP_DATA_PATH, DB_DATASETS))
+        datasets_conn = create_connection(AppConstants.DB_DATASETS)
         klines = await get_historical_klines(symbol, interval)
         interval = "1mo" if interval == "1M" else interval
 
