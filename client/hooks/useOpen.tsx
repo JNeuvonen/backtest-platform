@@ -14,5 +14,11 @@ export const useModal = (defaultState: boolean) => {
     setIsOpen(false);
   };
 
-  return { isOpen, setIsOpen, jsxContent, setContent, modalClose };
+  return {
+    isOpen,
+    setIsOpen,
+    jsxContent,
+    setContent,
+    modalClose,
+  };
 };
