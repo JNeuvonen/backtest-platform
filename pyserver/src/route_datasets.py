@@ -16,7 +16,7 @@ from db import (
     rename_column,
     rename_table,
 )
-from log import get_logger
+from log import LogExceptionContext, get_logger
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -49,10 +49,13 @@ class ColumnsToDataset(BaseModel):
 async def route_post_dataset_add_columns(
     dataset_name: str, payload: List[ColumnsToDataset]
 ):
-    add_columns_to_table(
-        os.path.join(APP_DATA_PATH, DB_DATASETS), dataset_name, payload
-    )
-    return payload
+    try:
+        add_columns_to_table(
+            os.path.join(APP_DATA_PATH, DB_DATASETS), dataset_name, payload
+        )
+        return {"message": "OK"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 class BodyUpdateTimeseriesCol(BaseModel):
@@ -113,7 +116,7 @@ async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
 
     if rename_is_success and timeseries_col_update_success:
         logger = get_logger()
-        await logger.log(
+        logger.log(
             f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}",
             logging.INFO,
         )
