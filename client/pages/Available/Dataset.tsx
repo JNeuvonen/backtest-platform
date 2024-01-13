@@ -132,6 +132,7 @@ export const DatasetDetailPage = () => {
         <CombineDataset
           baseDataset={datasetName}
           baseDatasetColumns={columns}
+          refetchParent={refetch}
         />
       </ChakraModal>
       <Box
