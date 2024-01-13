@@ -5,6 +5,7 @@ import statistics
 from typing import List
 
 from config import append_app_data_path
+from constants import AppConstants
 from dataset import (
     combine_datasets,
     read_columns_to_mem,
@@ -18,40 +19,45 @@ def create_connection(db_file: str):
     return conn
 
 
-def get_tables(conn: sqlite3.Connection):
+def get_dataset_tables():
     with LogExceptionContext():
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cursor.fetchall()
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = cursor.fetchall()
 
-        tables_data = []
-        for table in tables:
-            table_name = table[0]
+            tables_data = []
+            for table in tables:
+                table_name = table[0]
 
-            cursor.execute(f"PRAGMA table_info({table_name});")
-            columns = [column_info[1] for column_info in cursor.fetchall()]
+                cursor.execute(f"PRAGMA table_info({table_name});")
+                columns = [column_info[1] for column_info in cursor.fetchall()]
 
-            cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID ASC LIMIT 1;")
-            first_row = cursor.fetchone()
-            cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 1;")
-            last_row = cursor.fetchone()
+                cursor.execute(
+                    f"SELECT * FROM {table_name} ORDER BY ROWID ASC LIMIT 1;"
+                )
+                first_row = cursor.fetchone()
+                cursor.execute(
+                    f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 1;"
+                )
+                last_row = cursor.fetchone()
 
-            cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
-            row_count = cursor.fetchone()[0]
+                cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+                row_count = cursor.fetchone()[0]
 
-            tables_data.append(
-                {
-                    "table_name": table_name,
-                    "timeseries_col": DatasetUtils.get_timeseries_col(table_name),
-                    "columns": columns,
-                    "start_date": first_row[0],
-                    "end_date": last_row[0],
-                    "row_count": row_count,
-                }
-            )
+                tables_data.append(
+                    {
+                        "table_name": table_name,
+                        "timeseries_col": DatasetUtils.get_timeseries_col(table_name),
+                        "columns": columns,
+                        "start_date": first_row[0],
+                        "end_date": last_row[0],
+                        "row_count": row_count,
+                    }
+                )
 
-        cursor.close()
-        return tables_data
+            cursor.close()
+            return tables_data
 
 
 def get_col_null_count(
@@ -162,34 +168,38 @@ def get_all_tables_and_columns(db_path: str):
         return table_dict
 
 
-def get_dataset_table(conn: sqlite3.Connection, table_name: str):
+def get_dataset_table(table_name: str):
     with LogExceptionContext():
-        cursor = conn.cursor()
-        cursor.execute(f"PRAGMA table_info({table_name})")
-        columns_info = cursor.fetchall()
-        columns = [row[1] for row in columns_info]
-        numerical_columns = [
-            row[1] for row in columns_info if row[2] in ("INTEGER", "REAL", "NUMERIC")
-        ]
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns_info = cursor.fetchall()
+            columns = [row[1] for row in columns_info]
+            numerical_columns = [
+                row[1]
+                for row in columns_info
+                if row[2] in ("INTEGER", "REAL", "NUMERIC")
+            ]
 
-        head, tail = get_first_last_five_rows(cursor, table_name)
-        null_counts = {
-            column: get_col_null_count(cursor, table_name, column) for column in columns
-        }
-        row_count = get_table_row_count(cursor, table_name)
-        numerical_stats = {
-            column: get_col_stats(cursor, table_name, column)
-            for column in numerical_columns
-        }
+            head, tail = get_first_last_five_rows(cursor, table_name)
+            null_counts = {
+                column: get_col_null_count(cursor, table_name, column)
+                for column in columns
+            }
+            row_count = get_table_row_count(cursor, table_name)
+            numerical_stats = {
+                column: get_col_stats(cursor, table_name, column)
+                for column in numerical_columns
+            }
 
-        return {
-            "columns": columns,
-            "head": head,
-            "tail": tail,
-            "null_counts": null_counts,
-            "row_count": row_count,
-            "stats_by_col": numerical_stats,
-        }
+            return {
+                "columns": columns,
+                "head": head,
+                "tail": tail,
+                "null_counts": null_counts,
+                "row_count": row_count,
+                "stats_by_col": numerical_stats,
+            }
 
 
 def exec_sql(db_path: str, sql_statement: str):
@@ -202,29 +212,29 @@ def exec_sql(db_path: str, sql_statement: str):
 
 
 def get_column_detailed_info(
-    conn: sqlite3.Connection,
     table_name: str,
     col_name: str,
     timeseries_col_name: str | None,
 ):
     with LogExceptionContext():
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT {col_name} from {table_name}")
-        rows = cursor.fetchall()
-        null_count = get_col_null_count(cursor, table_name, col_name)
-        stats = get_col_stats(cursor, table_name, col_name)
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT {col_name} from {table_name}")
+            rows = cursor.fetchall()
+            null_count = get_col_null_count(cursor, table_name, col_name)
+            stats = get_col_stats(cursor, table_name, col_name)
 
-        if timeseries_col_name is not None:
-            cursor.execute(f"SELECT {timeseries_col_name} from {table_name}")
-            kline_open_time = cursor.fetchall()
-        else:
-            kline_open_time = None
-        return {
-            "rows": rows,
-            "null_count": null_count,
-            "stats": stats,
-            "kline_open_time": kline_open_time,
-        }
+            if timeseries_col_name is not None:
+                cursor.execute(f"SELECT {timeseries_col_name} from {table_name}")
+                kline_open_time = cursor.fetchall()
+            else:
+                kline_open_time = None
+            return {
+                "rows": rows,
+                "null_count": null_count,
+                "stats": stats,
+                "kline_open_time": kline_open_time,
+            }
 
 
 def rename_column(path: str, table_name: str, old_col_name: str, new_col_name: str):
