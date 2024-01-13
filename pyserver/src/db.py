@@ -10,7 +10,7 @@ from dataset import (
     read_columns_to_mem,
     read_dataset_to_mem,
 )
-from log import LogExceptionContext, create_init_log_msg, get_logger
+from log import LogExceptionContext, get_logger
 
 
 def create_connection(db_file: str):
@@ -19,37 +19,38 @@ def create_connection(db_file: str):
 
 
 def get_tables(conn: sqlite3.Connection):
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = cursor.fetchall()
+    with LogExceptionContext():
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
 
-    tables_data = []
-    for table in tables:
-        table_name = table[0]
+        tables_data = []
+        for table in tables:
+            table_name = table[0]
 
-        cursor.execute(f"PRAGMA table_info({table_name});")
-        columns = [column_info[1] for column_info in cursor.fetchall()]
+            cursor.execute(f"PRAGMA table_info({table_name});")
+            columns = [column_info[1] for column_info in cursor.fetchall()]
 
-        cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID ASC LIMIT 1;")
-        first_row = cursor.fetchone()
-        cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 1;")
-        last_row = cursor.fetchone()
+            cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID ASC LIMIT 1;")
+            first_row = cursor.fetchone()
+            cursor.execute(f"SELECT * FROM {table_name} ORDER BY ROWID DESC LIMIT 1;")
+            last_row = cursor.fetchone()
 
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
-        row_count = cursor.fetchone()[0]
+            cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+            row_count = cursor.fetchone()[0]
 
-        tables_data.append(
-            {
-                "table_name": table_name,
-                "columns": columns,
-                "start_date": first_row[0],
-                "end_date": last_row[0],
-                "row_count": row_count,
-            }
-        )
+            tables_data.append(
+                {
+                    "table_name": table_name,
+                    "columns": columns,
+                    "start_date": first_row[0],
+                    "end_date": last_row[0],
+                    "row_count": row_count,
+                }
+            )
 
-    cursor.close()
-    return tables_data
+        cursor.close()
+        return tables_data
 
 
 def get_col_null_count(
@@ -61,14 +62,11 @@ def get_col_null_count(
 
 
 def rename_table(db_path, old_name, new_name):
-    try:
+    with LogExceptionContext():
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f"ALTER TABLE {old_name} RENAME TO {new_name}")
             conn.commit()
-        return True
-    except sqlite3.Error:
-        return False
 
 
 def get_table_row_count(cursor: sqlite3.Cursor, table_name: str) -> int:
@@ -116,17 +114,7 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
 
 
 async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
-    with LogExceptionContext(
-        notification_duration=60000,
-        logging_level=logging.ERROR,
-        context_init_log=create_init_log_msg(
-            "add_columns_to_table",
-            {
-                "dataset_name": dataset_name,
-                "new_cols_arr": new_cols_arr,
-            },
-        ),
-    ):
+    with LogExceptionContext(notification_duration=60000):
         base_df = read_dataset_to_mem(db_path, dataset_name)
         if base_df is None:
             return False
@@ -158,7 +146,7 @@ async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
 
 
 def get_all_tables_and_columns(db_path: str):
-    try:
+    with LogExceptionContext():
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -171,14 +159,10 @@ def get_all_tables_and_columns(db_path: str):
                 table_dict[table[0]] = columns
 
         return table_dict
-    except sqlite3.Error:
-        return {}
 
 
 def get_dataset_table(conn: sqlite3.Connection, table_name: str):
-    logger = get_logger()
-    try:
-        logger.info("Called get_dataset_table")
+    with LogExceptionContext():
         cursor = conn.cursor()
         cursor.execute(f"PRAGMA table_info({table_name})")
         columns_info = cursor.fetchall()
@@ -205,17 +189,15 @@ def get_dataset_table(conn: sqlite3.Connection, table_name: str):
             "row_count": row_count,
             "stats_by_col": numerical_stats,
         }
-    except Exception as e:
-        logger.info(f"{e}")
-        return None
 
 
 def exec_sql(db_path: str, sql_statement: str):
-    db = create_connection(db_path)
-    cursor = db.cursor()
-    cursor.execute(sql_statement)
-    db.commit()
-    db.close()
+    with LogExceptionContext():
+        db = create_connection(db_path)
+        cursor = db.cursor()
+        cursor.execute(sql_statement)
+        db.commit()
+        db.close()
 
 
 def get_column_detailed_info(
@@ -224,9 +206,7 @@ def get_column_detailed_info(
     col_name: str,
     timeseries_col_name: str | None,
 ):
-    logger = get_logger()
-    try:
-        logger.info("Called get_column_detailed_info")
+    with LogExceptionContext():
         cursor = conn.cursor()
         cursor.execute(f"SELECT {col_name} from {table_name}")
         rows = cursor.fetchall()
@@ -245,34 +225,24 @@ def get_column_detailed_info(
             "kline_open_time": kline_open_time,
         }
 
-    except Exception as e:
-        logger.info(f"{e}")
-        return None
-
 
 def rename_column(path: str, table_name: str, old_col_name: str, new_col_name: str):
-    with sqlite3.connect(path) as conn:
-        logger = get_logger()
-        try:
-            logger.info("Called rename_column")
+    with LogExceptionContext():
+        with sqlite3.connect(path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 f"ALTER TABLE {table_name} RENAME COLUMN {old_col_name} TO {new_col_name}"
             )
             conn.commit()
-            logger.info(f"Column renamed from {old_col_name} to {new_col_name}")
-        except Exception as e:
-            logger.error(f"Error renaming column: {e}")
-            return False
-        return True
 
 
 def get_column_names(conn: sqlite3.Connection, table_name: str) -> List[str]:
-    cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({table_name})")
-    columns = [info[1] for info in cursor.fetchall()]
-    cursor.close()
-    return columns
+    with LogExceptionContext():
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = [info[1] for info in cursor.fetchall()]
+        cursor.close()
+        return columns
 
 
 class DatasetUtils:
@@ -290,7 +260,7 @@ class DatasetUtils:
 
     @staticmethod
     def update_dataset_name(old_name, new_name):
-        try:
+        with LogExceptionContext():
             with sqlite3.connect(DatasetUtils.get_path()) as conn:
                 cursor = conn.cursor()
                 update_query = f"""
@@ -301,55 +271,46 @@ class DatasetUtils:
                 cursor.execute(update_query, (new_name, old_name))
                 conn.commit()
             return True
-        except sqlite3.Error:
-            return False
 
     @staticmethod
     def get_timeseries_col(dataset_name: str):
-        with sqlite3.connect(DatasetUtils.get_path()) as conn:
-            DB_UTIL_COLS = DatasetUtils.Columns
-            cursor = conn.cursor()
-            query = f"SELECT {DB_UTIL_COLS.TIMESERIES_COLUMN.value} FROM {DatasetUtils.TABLE_NAME} WHERE {DB_UTIL_COLS.DATASET_NAME.value} = ?;"
-            cursor.execute(query, (dataset_name,))
-            rows = cursor.fetchall()
-            cursor.close()
-            timeseries_col = None
-            try:
+        with LogExceptionContext():
+            with sqlite3.connect(DatasetUtils.get_path()) as conn:
+                DB_UTIL_COLS = DatasetUtils.Columns
+                cursor = conn.cursor()
+                query = f"SELECT {DB_UTIL_COLS.TIMESERIES_COLUMN.value} FROM {DatasetUtils.TABLE_NAME} WHERE {DB_UTIL_COLS.DATASET_NAME.value} = ?;"
+                cursor.execute(query, (dataset_name,))
+                rows = cursor.fetchall()
+                cursor.close()
+                timeseries_col = None
                 timeseries_col = rows[0][0]
-            except Exception as e:
-                print(f"An error occured {e}")
-            return timeseries_col
+                return timeseries_col
 
     @staticmethod
-    def update_timeseries_col(
-        dataset_name: str, new_timeseries_col: str | None
-    ) -> bool:
-        with sqlite3.connect(DatasetUtils.get_path()) as conn:
-            col_timeseries = DatasetUtils.Columns.TIMESERIES_COLUMN.value
-            col_dataset_name = DatasetUtils.Columns.DATASET_NAME.value
-            query = f"""UPDATE {DatasetUtils.TABLE_NAME} SET {col_timeseries} = ?
-            WHERE {col_dataset_name} = ?;"""
-            try:
+    def update_timeseries_col(dataset_name: str, new_timeseries_col: str | None):
+        with LogExceptionContext():
+            with sqlite3.connect(DatasetUtils.get_path()) as conn:
+                col_timeseries = DatasetUtils.Columns.TIMESERIES_COLUMN.value
+                col_dataset_name = DatasetUtils.Columns.DATASET_NAME.value
+                query = f"""UPDATE {DatasetUtils.TABLE_NAME} SET {col_timeseries} = ?
+                WHERE {col_dataset_name} = ?;"""
                 cursor = conn.cursor()
                 cursor.execute(query, (new_timeseries_col, dataset_name))
                 conn.commit()
                 cursor.close()
-                return True
-            except sqlite3.Error as e:
-                print(e)
-                return False
 
     @staticmethod
     async def create_db_utils_entry(dataset_name: str, timeseries_column: str):
-        with sqlite3.connect(DatasetUtils.get_path()) as conn:
-            DB_UTIL_COLS = DatasetUtils.Columns
-            cursor = conn.cursor()
-            cursor.execute(
-                f"""INSERT INTO {DatasetUtils.TABLE_NAME} ({DB_UTIL_COLS.DATASET_NAME.value}, 
-                                {DB_UTIL_COLS.TIMESERIES_COLUMN.value}) VALUES (?, ?)""",
-                (
-                    dataset_name,
-                    timeseries_column,
-                ),
-            )
-            conn.commit()
+        with LogExceptionContext():
+            with sqlite3.connect(DatasetUtils.get_path()) as conn:
+                DB_UTIL_COLS = DatasetUtils.Columns
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""INSERT INTO {DatasetUtils.TABLE_NAME} ({DB_UTIL_COLS.DATASET_NAME.value}, 
+                                    {DB_UTIL_COLS.TIMESERIES_COLUMN.value}) VALUES (?, ?)""",
+                    (
+                        dataset_name,
+                        timeseries_column,
+                    ),
+                )
+                conn.commit()
