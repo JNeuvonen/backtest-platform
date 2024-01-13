@@ -122,7 +122,7 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
 
 async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
     with LogExceptionContext(notification_duration=60000):
-        base_df = read_dataset_to_mem(db_path, dataset_name)
+        base_df = read_dataset_to_mem(dataset_name)
         if base_df is None:
             return False
         base_df_timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
@@ -169,6 +169,30 @@ def get_all_tables_and_columns(db_path: str):
         return table_dict
 
 
+def delete_dataset_cols(table_name: str, delete_cols):
+    with LogExceptionContext():
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            cursor = conn.cursor()
+
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = [info[1] for info in cursor.fetchall()]
+
+            remaining_columns = [col for col in columns if col not in delete_cols]
+
+            if not remaining_columns:
+                raise ValueError("No columns would remain after deletion.")
+
+            remaining_columns_str = ", ".join(remaining_columns)
+
+            new_table_name = f"{table_name}_new"
+            cursor.execute(
+                f"CREATE TABLE {new_table_name} AS SELECT {remaining_columns_str} FROM {table_name}"
+            )
+            cursor.execute(f"DROP TABLE {table_name}")
+            cursor.execute(f"ALTER TABLE {new_table_name} RENAME TO {table_name}")
+            conn.commit()
+
+
 def get_dataset_table(table_name: str):
     with LogExceptionContext():
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
@@ -200,6 +224,7 @@ def get_dataset_table(table_name: str):
                 "null_counts": null_counts,
                 "row_count": row_count,
                 "stats_by_col": numerical_stats,
+                "timeseries_col": DatasetUtils.get_timeseries_col(table_name),
             }
 
 
