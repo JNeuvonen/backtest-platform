@@ -48,7 +48,7 @@ export type SelectedDatasetColumns = { [key: string]: boolean | null };
 export type AddColumnsReqPayload = { table_name: string; columns: string[] }[];
 type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 
-export const DatasetEditor = () => {
+export const DatasetEditorPage = () => {
   const datasetName = usePathParams({ key: PATH_KEYS.dataset });
   const { data: datasetResp, refetch: refetchDataset } =
     useDatasetQuery(datasetName);
@@ -160,7 +160,9 @@ export const DatasetEditor = () => {
     const res = await addColumnsToDataset(datasetName, reqPayload);
 
     if (res.status === 200) {
+      selectedColumns.current = {};
       addModalClose();
+      forceUpdate();
     }
   };
 
