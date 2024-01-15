@@ -7,9 +7,14 @@ interface Props {
   sideNavItems: SideNavItem[];
   pathActiveItemDepth: number;
   fallbackPath: string;
+  formatPath?: (path: string) => string;
 }
 
-export const InnerSideNav = ({ sideNavItems, pathActiveItemDepth }: Props) => {
+export const InnerSideNav = ({
+  sideNavItems,
+  pathActiveItemDepth,
+  formatPath,
+}: Props) => {
   const { activePath } = useActivePath({ tabPathDepth: pathActiveItemDepth });
   return (
     <div className="layout__page-side-nav">
@@ -17,7 +22,10 @@ export const InnerSideNav = ({ sideNavItems, pathActiveItemDepth }: Props) => {
         const styleClassName = "layout__container-inner-side-nav__item";
         const activeClassName = "layout__container-inner-side-nav__item-active";
         return (
-          <Link to={item.path} key={item.link}>
+          <Link
+            to={formatPath ? formatPath(item.path) : item.path}
+            key={item.link}
+          >
             <div
               className={
                 item.path.includes(activePath)
