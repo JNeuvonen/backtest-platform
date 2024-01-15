@@ -1,17 +1,13 @@
+export const PATH_KEYS = {
+  dataset: ":datasetName",
+};
+
 export const PATHS = {
   datasets: {
     path: "/datasets",
-    subpaths: {
-      available: {
-        path: "/datasets/all",
-      },
-      binance: {
-        path: "/datasets/binance",
-      },
-      stock_market: {
-        path: "/datasets/stock-market",
-      },
-    },
+    dataset: `/datasets/${PATH_KEYS.dataset}`,
+    info: `/datasets/${PATH_KEYS.dataset}/info`,
+    editor: `/datasets/${PATH_KEYS.dataset}/editor`,
   },
   simulate: {
     path: "/simulate",
