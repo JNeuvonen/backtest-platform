@@ -52,7 +52,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "backtest-engine",
+        "title": "",
         "width": 1920,
         "height": 1080,
         "minWidth": 1920,
