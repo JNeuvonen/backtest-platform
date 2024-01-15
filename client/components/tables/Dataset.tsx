@@ -4,6 +4,7 @@ import { useModal } from "../../hooks/useOpen";
 import { ChakraModal } from "../chakra/modal";
 import { Link } from "react-router-dom";
 import { DatasetMetadata } from "../../clients/queries/response-types";
+import { PATHS, PATH_KEYS } from "../../utils/constants";
 
 interface Props {
   tables: DatasetMetadata[];
@@ -42,7 +43,10 @@ export const DatasetTable = ({ tables }: Props) => {
               <Tr key={item.table_name}>
                 <Td>
                   <Link
-                    to={`/datasets/all/${item.table_name}`}
+                    to={`${PATHS.datasets.info.replace(
+                      PATH_KEYS.dataset,
+                      item.table_name
+                    )}`}
                     className="link-default"
                   >
                     {item.table_name}
