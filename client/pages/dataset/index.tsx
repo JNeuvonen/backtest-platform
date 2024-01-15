@@ -4,10 +4,19 @@ import { SideNavItem } from "../../components/layout/SideNav";
 import { InnerSideNav } from "../../components/layout/InnerSideNav";
 import { Outlet } from "react-router-dom";
 import { usePathParams } from "../../hooks/usePathParams";
+import { PiComputerTowerFill } from "react-icons/pi";
 
 const SIDE_NAV_ITEMS: SideNavItem[] = [
-  { link: "Info", path: PATHS.datasets.info },
-  { link: "Editor", path: PATHS.datasets.editor },
+  {
+    link: "Info",
+    path: PATHS.datasets.info,
+    icon: <PiComputerTowerFill size={20} />,
+  },
+  {
+    link: "Editor",
+    path: PATHS.datasets.editor,
+    icon: <PiComputerTowerFill size={20} />,
+  },
 ];
 
 export const DatasetIndex = () => {
