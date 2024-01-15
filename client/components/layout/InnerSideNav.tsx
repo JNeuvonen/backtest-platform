@@ -33,6 +33,7 @@ export const InnerSideNav = ({
                   : styleClassName
               }
             >
+              {item.icon}
               {item.link}
             </div>
           </Link>
