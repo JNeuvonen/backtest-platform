@@ -100,6 +100,7 @@ export const DatasetEditorPage = () => {
     messageName: DOM_EVENT_CHANNELS.refetch_all_datasets,
     messageCallback: () => {
       if (refetchDataset) refetchDataset();
+      selectedColumns.current = {};
       refetch();
     },
   });
@@ -160,7 +161,6 @@ export const DatasetEditorPage = () => {
     const res = await addColumnsToDataset(datasetName, reqPayload);
 
     if (res.status === 200) {
-      selectedColumns.current = {};
       addModalClose();
       forceUpdate();
     }
