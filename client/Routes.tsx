@@ -5,7 +5,7 @@ import { PATHS } from "./utils/constants";
 import { BrowseDatasetsPage } from "./pages/Datasets";
 import { DatasetIndex } from "./pages/dataset";
 import { DatasetInfoPage } from "./pages/dataset/info";
-import { DatasetEditor } from "./pages/dataset/editor";
+import { DatasetEditorPage } from "./pages/dataset/editor";
 
 export const AppRoutes = () => {
   return (
@@ -14,7 +14,7 @@ export const AppRoutes = () => {
       <Route path={PATHS.datasets.path} element={<BrowseDatasetsPage />} />
       <Route path={PATHS.datasets.dataset} element={<DatasetIndex />}>
         <Route path={PATHS.datasets.info} element={<DatasetInfoPage />} />
-        <Route path={PATHS.datasets.editor} element={<DatasetEditor />} />
+        <Route path={PATHS.datasets.editor} element={<DatasetEditorPage />} />
       </Route>
       <Route path={PATHS.simulate.path} element={<Home />} />
     </Routes>
