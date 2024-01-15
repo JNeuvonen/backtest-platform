@@ -73,7 +73,7 @@ export const DatasetInfoPage = () => {
             isClosable: true,
           });
           setInputDatasetName(newDatasetName);
-          navigate(replaceNthPathItem(0, newDatasetName));
+          navigate(replaceNthPathItem(1, newDatasetName));
         } else {
           toast({
             title: "Failed to change the datasets name",
