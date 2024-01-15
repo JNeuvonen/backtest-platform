@@ -14,7 +14,7 @@ const SIDE_NAV_ITEMS = [
   {
     link: LINKS.datasets,
     icon: BsDatabase,
-    path: PATHS.datasets.subpaths.available.path,
+    path: PATHS.datasets.path,
   },
   { link: LINKS.simulate, icon: BsDatabase, path: PATHS.simulate.path },
 ];
