@@ -15,8 +15,11 @@ from tests.t_constants import (
     Size,
 )
 from tests.t_env import is_fast_test_mode
-from tests.t_populate import t_upload_dataset
-from tests.t_utils import read_csv_to_df, t_generate_big_dataframe
+from tests.t_utils import (
+    read_csv_to_df,
+    t_add_binance_dataset_to_db,
+    t_generate_big_dataframe,
+)
 
 sys.path.append(SERVER_SOURCE_DIR)
 
@@ -70,11 +73,22 @@ def fixt_init_large_csv():
 @pytest.fixture
 def fixt_btc_small_1h():
     dataset = BinanceData.BTCUSDT_1H_2023_06
-    df = read_csv_to_df(dataset.path)
-    df.columns = BINANCE_DATA_COLS
-    add_to_datasets_db(df, dataset.name)
-    DatasetUtils.create_db_utils_entry(dataset.name, dataset.timeseries_col)
+    t_add_binance_dataset_to_db(dataset)
     return dataset
+
+
+@pytest.fixture
+def fixt_add_many_datasets():
+    binance_datasets = [
+        BinanceData.BTCUSDT_1H_2023_06,
+        BinanceData.DOGEUSDT_1H_2023_06,
+        BinanceData.ETHUSDT_1H_2023_06,
+    ]
+
+    for dataset in binance_datasets:
+        t_add_binance_dataset_to_db(dataset)
+
+    return binance_datasets
 
 
 def t_kill_process_on_port(port):

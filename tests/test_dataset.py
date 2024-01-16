@@ -1,3 +1,4 @@
+from typing import List
 import pytest
 import sys
 
@@ -67,3 +68,15 @@ def test_route_rename_column(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
 
     assert TEST_COL_NAME in dataset_cols
     assert BinanceCols.KLINE_OPEN_TIME not in dataset_cols
+
+
+@pytest.mark.acceptance
+def test_route_all_columns(cleanup_db, fixt_add_many_datasets: List[DatasetMetadata]):
+    _ = cleanup_db
+    table_col_map = Fetch.get_all_tables_and_columns()
+    assert len(table_col_map) == len(fixt_add_many_datasets)
+
+
+@pytest.mark.acceptance
+def test_route_update_dataset_name(cleanup_db, fixt_btc_small_1h):
+    _ = cleanup_db

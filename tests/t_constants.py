@@ -90,6 +90,10 @@ class URL:
         )
 
     @classmethod
+    def t_get_all_columns(cls):
+        return cls._datasets_route() + RoutePaths.ROOT
+
+    @classmethod
     def t_get_dataset_by_name(cls, dataset_name: str):
         return cls._datasets_route() + RoutePaths.GET_DATASET_BY_NAME.format(
             dataset_name=dataset_name
