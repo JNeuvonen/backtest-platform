@@ -23,10 +23,9 @@ def test_setup_sanity(cleanup_db):
 
 
 @pytest.mark.acceptance
-def test_upload_timeseries_data(cleanup_db):
+def test_upload_timeseries_data(cleanup_db, fixt_btc_small_1h):
     _ = cleanup_db
-    dataset = BinanceData.BTCUSDT_1H_2023_06
-    response = t_upload_dataset(dataset)
+    response, dataset = fixt_btc_small_1h
     assert response.status_code == 200
     tables = FetchData.get_tables()
     assert len(tables) == 1

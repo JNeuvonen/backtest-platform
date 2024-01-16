@@ -8,7 +8,8 @@ import time
 import sys
 from tests.t_conf import SERVER_SOURCE_DIR
 
-from tests.t_constants import Constants, FixturePaths
+from tests.t_constants import BinanceData, Constants, FixturePaths
+from tests.t_populate import t_upload_dataset
 
 sys.path.append(SERVER_SOURCE_DIR)
 
@@ -45,6 +46,13 @@ def cleanup_db():
     t_rm_db()
     exec_sql(DatasetUtils.get_path(), CREATE_DATASET_UTILS_TABLE)
     yield
+
+
+@pytest.fixture
+def fixt_btc_small_1h():
+    dataset = BinanceData.BTCUSDT_1H_2023_06
+    response = t_upload_dataset(dataset)
+    return response, dataset
 
 
 def t_kill_process_on_port(port):
