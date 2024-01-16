@@ -100,6 +100,12 @@ class URL:
         )
 
     @classmethod
+    def t_update_dataset_name(cls, dataset_name: str):
+        return cls._datasets_route() + RoutePaths.UPDATE_DATASET_NAME.format(
+            dataset_name=dataset_name
+        )
+
+    @classmethod
     def t_get_upload_dataset_url(cls, table_name: str, timeseries_col: str):
         return (
             cls._datasets_route()
