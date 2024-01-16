@@ -16,3 +16,12 @@ def t_binance_file(filename):
         yield file
     finally:
         file.close()
+
+
+@contextmanager
+def t_file(filename):
+    try:
+        file = open(append_app_data_path(filename), "rb")
+        yield file
+    finally:
+        file.close()

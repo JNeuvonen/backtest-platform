@@ -8,11 +8,16 @@ from server import Routers
 from route_datasets import RoutePaths
 
 
+class FixturePaths:
+    BINANCE = "fixtures/binance/{}"
+
+
 class Constants:
     TESTS_FOLDER = "/tests"
+    BIG_TEST_FILE = "big_testfile.csv"
 
 
-class MockDataset:
+class DatasetMetadata:
     def __init__(self, path: str, dataset_name: str, timeseries_col: str) -> None:
         self.path = path
         self.name = dataset_name
@@ -34,22 +39,37 @@ class BinanceCols:
 
 
 class BinanceData:
-    BTCUSDT_1H_2023_06 = MockDataset(
-        "BTCUSDT-1h-2023-06.csv", "btcusdt_1h", BinanceCols.KLINE_OPEN_TIME
+    BTCUSDT_1H_2023_06 = DatasetMetadata(
+        FixturePaths.BINANCE.format("BTCUSDT-1h-2023-06.csv"),
+        "btcusdt_1h",
+        BinanceCols.KLINE_OPEN_TIME,
     )
-    DOGEUSDT_1H_2023_06 = MockDataset(
-        "DOGEUSDT-1h-2023-06.csv", "dogeusdt_1h", BinanceCols.KLINE_OPEN_TIME
+    DOGEUSDT_1H_2023_06 = DatasetMetadata(
+        FixturePaths.BINANCE.format("DOGEUSDT-1h-2023-06.csv"),
+        "dogeusdt_1h",
+        BinanceCols.KLINE_OPEN_TIME,
     )
-    ETHBTC_1H_2023_06 = MockDataset(
-        "ETHBTC-1h-2023-06.csv", "ethbtc_1h", BinanceCols.KLINE_OPEN_TIME
+    ETHBTC_1H_2023_06 = DatasetMetadata(
+        FixturePaths.BINANCE.format("ETHBTC-1h-2023-06.csv"),
+        "ethbtc_1h",
+        BinanceCols.KLINE_OPEN_TIME,
     )
-    ETHUSDT_1H_2023_06 = MockDataset(
-        "ETHUSDT-1h-2023-06.csv", "ethusdt_1h", BinanceCols.KLINE_OPEN_TIME
+    ETHUSDT_1H_2023_06 = DatasetMetadata(
+        FixturePaths.BINANCE.format("ETHUSDT-1h-2023-06.csv"),
+        "ethusdt_1h",
+        BinanceCols.KLINE_OPEN_TIME,
     )
 
 
-class FixturePaths:
-    BINANCE = "fixtures/binance/{}"
+class EnvTestSpeed:
+    FAST = "FAST"
+    SLOW = "SLOW"
+
+
+class Size:
+    KB_BYTES = 1024
+    MB_BYTES = 1024 * 1024
+    GB_BYTES = 1024 * 1024 * 1024
 
 
 class URL:

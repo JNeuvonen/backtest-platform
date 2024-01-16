@@ -8,8 +8,16 @@ import time
 import sys
 from tests.t_conf import SERVER_SOURCE_DIR
 
-from tests.t_constants import BinanceData, Constants, FixturePaths
+from tests.t_constants import (
+    BinanceCols,
+    BinanceData,
+    Constants,
+    DatasetMetadata,
+    Size,
+)
+from tests.t_env import is_fast_test_mode
 from tests.t_populate import t_upload_dataset
+from tests.t_utils import t_generate_big_dataframe
 
 sys.path.append(SERVER_SOURCE_DIR)
 
@@ -24,10 +32,6 @@ from sql_statements import CREATE_DATASET_UTILS_TABLE
 def t_binance_path_to_dataset_name(binance_path: str):
     parts = binance_path.split("-")
     return parts[0].lower() + "_" + parts[1]
-
-
-def t_read_binance_df(dataset_name):
-    return pd.read_csv(append_app_data_path(FixturePaths.BINANCE.format(dataset_name)))
 
 
 def t_init_server():
@@ -46,6 +50,22 @@ def cleanup_db():
     t_rm_db()
     exec_sql(DatasetUtils.get_path(), CREATE_DATASET_UTILS_TABLE)
     yield
+
+
+@pytest.fixture
+def init_large_csv():
+    if os.path.exists(append_app_data_path(Constants.BIG_TEST_FILE)):
+        return
+    dataset = BinanceData.BTCUSDT_1H_2023_06
+    if is_fast_test_mode():
+        df = t_generate_big_dataframe(dataset, Size.MB_BYTES)
+    else:
+        df = t_generate_big_dataframe(dataset, Size.GB_BYTES)
+
+    df.to_csv(append_app_data_path(Constants.BIG_TEST_FILE), index=False)
+    return DatasetMetadata(
+        Constants.BIG_TEST_FILE, "btc_big_test_file", BinanceCols.KLINE_OPEN_TIME
+    )
 
 
 @pytest.fixture
@@ -73,7 +93,7 @@ def t_kill_process_on_port(port):
             command = f"fuser -k {port}/tcp"
             subprocess.call(command, shell=True)
     except Exception:
-        print("No process to kill")
+        pass
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -86,3 +106,5 @@ def setup_test_environment():
     yield
     process.terminate()
     process.join()
+    t_rm_db()
+    rm_file(append_app_data_path(Constants.BIG_TEST_FILE))
