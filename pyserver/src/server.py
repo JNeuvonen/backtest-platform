@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 
-APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
+APP_DATA_PATH = os.getenv("APP_DATA_PATH", "tests")
 
 
 @app.get("/", response_class=Response)
@@ -46,5 +46,9 @@ def read_root():
     )
 
 
-if __name__ == "__main__":
+def run():
     uvicorn.run("server:app", host="0.0.0.0", port=8000, log_level="info")
+
+
+if __name__ == "__main__":
+    run()
