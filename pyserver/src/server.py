@@ -23,10 +23,16 @@ async def lifespan(
     yield
 
 
+class Routers:
+    BINANCE = "/binance"
+    STREAMS = "/streams"
+    DATASET = "/dataset"
+
+
 app = FastAPI(lifespan=lifespan)
-app.include_router(binance_router, prefix="/binance")
-app.include_router(streams_router, prefix="/streams")
-app.include_router(datasets_router, prefix="/dataset")
+app.include_router(binance_router, prefix=Routers.BINANCE)
+app.include_router(streams_router, prefix=Routers.STREAMS)
+app.include_router(datasets_router, prefix=Routers.DATASET)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
