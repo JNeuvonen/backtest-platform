@@ -27,19 +27,32 @@ APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 router = APIRouter()
 
 
-@router.get("/tables")
+class RoutePaths:
+    ALL_TABLES = "/tables"
+    GET_DATASET_BY_NAME = "/{dataset_name}"
+    GET_DATASET_COL_INFO = "/{dataset_name}/col-info/{column_name}"
+    ADD_COLUMNS = "/{dataset_name}/add-columns"
+    UPDATE_TIMESERIES_COL = "/{dataset_name}/update-timeseries-col"
+    UPDATE_DATASET_NAME = "/{dataset_name}/update-dataset-name"
+    ROOT = "/"
+    RENAME_COLUMN = "/{dataset_name}/rename-column"
+    DELETE_COLUMNS = "/{dataset_name}/delete-cols"
+    UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
+
+
+@router.get(RoutePaths.ALL_TABLES)
 async def route_all_tables():
     with HttpResponseContext():
         return {"tables": get_dataset_tables()}
 
 
-@router.get("/{dataset_name}")
+@router.get(RoutePaths.GET_DATASET_BY_NAME)
 async def route_get_dataset_by_name(dataset_name: str) -> dict:
     with HttpResponseContext():
         return {"dataset": get_dataset_table(dataset_name)}
 
 
-@router.get("/{dataset_name}/col-info/{column_name}")
+@router.get(RoutePaths.GET_DATASET_COL_INFO)
 async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dict:
     with HttpResponseContext():
         timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
@@ -52,7 +65,7 @@ class ColumnsToDataset(BaseModel):
     columns: List[str]
 
 
-@router.post("/{dataset_name}/add-columns")
+@router.post(RoutePaths.ADD_COLUMNS)
 async def route_post_dataset_add_columns(
     dataset_name: str, payload: List[ColumnsToDataset]
 ):
@@ -67,7 +80,7 @@ class BodyUpdateTimeseriesCol(BaseModel):
     new_timeseries_col: str | None
 
 
-@router.put("/{dataset_name}/update-timeseries-col")
+@router.put(RoutePaths.UPDATE_TIMESERIES_COL)
 async def route_update_timeseries_col(dataset_name: str, body: BodyUpdateTimeseriesCol):
     with HttpResponseContext():
         DatasetUtils.update_timeseries_col(dataset_name, body.new_timeseries_col)
@@ -78,7 +91,7 @@ class BodyUpdateDatasetName(BaseModel):
     new_dataset_name: str | None
 
 
-@router.put("/{dataset_name}/update-dataset-name")
+@router.put(RoutePaths.UPDATE_DATASET_NAME)
 async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetName):
     with HttpResponseContext():
         rename_table(AppConstants.DB_DATASETS, dataset_name, body.new_dataset_name)
@@ -86,7 +99,7 @@ async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetNa
         return {"message": "OK"}
 
 
-@router.get("/")
+@router.get(RoutePaths.ROOT)
 async def route_all_columns():
     with HttpResponseContext():
         return {"table_col_map": get_all_tables_and_columns(AppConstants.DB_DATASETS)}
@@ -98,7 +111,7 @@ class BodyRenameColumn(BaseModel):
     is_timeseries_col: bool
 
 
-@router.post("/{dataset_name}/rename-column")
+@router.post(RoutePaths.RENAME_COLUMN)
 async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
     with HttpResponseContext(
         f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}"
@@ -119,14 +132,14 @@ class PayloadDeleteColumns(BaseModel):
     cols: List[str]
 
 
-@router.post("/{dataset_name}/delete-cols")
+@router.post(RoutePaths.DELETE_COLUMNS)
 async def route_del_cols(dataset_name: str, delete_cols: PayloadDeleteColumns):
     with HttpResponseContext():
         delete_dataset_cols(dataset_name, delete_cols.cols)
         return {"message": "OK"}
 
 
-@router.post("/upload-timeseries-data")
+@router.post(RoutePaths.UPLOAD_TIMESERIES_DATA)
 async def upload_timeseries_data(file: UploadFile, dataset_name: str):
     with HttpResponseContext():
         df = await read_file_to_dataframe(file, STREAMING_DEFAULT_CHUNK_SIZE)
