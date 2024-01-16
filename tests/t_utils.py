@@ -76,3 +76,10 @@ class Post:
     def rename_column(dataset_name: str, body):
         with Req("post", URL.t_get_rename_column(dataset_name), json=body) as res:
             return res.json()
+
+
+class Put:
+    @staticmethod
+    def update_dataset_name(dataset_name: str, body):
+        with Req("put", URL.t_update_dataset_name(dataset_name), json=body) as res:
+            return res.json()
