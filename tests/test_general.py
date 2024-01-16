@@ -1,6 +1,10 @@
 import pytest
+import requests
+
+from tests.t_constants import URL
 
 
 @pytest.mark.acceptance
 def test_system_health():
-    pass
+    response = requests.get(URL.BASE_URL)
+    assert response.status_code == 200
