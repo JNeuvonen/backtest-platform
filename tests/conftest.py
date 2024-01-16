@@ -47,46 +47,30 @@ def cleanup_db():
     yield
 
 
-def t_kill_port_with_npx(port):
+def t_kill_process_on_port(port):
     try:
-        subprocess.run(
-            ["npx", "--version"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-
-        subprocess.run(["npx", "kill-port", str(port)], check=True)
-        print(f"Port {port} killed using npx kill-port.")
-    except subprocess.CalledProcessError:
-        try:
-            if platform.system() == "Windows":
-                command = f"netstat -ano | findstr :{port}"
-                lines = (
-                    subprocess.check_output(command, shell=True).decode().splitlines()
-                )
-                for line in lines:
-                    pid = line.strip().split()[-1]
-                    subprocess.call(f"taskkill /F /PID {pid}", shell=True)
-            elif platform.system() == "Darwin":
-                command = f"lsof -i tcp:{port} | grep LISTEN"
-                lines = (
-                    subprocess.check_output(command, shell=True).decode().splitlines()
-                )
-                for line in lines:
-                    pid = line.split()[1]
-                    os.kill(int(pid), 9)
-            else:
-                command = f"fuser -k {port}/tcp"
-                subprocess.call(command, shell=True)
-
-        except Exception:
-            pass
+        if platform.system() == "Windows":
+            command = f"netstat -ano | findstr :{port}"
+            lines = subprocess.check_output(command, shell=True).decode().splitlines()
+            for line in lines:
+                pid = line.strip().split()[-1]
+                subprocess.call(f"taskkill /F /PID {pid}", shell=True)
+        elif platform.system() == "Darwin":
+            command = f"lsof -i tcp:{port} | grep LISTEN"
+            lines = subprocess.check_output(command, shell=True).decode().splitlines()
+            for line in lines:
+                pid = line.split()[1]
+                os.kill(int(pid), 9)
+        else:
+            command = f"fuser -k {port}/tcp"
+            subprocess.call(command, shell=True)
+    except Exception:
+        print("No process to kill")
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
-    t_kill_port_with_npx(8000)
+    t_kill_process_on_port(8000)
     t_rm_db()
     process = multiprocessing.Process(target=t_init_server)
     process.start()
