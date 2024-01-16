@@ -1,10 +1,13 @@
 import os
 import asyncio
+import pandas as pd
 
+
+from io import BytesIO
 from typing import List
-from constants import AppConstants
+from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants
 from context import HttpResponseContext
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile
 from pydantic import BaseModel
 from db import (
     DatasetUtils,
@@ -17,6 +20,7 @@ from db import (
     rename_column,
     rename_table,
 )
+from utils import add_to_datasets_db, read_file_to_dataframe
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -120,3 +124,11 @@ async def route_del_cols(dataset_name: str, delete_cols: PayloadDeleteColumns):
     with HttpResponseContext():
         delete_dataset_cols(dataset_name, delete_cols.cols)
         return {"message": "OK"}
+
+
+@router.post("/upload-timeseries-data")
+async def upload_timeseries_data(file: UploadFile, dataset_name: str):
+    with HttpResponseContext():
+        df = await read_file_to_dataframe(file, STREAMING_DEFAULT_CHUNK_SIZE)
+        add_to_datasets_db(df, dataset_name)
+        return {"message": "OK", "shape": df.shape}
