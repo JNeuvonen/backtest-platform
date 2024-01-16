@@ -1,9 +1,6 @@
 import os
 import asyncio
-import pandas as pd
 
-
-from io import BytesIO
 from typing import List
 from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants
 from context import HttpResponseContext
@@ -140,8 +137,11 @@ async def route_del_cols(dataset_name: str, delete_cols: PayloadDeleteColumns):
 
 
 @router.post(RoutePaths.UPLOAD_TIMESERIES_DATA)
-async def upload_timeseries_data(file: UploadFile, dataset_name: str):
+async def upload_timeseries_data(
+    file: UploadFile, dataset_name: str, timeseries_col: str
+):
     with HttpResponseContext():
         df = await read_file_to_dataframe(file, STREAMING_DEFAULT_CHUNK_SIZE)
         add_to_datasets_db(df, dataset_name)
+        DatasetUtils.create_db_utils_entry(dataset_name, timeseries_col)
         return {"message": "OK", "shape": df.shape}
