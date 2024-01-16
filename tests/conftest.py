@@ -5,7 +5,7 @@ import pytest
 import time
 import sys
 
-from tests.t_constants import BINANCE_FIXTURES_PATH, Constants
+from tests.t_constants import Constants, FixturePaths
 
 sys.path.append("pyserver/src")
 
@@ -23,7 +23,7 @@ def binance_path_to_dataset_name(binance_path: str):
 
 
 def read_binance_df(dataset_name):
-    return pd.read_csv(append_app_data_path(BINANCE_FIXTURES_PATH.format(dataset_name)))
+    return pd.read_csv(append_app_data_path(FixturePaths.BINANCE.format(dataset_name)))
 
 
 def init_server():
