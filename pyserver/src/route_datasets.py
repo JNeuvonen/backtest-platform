@@ -105,7 +105,6 @@ async def route_all_columns():
 class BodyRenameColumn(BaseModel):
     old_col_name: str
     new_col_name: str
-    is_timeseries_col: bool
 
 
 @router.post(RoutePaths.RENAME_COLUMN)
@@ -113,14 +112,15 @@ async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
     with HttpResponseContext(
         f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}"
     ):
+        if body.old_col_name == DatasetUtils.get_timeseries_col(dataset_name):
+            DatasetUtils.update_timeseries_col(dataset_name, body.new_col_name)
+
         rename_column(
             AppConstants.DB_DATASETS,
             dataset_name,
             body.old_col_name,
             body.new_col_name,
         )
-        if body.is_timeseries_col:
-            DatasetUtils.update_timeseries_col(dataset_name, body.new_col_name)
 
         return {"message": "OK"}
 

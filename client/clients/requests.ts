@@ -33,8 +33,7 @@ export async function fetchAllTickers() {
 export async function renameColumnName(
   datasetName: string,
   oldName: string,
-  newName: string,
-  isTimeseriesCol: boolean
+  newName: string
 ) {
   const url = URLS.rename_column(datasetName);
   return buildRequest({
@@ -43,7 +42,6 @@ export async function renameColumnName(
     payload: {
       old_col_name: oldName,
       new_col_name: newName,
-      is_timeseries_col: isTimeseriesCol,
     },
   });
 }

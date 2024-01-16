@@ -4,7 +4,7 @@ import asyncio
 import pandas as pd
 
 from binance import Client
-from constants import BINANCE_DATA_COLS, DB_DATASETS, AppConstants, DomEventChannels
+from constants import BINANCE_DATA_COLS, AppConstants, DomEventChannels
 from db import DatasetUtils, create_connection
 from log import LogExceptionContext, get_logger
 

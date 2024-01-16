@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import os
 import pandas as pd
 import requests
@@ -5,6 +6,13 @@ from pyserver.src.config import append_app_data_path
 
 from tests.t_constants import URL, DatasetMetadata
 from tests.t_context import t_file
+
+
+@contextmanager
+def Req(method, url, **kwargs):
+    with requests.request(method, url, **kwargs) as response:
+        response.raise_for_status()
+        yield response
 
 
 def t_fetch_json(url):
@@ -37,7 +45,20 @@ def t_generate_big_dataframe(data: DatasetMetadata, target_size_bytes: int):
     return big_dataframe
 
 
-class FetchData:
+class Fetch:
     @staticmethod
     def get_tables():
-        return t_fetch_json(URL.t_get_tables())["tables"]
+        with Req("get", URL.t_get_tables()) as res:
+            return res.json()["tables"]
+
+    @staticmethod
+    def get_dataset_by_name(dataset_name: str):
+        with Req("get", URL.t_get_dataset_by_name(dataset_name)) as res:
+            return res.json()["dataset"]
+
+
+class Post:
+    @staticmethod
+    def rename_column(dataset_name: str, body):
+        with Req("post", URL.t_get_rename_column(dataset_name), json=body) as res:
+            return res.json()

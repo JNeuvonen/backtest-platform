@@ -84,6 +84,18 @@ class URL:
         return cls._datasets_route() + RoutePaths.ALL_TABLES
 
     @classmethod
+    def t_get_rename_column(cls, dataset_name: str):
+        return cls._datasets_route() + RoutePaths.RENAME_COLUMN.format(
+            dataset_name=dataset_name
+        )
+
+    @classmethod
+    def t_get_dataset_by_name(cls, dataset_name: str):
+        return cls._datasets_route() + RoutePaths.GET_DATASET_BY_NAME.format(
+            dataset_name=dataset_name
+        )
+
+    @classmethod
     def t_get_upload_dataset_url(cls, table_name: str, timeseries_col: str):
         return (
             cls._datasets_route()

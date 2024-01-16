@@ -32,19 +32,13 @@ const RenameColumnModal = ({
   columnName,
   close,
   setColumnName,
-  isTimeseriesCol,
 }: RenameColumnModalProps) => {
   const toast = useToast();
   const [inputValue, setInputValue] = useState(columnName);
   const { isOpen, modalClose, setIsOpen } = useModal(false);
 
   const onSubmit = async () => {
-    const res = await renameColumnName(
-      datasetName,
-      columnName,
-      inputValue,
-      isTimeseriesCol
-    );
+    const res = await renameColumnName(datasetName, columnName, inputValue);
 
     if (res?.status === 200) {
       toast({

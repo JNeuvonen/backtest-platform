@@ -24,7 +24,7 @@ import server
 from utils import rm_file, add_to_datasets_db
 from db import DatasetUtils, exec_sql
 from config import append_app_data_path
-from constants import LOG_FILE, DB_DATASETS
+from constants import LOG_FILE, DB_DATASETS, BINANCE_DATA_COLS
 from sql_statements import CREATE_DATASET_UTILS_TABLE
 
 
@@ -71,6 +71,7 @@ def fixt_init_large_csv():
 def fixt_btc_small_1h():
     dataset = BinanceData.BTCUSDT_1H_2023_06
     df = read_csv_to_df(dataset.path)
+    df.columns = BINANCE_DATA_COLS
     add_to_datasets_db(df, dataset.name)
     DatasetUtils.create_db_utils_entry(dataset.name, dataset.timeseries_col)
     return dataset
