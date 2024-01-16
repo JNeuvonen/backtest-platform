@@ -47,7 +47,7 @@ async def save_historical_klines(symbol, interval):
 
         table_name = symbol.lower() + "_" + interval
         klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
-        await DatasetUtils.create_db_utils_entry(table_name, "kline_open_time")
+        DatasetUtils.create_db_utils_entry(table_name, "kline_open_time")
         logger.log(
             f"Downloaded klines on {symbol} with {interval} interval",
             logging.INFO,
