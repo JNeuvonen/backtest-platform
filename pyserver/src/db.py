@@ -339,7 +339,7 @@ class DatasetUtils:
                 cursor.close()
 
     @staticmethod
-    async def create_db_utils_entry(dataset_name: str, timeseries_column: str):
+    def create_db_utils_entry(dataset_name: str, timeseries_column: str):
         with LogExceptionContext():
             with sqlite3.connect(DatasetUtils.get_path()) as conn:
                 DB_UTIL_COLS = DatasetUtils.Columns
