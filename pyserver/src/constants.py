@@ -18,7 +18,8 @@ BINANCE_DATA_COLS = [
 
 LOG_FILE = "logs"
 DB_DATASETS = "datasets.db"
-DB_LOGS = "logs.db"
+
+STREAMING_DEFAULT_CHUNK_SIZE = 1024
 
 
 class DomEventChannels(Enum):
