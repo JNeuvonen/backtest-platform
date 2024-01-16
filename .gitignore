@@ -18,8 +18,8 @@ venv
 .vscode
 .wdm
 
-tests/datasets_util.db
-tests/datasets.db
+datasets_util.db
+datasets.db
 
 # Editor directories and files
 .vscode/*
