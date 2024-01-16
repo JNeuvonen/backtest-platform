@@ -2,12 +2,15 @@ from typing import List
 import pytest
 import sys
 
+import requests
+
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
 from tests.t_populate import t_upload_dataset
 from tests.t_utils import (
     Fetch,
     Post,
+    Put,
     t_get_timeseries_col,
 )
 
@@ -41,6 +44,25 @@ def test_route_rename_column(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     dataset = fixt_btc_small_1h
 
     TEST_COL_NAME = "new_open_price"
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        Post.rename_column(
+            "arbitrary_name_that_should_fail",
+            {
+                "old_col_name": BinanceCols.OPEN_PRICE,
+                "new_col_name": TEST_COL_NAME,
+            },
+        )
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        Post.rename_column(
+            "arbitrary_name_that_should_fail",
+            {
+                "old_col_name": "arbitrary_column_name_that_should_fail",
+                "new_col_name": TEST_COL_NAME,
+            },
+        )
+
     Post.rename_column(
         fixt_btc_small_1h.name,
         {
@@ -78,5 +100,19 @@ def test_route_all_columns(cleanup_db, fixt_add_many_datasets: List[DatasetMetad
 
 
 @pytest.mark.acceptance
-def test_route_update_dataset_name(cleanup_db, fixt_btc_small_1h):
+def test_route_update_dataset_name(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     _ = cleanup_db
+    NEW_DATASET_NAME = "test_name_123"
+    with pytest.raises(requests.exceptions.HTTPError):
+        Fetch.get_dataset_by_name(NEW_DATASET_NAME)
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        Put.update_dataset_name(
+            "arbitrary_name_that_should_fail",
+            body={"new_dataset_name": NEW_DATASET_NAME},
+        )
+
+    Put.update_dataset_name(
+        fixt_btc_small_1h.name, body={"new_dataset_name": NEW_DATASET_NAME}
+    )
+    Fetch.get_dataset_by_name(NEW_DATASET_NAME)
