@@ -319,7 +319,10 @@ class DatasetUtils:
                 rows = cursor.fetchall()
                 cursor.close()
                 timeseries_col = None
-                timeseries_col = rows[0][0]
+                try:
+                    timeseries_col = rows[0][0]
+                except Exception:
+                    pass
                 return timeseries_col
 
     @staticmethod
