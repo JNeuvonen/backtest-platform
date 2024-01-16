@@ -18,6 +18,9 @@ venv
 .vscode
 .wdm
 
+datasets_util.db
+datasets.db
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
