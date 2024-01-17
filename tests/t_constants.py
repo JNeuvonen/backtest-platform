@@ -1,4 +1,5 @@
 import sys
+from pyserver.src.config import append_app_data_path
 
 from tests.t_conf import SERVER_SOURCE_DIR
 
@@ -69,13 +70,19 @@ class BinanceData:
     )
 
     BTCUSDT_1MO = DatasetMetadata(
-        "BTCUSDT-1mo.csv",
+        FixturePaths.BINANCE_DOWNLOADED.format("BTCUSDT-1mo.csv"),
         "btcusdt_1mo",
         BinanceCols.KLINE_OPEN_TIME,
         "BTCUSDT",
     )
+    SUSHIUSDT_1MO = DatasetMetadata(
+        FixturePaths.BINANCE_DOWNLOADED.format("SUSHIUSDT-1mo.csv"),
+        "sushiusdt_1mo",
+        BinanceCols.KLINE_OPEN_TIME,
+        "SUSHIUSDT",
+    )
     AAVEUSDT_1MO = DatasetMetadata(
-        "AAVEUSDT-1mo.csv",
+        FixturePaths.BINANCE_DOWNLOADED.format("AAVEUSDT-1mo.csv"),
         "aaveusdt_1mo",
         BinanceCols.KLINE_OPEN_TIME,
         "AAVEUSDT",

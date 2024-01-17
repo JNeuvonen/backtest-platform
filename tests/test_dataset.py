@@ -142,5 +142,6 @@ def test_route_update_timeseries_col(cleanup_db, fixt_btc_small_1h: DatasetMetad
 
 
 @pytest.mark.acceptance
-def test_route_dataset_add_cols(cleanup_db):
-    pass
+def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
+    BTC_1MO = BinanceData.BTCUSDT_1MO
+    AAVE_1MO = BinanceData.AAVEUSDT_1MO

@@ -43,10 +43,20 @@ def t_init_server():
 
 def download_data():
     download_historical_binance_data(
-        BinanceData.BTCUSDT_1MO.pair_name, "1M", BinanceData.BTCUSDT_1MO.path
+        BinanceData.BTCUSDT_1MO.pair_name,
+        "1M",
+        append_app_data_path(BinanceData.BTCUSDT_1MO.path),
+    )
+
+    download_historical_binance_data(
+        BinanceData.SUSHIUSDT_1MO.pair_name,
+        "1M",
+        append_app_data_path(BinanceData.SUSHIUSDT_1MO.path),
     )
     download_historical_binance_data(
-        BinanceData.AAVEUSDT_1MO.pair_name, "1M", BinanceData.AAVEUSDT_1MO.path
+        BinanceData.AAVEUSDT_1MO.pair_name,
+        "1M",
+        append_app_data_path(BinanceData.AAVEUSDT_1MO.path),
     )
 
 
@@ -77,6 +87,16 @@ def fixt_init_large_csv():
     return DatasetMetadata(
         Constants.BIG_TEST_FILE, "btc_big_test_file", BinanceCols.KLINE_OPEN_TIME
     )
+
+
+@pytest.fixture
+def fixt_add_all_downloaded_datasets():
+    binance_datasets = [BinanceData.BTCUSDT_1MO, BinanceData.AAVEUSDT_1MO]
+
+    for dataset in binance_datasets:
+        t_add_binance_dataset_to_db(dataset)
+
+    return binance_datasets
 
 
 @pytest.fixture
