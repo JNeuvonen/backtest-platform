@@ -70,6 +70,12 @@ class Fetch:
         with Req("get", URL.t_get_dataset_by_name(dataset_name)) as res:
             return res.json()["dataset"]
 
+    @staticmethod
+    def get_dataset_col_info(dataset_name: str, column_name: str):
+        with Req("get", URL.get_column_detailed_info(dataset_name, column_name)) as res:
+            res_json = res.json()
+            return res_json["column"], res_json["timeseries_col"]
+
 
 class Post:
     @staticmethod
@@ -82,4 +88,9 @@ class Put:
     @staticmethod
     def update_dataset_name(dataset_name: str, body):
         with Req("put", URL.t_update_dataset_name(dataset_name), json=body) as res:
+            return res.json()
+
+    @staticmethod
+    def update_timeseries_col(dataset_name: str, body):
+        with Req("put", URL.update_timeseries_col(dataset_name), json=body) as res:
             return res.json()
