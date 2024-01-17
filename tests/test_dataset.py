@@ -1,4 +1,5 @@
 from typing import List
+from fastapi import Query
 import pytest
 import sys
 import requests
@@ -10,6 +11,7 @@ from tests.t_utils import (
     Fetch,
     Post,
     Put,
+    add_object_to_add_cols_payload,
     t_get_timeseries_col,
 )
 
@@ -145,3 +147,66 @@ def test_route_update_timeseries_col(cleanup_db, fixt_btc_small_1h: DatasetMetad
 def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
     BTC_1MO = BinanceData.BTCUSDT_1MO
     AAVE_1MO = BinanceData.AAVEUSDT_1MO
+    SUSHI_1MO = BinanceData.SUSHIUSDT_1MO
+
+    sushi_dataset = Fetch.get_dataset_by_name(SUSHI_1MO.name)
+    btc_dataset_before_add = Fetch.get_dataset_by_name(BTC_1MO.name)
+
+    payload = []
+
+    aave_added_cols = [
+        BinanceCols.HIGH_PRICE,
+        BinanceCols.OPEN_PRICE,
+    ]
+    add_object_to_add_cols_payload(payload, AAVE_1MO.name, aave_added_cols)
+
+    sushi_added_cols = [
+        BinanceCols.TAKER_BUY_BASE_ASSET_VOLUME,
+        BinanceCols.TAKER_BUY_QUOTE_ASSET_VOLUME,
+    ]
+    add_object_to_add_cols_payload(payload, SUSHI_1MO.name, sushi_added_cols)
+
+    Post.add_columns(BTC_1MO.name, body=payload)
+
+    btc_dataset_after_add = Fetch.get_dataset_by_name(BTC_1MO.name)
+
+    assert len(btc_dataset_before_add["columns"]) + len(aave_added_cols) + len(
+        sushi_added_cols
+    ) == len(btc_dataset_after_add["columns"])
+
+    null_counts = btc_dataset_after_add["null_counts"]
+
+    for key, value in null_counts.items():
+        if SUSHI_1MO.name in key:
+            # assert no extra nulls
+            assert (
+                value
+                == btc_dataset_before_add["row_count"] - sushi_dataset["row_count"]
+            )
+
+
+@pytest.mark.acceptance
+def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
+    BTC_1MO = BinanceData.BTCUSDT_1MO
+    AAVE_1MO = BinanceData.AAVEUSDT_1MO
+    SUSHI_1MO = BinanceData.SUSHIUSDT_1MO
+
+    btc_dataset_before_add = Fetch.get_dataset_by_name(BTC_1MO.name)
+
+    payload = []
+
+    aave_added_cols = [
+        BinanceCols.HIGH_PRICE,
+        BinanceCols.OPEN_PRICE,
+    ]
+    add_object_to_add_cols_payload(payload, AAVE_1MO.name, aave_added_cols)
+
+    sushi_added_cols = [
+        BinanceCols.TAKER_BUY_BASE_ASSET_VOLUME,
+        BinanceCols.TAKER_BUY_QUOTE_ASSET_VOLUME,
+    ]
+    add_object_to_add_cols_payload(payload, SUSHI_1MO.name, sushi_added_cols)
+
+    Post.add_columns(BTC_1MO.name, body=payload, null_fill_strategy="CLOSEST")
+
+    btc_dataset_after_add = Fetch.get_dataset_by_name(BTC_1MO.name)
