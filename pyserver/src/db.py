@@ -3,6 +3,9 @@ import logging
 import sqlite3
 import statistics
 from typing import List
+from fastapi import HTTPException
+
+from requests import HTTPError
 
 from config import append_app_data_path
 from constants import AppConstants, DomEventChannels
@@ -193,6 +196,16 @@ def delete_dataset_cols(table_name: str, delete_cols):
             conn.commit()
 
 
+def get_column_from_dataset(table_name: str, column_name: str):
+    with LogExceptionContext():
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            cursor = conn.cursor()
+            query = f"SELECT {column_name} FROM {table_name};"
+            cursor.execute(query)
+            result = cursor.fetchone()
+            return result[0] if result is not None else None
+
+
 def get_dataset_table(table_name: str):
     with LogExceptionContext():
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
@@ -326,8 +339,23 @@ class DatasetUtils:
                 return timeseries_col
 
     @staticmethod
-    def update_timeseries_col(dataset_name: str, new_timeseries_col: str | None):
+    def update_timeseries_col(
+        dataset_name: str,
+        new_timeseries_col: str,
+        renaming_timeseries_col: bool,
+    ):
         with LogExceptionContext():
+            if renaming_timeseries_col is False:
+                column_exists = get_column_from_dataset(
+                    dataset_name, new_timeseries_col
+                )
+
+                if column_exists is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="New column does not exist in the dataset",
+                    )
+
             with sqlite3.connect(DatasetUtils.get_path()) as conn:
                 col_timeseries = DatasetUtils.Columns.TIMESERIES_COLUMN.value
                 col_dataset_name = DatasetUtils.Columns.DATASET_NAME.value
