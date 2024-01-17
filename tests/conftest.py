@@ -14,9 +14,9 @@ from tests.t_constants import (
     DatasetMetadata,
     Size,
 )
+from tests.t_download_data import download_historical_binance_data
 from tests.t_env import is_fast_test_mode
 from tests.t_utils import (
-    read_csv_to_df,
     t_add_binance_dataset_to_db,
     t_generate_big_dataframe,
 )
@@ -24,10 +24,10 @@ from tests.t_utils import (
 sys.path.append(SERVER_SOURCE_DIR)
 
 import server
-from utils import rm_file, add_to_datasets_db
+from utils import rm_file
 from db import DatasetUtils, exec_sql
 from config import append_app_data_path
-from constants import LOG_FILE, DB_DATASETS, BINANCE_DATA_COLS
+from constants import LOG_FILE, DB_DATASETS
 from sql_statements import CREATE_DATASET_UTILS_TABLE
 
 
@@ -39,6 +39,10 @@ def t_binance_path_to_dataset_name(binance_path: str):
 def t_init_server():
     os.environ["APP_DATA_PATH"] = Constants.TESTS_FOLDER
     server.run()
+
+
+def download_data():
+    download_historical_binance_data("BTCUSDT", "1M", "btcusdt-1mo.csv")
 
 
 def t_rm_db():
@@ -115,6 +119,7 @@ def t_kill_process_on_port(port):
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
     t_kill_process_on_port(8000)
+    download_data()
     t_rm_db()
     process = multiprocessing.Process(target=t_init_server)
     process.start()

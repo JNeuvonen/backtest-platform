@@ -10,6 +10,7 @@ from route_datasets import RoutePaths
 
 class FixturePaths:
     BINANCE = "fixtures/binance/{}"
+    BINANCE_DOWNLOADED = "fixtures/binance/downloaded/{}"
 
 
 class Constants:

@@ -20,6 +20,7 @@ venv
 
 datasets_util.db
 datasets.db
+downloaded
 
 # Editor directories and files
 .vscode/*
