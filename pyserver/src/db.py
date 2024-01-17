@@ -5,7 +5,6 @@ import statistics
 from typing import List
 from fastapi import HTTPException
 
-from requests import HTTPError
 
 from config import append_app_data_path
 from constants import AppConstants, DomEventChannels, NullFillStrategy
@@ -154,7 +153,6 @@ async def add_columns_to_table(
                     for col in item.columns:
                         col_prefixed = col_prefix + col
                         df_fill_nulls(base_df, col_prefixed, null_fill_strat)
-                        print("hello world")
 
             base_df.to_sql(dataset_name, conn, if_exists="replace", index=False)
             logger = get_logger()
