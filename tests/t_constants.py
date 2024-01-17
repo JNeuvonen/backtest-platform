@@ -1,6 +1,4 @@
 import sys
-from pyserver.src.config import append_app_data_path
-
 from tests.t_conf import SERVER_SOURCE_DIR
 
 sys.path.append(SERVER_SOURCE_DIR)
@@ -137,6 +135,14 @@ class URL:
     def t_get_dataset_by_name(cls, dataset_name: str):
         return cls._datasets_route() + RoutePaths.GET_DATASET_BY_NAME.format(
             dataset_name=dataset_name
+        )
+
+    @classmethod
+    def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):
+        return (
+            cls._datasets_route()
+            + RoutePaths.ADD_COLUMNS.format(dataset_name=dataset_name)
+            + f"?is_test_mode=True&null_fill_strategy={null_fill_strategy}"
         )
 
     @classmethod
