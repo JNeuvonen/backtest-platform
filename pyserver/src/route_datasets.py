@@ -74,18 +74,18 @@ async def route_post_dataset_add_columns(
 
 
 class BodyUpdateTimeseriesCol(BaseModel):
-    new_timeseries_col: str | None
+    new_timeseries_col: str
 
 
 @router.put(RoutePaths.UPDATE_TIMESERIES_COL)
 async def route_update_timeseries_col(dataset_name: str, body: BodyUpdateTimeseriesCol):
     with HttpResponseContext():
-        DatasetUtils.update_timeseries_col(dataset_name, body.new_timeseries_col)
+        DatasetUtils.update_timeseries_col(dataset_name, body.new_timeseries_col, False)
         return {"message": "OK"}
 
 
 class BodyUpdateDatasetName(BaseModel):
-    new_dataset_name: str | None
+    new_dataset_name: str
 
 
 @router.put(RoutePaths.UPDATE_DATASET_NAME)
@@ -113,7 +113,7 @@ async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
         f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}"
     ):
         if body.old_col_name == DatasetUtils.get_timeseries_col(dataset_name):
-            DatasetUtils.update_timeseries_col(dataset_name, body.new_col_name)
+            DatasetUtils.update_timeseries_col(dataset_name, body.new_col_name, True)
 
         rename_column(
             AppConstants.DB_DATASETS,
