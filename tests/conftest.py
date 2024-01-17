@@ -42,7 +42,12 @@ def t_init_server():
 
 
 def download_data():
-    download_historical_binance_data("BTCUSDT", "1M", "btcusdt-1mo.csv")
+    download_historical_binance_data(
+        BinanceData.BTCUSDT_1MO.pair_name, "1M", BinanceData.BTCUSDT_1MO.path
+    )
+    download_historical_binance_data(
+        BinanceData.AAVEUSDT_1MO.pair_name, "1M", BinanceData.AAVEUSDT_1MO.path
+    )
 
 
 def t_rm_db():
