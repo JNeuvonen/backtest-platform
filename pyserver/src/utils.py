@@ -45,7 +45,7 @@ def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
         df[column].fillna(mean_value, inplace=True)
 
     elif strategy == NullFillStrategy.CLOSEST:
-        if df[column].isnull().any() is not False:
+        if df[column].isnull().any():
             ffill = df[column].ffill()
             bfill = df[column].bfill()
 
