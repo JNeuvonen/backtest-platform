@@ -19,10 +19,17 @@ class Constants:
 
 
 class DatasetMetadata:
-    def __init__(self, path: str, dataset_name: str, timeseries_col: str) -> None:
+    def __init__(
+        self,
+        path: str,
+        dataset_name: str,
+        timeseries_col: str,
+        pair_name: str | None = None,
+    ) -> None:
         self.path = path
         self.name = dataset_name
         self.timeseries_col = timeseries_col
+        self.pair_name = pair_name
 
 
 class BinanceCols:
@@ -59,6 +66,19 @@ class BinanceData:
         FixturePaths.BINANCE.format("ETHUSDT-1h-2023-06.csv"),
         "ethusdt_1h",
         BinanceCols.KLINE_OPEN_TIME,
+    )
+
+    BTCUSDT_1MO = DatasetMetadata(
+        "BTCUSDT-1mo.csv",
+        "btcusdt_1mo",
+        BinanceCols.KLINE_OPEN_TIME,
+        "BTCUSDT",
+    )
+    AAVEUSDT_1MO = DatasetMetadata(
+        "AAVEUSDT-1mo.csv",
+        "aaveusdt_1mo",
+        BinanceCols.KLINE_OPEN_TIME,
+        "AAVEUSDT",
     )
 
 
