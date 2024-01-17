@@ -28,3 +28,10 @@ class DomEventChannels(Enum):
 
 class AppConstants:
     DB_DATASETS = append_app_data_path(DB_DATASETS)
+
+
+class NullFillStrategy(Enum):
+    NONE = 1
+    ZERO = 2
+    MEAN = 3
+    CLOSEST = 4
