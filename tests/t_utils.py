@@ -27,6 +27,10 @@ def t_get_timeseries_col(table_item):
     return table_item["timeseries_col"]
 
 
+def add_object_to_add_cols_payload(payload_arr, table_name, cols):
+    payload_arr.append({"table_name": table_name, "columns": cols})
+
+
 def read_csv_to_df(path):
     return pd.read_csv(append_app_data_path(path))
 
@@ -81,6 +85,15 @@ class Post:
     @staticmethod
     def rename_column(dataset_name: str, body):
         with Req("post", URL.t_get_rename_column(dataset_name), json=body) as res:
+            return res.json()
+
+    @staticmethod
+    def add_columns(dataset_name: str, body, null_fill_strategy: str = "NONE"):
+        with Req(
+            "post",
+            URL.add_columns_to_dataset(dataset_name, null_fill_strategy),
+            json=body,
+        ) as res:
             return res.json()
 
 
