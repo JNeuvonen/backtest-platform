@@ -149,6 +149,7 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
       });
       filteredColumns.current = cloneDeep(allColumnsData.current);
       setProviderMounted(true);
+      forceUpdate();
     }
   }, [data, setProviderMounted, datasetResp, datasetName]);
 
@@ -267,8 +268,8 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
           setDeleteColumns([]);
           if (refetchDataset) refetchDataset();
         }
-
         setDeleteIsLoading(false);
+        forceUpdate();
       })
       .catch((error) => {
         toast({

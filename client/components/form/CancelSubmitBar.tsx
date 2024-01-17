@@ -21,7 +21,7 @@ export const FormSubmitBar = ({
 }: Props) => {
   return (
     <div className="form-submit-bar" style={style}>
-      <Button variant={BUTTON_VARIANTS.grey} onClick={cancelCallback}>
+      <Button variant={BUTTON_VARIANTS.nofill} onClick={cancelCallback}>
         {cancelText}
       </Button>
       <Button
