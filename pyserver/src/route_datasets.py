@@ -2,9 +2,9 @@ import os
 import asyncio
 
 from typing import List
-from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants
+from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrategy
 from context import HttpResponseContext
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, Query, UploadFile
 from pydantic import BaseModel
 from db import (
     DatasetUtils,
@@ -63,14 +63,25 @@ class ColumnsToDataset(BaseModel):
 
 
 @router.post(RoutePaths.ADD_COLUMNS)
-async def route_post_dataset_add_columns(
-    dataset_name: str, payload: List[ColumnsToDataset]
+async def route_dataset_add_columns(
+    dataset_name: str,
+    payload: List[ColumnsToDataset],
+    is_test_mode: bool = False,
+    null_fill_strategy: str = Query("NONE"),
 ):
+    null_fill_strat = NullFillStrategy[null_fill_strategy]
     with HttpResponseContext():
-        asyncio.create_task(
-            add_columns_to_table(AppConstants.DB_DATASETS, dataset_name, payload)
+        if is_test_mode is False:
+            asyncio.create_task(
+                add_columns_to_table(
+                    AppConstants.DB_DATASETS, dataset_name, payload, null_fill_strat
+                )
+            )
+            return {"message": "OK"}
+        await add_columns_to_table(
+            AppConstants.DB_DATASETS, dataset_name, payload, null_fill_strat
         )
-        return {"message": "OK"}
+        return {"messsage": "OK"}
 
 
 class BodyUpdateTimeseriesCol(BaseModel):
