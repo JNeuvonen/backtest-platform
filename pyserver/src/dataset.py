@@ -24,6 +24,10 @@ def add_prefix_to_dataset(df, prefix, timeseries_col):
     df.rename(columns={prefix + timeseries_col: timeseries_col})
 
 
+def get_col_prefix(table_name: str):
+    return table_name + "_"
+
+
 def combine_datasets(
     base_df,
     join_df,
@@ -33,7 +37,7 @@ def combine_datasets(
     use_prefix=True,
 ):
     if use_prefix:
-        prefix = join_table_name + "_"
+        prefix = get_col_prefix(join_table_name)
         join_df = join_df.add_prefix(prefix)
         join_df_column = prefix + join_df_column
 

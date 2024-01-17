@@ -2,9 +2,10 @@ from io import BytesIO
 import os
 from fastapi import UploadFile
 import pandas as pd
+import numpy as np
 import sqlite3
 
-from constants import DB_DATASETS, STREAMING_DEFAULT_CHUNK_SIZE
+from constants import DB_DATASETS, STREAMING_DEFAULT_CHUNK_SIZE, NullFillStrategy
 from config import append_app_data_path
 from log import LogExceptionContext
 
@@ -33,3 +34,31 @@ async def read_file_to_dataframe(
 
         file_bytes = b"".join(chunks)
         return pd.read_csv(BytesIO(file_bytes))
+
+
+def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
+    if strategy == NullFillStrategy.ZERO:
+        df[column].fillna(0, inplace=True)
+
+    elif strategy == NullFillStrategy.MEAN:
+        mean_value = df[column].mean()
+        df[column].fillna(mean_value, inplace=True)
+
+    elif strategy == NullFillStrategy.CLOSEST:
+        if df[column].isnull().any() is not False:
+            ffill = df[column].ffill()
+            bfill = df[column].bfill()
+
+            ffill_mask = df[column].ffill().notnull()
+            bfill_mask = df[column].bfill().notnull()
+
+            index_series = pd.Series(df.index, index=df.index)
+
+            ffill_dist = (
+                index_series[ffill_mask].reindex_like(df, method="ffill") - df.index
+            )
+            bfill_dist = df.index - index_series[bfill_mask].reindex_like(
+                df, method="bfill"
+            )
+
+            df[column] = np.where(ffill_dist <= bfill_dist, ffill, bfill)

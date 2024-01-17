@@ -191,8 +191,6 @@ def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
     AAVE_1MO = BinanceData.AAVEUSDT_1MO
     SUSHI_1MO = BinanceData.SUSHIUSDT_1MO
 
-    btc_dataset_before_add = Fetch.get_dataset_by_name(BTC_1MO.name)
-
     payload = []
 
     aave_added_cols = [
@@ -210,3 +208,7 @@ def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
     Post.add_columns(BTC_1MO.name, body=payload, null_fill_strategy="CLOSEST")
 
     btc_dataset_after_add = Fetch.get_dataset_by_name(BTC_1MO.name)
+    null_counts = btc_dataset_after_add["null_counts"]
+
+    for _, value in null_counts.items():
+        assert value == 0

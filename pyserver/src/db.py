@@ -11,10 +11,12 @@ from config import append_app_data_path
 from constants import AppConstants, DomEventChannels, NullFillStrategy
 from dataset import (
     combine_datasets,
+    get_col_prefix,
     read_columns_to_mem,
     read_dataset_to_mem,
 )
 from log import LogExceptionContext, get_logger
+from utils import df_fill_nulls
 
 
 def create_connection(db_file: str):
@@ -147,6 +149,12 @@ async def add_columns_to_table(
                         base_df_timeseries_col,
                         timeseries_col,
                     )
+
+                    col_prefix = get_col_prefix(item.table_name)
+                    for col in item.columns:
+                        col_prefixed = col_prefix + col
+                        df_fill_nulls(base_df, col_prefixed, null_fill_strat)
+                        print("hello world")
 
             base_df.to_sql(dataset_name, conn, if_exists="replace", index=False)
             logger = get_logger()
