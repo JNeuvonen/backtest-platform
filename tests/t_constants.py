@@ -90,6 +90,18 @@ class URL:
         )
 
     @classmethod
+    def get_column_detailed_info(cls, dataset_name: str, column_name: str):
+        return cls._datasets_route() + RoutePaths.GET_DATASET_COL_INFO.format(
+            dataset_name=dataset_name, column_name=column_name
+        )
+
+    @classmethod
+    def update_timeseries_col(cls, dataset_name: str):
+        return cls._datasets_route() + RoutePaths.UPDATE_TIMESERIES_COL.format(
+            dataset_name=dataset_name
+        )
+
+    @classmethod
     def t_get_all_columns(cls):
         return cls._datasets_route() + RoutePaths.ROOT
 
