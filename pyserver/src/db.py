@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from requests import HTTPError
 
 from config import append_app_data_path
-from constants import AppConstants, DomEventChannels
+from constants import AppConstants, DomEventChannels, NullFillStrategy
 from dataset import (
     combine_datasets,
     read_columns_to_mem,
@@ -123,7 +123,9 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
     return first_five, last_five
 
 
-async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
+async def add_columns_to_table(
+    db_path: str, dataset_name: str, new_cols_arr, null_fill_strat: NullFillStrategy
+):
     with LogExceptionContext(notification_duration=60000):
         base_df = read_dataset_to_mem(dataset_name)
         if base_df is None:
@@ -132,6 +134,8 @@ async def add_columns_to_table(db_path: str, dataset_name: str, new_cols_arr):
         with sqlite3.connect(db_path) as conn:
             for item in new_cols_arr:
                 timeseries_col = DatasetUtils.get_timeseries_col(item.table_name)
+                if timeseries_col is None:
+                    continue
                 df = read_columns_to_mem(
                     db_path, item.table_name, item.columns + [timeseries_col]
                 )
