@@ -1,4 +1,4 @@
-import { AddColumnsReqPayload } from "../components/CombineDataset";
+import { AddColumnsReqPayload } from "../pages/dataset/editor";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 
