@@ -1,8 +1,9 @@
 import React from "react";
 import { getParenthesisSize } from "../utils/content";
-import { BUTTON_VARIANTS } from "../theme";
+import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../theme";
 import { useEditorContext } from "../context/editor";
 import Title from "./Title";
+import { Text } from "@chakra-ui/react";
 import { Button, Checkbox, Spinner } from "@chakra-ui/react";
 import { AiFillDelete, AiOutlineClose, AiOutlineRight } from "react-icons/ai";
 import { ChakraDivider } from "./Divider";
@@ -31,7 +32,11 @@ const CONTAINERS = {
 export const EditorBaseColumns = () => {
   const navigate = useNavigate();
   const datasetName = usePathParams({ key: PATH_KEYS.dataset });
-  const { isOpen, modalClose, setIsOpen } = useModal(false);
+  const {
+    isOpen: selectDatasetOpen,
+    modalClose: selectDatasetClose,
+    setIsOpen: selectDatasetSetOpen,
+  } = useModal(false);
   const {
     setIsDelMode,
     dataset,
@@ -70,7 +75,11 @@ export const EditorBaseColumns = () => {
 
   return (
     <>
-      <ChakraModal isOpen={isOpen} title="Select dataset" onClose={modalClose}>
+      <ChakraModal
+        isOpen={selectDatasetOpen}
+        title="Select dataset"
+        onClose={selectDatasetClose}
+      >
         <SelectDataset
           onSelect={(
             selectedItem: SingleValue<OptionType> | MultiValue<OptionType>
@@ -82,9 +91,9 @@ export const EditorBaseColumns = () => {
                 item?.value as string
               )
             );
-            modalClose();
+            selectDatasetClose();
           }}
-          cancelCallback={modalClose}
+          cancelCallback={selectDatasetClose}
           datasets={allDatasets.filter(
             (item) => item.table_name !== datasetName
           )}
@@ -112,7 +121,7 @@ export const EditorBaseColumns = () => {
             >
               <Button
                 variant={BUTTON_VARIANTS.nofill}
-                onClick={() => setIsOpen(true)}
+                onClick={() => selectDatasetSetOpen(true)}
               >
                 {datasetName} {getParenthesisSize(dataset.columns.length)}
               </Button>
@@ -167,7 +176,8 @@ export const EditorBaseColumns = () => {
                     }}
                   />
                 )}
-                {item}
+
+                <Text variant={TEXT_VARIANTS.clickable}>{item}</Text>
               </div>
             );
           })}
