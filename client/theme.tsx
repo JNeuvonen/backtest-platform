@@ -15,6 +15,10 @@ export const BUTTON_VARIANTS = {
   grey2: "grey2",
 };
 
+export const TEXT_VARIANTS = {
+  clickable: "clickable",
+};
+
 const buttonCtaVariant = () => ({
   bg: COLOR_BRAND_SECONDARY_SHADE_ONE,
   color: COLOR_CONTENT_PRIMARY,
@@ -66,6 +70,26 @@ const buttonTheme = {
   },
 };
 
+const textClickableVariant = () => ({
+  cursor: "pointer",
+  _hover: {
+    color: COLOR_BRAND_SECONDARY_HIGHLIGHT,
+    textDecoration: "underline",
+  },
+});
+
+const textTheme = {
+  Text: {
+    baseStyle: {},
+    variants: {
+      clickable: () => textClickableVariant(),
+    },
+    defaultProps: {
+      variant: "",
+    },
+  },
+};
+
 export const customChakraTheme = extendTheme({
   styles: {
     global: {
@@ -77,5 +101,6 @@ export const customChakraTheme = extendTheme({
   },
   components: {
     ...buttonTheme,
+    ...textTheme,
   },
 });
