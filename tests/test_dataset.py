@@ -1,7 +1,6 @@
 from typing import List
 import pytest
 import sys
-
 import requests
 
 from tests.t_conf import SERVER_SOURCE_DIR
@@ -116,3 +115,30 @@ def test_route_update_dataset_name(cleanup_db, fixt_btc_small_1h: DatasetMetadat
         fixt_btc_small_1h.name, body={"new_dataset_name": NEW_DATASET_NAME}
     )
     Fetch.get_dataset_by_name(NEW_DATASET_NAME)
+
+
+@pytest.mark.acceptance
+def test_route_get_dataset_col_info(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    _ = cleanup_db
+
+    res = Fetch.get_dataset_col_info(fixt_btc_small_1h.name, BinanceCols.LOW_PRICE)
+    dataset = res[0]
+    assert len(dataset["rows"]) == len(dataset["kline_open_time"])
+
+
+@pytest.mark.acceptance
+def test_route_update_timeseries_col(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    _ = cleanup_db
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        Put.update_timeseries_col(
+            fixt_btc_small_1h.name, {"new_timeseries_col": "should_fail"}
+        )
+
+    Put.update_timeseries_col(
+        fixt_btc_small_1h.name, {"new_timeseries_col": BinanceCols.LOW_PRICE}
+    )
+    dataset = Fetch.get_dataset_by_name(fixt_btc_small_1h.name)
+    timeseries_col = dataset["timeseries_col"]
+
+    assert timeseries_col == BinanceCols.LOW_PRICE
