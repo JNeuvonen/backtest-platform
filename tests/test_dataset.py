@@ -186,7 +186,7 @@ def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
 
 
 @pytest.mark.acceptance
-def test_route_dataset_add_cols(fixt_add_all_downloaded_datasets):
+def test_route_dataset_add_cols_fill_closest(fixt_add_all_downloaded_datasets):
     BTC_1MO = BinanceData.BTCUSDT_1MO
     AAVE_1MO = BinanceData.AAVEUSDT_1MO
     SUSHI_1MO = BinanceData.SUSHIUSDT_1MO
