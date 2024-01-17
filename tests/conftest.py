@@ -27,7 +27,7 @@ import server
 from utils import rm_file
 from db import DatasetUtils, exec_sql
 from config import append_app_data_path
-from constants import LOG_FILE, DB_DATASETS
+from constants import DB_DATASETS
 from sql_statements import CREATE_DATASET_UTILS_TABLE
 
 
@@ -62,7 +62,6 @@ def download_data():
 
 def t_rm_db():
     rm_file(append_app_data_path(DatasetUtils.DB_PATH))
-    rm_file(append_app_data_path(LOG_FILE))
     rm_file(append_app_data_path(DB_DATASETS))
 
 
@@ -91,7 +90,11 @@ def fixt_init_large_csv():
 
 @pytest.fixture
 def fixt_add_all_downloaded_datasets():
-    binance_datasets = [BinanceData.BTCUSDT_1MO, BinanceData.AAVEUSDT_1MO]
+    binance_datasets = [
+        BinanceData.BTCUSDT_1MO,
+        BinanceData.AAVEUSDT_1MO,
+        BinanceData.SUSHIUSDT_1MO,
+    ]
 
     for dataset in binance_datasets:
         t_add_binance_dataset_to_db(dataset)
