@@ -96,6 +96,11 @@ class Post:
         ) as res:
             return res.json()
 
+    @staticmethod
+    def exec_python(body):
+        with Req("post", URL.exec_python(), json=body) as res:
+            return res.json()
+
 
 class Put:
     @staticmethod
@@ -107,3 +112,22 @@ class Put:
     def update_timeseries_col(dataset_name: str, body):
         with Req("put", URL.update_timeseries_col(dataset_name), json=body) as res:
             return res.json()
+
+
+class PythonCode:
+    INDENT = "    "
+    DATASET_SYMBOL = "dataset"
+    EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}):\n{INDENT}"
+    SAVE_STATEMENT = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
+
+    @classmethod
+    def append_code(cls, dataset_name: str, code: str):
+        return (
+            cls.EDIT_COLUMN_DEFAULT
+            + code
+            + f"\n{cls.INDENT}"
+            + cls.SAVE_STATEMENT
+            + f"\n{cls.INDENT}{cls.INDENT}"
+            + f'{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
+            + f'\nrun_python(read_dataset_to_mem("{dataset_name}"))'
+        )
