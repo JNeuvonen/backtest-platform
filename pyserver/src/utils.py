@@ -67,13 +67,20 @@ def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
 class PythonCode:
     INDENT = "    "
     DATASET_SYMBOL = "dataset"
-    EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}):\n{INDENT}"
+    COLUMN_SYMBOL = "column"
+    EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}, {COLUMN_SYMBOL}):\n"
     SAVE_STATEMENT = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
-    HELPER_CODE_EXAMPLE = "dataset = get_dataset()\n"
+    DATASET_CODE_EXAMPLE = "dataset = get_dataset()\n"
+    COLUMN_CODE_EXAMPLE = "column = get_column()\n"
 
     @classmethod
-    def append_code(cls, dataset_name: str, code: str):
-        code = code.replace(cls.HELPER_CODE_EXAMPLE, "").rstrip()
+    def run_on_column(cls, dataset_name: str, column_name: str, code: str):
+        code = "\n".join(cls.INDENT + line for line in code.split("\n"))
+        code = (
+            code.replace(cls.DATASET_CODE_EXAMPLE, "")
+            .replace(cls.COLUMN_CODE_EXAMPLE, "")
+            .rstrip()
+        )
         return (
             cls.EDIT_COLUMN_DEFAULT
             + code
@@ -81,5 +88,5 @@ class PythonCode:
             + cls.SAVE_STATEMENT
             + f"\n{cls.INDENT}{cls.INDENT}"
             + f'{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
-            + f'\nrun_python(read_dataset_to_mem("{dataset_name}"))'
+            + f'\nrun_python(read_dataset_to_mem("{dataset_name}"), "{column_name}")'
         )
