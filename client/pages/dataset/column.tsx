@@ -3,7 +3,7 @@ import Title from "../../components/Title";
 import { usePathParams } from "../../hooks/usePathParams";
 import { useColumnQuery } from "../../clients/queries/queries";
 import { SmallTable } from "../../components/tables/Small";
-import { Button, Spinner } from "@chakra-ui/react";
+import { Button, Spinner, useToast } from "@chakra-ui/react";
 import { Column } from "../../clients/queries/response-types";
 import { makeUniDimensionalTableRows } from "../../utils/table";
 import { roundNumberDropRemaining } from "../../utils/number";
@@ -15,6 +15,8 @@ import { ChakraModal } from "../../components/chakra/modal";
 import { useModal } from "../../hooks/useOpen";
 import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 import { createPythonCode } from "../../utils/str";
+import { ConfirmModal } from "../../components/form/confirm";
+import { execPythonOnDatasetCol } from "../../clients/requests";
 
 interface RouteParams {
   datasetName: string;
@@ -41,15 +43,16 @@ const COLUMNS_STATS_TABLE: string[] = [
 //   return `dataset = get_dataset()\ndataset["${columnName}"] = dataset["${columnName}"] * 3\n#line above multiplies the value of ${columnName} on every row by three`;
 // };
 
-const getCodeDefaultValue = (columnName: string) => {
+const getCodeDefaultValue = (datasetName: string, columnName: string) => {
   return createPythonCode([
-    "dataset = get_dataset()",
+    `dataset = get_dataset() #pandas dataframe`,
+    `column = get_column() #${columnName}`,
     "",
     `#Multiply example. This multiplies the value of ${columnName} on every row.`,
-    `#dataset["${columnName}"] = dataset["${columnName}"] * 3`,
+    `#dataset[column] = dataset[column] * 3`,
     "",
     `#Create a new column example. This creates a new column based on the column ${columnName}.`,
-    `#dataset["new_column"] = dataset["${columnName}"]`,
+    `#dataset["new_column"] = dataset[column]`,
     "",
     `#Dataset is a pandas dataframe. So all native pandas functions are available.`,
     `#This example creates a simple moving average of 30 days on the column ${columnName}`,
@@ -60,8 +63,12 @@ const getCodeDefaultValue = (columnName: string) => {
 export const DatasetColumnInfoPage = () => {
   const { datasetName, columnName } = usePathParams<RouteParams>();
   const { data } = useColumnQuery(datasetName, columnName);
-  const [code, setCode] = useState<string>(getCodeDefaultValue(columnName));
+  const [code, setCode] = useState<string>(
+    getCodeDefaultValue(datasetName, columnName)
+  );
   const { isOpen, setIsOpen, modalClose } = useModal();
+  const toast = useToast();
+  const useSubmitConfirm = useModal();
 
   if (!data?.res) {
     return (
@@ -99,65 +106,84 @@ export const DatasetColumnInfoPage = () => {
     editor.focus();
   };
 
-  const onSubmit = () => {};
+  const onSubmit = async () => {
+    const res = await execPythonOnDatasetCol(datasetName, columnName, code);
+
+    if (res.status === 200) {
+      toast({
+        title: "Executed python code",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      useSubmitConfirm.modalClose();
+    }
+  };
 
   return (
-    <div>
-      <Title>Column {columnName}</Title>
-      <div>
-        <Button
-          variant={BUTTON_VARIANTS.grey}
-          leftIcon={<PythonIcon width={24} height={24} />}
-          fontSize={14}
-          onClick={() => setIsOpen(true)}
-        >
-          Python
-        </Button>
-      </div>
-      <SmallTable
-        columns={COLUMNS_STATS_TABLE}
-        rows={getStatsRows(res)}
-        containerStyles={{ maxWidth: "max-content", marginTop: "16px" }}
+    <>
+      <ConfirmModal
+        {...useSubmitConfirm}
+        onClose={useSubmitConfirm.modalClose}
+        onConfirm={onSubmit}
       />
-
-      <ChakraModal
-        isOpen={isOpen}
-        title="Edit with python"
-        onClose={modalClose}
-        modalContentStyle={{
-          minWidth: "max-content",
-          minHeight: "80vh",
-          maxWidth: "80vw",
-          marginTop: "10vh",
-          position: "relative",
-        }}
-        footerContent={
-          <FormSubmitBar
-            cancelCallback={modalClose}
-            submitCallback={onSubmit}
-          />
-        }
-      >
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            display: "flex",
-          }}
-        >
-          <PythonEditor
-            code={code}
-            onChange={handleCodeChange}
-            editorMount={handleEditorDidMount}
-            height={"400px"}
-            containerStyles={{ width: "65%", height: "100%" }}
-            fontSize={15}
-          />
-
-          <div>Code presets will come here</div>
+      <div>
+        <Title>Column {columnName}</Title>
+        <div>
+          <Button
+            variant={BUTTON_VARIANTS.grey}
+            leftIcon={<PythonIcon width={24} height={24} />}
+            fontSize={14}
+            onClick={() => setIsOpen(true)}
+          >
+            Python
+          </Button>
         </div>
-      </ChakraModal>
-    </div>
+        <SmallTable
+          columns={COLUMNS_STATS_TABLE}
+          rows={getStatsRows(res)}
+          containerStyles={{ maxWidth: "max-content", marginTop: "16px" }}
+        />
+
+        <ChakraModal
+          isOpen={isOpen}
+          title="Edit with python"
+          onClose={modalClose}
+          modalContentStyle={{
+            minWidth: "max-content",
+            minHeight: "80vh",
+            maxWidth: "80vw",
+            marginTop: "10vh",
+            position: "relative",
+          }}
+          footerContent={
+            <FormSubmitBar
+              cancelCallback={modalClose}
+              submitCallback={useSubmitConfirm.modalOpen}
+            />
+          }
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              display: "flex",
+            }}
+          >
+            <PythonEditor
+              code={code}
+              onChange={handleCodeChange}
+              editorMount={handleEditorDidMount}
+              height={"400px"}
+              containerStyles={{ width: "65%", height: "100%" }}
+              fontSize={15}
+            />
+
+            <div>Code presets will come here</div>
+          </div>
+        </ChakraModal>
+      </div>
+    </>
   );
 };
