@@ -43,7 +43,14 @@ export const ChakraPopover = ({
       onClose={onClose}
     >
       <PopoverTrigger>
-        <span onClick={setOpen}>{children}</span>
+        <span
+          onClick={setOpen}
+          onKeyDown={(e) => e.key === "Enter" && setOpen()} // Add keyboard listener
+          tabIndex={0}
+          role="button"
+        >
+          {children}
+        </span>
       </PopoverTrigger>
       <PopoverContent bg={COLOR_BG_TERTIARY} borderColor={COLOR_BG_TERTIARY}>
         <PopoverHeader pt={4} fontWeight="bold" border="0">
