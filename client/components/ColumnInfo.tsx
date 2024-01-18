@@ -11,5 +11,6 @@ export const ColumnInfo = ({ datasetName, columnName }: Props) => {
     datasetName,
     columnName
   );
+
   return <div>col info here</div>;
 };
