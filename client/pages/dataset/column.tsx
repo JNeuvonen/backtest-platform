@@ -11,10 +11,10 @@ import { BUTTON_VARIANTS } from "../../theme";
 import { PythonIcon } from "../../components/icons/python";
 import { PythonEditor } from "../../components/PythonEditor";
 import { OnMount } from "@monaco-editor/react";
-import { CODE } from "../../utils/constants";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useModal } from "../../hooks/useOpen";
 import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
+import { createPythonCode } from "../../utils/str";
 
 interface RouteParams {
   datasetName: string;
@@ -37,10 +37,24 @@ const COLUMNS_STATS_TABLE: string[] = [
   "Std dev",
 ];
 
-const { INDENT } = CODE;
+// const getCodeDefaultValue = (columnName: string) => {
+//   return `dataset = get_dataset()\ndataset["${columnName}"] = dataset["${columnName}"] * 3\n#line above multiplies the value of ${columnName} on every row by three`;
+// };
 
 const getCodeDefaultValue = (columnName: string) => {
-  return `def run_python(dataset):\n${INDENT}#dataset["${columnName}"] = dataset["${columnName}"] * 3\n${INDENT}#above line multiplies all values in the column '${columnName}' by 3`;
+  return createPythonCode([
+    "dataset = get_dataset()",
+    "",
+    `#Multiply example. This multiplies the value of ${columnName} on every row.`,
+    `#dataset["${columnName}"] = dataset["${columnName}"] * 3`,
+    "",
+    `#Create a new column example. This creates a new column based on the column ${columnName}.`,
+    `#dataset["new_column"] = dataset["${columnName}"]`,
+    "",
+    `#Dataset is a pandas dataframe. So all native pandas functions are available.`,
+    `#This example creates a simple moving average of 30 days on the column ${columnName}`,
+    `#dataset['SMA30_${columnName}'] = dataset['${columnName}'].rolling(window=30).mean()`,
+  ]);
 };
 
 export const DatasetColumnInfoPage = () => {
