@@ -35,7 +35,7 @@ const RenameColumnModal = ({
 }: RenameColumnModalProps) => {
   const toast = useToast();
   const [inputValue, setInputValue] = useState(columnName);
-  const { isOpen, modalClose, setIsOpen } = useModal(false);
+  const { isOpen, modalClose, setIsOpen } = useModal();
 
   const onSubmit = async () => {
     const res = await renameColumnName(datasetName, columnName, inputValue);
@@ -121,7 +121,7 @@ export const ColumnModal = ({
     isOpen: renameIsOpen,
     modalClose: renameModalClose,
     setIsOpen: renameSetIsOpen,
-  } = useModal(false);
+  } = useModal();
 
   const massageDataForChart = (
     rows: number[][],
