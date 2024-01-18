@@ -3,6 +3,10 @@ export const PATH_KEYS = {
   column: ":columnName",
 };
 
+export const CODE = {
+  INDENT: "    ",
+};
+
 export const PATHS = {
   datasets: {
     path: "/datasets",
