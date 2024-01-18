@@ -218,7 +218,7 @@ const GetNewDatasetModal = ({ modalClose }: GetNewDatasetModalProps) => {
 
 export const BrowseDatasetsPage = () => {
   const { data, isLoading, refetch } = useDatasetsQuery();
-  const { isOpen, jsxContent, setContent, modalClose } = useModal(false);
+  const { isOpen, jsxContent, setContent, modalClose } = useModal();
 
   const refetchTables = () => {
     refetch();
