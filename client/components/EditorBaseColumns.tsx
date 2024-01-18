@@ -24,6 +24,7 @@ import { OptionType } from "./SelectFilter";
 import { ChakraPopover } from "./chakra/popover";
 import { ChakraModal } from "./chakra/modal";
 import { ColumnInfo } from "./ColumnInfo";
+import { getDatasetEditorUrl } from "../utils/navigate";
 
 const CONTAINERS = {
   combine_datasets: "combine-datasets",
@@ -124,12 +125,7 @@ export const EditorBaseColumns = () => {
                       | MultiValue<OptionType>
                   ) => {
                     const item = selectedItem as SingleValue<OptionType>;
-                    navigate(
-                      PATHS.datasets.editor.replace(
-                        PATH_KEYS.dataset,
-                        item?.value as string
-                      )
-                    );
+                    navigate(getDatasetEditorUrl(item?.value as string));
                     selectDatasetClose();
                   }}
                   cancelCallback={selectDatasetClose}
