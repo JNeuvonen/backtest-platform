@@ -10,7 +10,6 @@ from tests.t_utils import (
     Fetch,
     Post,
     Put,
-    PythonCode,
     add_object_to_add_cols_payload,
     t_get_timeseries_col,
 )
@@ -194,12 +193,12 @@ def test_route_exec_python(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     )
     assert res_open_price != res_quote_asset_vol
 
-    python_program = PythonCode.append_code(
+    Post.exec_python(
         fixt_btc_small_1h.name,
-        f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.QUOTE_ASSET_VOLUME}"]',
+        body={
+            "code": f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.QUOTE_ASSET_VOLUME}"]',
+        },
     )
-
-    Post.exec_python(body={"code": python_program})
     res_open_price = Fetch.get_dataset_col_info(
         fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
     )
@@ -214,12 +213,13 @@ def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMe
     res_open_price_before = Fetch.get_dataset_col_info(
         fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
     )
-    python_program = PythonCode.append_code(
-        fixt_btc_small_1h.name,
-        f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.OPEN_PRICE}"] * 3',
-    )
 
-    Post.exec_python(body={"code": python_program})
+    Post.exec_python(
+        fixt_btc_small_1h.name,
+        body={
+            "code": f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.OPEN_PRICE}"] * 3',
+        },
+    )
 
     res_open_price_after = Fetch.get_dataset_col_info(
         fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
