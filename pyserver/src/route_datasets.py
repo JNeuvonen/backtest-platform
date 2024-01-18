@@ -18,7 +18,7 @@ from db import (
     rename_column,
     rename_table,
 )
-from utils import add_to_datasets_db, read_file_to_dataframe
+from utils import PythonCode, add_to_datasets_db, read_file_to_dataframe
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -44,9 +44,10 @@ class BodyExecPython(BaseModel):
 
 
 @router.post(RoutePaths.EXEC_PYTHON)
-async def route_exec_python(body: BodyExecPython):
+async def route_exec_python(dataset_name: str, body: BodyExecPython):
     with HttpResponseContext():
-        exec_python(body.code)
+        python_program = PythonCode.append_code(dataset_name, body.code)
+        exec_python(python_program)
         return {"message": "OK"}
 
 
