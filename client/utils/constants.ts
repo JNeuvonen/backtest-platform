@@ -1,5 +1,6 @@
 export const PATH_KEYS = {
   dataset: ":datasetName",
+  column: ":columnName",
 };
 
 export const PATHS = {
@@ -7,6 +8,7 @@ export const PATHS = {
     path: "/datasets",
     dataset: `/datasets/${PATH_KEYS.dataset}`,
     info: `/datasets/${PATH_KEYS.dataset}/info`,
+    column: `/datasets/${PATH_KEYS.dataset}/info/${PATH_KEYS.column}`,
     editor: `/datasets/${PATH_KEYS.dataset}/editor`,
   },
   simulate: {
