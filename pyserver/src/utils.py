@@ -69,9 +69,11 @@ class PythonCode:
     DATASET_SYMBOL = "dataset"
     EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}):\n{INDENT}"
     SAVE_STATEMENT = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
+    HELPER_CODE_EXAMPLE = "dataset = get_dataset()\n"
 
     @classmethod
     def append_code(cls, dataset_name: str, code: str):
+        code = code.replace(cls.HELPER_CODE_EXAMPLE, "")
         return (
             cls.EDIT_COLUMN_DEFAULT
             + code
