@@ -1,14 +1,14 @@
 import React from "react";
 import {
-  PlacementWithLogical,
   Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverFooter,
-  PopoverHeader,
   PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverBody,
+  PopoverFooter,
+  PlacementWithLogical,
 } from "@chakra-ui/react";
 import { COLOR_BG_TERTIARY } from "../../utils/colors";
 
@@ -19,6 +19,9 @@ interface Props {
   headerText: string;
   placement?: PlacementWithLogical;
   closeOnBlur?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  setOpen: () => void;
 }
 
 export const ChakraPopover = ({
@@ -28,10 +31,20 @@ export const ChakraPopover = ({
   headerText,
   placement = "bottom",
   closeOnBlur = true,
+  isOpen,
+  onClose,
+  setOpen,
 }: Props) => {
   return (
-    <Popover placement={placement} closeOnBlur={closeOnBlur}>
-      <PopoverTrigger>{children}</PopoverTrigger>
+    <Popover
+      placement={placement}
+      closeOnBlur={closeOnBlur}
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      <PopoverTrigger>
+        <span onClick={setOpen}>{children}</span>
+      </PopoverTrigger>
       <PopoverContent bg={COLOR_BG_TERTIARY} borderColor={COLOR_BG_TERTIARY}>
         <PopoverHeader pt={4} fontWeight="bold" border="0">
           {headerText}

@@ -17,7 +17,6 @@ import { createScssClassName } from "../utils/css";
 import { usePathParams } from "../hooks/usePathParams";
 import { PATHS, PATH_KEYS } from "../utils/constants";
 import { useModal } from "../hooks/useOpen";
-import { ChakraModal } from "./chakra/modal";
 import { SelectDataset } from "./SelectDataset";
 import { useNavigate } from "react-router-dom";
 import { MultiValue, SingleValue } from "react-select";
@@ -76,30 +75,6 @@ export const EditorBaseColumns = () => {
 
   return (
     <>
-      <ChakraModal
-        isOpen={selectDatasetOpen}
-        title="Select dataset"
-        onClose={selectDatasetClose}
-      >
-        <SelectDataset
-          onSelect={(
-            selectedItem: SingleValue<OptionType> | MultiValue<OptionType>
-          ) => {
-            const item = selectedItem as SingleValue<OptionType>;
-            navigate(
-              PATHS.datasets.editor.replace(
-                PATH_KEYS.dataset,
-                item?.value as string
-              )
-            );
-            selectDatasetClose();
-          }}
-          cancelCallback={selectDatasetClose}
-          datasets={allDatasets.filter(
-            (item) => item.table_name !== datasetName
-          )}
-        />
-      </ChakraModal>
       <div
         className={createScssClassName([
           CONTAINERS.combine_datasets,
@@ -114,19 +89,38 @@ export const EditorBaseColumns = () => {
               justifyContent: "space-between",
             }}
           >
-            <Title
-              style={{
-                fontWeight: 600,
-                fontSize: 17,
-              }}
+            <ChakraPopover
+              isOpen={selectDatasetOpen}
+              setOpen={() => selectDatasetSetOpen(true)}
+              onClose={selectDatasetClose}
+              body={
+                <SelectDataset
+                  onSelect={(
+                    selectedItem:
+                      | SingleValue<OptionType>
+                      | MultiValue<OptionType>
+                  ) => {
+                    const item = selectedItem as SingleValue<OptionType>;
+                    navigate(
+                      PATHS.datasets.editor.replace(
+                        PATH_KEYS.dataset,
+                        item?.value as string
+                      )
+                    );
+                    selectDatasetClose();
+                  }}
+                  cancelCallback={selectDatasetClose}
+                  datasets={allDatasets.filter(
+                    (item) => item.table_name !== datasetName
+                  )}
+                />
+              }
+              headerText="Select dataset"
             >
-              <Button
-                variant={BUTTON_VARIANTS.nofill}
-                onClick={() => selectDatasetSetOpen(true)}
-              >
+              <Button variant={BUTTON_VARIANTS.nofill}>
                 {datasetName} {getParenthesisSize(dataset.columns.length)}
               </Button>
-            </Title>
+            </ChakraPopover>
             {!isDelMode ? (
               <Button
                 variant={BUTTON_VARIANTS.grey}
