@@ -7,6 +7,7 @@ import App from "./App";
 import "./styles/css/styles.css";
 import { LogProvider } from "./context/log";
 import { AppProvider } from "./context/app";
+import "monaco-editor/min/vs/editor/editor.main.css";
 
 const queryClient = new QueryClient();
 
