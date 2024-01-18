@@ -73,7 +73,7 @@ class PythonCode:
 
     @classmethod
     def append_code(cls, dataset_name: str, code: str):
-        code = code.replace(cls.HELPER_CODE_EXAMPLE, "")
+        code = code.replace(cls.HELPER_CODE_EXAMPLE, "").rstrip()
         return (
             cls.EDIT_COLUMN_DEFAULT
             + code
