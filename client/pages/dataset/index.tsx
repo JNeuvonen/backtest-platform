@@ -19,8 +19,12 @@ const SIDE_NAV_ITEMS: SideNavItem[] = [
   },
 ];
 
+interface RouteParams {
+  datasetName: string;
+}
+
 export const DatasetIndex = () => {
-  const item = usePathParams({ key: PATH_KEYS.dataset }) as string;
+  const { datasetName } = usePathParams<RouteParams>();
   return (
     <div className="layout__container-inner-side-nav">
       <InnerSideNav
@@ -28,7 +32,7 @@ export const DatasetIndex = () => {
         pathActiveItemDepth={3}
         fallbackPath={PATHS.datasets.info}
         formatPath={(path) => {
-          return path.replace(PATH_KEYS.dataset, item);
+          return path.replace(PATH_KEYS.dataset, datasetName);
         }}
       />
       <Outlet />
