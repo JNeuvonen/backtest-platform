@@ -15,7 +15,6 @@ import {
 import { SelectDatasetColumn } from "./SelectDatasetColumn";
 import { createScssClassName } from "../utils/css";
 import { usePathParams } from "../hooks/usePathParams";
-import { PATHS, PATH_KEYS } from "../utils/constants";
 import { useModal } from "../hooks/useOpen";
 import { SelectDataset } from "./SelectDataset";
 import { useNavigate } from "react-router-dom";
