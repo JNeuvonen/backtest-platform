@@ -23,5 +23,6 @@ export const useModal = () => {
     modalClose,
     selectedItem,
     setSelectedItem,
+    modalOpen: () => setIsOpen(true),
   };
 };
