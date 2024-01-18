@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 
-export const useModal = (defaultState: boolean) => {
-  const [isOpen, setIsOpen] = useState(defaultState);
+export const useModal = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [jsxContent, setJsxContent] = useState<null | JSX.Element>(<div></div>);
+  const [selectedItem, setSelectedItem] = useState("");
 
   const setContent = (htmlElement: JSX.Element) => {
     setJsxContent(htmlElement);
@@ -20,5 +21,7 @@ export const useModal = (defaultState: boolean) => {
     jsxContent,
     setContent,
     modalClose,
+    selectedItem,
+    setSelectedItem,
   };
 };
