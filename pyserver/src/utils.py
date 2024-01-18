@@ -62,3 +62,22 @@ def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
             )
 
             df[column] = np.where(ffill_dist <= bfill_dist, ffill, bfill)
+
+
+class PythonCode:
+    INDENT = "    "
+    DATASET_SYMBOL = "dataset"
+    EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}):\n{INDENT}"
+    SAVE_STATEMENT = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
+
+    @classmethod
+    def append_code(cls, dataset_name: str, code: str):
+        return (
+            cls.EDIT_COLUMN_DEFAULT
+            + code
+            + f"\n{cls.INDENT}"
+            + cls.SAVE_STATEMENT
+            + f"\n{cls.INDENT}{cls.INDENT}"
+            + f'{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
+            + f'\nrun_python(read_dataset_to_mem("{dataset_name}"))'
+        )
