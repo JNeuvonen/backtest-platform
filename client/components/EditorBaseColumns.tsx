@@ -32,9 +32,13 @@ const CONTAINERS = {
   all_columns: "all-columns",
 };
 
+interface RouteParams {
+  datasetName: string;
+}
+
 export const EditorBaseColumns = () => {
   const navigate = useNavigate();
-  const datasetName = usePathParams({ key: PATH_KEYS.dataset });
+  const { datasetName } = usePathParams<RouteParams>();
   const {
     isOpen: selectDatasetOpen,
     modalClose: selectDatasetClose,
