@@ -138,8 +138,10 @@ class URL:
         )
 
     @classmethod
-    def exec_python(cls):
-        return cls._datasets_route() + RoutePaths.EXEC_PYTHON
+    def exec_python(cls, dataset_name):
+        return cls._datasets_route() + RoutePaths.EXEC_PYTHON.format(
+            dataset_name=dataset_name
+        )
 
     @classmethod
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):
