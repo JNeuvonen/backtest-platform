@@ -1,4 +1,4 @@
-import { AddColumnsReqPayload } from "../pages/dataset/editor";
+import { AddColumnsReqPayload } from "../context/editor";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 
@@ -12,6 +12,14 @@ export async function fetchDataset(datasetName: string) {
   return buildRequest({ method: "GET", url });
 }
 
+export async function execPythonOnDatasetCol(
+  datasetName: string,
+  columnName: string,
+  code: string
+) {
+  const url = URLS.execute_python_on_dataset(datasetName, columnName);
+  return buildRequest({ method: "POST", url, payload: { code } });
+}
 export async function addColumnsToDataset(
   datasetName: string,
   payload: AddColumnsReqPayload
