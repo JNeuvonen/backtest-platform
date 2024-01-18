@@ -5,15 +5,15 @@ import { BUTTON_VARIANTS } from "../../theme";
 interface Props {
   cancelText?: string;
   submitText?: string;
-  submitDisabled: boolean;
-  cancelCallback: () => void;
+  submitDisabled?: boolean;
+  cancelCallback?: () => void;
   submitCallback?: () => void;
   style?: CSSProperties;
 }
 
 export const FormSubmitBar = ({
   cancelText = "Cancel",
-  submitDisabled,
+  submitDisabled = false,
   cancelCallback,
   submitText = "Submit",
   submitCallback,
