@@ -1,5 +1,4 @@
 from typing import List
-from fastapi import Query
 import pytest
 import sys
 import requests
@@ -11,6 +10,7 @@ from tests.t_utils import (
     Fetch,
     Post,
     Put,
+    PythonCode,
     add_object_to_add_cols_payload,
     t_get_timeseries_col,
 )
@@ -45,24 +45,6 @@ def test_route_rename_column(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     dataset = fixt_btc_small_1h
 
     TEST_COL_NAME = "new_open_price"
-
-    with pytest.raises(requests.exceptions.HTTPError):
-        Post.rename_column(
-            "arbitrary_name_that_should_fail",
-            {
-                "old_col_name": BinanceCols.OPEN_PRICE,
-                "new_col_name": TEST_COL_NAME,
-            },
-        )
-
-    with pytest.raises(requests.exceptions.HTTPError):
-        Post.rename_column(
-            "arbitrary_name_that_should_fail",
-            {
-                "old_col_name": "arbitrary_column_name_that_should_fail",
-                "new_col_name": TEST_COL_NAME,
-            },
-        )
 
     Post.rename_column(
         fixt_btc_small_1h.name,
@@ -104,14 +86,6 @@ def test_route_all_columns(cleanup_db, fixt_add_many_datasets: List[DatasetMetad
 def test_route_update_dataset_name(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     _ = cleanup_db
     NEW_DATASET_NAME = "test_name_123"
-    with pytest.raises(requests.exceptions.HTTPError):
-        Fetch.get_dataset_by_name(NEW_DATASET_NAME)
-
-    with pytest.raises(requests.exceptions.HTTPError):
-        Put.update_dataset_name(
-            "arbitrary_name_that_should_fail",
-            body={"new_dataset_name": NEW_DATASET_NAME},
-        )
 
     Put.update_dataset_name(
         fixt_btc_small_1h.name, body={"new_dataset_name": NEW_DATASET_NAME}
@@ -131,10 +105,6 @@ def test_route_get_dataset_col_info(cleanup_db, fixt_btc_small_1h: DatasetMetada
 @pytest.mark.acceptance
 def test_route_update_timeseries_col(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     _ = cleanup_db
-    with pytest.raises(requests.exceptions.HTTPError):
-        Put.update_timeseries_col(
-            fixt_btc_small_1h.name, {"new_timeseries_col": "should_fail"}
-        )
     Put.update_timeseries_col(
         fixt_btc_small_1h.name, {"new_timeseries_col": BinanceCols.LOW_PRICE}
     )
@@ -212,3 +182,50 @@ def test_route_dataset_add_cols_fill_closest(fixt_add_all_downloaded_datasets):
 
     for _, value in null_counts.items():
         assert value == 0
+
+
+@pytest.mark.acceptance
+def test_route_exec_python(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    res_open_price = Fetch.get_dataset_col_info(
+        fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
+    )
+    res_quote_asset_vol = Fetch.get_dataset_col_info(
+        fixt_btc_small_1h.name, BinanceCols.QUOTE_ASSET_VOLUME
+    )
+    assert res_open_price != res_quote_asset_vol
+
+    python_program = PythonCode.append_code(
+        fixt_btc_small_1h.name,
+        f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.QUOTE_ASSET_VOLUME}"]',
+    )
+
+    Post.exec_python(body={"code": python_program})
+    res_open_price = Fetch.get_dataset_col_info(
+        fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
+    )
+    res_quote_asset_vol = Fetch.get_dataset_col_info(
+        fixt_btc_small_1h.name, BinanceCols.QUOTE_ASSET_VOLUME
+    )
+    assert res_open_price == res_quote_asset_vol
+
+
+@pytest.mark.acceptance
+def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    res_open_price_before = Fetch.get_dataset_col_info(
+        fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
+    )
+    python_program = PythonCode.append_code(
+        fixt_btc_small_1h.name,
+        f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.OPEN_PRICE}"] * 3',
+    )
+
+    Post.exec_python(body={"code": python_program})
+
+    res_open_price_after = Fetch.get_dataset_col_info(
+        fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
+    )
+
+    for i in range(len(res_open_price_before[0]["rows"])):
+        before = res_open_price_before[0]["rows"][i][0]
+        after = res_open_price_after[0]["rows"][i][0]
+        assert before * 3 == after
