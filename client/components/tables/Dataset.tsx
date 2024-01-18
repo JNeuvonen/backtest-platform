@@ -23,7 +23,7 @@ const ColumnsModalContent = ({ columns }: { columns: string[] }) => {
 };
 
 export const DatasetTable = ({ tables }: Props) => {
-  const { isOpen, setContent, modalClose, jsxContent } = useModal(false);
+  const { isOpen, setContent, modalClose, jsxContent } = useModal();
   return (
     <Box overflow="auto">
       <ChakraModal isOpen={isOpen} onClose={modalClose} title={"Table columns"}>
