@@ -26,7 +26,7 @@ export const ConfirmInput = ({
   setInputCurrent,
   disallowedCharsRegex,
 }: Props) => {
-  const { isOpen, modalClose, setIsOpen } = useModal(false);
+  const { isOpen, modalClose, setIsOpen } = useModal();
   const handleToggle = () => {
     if (inputCurrent !== defaultValue) {
       setIsOpen(true);
