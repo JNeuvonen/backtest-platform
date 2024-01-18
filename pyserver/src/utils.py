@@ -67,11 +67,11 @@ def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
 class PythonCode:
     INDENT = "    "
     DATASET_SYMBOL = "dataset"
-    COLUMN_SYMBOL = "column"
+    COLUMN_SYMBOL = "column_name"
     EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}, {COLUMN_SYMBOL}):\n"
     SAVE_STATEMENT = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
-    DATASET_CODE_EXAMPLE = "dataset = get_dataset()\n"
-    COLUMN_CODE_EXAMPLE = "column = get_column()\n"
+    DATASET_CODE_EXAMPLE = "dataset = get_dataset()"
+    COLUMN_CODE_EXAMPLE = f"{COLUMN_SYMBOL} = get_column()"
 
     @classmethod
     def run_on_column(cls, dataset_name: str, column_name: str, code: str):

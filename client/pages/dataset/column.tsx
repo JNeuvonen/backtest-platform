@@ -43,16 +43,17 @@ const COLUMNS_STATS_TABLE: string[] = [
 //   return `dataset = get_dataset()\ndataset["${columnName}"] = dataset["${columnName}"] * 3\n#line above multiplies the value of ${columnName} on every row by three`;
 // };
 
-const getCodeDefaultValue = (datasetName: string, columnName: string) => {
+const getCodeDefaultValue = (columnName: string) => {
+  const COL_SYMBOL = "column_name";
   return createPythonCode([
     `dataset = get_dataset() #pandas dataframe`,
-    `column = get_column() #${columnName}`,
+    `${COL_SYMBOL} = get_column() #${columnName}`,
     "",
     `#Multiply example. This multiplies the value of ${columnName} on every row.`,
-    `#dataset[column] = dataset[column] * 3`,
+    `#dataset[${COL_SYMBOL}] = dataset[${COL_SYMBOL}] * 3`,
     "",
     `#Create a new column example. This creates a new column based on the column ${columnName}.`,
-    `#dataset["new_column"] = dataset[column]`,
+    `#dataset["new_column"] = dataset[${COL_SYMBOL}]`,
     "",
     `#Dataset is a pandas dataframe. So all native pandas functions are available.`,
     `#This example creates a simple moving average of 30 days on the column ${columnName}`,
@@ -63,9 +64,7 @@ const getCodeDefaultValue = (datasetName: string, columnName: string) => {
 export const DatasetColumnInfoPage = () => {
   const { datasetName, columnName } = usePathParams<RouteParams>();
   const { data } = useColumnQuery(datasetName, columnName);
-  const [code, setCode] = useState<string>(
-    getCodeDefaultValue(datasetName, columnName)
-  );
+  const [code, setCode] = useState<string>(getCodeDefaultValue(columnName));
   const { isOpen, setIsOpen, modalClose } = useModal();
   const toast = useToast();
   const useSubmitConfirm = useModal();

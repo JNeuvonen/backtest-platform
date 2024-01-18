@@ -16,6 +16,8 @@ from tests.t_utils import (
 
 sys.path.append(SERVER_SOURCE_DIR)
 
+from utils import PythonCode
+
 
 @pytest.mark.acceptance
 def test_setup_sanity(cleanup_db, fixt_btc_small_1h):
@@ -219,7 +221,7 @@ def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMe
         fixt_btc_small_1h.name,
         BinanceCols.OPEN_PRICE,
         body={
-            "code": "dataset[column] = dataset[column] * 3\n",
+            "code": f"dataset[{PythonCode.COLUMN_SYMBOL}] = dataset[{PythonCode.COLUMN_SYMBOL}] * 3\n",
         },
     )
 
