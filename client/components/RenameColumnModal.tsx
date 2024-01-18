@@ -10,7 +10,7 @@ import { useColumnQuery } from "../clients/queries/queries";
 import { URLS } from "../clients/endpoints";
 import { ColumnChart } from "./charts/column";
 import { ChakraModal } from "./chakra/modal";
-import { ConfirmSwitch } from "./charts/confirm-switch";
+import { ConfirmSwitch } from "./form/confirm-switch";
 
 interface ColumnModalContentProps {
   datasetName: string;
