@@ -22,6 +22,8 @@ import { useNavigate } from "react-router-dom";
 import { MultiValue, SingleValue } from "react-select";
 import { OptionType } from "./SelectFilter";
 import { ChakraPopover } from "./chakra/popover";
+import { ChakraModal } from "./chakra/modal";
+import { ColumnInfo } from "./ColumnInfo";
 
 const CONTAINERS = {
   combine_datasets: "combine-datasets",
@@ -36,7 +38,16 @@ export const EditorBaseColumns = () => {
     isOpen: selectDatasetOpen,
     modalClose: selectDatasetClose,
     setIsOpen: selectDatasetSetOpen,
-  } = useModal(false);
+  } = useModal();
+
+  const {
+    isOpen: columnModalIsOpen,
+    modalClose: columnModalOnClose,
+    setIsOpen: columnModalSetOpen,
+    setSelectedItem: setColumnItem,
+    selectedItem: columnItem,
+  } = useModal();
+
   const {
     setIsDelMode,
     dataset,
@@ -53,6 +64,11 @@ export const EditorBaseColumns = () => {
   if (!dataset) {
     return <Spinner />;
   }
+
+  const openColumnModal = (columnName: string) => {
+    columnModalSetOpen(true);
+    setColumnItem(columnName);
+  };
 
   const removeFromBaseButton = () => {
     if (
@@ -75,6 +91,13 @@ export const EditorBaseColumns = () => {
 
   return (
     <>
+      <ChakraModal
+        isOpen={columnModalIsOpen}
+        onClose={columnModalOnClose}
+        title={columnItem}
+      >
+        <ColumnInfo datasetName={datasetName} columnName={columnItem} />
+      </ChakraModal>
       <div
         className={createScssClassName([
           CONTAINERS.combine_datasets,
@@ -172,7 +195,12 @@ export const EditorBaseColumns = () => {
                   />
                 )}
 
-                <Text variant={TEXT_VARIANTS.clickable}>{item}</Text>
+                <Text
+                  variant={TEXT_VARIANTS.clickable}
+                  onClick={() => openColumnModal(item)}
+                >
+                  {item}
+                </Text>
               </div>
             );
           })}
