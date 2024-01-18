@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { useParams } from "react-router-dom";
 
 type PathParams<T = {}> = {
