@@ -83,7 +83,7 @@ export type ColumnsDict = { [key: string]: SelectedDatasetColumns };
 export type AddColumnsReqPayload = { table_name: string; columns: string[] }[];
 
 export const EditorProvider: React.FC<Props> = ({ children }) => {
-  const datasetName = usePathParams({ key: PATH_KEYS.dataset });
+  const { datasetName } = usePathParams<{ datasetName: string }>();
   const { data: datasetResp, refetch: refetchDataset } =
     useDatasetQuery(datasetName);
 
@@ -106,12 +106,12 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
     isOpen: addModalIsOpen,
     modalClose: addModalClose,
     setIsOpen: addModalSetOpen,
-  } = useModal(false);
+  } = useModal();
   const {
     isOpen: delModalIsOpen,
     modalClose: delModalClose,
     setIsOpen: delModalSetOpen,
-  } = useModal(false);
+  } = useModal();
 
   const forceUpdate = useForceUpdate();
 
