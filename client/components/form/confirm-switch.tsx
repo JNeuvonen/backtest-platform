@@ -20,7 +20,7 @@ export const ConfirmSwitch = ({
   cancelText = "Cancel",
   message = "Are you sure you want to confirm this action?",
 }: Props) => {
-  const { isOpen, modalClose, setIsOpen } = useModal(false);
+  const { isOpen, modalClose, setIsOpen } = useModal();
   const handleToggle = () => setIsOpen(true);
   const handleClose = () => setIsOpen(false);
   const handleConfirm = () => {
