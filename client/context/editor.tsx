@@ -10,7 +10,7 @@ import { SelectedDatasetColumns } from "../components/DatasetEditor";
 import { useModal } from "../hooks/useOpen";
 import { useForceUpdate } from "../hooks/useForceUpdate";
 import { addColumnsToDataset } from "../clients/requests";
-import { DOM_EVENT_CHANNELS, PATH_KEYS } from "../utils/constants";
+import { DOM_EVENT_CHANNELS } from "../utils/constants";
 import { usePathParams } from "../hooks/usePathParams";
 import { areAllNestedValuesNull, isObjectEmpty } from "../utils/object";
 import { useAppContext } from "./app";
