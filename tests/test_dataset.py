@@ -195,8 +195,9 @@ def test_route_exec_python(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
 
     Post.exec_python(
         fixt_btc_small_1h.name,
+        BinanceCols.OPEN_PRICE,
         body={
-            "code": f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.QUOTE_ASSET_VOLUME}"]',
+            "code": f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.QUOTE_ASSET_VOLUME}"]\n',
         },
     )
     res_open_price = Fetch.get_dataset_col_info(
@@ -216,8 +217,9 @@ def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMe
 
     Post.exec_python(
         fixt_btc_small_1h.name,
+        BinanceCols.OPEN_PRICE,
         body={
-            "code": f'dataset["{BinanceCols.OPEN_PRICE}"] = dataset["{BinanceCols.OPEN_PRICE}"] * 3',
+            "code": "dataset[column] = dataset[column] * 3\n",
         },
     )
 
