@@ -64,6 +64,11 @@ def get_dataset_tables():
             return tables_data
 
 
+def exec_python(code: str):
+    with LogExceptionContext():
+        exec(code)
+
+
 def get_col_null_count(
     cursor: sqlite3.Cursor, table_name: str, column_name: str
 ) -> int:
