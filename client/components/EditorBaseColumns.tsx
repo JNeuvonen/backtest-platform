@@ -22,6 +22,7 @@ import { SelectDataset } from "./SelectDataset";
 import { useNavigate } from "react-router-dom";
 import { MultiValue, SingleValue } from "react-select";
 import { OptionType } from "./SelectFilter";
+import { ChakraPopover } from "./chakra/popover";
 
 const CONTAINERS = {
   combine_datasets: "combine-datasets",
