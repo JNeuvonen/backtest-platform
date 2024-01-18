@@ -10,6 +10,7 @@ from db import (
     DatasetUtils,
     add_columns_to_table,
     delete_dataset_cols,
+    exec_python,
     get_all_tables_and_columns,
     get_column_detailed_info,
     get_dataset_table,
@@ -34,7 +35,19 @@ class RoutePaths:
     ROOT = "/"
     RENAME_COLUMN = "/{dataset_name}/rename-column"
     DELETE_COLUMNS = "/{dataset_name}/delete-cols"
+    EXEC_PYTHON = "/{dataset_name}/exec-python"
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
+
+
+class BodyExecPython(BaseModel):
+    code: str
+
+
+@router.post(RoutePaths.EXEC_PYTHON)
+async def route_exec_python(body: BodyExecPython):
+    with HttpResponseContext():
+        exec_python(body.code)
+        return {"message": "OK"}
 
 
 @router.get(RoutePaths.ALL_TABLES)
@@ -148,7 +161,7 @@ async def route_del_cols(dataset_name: str, delete_cols: PayloadDeleteColumns):
 
 
 @router.post(RoutePaths.UPLOAD_TIMESERIES_DATA)
-async def upload_timeseries_data(
+async def route_upload_timeseries_data(
     file: UploadFile, dataset_name: str, timeseries_col: str
 ):
     with HttpResponseContext():
