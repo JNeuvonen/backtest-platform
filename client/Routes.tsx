@@ -16,12 +16,8 @@ export const AppRoutes = () => {
       <Route path={PATHS.datasets.dataset} element={<DatasetIndex />}>
         <Route path={PATHS.datasets.info} element={<DatasetInfoPage />} />
         <Route path={PATHS.datasets.editor} element={<DatasetEditorPage />} />
-        <Route path={PATHS.datasets.editor} element={<DatasetEditorPage />} />
-        <Route
-          path={PATHS.datasets.column}
-          element={<DatasetColumnInfoPage />}
-        />
       </Route>
+      <Route path={PATHS.datasets.column} element={<DatasetColumnInfoPage />} />
       <Route path={PATHS.simulate.path} element={<Home />} />
     </Routes>
   );
