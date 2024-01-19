@@ -93,11 +93,20 @@ export const DatasetColumnInfoPage = () => {
     }
     rows.push(roundNumberDropRemaining(data.column.null_count, 3));
     rows.push(data.column.rows.length);
-    rows.push(roundNumberDropRemaining(data.column.stats.max, 3));
-    rows.push(roundNumberDropRemaining(data.column.stats.mean, 3));
-    rows.push(roundNumberDropRemaining(data.column.stats.median, 3));
-    rows.push(roundNumberDropRemaining(data.column.stats.min, 3));
-    rows.push(roundNumberDropRemaining(data.column.stats.std_dev, 3));
+
+    if (data.column.stats) {
+      rows.push(roundNumberDropRemaining(data.column.stats.max, 3));
+      rows.push(roundNumberDropRemaining(data.column.stats.mean, 3));
+      rows.push(roundNumberDropRemaining(data.column.stats.median, 3));
+      rows.push(roundNumberDropRemaining(data.column.stats.min, 3));
+      rows.push(roundNumberDropRemaining(data.column.stats.std_dev, 3));
+    } else {
+      rows.push("N/A");
+      rows.push("N/A");
+      rows.push("N/A");
+      rows.push("N/A");
+      rows.push("N/A");
+    }
     return makeUniDimensionalTableRows(rows);
   };
 
