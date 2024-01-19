@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDatasetQuery } from "../../clients/queries/queries";
 import { Box, Button, Spinner, useToast } from "@chakra-ui/react";
 import { GenericTable } from "../../components/tables/GenericTable";
@@ -24,10 +24,7 @@ import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 import { createPythonCode } from "../../utils/str";
 import { usePathParams } from "../../hooks/usePathParams";
 import { ConfirmModal } from "../../components/form/confirm";
-import {
-  execPythonOnDataset,
-  execPythonOnDatasetCol,
-} from "../../clients/requests";
+import { execPythonOnDataset } from "../../clients/requests";
 import { getValueById } from "../../utils/dom";
 
 type DatasetDetailParams = {
