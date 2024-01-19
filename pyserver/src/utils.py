@@ -5,8 +5,14 @@ import pandas as pd
 import numpy as np
 import sqlite3
 
-from constants import DB_DATASETS, STREAMING_DEFAULT_CHUNK_SIZE, NullFillStrategy
+from constants import (
+    DB_DATASETS,
+    STREAMING_DEFAULT_CHUNK_SIZE,
+    AppConstants,
+    NullFillStrategy,
+)
 from config import append_app_data_path
+from dataset import read_dataset_to_mem
 from log import LogExceptionContext
 
 
@@ -34,6 +40,19 @@ async def read_file_to_dataframe(
 
         file_bytes = b"".join(chunks)
         return pd.read_csv(BytesIO(file_bytes))
+
+
+def df_fill_nulls_on_all_cols(dataset_name: str, strategy: NullFillStrategy):
+    if strategy is NullFillStrategy.NONE:
+        return
+    with LogExceptionContext():
+        dataset = read_dataset_to_mem(dataset_name)
+
+        for item in dataset.columns:
+            df_fill_nulls(dataset, item, strategy)
+
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            dataset.to_sql(dataset_name, conn, if_exists="replace", index=False)
 
 
 def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
