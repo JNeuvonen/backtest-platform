@@ -17,6 +17,7 @@ import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 import { createPythonCode } from "../../utils/str";
 import { ConfirmModal } from "../../components/form/confirm";
 import { execPythonOnDatasetCol } from "../../clients/requests";
+import { CODE } from "../../utils/constants";
 
 interface RouteParams {
   datasetName: string;
@@ -39,14 +40,15 @@ const COLUMNS_STATS_TABLE: string[] = [
   "Std dev",
 ];
 
+const { GET_DATASET_EXAMPLE, COL_SYMBOL } = CODE;
+
 // const getCodeDefaultValue = (columnName: string) => {
 //   return `dataset = get_dataset()\ndataset["${columnName}"] = dataset["${columnName}"] * 3\n#line above multiplies the value of ${columnName} on every row by three`;
 // };
 
 const getCodeDefaultValue = (columnName: string) => {
-  const COL_SYMBOL = "column_name";
   return createPythonCode([
-    `dataset = get_dataset() #pandas dataframe`,
+    `${GET_DATASET_EXAMPLE}`,
     `${COL_SYMBOL} = get_column() #${columnName}`,
     "",
     `#Multiply example. This multiplies the value of ${columnName} on every row.`,
