@@ -3,6 +3,7 @@ import pytest
 import sys
 import requests
 
+from decimal import Decimal
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
 from tests.t_populate import t_upload_dataset
@@ -195,7 +196,7 @@ def test_route_exec_python(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     )
     assert res_open_price != res_quote_asset_vol
 
-    Post.exec_python(
+    Post.exec_python_on_col(
         fixt_btc_small_1h.name,
         BinanceCols.OPEN_PRICE,
         body={
@@ -217,7 +218,7 @@ def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMe
         fixt_btc_small_1h.name, BinanceCols.OPEN_PRICE
     )
 
-    Post.exec_python(
+    Post.exec_python_on_col(
         fixt_btc_small_1h.name,
         BinanceCols.OPEN_PRICE,
         body={
@@ -233,3 +234,40 @@ def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMe
         before = res_open_price_before[0]["rows"][i][0]
         after = res_open_price_after[0]["rows"][i][0]
         assert before * 3 == after
+
+
+@pytest.mark.acceptance
+def test_route_exec_python_on_dataset(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    dataset_before = Fetch.get_dataset_by_name(fixt_btc_small_1h.name)
+
+    Post.exec_python_on_dataset(
+        fixt_btc_small_1h.name,
+        body={
+            "code": f"for item in dataset.columns:\n{PythonCode.INDENT}dataset[item] = dataset[item] * 3\n",
+        },
+    )
+
+    dataset_after = Fetch.get_dataset_by_name(fixt_btc_small_1h.name)
+
+    idx = 0
+    for head_before in dataset_before["head"]:
+        before_list_mul_3 = [Decimal(x) * Decimal("3") for x in head_before]
+        after_list = dataset_after["head"][idx]
+
+        for i in range(len(before_list_mul_3)):
+            # prevent rounding errors from failing tests
+            assert (
+                before_list_mul_3[i] <= 1.005 * after_list[i]
+                or before_list_mul_3[i] >= 0.995 * after_list[i]
+            )
+
+    for tail_before in dataset_before["tail"]:
+        before_list_mul_3 = [Decimal(x) * Decimal("3") for x in tail_before]
+        after_list = dataset_after["tail"][idx]
+
+        for i in range(len(before_list_mul_3)):
+            # prevent rounding errors from failing tests
+            assert (
+                before_list_mul_3[i] <= 1.005 * after_list[i]
+                or before_list_mul_3[i] >= 0.995 * after_list[i]
+            )
