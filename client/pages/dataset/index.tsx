@@ -1,41 +1,25 @@
 import React from "react";
-import { PATHS, PATH_KEYS } from "../../utils/constants";
-import { SideNavItem } from "../../components/layout/SideNav";
-import { InnerSideNav } from "../../components/layout/InnerSideNav";
-import { Outlet } from "react-router-dom";
-import { usePathParams } from "../../hooks/usePathParams";
-import { PiComputerTowerFill } from "react-icons/pi";
+import { ChakraTabs } from "../../components/layout/Tabs";
+import { DatasetInfoPage } from "./info";
+import { DatasetEditorPage } from "./editor";
+import useQueryParams from "../../hooks/useQueryParams";
 
-const SIDE_NAV_ITEMS: SideNavItem[] = [
-  {
-    link: "Info",
-    path: PATHS.datasets.info,
-    icon: <PiComputerTowerFill size={20} />,
-  },
-  {
-    link: "Editor",
-    path: PATHS.datasets.editor,
-    icon: <PiComputerTowerFill size={20} />,
-  },
-];
+const TAB_LABELS = ["Info", "Editor", "Model"];
+const TABS = [<DatasetInfoPage />, <DatasetEditorPage />, <div>model</div>];
 
-interface RouteParams {
-  datasetName: string;
+interface TabQueryParams {
+  defaultTab: number | undefined;
 }
 
 export const DatasetIndex = () => {
-  const { datasetName } = usePathParams<RouteParams>();
+  const { defaultTab } = useQueryParams<TabQueryParams>();
   return (
-    <div className="layout__container-inner-side-nav">
-      <InnerSideNav
-        sideNavItems={SIDE_NAV_ITEMS}
-        pathActiveItemDepth={3}
-        fallbackPath={PATHS.datasets.info}
-        formatPath={(path) => {
-          return path.replace(PATH_KEYS.dataset, datasetName);
-        }}
+    <div>
+      <ChakraTabs
+        labels={TAB_LABELS}
+        tabs={TABS}
+        defaultTab={defaultTab ? Number(defaultTab) : 0}
       />
-      <Outlet />
     </div>
   );
 };
