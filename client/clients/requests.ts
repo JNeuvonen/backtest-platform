@@ -1,4 +1,5 @@
 import { AddColumnsReqPayload } from "../context/editor";
+import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 
@@ -21,9 +22,17 @@ export async function execPythonOnDatasetCol(
   return buildRequest({ method: "POST", url, payload: { code } });
 }
 
-export async function execPythonOnDataset(datasetName: string, code: string) {
+export async function execPythonOnDataset(
+  datasetName: string,
+  code: string,
+  nullFillStrategy: NullFillStrategy
+) {
   const url = URLS.exec_python_on_dataset(datasetName);
-  return buildRequest({ method: "POST", url, payload: { code } });
+  return buildRequest({
+    method: "POST",
+    url,
+    payload: { code, null_fill_strategy: nullFillStrategy },
+  });
 }
 
 export async function addColumnsToDataset(
