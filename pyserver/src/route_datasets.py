@@ -36,6 +36,7 @@ class RoutePaths:
     RENAME_COLUMN = "/{dataset_name}/rename-column"
     DELETE_COLUMNS = "/{dataset_name}/delete-cols"
     EXEC_PYTHON_ON_COL = "/{dataset_name}/exec-python/{column_name}"
+    EXEC_PYTHON_ON_DATASET = "/{dataset_name}/exec-python"
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
 
 
@@ -48,7 +49,15 @@ async def route_exec_python_on_column(
     dataset_name: str, column_name: str, body: BodyExecPython
 ):
     with HttpResponseContext():
-        python_program = PythonCode.run_on_column(dataset_name, column_name, body.code)
+        python_program = PythonCode.on_column(dataset_name, column_name, body.code)
+        exec_python(python_program)
+        return {"message": "OK"}
+
+
+@router.post(RoutePaths.EXEC_PYTHON_ON_DATASET)
+async def route_exec_python_on_dataset(dataset_name: str, body: BodyExecPython):
+    with HttpResponseContext():
+        python_program = PythonCode.on_dataset(dataset_name, body.code)
         exec_python(python_program)
         return {"message": "OK"}
 
