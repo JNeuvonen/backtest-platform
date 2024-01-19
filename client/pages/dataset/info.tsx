@@ -19,6 +19,10 @@ import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 import { createPythonCode } from "../../utils/str";
 import { usePathParams } from "../../hooks/usePathParams";
 import { ConfirmModal } from "../../components/form/confirm";
+import {
+  execPythonOnDataset,
+  execPythonOnDatasetCol,
+} from "../../clients/requests";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -109,7 +113,19 @@ export const DatasetInfoPage = () => {
       });
   };
 
-  const submitExecPythonOnDataset = async () => {};
+  const submitExecPythonOnDataset = async () => {
+    const res = await execPythonOnDataset(datasetName, code);
+    if (res.status === 200) {
+      toast({
+        title: "Executed python code",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      runPythonModal.modalClose();
+      confirmRunPythonModal.modalClose();
+    }
+  };
 
   const columns = dataset.columns;
 
