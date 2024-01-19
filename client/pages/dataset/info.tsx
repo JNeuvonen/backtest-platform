@@ -11,7 +11,12 @@ import { buildRequest } from "../../clients/fetch";
 import { URLS } from "../../clients/endpoints";
 import { replaceNthPathItem } from "../../utils/path";
 import { useMessageListener } from "../../hooks/useMessageListener";
-import { CODE, DOM_EVENT_CHANNELS } from "../../utils/constants";
+import {
+  CODE,
+  DOM_EVENT_CHANNELS,
+  DOM_IDS,
+  NullFillStrategy,
+} from "../../utils/constants";
 import { ColumnModal } from "../../components/RenameColumnModal";
 import { PythonIcon } from "../../components/icons/python";
 import { RunPythonOnAllCols } from "../../components/RunPythonOnAllCols";
@@ -23,6 +28,7 @@ import {
   execPythonOnDataset,
   execPythonOnDatasetCol,
 } from "../../clients/requests";
+import { getValueById } from "../../utils/dom";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -114,7 +120,11 @@ export const DatasetInfoPage = () => {
   };
 
   const submitExecPythonOnDataset = async () => {
-    const res = await execPythonOnDataset(datasetName, code);
+    const nullFillStrategy = getValueById(
+      DOM_IDS.select_null_fill_strat
+    ) as NullFillStrategy;
+
+    const res = await execPythonOnDataset(datasetName, code, nullFillStrategy);
     if (res.status === 200) {
       toast({
         title: "Executed python code",
