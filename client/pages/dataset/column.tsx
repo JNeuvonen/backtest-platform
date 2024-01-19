@@ -9,7 +9,6 @@ import { makeUniDimensionalTableRows } from "../../utils/table";
 import { roundNumberDropRemaining } from "../../utils/number";
 import { BUTTON_VARIANTS } from "../../theme";
 import { PythonIcon } from "../../components/icons/python";
-import { PythonEditor } from "../../components/PythonEditor";
 import { OnMount } from "@monaco-editor/react";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useModal } from "../../hooks/useOpen";
@@ -22,7 +21,7 @@ import { MdOutlineSubdirectoryArrowLeft } from "react-icons/md";
 import { ToolBarStyle } from "../../components/ToolbarStyle";
 import { useNavigate } from "react-router-dom";
 import { getDatasetEditorUrl } from "../../utils/navigate";
-import { CodeEditor } from "../../components/CodeInput";
+import { CodeEditor } from "../../components/CodeEditor";
 
 interface RouteParams {
   datasetName: string;
