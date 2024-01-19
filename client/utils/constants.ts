@@ -67,3 +67,15 @@ export const DOM_EVENT_CHANNELS = {
   refetch_dataset: "refetch_dataset",
   refetch_dataset_columns: "refetch_dataset_columns",
 };
+
+export type NullFillStrategy = "CLOSEST" | "MEAN" | "ZERO" | "KEEP";
+
+export const NULL_FILL_STRATEGIES: {
+  value: NullFillStrategy;
+  label: string;
+}[] = [
+  { value: "CLOSEST", label: "Closest" },
+  { value: "MEAN", label: "Mean" },
+  { value: "ZERO", label: "Zero" },
+  { value: "KEEP", label: "Keep" },
+];
