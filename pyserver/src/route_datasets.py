@@ -6,6 +6,7 @@ from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrate
 from context import HttpResponseContext
 from fastapi import APIRouter, Query, UploadFile
 from pydantic import BaseModel
+from dataset import read_dataset_to_mem
 from db import (
     DatasetUtils,
     add_columns_to_table,
@@ -18,7 +19,12 @@ from db import (
     rename_column,
     rename_table,
 )
-from utils import PythonCode, add_to_datasets_db, read_file_to_dataframe
+from utils import (
+    PythonCode,
+    add_to_datasets_db,
+    df_fill_nulls_on_all_cols,
+    read_file_to_dataframe,
+)
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -42,6 +48,7 @@ class RoutePaths:
 
 class BodyExecPython(BaseModel):
     code: str
+    null_fill_strategy: str = "NONE"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -55,10 +62,15 @@ async def route_exec_python_on_column(
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_DATASET)
-async def route_exec_python_on_dataset(dataset_name: str, body: BodyExecPython):
+async def route_exec_python_on_dataset(
+    dataset_name: str,
+    body: BodyExecPython,
+):
     with HttpResponseContext():
+        null_fill_strat = NullFillStrategy[body.null_fill_strategy]
         python_program = PythonCode.on_dataset(dataset_name, body.code)
         exec_python(python_program)
+        df_fill_nulls_on_all_cols(dataset_name, null_fill_strat)
         return {"message": "OK"}
 
 
