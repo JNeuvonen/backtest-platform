@@ -11,34 +11,49 @@ import { buildRequest } from "../../clients/fetch";
 import { URLS } from "../../clients/endpoints";
 import { replaceNthPathItem } from "../../utils/path";
 import { useMessageListener } from "../../hooks/useMessageListener";
-import { DOM_EVENT_CHANNELS } from "../../utils/constants";
+import { CODE, DOM_EVENT_CHANNELS } from "../../utils/constants";
 import { ColumnModal } from "../../components/RenameColumnModal";
+import { PythonIcon } from "../../components/icons/python";
+import { RunPythonOnAllCols } from "../../components/RunPythonOnAllCols";
+import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
+import { createPythonCode } from "../../utils/str";
+import { usePathParams } from "../../hooks/usePathParams";
+import { ConfirmModal } from "../../components/form/confirm";
 
 type DatasetDetailParams = {
   datasetName: string;
 };
 
+const { GET_DATASET_EXAMPLE, DATASET_SYMBOL, INDENT } = CODE;
+
+const getCodeDefaultValue = () => {
+  return createPythonCode([
+    `${GET_DATASET_EXAMPLE}`,
+    "",
+    "#This example transforms all columns into a simple moving average of 30 last datapoints",
+    `#for item in ${DATASET_SYMBOL}.columns:`,
+    `#${INDENT}dataset[item] = dataset[item].rolling(window=30).mean()`,
+  ]);
+};
+
 export const DatasetInfoPage = () => {
-  const params = useParams<DatasetDetailParams>();
-  const toast = useToast();
-  const datasetName = params.datasetName || "";
-  const {
-    isOpen: columnModalOpen,
-    modalClose: columnModalClose,
-    setIsOpen: columnModalSetOpen,
-  } = useModal(false);
-  const {
-    isOpen: combineModalOpen,
-    modalClose: combineModalClose,
-    setIsOpen: combineModalSetOpen,
-  } = useModal(false);
-  const { data, isLoading, refetch } = useDatasetQuery(datasetName);
-  const [selectedColumn, setSelectedColumn] = useState("");
-  const navigate = useNavigate();
+  const { datasetName } = usePathParams<DatasetDetailParams>();
   const [inputDatasetName, setInputDatasetName] = useState(datasetName);
+  const [selectedColumn, setSelectedColumn] = useState("");
+  const [code, setCode] = useState<string>(getCodeDefaultValue());
+
+  const toast = useToast();
+  const navigate = useNavigate();
+
+  const columnModal = useModal();
+  const runPythonModal = useModal();
+  const confirmRunPythonModal = useModal();
+
+  const { data, isLoading, refetch } = useDatasetQuery(datasetName);
+
   const columnOnClickFunction = (selectedColumn: string) => {
     setSelectedColumn(selectedColumn);
-    columnModalSetOpen(true);
+    columnModal.setIsOpen(true);
   };
 
   useMessageListener({
@@ -94,14 +109,21 @@ export const DatasetInfoPage = () => {
       });
   };
 
+  const submitExecPythonOnDataset = async () => {};
+
   const columns = dataset.columns;
 
   return (
     <div>
+      <ConfirmModal
+        {...confirmRunPythonModal}
+        onClose={confirmRunPythonModal.modalClose}
+        onConfirm={submitExecPythonOnDataset}
+      />
       <ChakraModal
-        isOpen={columnModalOpen}
+        isOpen={columnModal.isOpen}
         title={selectedColumn}
-        onClose={columnModalClose}
+        onClose={columnModal.modalClose}
         modalContentStyle={{
           minWidth: "max-content",
           minHeight: "80%",
@@ -113,22 +135,27 @@ export const DatasetInfoPage = () => {
           columnName={selectedColumn}
           setColumnName={setSelectedColumn}
           datasetName={datasetName}
-          close={columnModalClose}
+          close={columnModal.modalClose}
         />
       </ChakraModal>
-
       <ChakraModal
-        isOpen={combineModalOpen}
-        title="Combine datasets"
-        onClose={combineModalClose}
+        isOpen={runPythonModal.isOpen}
+        title={"Run python on all the columns"}
+        onClose={runPythonModal.modalClose}
         modalContentStyle={{
           minWidth: "max-content",
-          minHeight: "80vh",
-          maxWidth: "80vw",
+          minHeight: "50%",
+          maxWidth: "90%",
           marginTop: "10vh",
         }}
+        footerContent={
+          <FormSubmitBar
+            cancelCallback={runPythonModal.modalClose}
+            submitCallback={confirmRunPythonModal.modalOpen}
+          />
+        }
       >
-        {null}
+        <RunPythonOnAllCols code={code} setCode={setCode} />
       </ChakraModal>
       <Box
         display={"flex"}
@@ -153,12 +180,12 @@ export const DatasetInfoPage = () => {
           />
         </Box>
         <Box display={"flex"} gap={"16px"}>
-          <Button variant={BUTTON_VARIANTS.grey}>Add dataset</Button>
           <Button
             variant={BUTTON_VARIANTS.grey}
-            onClick={() => combineModalSetOpen(true)}
+            leftIcon={<PythonIcon width={24} height={24} />}
+            onClick={runPythonModal.modalOpen}
           >
-            Add columns
+            Run python
           </Button>
         </Box>
       </Box>
