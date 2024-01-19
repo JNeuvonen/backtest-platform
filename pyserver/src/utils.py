@@ -68,13 +68,14 @@ class PythonCode:
     INDENT = "    "
     DATASET_SYMBOL = "dataset"
     COLUMN_SYMBOL = "column_name"
-    FUNC_EXEC_ON_COLUMN = f"def run_python({DATASET_SYMBOL}, {COLUMN_SYMBOL}):"
+    FUNC_EXEC_ON_COLUMN = f"def run_on_column({DATASET_SYMBOL}, {COLUMN_SYMBOL}):"
+    FUNC_EXEC_ON_DATASET = f"def run_on_dataset({DATASET_SYMBOL}):"
     OPEN_CONNECTION = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
     DATASET_CODE_EXAMPLE = "dataset = get_dataset()"
     COLUMN_CODE_EXAMPLE = f"{COLUMN_SYMBOL} = get_column()"
 
     @classmethod
-    def run_on_column(cls, dataset_name: str, column_name: str, code: str):
+    def on_column(cls, dataset_name: str, column_name: str, code: str):
         code = "\n".join(cls.INDENT + line for line in code.split("\n"))
         code = (
             code.replace(cls.DATASET_CODE_EXAMPLE, "")
@@ -86,5 +87,21 @@ class PythonCode:
             + f"\n{code}"
             + f"\n{cls.INDENT}{cls.OPEN_CONNECTION}"
             + f'\n{cls.INDENT}{cls.INDENT}{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
-            + f'\nrun_python(read_dataset_to_mem("{dataset_name}"), "{column_name}")'
+            + f'\nrun_on_column(read_dataset_to_mem("{dataset_name}"), "{column_name}")'
+        )
+
+    @classmethod
+    def on_dataset(cls, dataset_name: str, code: str):
+        code = "\n".join(cls.INDENT + line for line in code.split("\n"))
+        code = (
+            code.replace(cls.DATASET_CODE_EXAMPLE, "")
+            .replace(cls.COLUMN_CODE_EXAMPLE, "")
+            .rstrip()
+        )
+        return (
+            cls.FUNC_EXEC_ON_DATASET
+            + f"\n{code}"
+            + f"\n{cls.INDENT}{cls.OPEN_CONNECTION}"
+            + f'\n{cls.INDENT}{cls.INDENT}{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
+            + f'\nrun_on_dataset(read_dataset_to_mem("{dataset_name}"))'
         )
