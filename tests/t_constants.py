@@ -138,9 +138,15 @@ class URL:
         )
 
     @classmethod
-    def exec_python(cls, dataset_name, column_name):
+    def exec_python_on_col(cls, dataset_name, column_name):
         return cls._datasets_route() + RoutePaths.EXEC_PYTHON_ON_COL.format(
             dataset_name=dataset_name, column_name=column_name
+        )
+
+    @classmethod
+    def exec_python_on_dataset(cls, dataset_name):
+        return cls._datasets_route() + RoutePaths.EXEC_PYTHON_ON_DATASET.format(
+            dataset_name=dataset_name
         )
 
     @classmethod
