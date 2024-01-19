@@ -12,6 +12,7 @@ interface ChakraSelectProps {
   id: string;
   onChange?: (value: string) => void;
   containerStyle?: CSSProperties;
+  defaultValueIndex?: number;
 }
 
 export const ChakraSelect: React.FC<ChakraSelectProps> = ({
@@ -20,11 +21,16 @@ export const ChakraSelect: React.FC<ChakraSelectProps> = ({
   id,
   onChange,
   containerStyle = { maxWidth: "200px" },
+  defaultValueIndex = 0,
 }) => {
   return (
     <FormControl style={containerStyle}>
       <FormLabel htmlFor={id}>{label}</FormLabel>
-      <Select id={id} onChange={(e) => onChange?.(e.target.value)}>
+      <Select
+        id={id}
+        onChange={(e) => onChange?.(e.target.value)}
+        defaultValue={options[defaultValueIndex].value}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
