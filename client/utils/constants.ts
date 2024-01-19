@@ -79,3 +79,7 @@ export const NULL_FILL_STRATEGIES: {
   { value: "ZERO", label: "Zero" },
   { value: "NONE", label: "None" },
 ];
+
+export const DOM_IDS = {
+  select_null_fill_strat: "select-null-fill-strat",
+};
