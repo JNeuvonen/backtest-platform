@@ -97,8 +97,15 @@ class Post:
             return res.json()
 
     @staticmethod
-    def exec_python(dataset_name, column_name, body):
-        with Req("post", URL.exec_python(dataset_name, column_name), json=body) as res:
+    def exec_python_on_col(dataset_name, column_name, body):
+        with Req(
+            "post", URL.exec_python_on_col(dataset_name, column_name), json=body
+        ) as res:
+            return res.json()
+
+    @staticmethod
+    def exec_python_on_dataset(dataset_name, body):
+        with Req("post", URL.exec_python_on_dataset(dataset_name), json=body) as res:
             return res.json()
 
 
