@@ -3,12 +3,13 @@ import { ChakraTabs } from "../../components/layout/Tabs";
 import { DatasetInfoPage } from "./info";
 import { DatasetEditorPage } from "./editor";
 import useQueryParams from "../../hooks/useQueryParams";
+import { DatasetModelPage } from "./model";
 
-const TAB_LABELS = ["Info", "Editor", "Model"];
-const TABS = [<DatasetInfoPage />, <DatasetEditorPage />, <div>model</div>];
+const TAB_LABELS = ["Info", "Editor", "Create model"];
+const TABS = [<DatasetInfoPage />, <DatasetEditorPage />, <DatasetModelPage />];
 
 interface TabQueryParams {
-  defaultTab: number | undefined;
+  defaultTab: string | undefined;
 }
 
 export const DatasetIndex = () => {
