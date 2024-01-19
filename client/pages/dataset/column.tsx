@@ -22,6 +22,7 @@ import { MdOutlineSubdirectoryArrowLeft } from "react-icons/md";
 import { ToolBarStyle } from "../../components/ToolbarStyle";
 import { useNavigate } from "react-router-dom";
 import { getDatasetEditorUrl } from "../../utils/navigate";
+import { CodeEditor } from "../../components/CodeInput";
 
 interface RouteParams {
   datasetName: string;
@@ -187,25 +188,7 @@ export const DatasetColumnInfoPage = () => {
             />
           }
         >
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              height: "100%",
-              display: "flex",
-            }}
-          >
-            <PythonEditor
-              code={code}
-              onChange={handleCodeChange}
-              editorMount={handleEditorDidMount}
-              height={"400px"}
-              containerStyles={{ width: "65%", height: "100%" }}
-              fontSize={15}
-            />
-
-            <div>Code presets will come here</div>
-          </div>
+          <CodeEditor code={code} setCode={setCode} />
         </ChakraModal>
       </div>
     </>
