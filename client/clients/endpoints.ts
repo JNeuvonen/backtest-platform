@@ -37,6 +37,9 @@ export const URLS = {
   delete_dataset_cols: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/delete-cols`,
 
-  execute_python_on_dataset: (datasetName: string, columnName: string) =>
+  exec_python_on_column: (datasetName: string, columnName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/exec-python/${columnName}`,
+
+  exec_python_on_dataset: (datasetName: string) =>
+    BASE_URL + API.dataset.root + `/${datasetName}/exec-python`,
 };
