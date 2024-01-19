@@ -1,9 +1,10 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import Select, { MultiValue, SingleValue } from "react-select";
 import {
   COLOR_BG_PRIMARY_SHADE_ONE,
   COLOR_BG_SECONDARY_SHADE_THREE,
 } from "../utils/colors";
+import { FormControl, FormLabel } from "@chakra-ui/react";
 
 export interface OptionType {
   value: string;
@@ -18,14 +19,17 @@ interface SelectWithTextFilterProps {
   placeholder?: string;
   isMulti: boolean;
   closeMenuOnSelect?: boolean;
+  label?: string;
+  containerStyle?: CSSProperties;
+  id?: string;
 }
 
-export const SelectWithTextFilter: React.FC<SelectWithTextFilterProps> = ({
+const SearchSelect = ({
   options,
   onChange,
-  placeholder,
   isMulti,
-  closeMenuOnSelect = true,
+  closeMenuOnSelect,
+  placeholder,
 }) => {
   return (
     <Select
@@ -51,6 +55,42 @@ export const SelectWithTextFilter: React.FC<SelectWithTextFilterProps> = ({
           };
         },
       }}
+    />
+  );
+};
+
+export const SelectWithTextFilter: React.FC<SelectWithTextFilterProps> = ({
+  options,
+  onChange,
+  placeholder,
+  isMulti,
+  closeMenuOnSelect = true,
+  label = "",
+  containerStyle = {},
+  id = "",
+}) => {
+  if (label) {
+    return (
+      <FormControl style={containerStyle}>
+        <FormLabel htmlFor={id}>{label}</FormLabel>
+        <SearchSelect
+          options={options}
+          onChange={onChange}
+          placeholder={placeholder}
+          isMulti={isMulti}
+          closeMenuOnSelect={closeMenuOnSelect}
+        />
+      </FormControl>
+    );
+  }
+
+  return (
+    <SearchSelect
+      options={options}
+      onChange={onChange}
+      placeholder={placeholder}
+      isMulti={isMulti}
+      closeMenuOnSelect={closeMenuOnSelect}
     />
   );
 };
