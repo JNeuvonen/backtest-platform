@@ -9,17 +9,45 @@ import {
 import { SingleValue } from "react-select";
 import { Spinner } from "@chakra-ui/react";
 import { ChakraSelect } from "../../components/chakra/select";
-import { DOM_IDS, NULL_FILL_STRATEGIES } from "../../utils/constants";
+import {
+  CodeHelper,
+  DOM_IDS,
+  NULL_FILL_STRATEGIES,
+} from "../../utils/constants";
 import { ToolBarStyle } from "../../components/ToolbarStyle";
+import { CodeEditor } from "../../components/CodeEditor";
+import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
 
 type PathParams = {
   datasetName: string;
+};
+
+const getCodeDefaultValue = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("class Model(nn.Module):");
+  code.addIndent();
+
+  code.appendLine("def __init__(self, n_input_params):");
+  code.addIndent();
+
+  code.appendLine("super(Model, self).__init__()");
+  code.appendLine("self.linear = nn.Linear(n_input_params, 1)");
+  code.appendLine("");
+
+  code.reduceIndent();
+  code.appendLine("def forward(self, x):");
+  code.addIndent();
+  code.appendLine("return self.linear(x)");
+
+  return code.get();
 };
 
 export const DatasetModelPage = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
   const [targetColumn, setTargetColumn] = useState<string>("");
+  const [code, setCode] = useState(getCodeDefaultValue());
 
   if (!data || !data?.res) {
     return (
@@ -58,6 +86,12 @@ export const DatasetModelPage = () => {
           defaultValueIndex={0}
         />
       </ToolBarStyle>
+      <CodeEditor
+        code={code}
+        setCode={setCode}
+        style={{ marginTop: "16px" }}
+        fontSize={13}
+      />
     </div>
   );
 };
