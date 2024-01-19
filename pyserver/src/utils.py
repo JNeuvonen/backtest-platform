@@ -68,8 +68,8 @@ class PythonCode:
     INDENT = "    "
     DATASET_SYMBOL = "dataset"
     COLUMN_SYMBOL = "column_name"
-    EDIT_COLUMN_DEFAULT = f"def run_python({DATASET_SYMBOL}, {COLUMN_SYMBOL}):\n"
-    SAVE_STATEMENT = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
+    FUNC_EXEC_ON_COLUMN = f"def run_python({DATASET_SYMBOL}, {COLUMN_SYMBOL}):"
+    OPEN_CONNECTION = "with sqlite3.connect(AppConstants.DB_DATASETS) as conn:"
     DATASET_CODE_EXAMPLE = "dataset = get_dataset()"
     COLUMN_CODE_EXAMPLE = f"{COLUMN_SYMBOL} = get_column()"
 
@@ -82,11 +82,9 @@ class PythonCode:
             .rstrip()
         )
         return (
-            cls.EDIT_COLUMN_DEFAULT
-            + code
-            + f"\n{cls.INDENT}"
-            + cls.SAVE_STATEMENT
-            + f"\n{cls.INDENT}{cls.INDENT}"
-            + f'{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
+            cls.FUNC_EXEC_ON_COLUMN
+            + f"\n{code}"
+            + f"\n{cls.INDENT}{cls.OPEN_CONNECTION}"
+            + f'\n{cls.INDENT}{cls.INDENT}{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
             + f'\nrun_python(read_dataset_to_mem("{dataset_name}"), "{column_name}")'
         )
