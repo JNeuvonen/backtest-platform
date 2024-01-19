@@ -87,6 +87,6 @@ export interface ColumnResponse {
 export interface Column {
   rows: Array<number[]>;
   null_count: number;
-  stats: StatsCol;
+  stats?: StatsCol;
   kline_open_time: Array<number[]>;
 }
