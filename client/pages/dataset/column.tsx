@@ -18,6 +18,10 @@ import { createPythonCode } from "../../utils/str";
 import { ConfirmModal } from "../../components/form/confirm";
 import { execPythonOnDatasetCol } from "../../clients/requests";
 import { CODE } from "../../utils/constants";
+import { MdOutlineSubdirectoryArrowLeft } from "react-icons/md";
+import { ToolBarStyle } from "../../components/ToolbarStyle";
+import { useNavigate } from "react-router-dom";
+import { getDatasetEditorUrl } from "../../utils/navigate";
 
 interface RouteParams {
   datasetName: string;
@@ -58,7 +62,7 @@ const getCodeDefaultValue = (columnName: string) => {
     `#dataset["new_column"] = dataset[${COL_SYMBOL}]`,
     "",
     `#Dataset is a pandas dataframe. So all native pandas functions are available.`,
-    `#This example creates a simple moving average of 30 days on the column ${columnName}`,
+    `#This example creates a simple moving average of last 30 datapoints on the column ${columnName}`,
     `#dataset['SMA30_${columnName}'] = dataset['${columnName}'].rolling(window=30).mean()`,
   ]);
 };
@@ -70,6 +74,7 @@ export const DatasetColumnInfoPage = () => {
   const { isOpen, setIsOpen, modalClose } = useModal();
   const toast = useToast();
   const useSubmitConfirm = useModal();
+  const navigate = useNavigate();
 
   if (!data?.res) {
     return (
@@ -139,16 +144,25 @@ export const DatasetColumnInfoPage = () => {
       />
       <div>
         <Title>Column {columnName}</Title>
-        <div>
+        <ToolBarStyle style={{ marginTop: "16px" }}>
           <Button
             variant={BUTTON_VARIANTS.grey}
-            leftIcon={<PythonIcon width={24} height={24} />}
-            fontSize={14}
-            onClick={() => setIsOpen(true)}
+            leftIcon={<MdOutlineSubdirectoryArrowLeft />}
+            onClick={() => navigate(getDatasetEditorUrl(datasetName))}
           >
-            Python
+            Return to dataset
           </Button>
-        </div>
+          <div>
+            <Button
+              variant={BUTTON_VARIANTS.grey}
+              leftIcon={<PythonIcon width={24} height={24} />}
+              fontSize={14}
+              onClick={() => setIsOpen(true)}
+            >
+              Python
+            </Button>
+          </div>
+        </ToolBarStyle>
         <SmallTable
           columns={COLUMNS_STATS_TABLE}
           rows={getStatsRows(res)}
