@@ -5,6 +5,9 @@ export const PATH_KEYS = {
 
 export const CODE = {
   INDENT: "    ",
+  GET_DATASET_EXAMPLE: "dataset = get_dataset() #pandas dataframe",
+  COL_SYMBOL: "column_name",
+  DATASET_SYMBOL: "dataset",
 };
 
 export const PATHS = {
