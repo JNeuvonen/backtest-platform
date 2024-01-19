@@ -2,7 +2,7 @@ import React from "react";
 import { OnMount } from "@monaco-editor/react";
 import { PythonEditor } from "./PythonEditor";
 import { ChakraSelect } from "./chakra/select";
-import { NULL_FILL_STRATEGIES } from "../utils/constants";
+import { DOM_IDS, NULL_FILL_STRATEGIES } from "../utils/constants";
 
 interface Props {
   code: string;
@@ -24,7 +24,8 @@ export const RunPythonOnAllCols = ({ code, setCode }: Props) => {
       <ChakraSelect
         label={"Null fill strategy"}
         options={NULL_FILL_STRATEGIES}
-        id="select-null-fill-strat"
+        id={DOM_IDS.select_null_fill_strat}
+        defaultValueIndex={3}
       />
       <div
         style={{
