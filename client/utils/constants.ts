@@ -32,6 +32,11 @@ export const CONSTANTS = {
   base_url: "http://localhost:8000",
 };
 
+export const LAYOUT = {
+  side_nav_width: 110,
+  layout_padding: 16,
+};
+
 export const TAURI_COMMANDS = {
   fetch_env: "fetch_env",
   fetch_platform: "fetch_platform",
@@ -83,3 +88,35 @@ export const NULL_FILL_STRATEGIES: {
 export const DOM_IDS = {
   select_null_fill_strat: "select-null-fill-strat",
 };
+
+export class CodeHelper {
+  indentLevel: number;
+  code: string;
+
+  constructor() {
+    this.indentLevel = 0;
+    this.code = "";
+  }
+
+  appendLine(line: string) {
+    let newLine = "";
+    for (let i = 0; i < this.indentLevel; i++) {
+      newLine += CODE.INDENT;
+    }
+    newLine += line + "\n";
+    this.code += newLine;
+  }
+
+  addIndent() {
+    this.indentLevel += 1;
+  }
+  resetIndent() {
+    this.indentLevel = 0;
+  }
+  reduceIndent() {
+    this.indentLevel -= 1;
+  }
+  get() {
+    return this.code;
+  }
+}
