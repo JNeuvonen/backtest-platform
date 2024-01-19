@@ -17,9 +17,15 @@ export async function execPythonOnDatasetCol(
   columnName: string,
   code: string
 ) {
-  const url = URLS.execute_python_on_dataset(datasetName, columnName);
+  const url = URLS.exec_python_on_column(datasetName, columnName);
   return buildRequest({ method: "POST", url, payload: { code } });
 }
+
+export async function execPythonOnDataset(datasetName: string, code: string) {
+  const url = URLS.exec_python_on_dataset(datasetName);
+  return buildRequest({ method: "POST", url, payload: { code } });
+}
+
 export async function addColumnsToDataset(
   datasetName: string,
   payload: AddColumnsReqPayload
