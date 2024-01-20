@@ -1,14 +1,14 @@
 import React from "react";
-import usePath from "../../../hooks/usePath";
+// import usePath from "../../../hooks/usePath";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { Button } from "@chakra-ui/react";
 import { DatasetModelCreatePage } from "./create";
 import { FormSubmitBar } from "../../../components/form/CancelSubmitBar";
 
-const TAB_LABELS = ["Available", "Create", "Train"];
+// const TAB_LABELS = ["Available", "Create", "Train"];
 export const DatasetModelIndex = () => {
-  const { path } = usePath();
+  // const { path } = usePath();
 
   const createModelModal = useModal();
 
