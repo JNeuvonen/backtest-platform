@@ -11,12 +11,15 @@ export const CODE = {
 };
 
 export const PATHS = {
-  datasets: {
+  data: {
     path: "/datasets",
     dataset: `/datasets/${PATH_KEYS.dataset}`,
     info: `/datasets/${PATH_KEYS.dataset}/info`,
     column: `/datasets/${PATH_KEYS.dataset}/info/${PATH_KEYS.column}`,
     editor: `/datasets/${PATH_KEYS.dataset}/editor`,
+    model: {
+      path: `/datasets/${PATH_KEYS.dataset}/model`,
+    },
   },
   simulate: {
     path: "/simulate",

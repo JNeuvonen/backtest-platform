@@ -12,12 +12,12 @@ export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path={PATHS.datasets.path} element={<BrowseDatasetsPage />} />
-      <Route path={PATHS.datasets.dataset} element={<DatasetIndex />}>
-        <Route path={PATHS.datasets.info} element={<DatasetInfoPage />} />
-        <Route path={PATHS.datasets.editor} element={<DatasetEditorPage />} />
+      <Route path={PATHS.data.path} element={<BrowseDatasetsPage />} />
+      <Route path={PATHS.data.dataset} element={<DatasetIndex />}>
+        <Route path={PATHS.data.info} element={<DatasetInfoPage />} />
+        <Route path={PATHS.data.editor} element={<DatasetEditorPage />} />
       </Route>
-      <Route path={PATHS.datasets.column} element={<DatasetColumnInfoPage />} />
+      <Route path={PATHS.data.column} element={<DatasetColumnInfoPage />} />
       <Route path={PATHS.simulate.path} element={<Home />} />
     </Routes>
   );
