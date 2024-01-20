@@ -9,7 +9,6 @@ import { makeUniDimensionalTableRows } from "../../../utils/table";
 import { roundNumberDropRemaining } from "../../../utils/number";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { PythonIcon } from "../../../components/icons/python";
-import { OnMount } from "@monaco-editor/react";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { FormSubmitBar } from "../../../components/form/CancelSubmitBar";
@@ -46,10 +45,6 @@ const COLUMNS_STATS_TABLE: string[] = [
 
 const { GET_DATASET_EXAMPLE, COL_SYMBOL } = CODE;
 
-// const getCodeDefaultValue = (columnName: string) => {
-//   return `dataset = get_dataset()\ndataset["${columnName}"] = dataset["${columnName}"] * 3\n#line above multiplies the value of ${columnName} on every row by three`;
-// };
-
 const getCodeDefaultValue = (columnName: string) => {
   return createPythonCode([
     `${GET_DATASET_EXAMPLE}`,
@@ -84,10 +79,6 @@ export const DatasetColumnInfoPage = () => {
     );
   }
 
-  const handleCodeChange = (newValue: string | undefined) => {
-    setCode(newValue ?? "");
-  };
-
   const res = data.res;
 
   const getStatsRows = (data: ColumnsRes) => {
@@ -113,12 +104,6 @@ export const DatasetColumnInfoPage = () => {
       rows.push("N/A");
     }
     return makeUniDimensionalTableRows(rows);
-  };
-
-  const handleEditorDidMount: OnMount = (editor) => {
-    editor.setValue(code);
-    editor.setPosition({ lineNumber: 4, column: 5 });
-    editor.focus();
   };
 
   const onSubmit = async () => {
