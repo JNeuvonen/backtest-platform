@@ -3,7 +3,6 @@ import { BrowseDatasetsPage } from "./Datasets";
 import { InnerSideNav } from "../components/layout/InnerSideNav";
 import { BsDatabase } from "react-icons/bs";
 import { PATHS, PATH_KEYS } from "../utils/constants";
-import { Outlet } from "react-router-dom";
 import usePath from "../hooks/usePath";
 import { usePathParams } from "../hooks/usePathParams";
 import { OutletContent } from "../components/layout/TwoNavsIndent";
