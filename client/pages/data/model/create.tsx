@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Title from "../../../components/Title";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { useDatasetQuery } from "../../../clients/queries/queries";
@@ -7,7 +7,13 @@ import {
   SelectWithTextFilter,
 } from "../../../components/SelectFilter";
 import { SingleValue } from "react-select";
-import { Spinner } from "@chakra-ui/react";
+import {
+  Button,
+  Divider,
+  FormControl,
+  FormLabel,
+  Spinner,
+} from "@chakra-ui/react";
 import { ChakraSelect } from "../../../components/chakra/select";
 import {
   CodeHelper,
@@ -18,6 +24,12 @@ import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { ValidationSplitSlider } from "../../../components/ValidationSplitSlider";
 import { ChakraCheckbox } from "../../../components/chakra/checkbox";
+import { BUTTON_VARIANTS } from "../../../theme";
+import {
+  CheckboxMulti,
+  CheckboxValue,
+} from "../../../components/form/CheckBoxMulti";
+import { useForceUpdate } from "../../../hooks/useForceUpdate";
 
 type PathParams = {
   datasetName: string;
@@ -58,13 +70,29 @@ const getHyperParamsExample = () => {
 export const DatasetModelCreatePage = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data } = useDatasetQuery(datasetName);
-  const [setTargetColumn] = useState<string>("");
+  const [targetColumn, setTargetColumn] = useState<string>("");
+  const [columnsToDrop, setColumnsToDrop] = useState<CheckboxValue[]>([]);
+  const [dropColumnsVisible, setDropColumnsVisible] = useState(false);
   const [modelCode, setModelCode] = useState(getModelDefaultExample());
   const [hyperParamsCode, setHyperParamsCode] = useState(
     getHyperParamsExample()
   );
   const [validSplitSize, setValidSplitSize] = useState([80, 100]);
   const [disableValSplit, setDisableValSplit] = useState(false);
+  const forceUpdate = useForceUpdate();
+
+  useEffect(() => {
+    if (data?.status === 200) {
+      setColumnsToDrop(
+        data.res.dataset.columns.map((item) => {
+          return {
+            isChecked: false,
+            label: item,
+          };
+        })
+      );
+    }
+  }, [data]);
 
   if (!data || !data?.res) {
     return (
@@ -117,6 +145,28 @@ export const DatasetModelCreatePage = () => {
         height="100px"
         label="Hyper parameters and optimizer"
       />
+
+      <FormControl style={{ marginTop: "16px" }}>
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={() => setDropColumnsVisible(!dropColumnsVisible)}
+        >
+          {dropColumnsVisible ? "Hide drop columns" : "Drop columns"}
+        </Button>
+
+        {dropColumnsVisible && (
+          <CheckboxMulti
+            options={columnsToDrop}
+            onSelect={() => {
+              forceUpdate();
+            }}
+          />
+        )}
+      </FormControl>
+
+      <Divider />
+
+      <Title>Validation split</Title>
 
       <div style={{ marginTop: "16px" }}>
         <ChakraCheckbox
