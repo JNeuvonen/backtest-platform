@@ -4,6 +4,7 @@ import sys
 import requests
 
 from decimal import Decimal
+from tests.fixtures import criterion_basic, linear_model_basic
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
 from tests.t_populate import t_upload_dataset
@@ -12,6 +13,7 @@ from tests.t_utils import (
     Post,
     Put,
     add_object_to_add_cols_payload,
+    create_model_body,
     t_get_timeseries_col,
 )
 
@@ -271,3 +273,18 @@ def test_route_exec_python_on_dataset(cleanup_db, fixt_btc_small_1h: DatasetMeta
                 before_list_mul_3[i] <= 1.005 * after_list[i]
                 or before_list_mul_3[i] >= 0.995 * after_list[i]
             )
+
+
+@pytest.mark.acceptance
+def test_route_create_model(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    body = create_model_body(
+        name="Example model",
+        target_col=BinanceCols.OPEN_PRICE,
+        drop_cols=[],
+        null_fill_strategy="NONE",
+        model=linear_model_basic(),
+        hyper_params_and_optimizer_code=criterion_basic(),
+        validation_split=[70, 100],
+    )
+
+    Post.create_model(fixt_btc_small_1h.name, body)
