@@ -319,17 +319,9 @@ class DatasetUtils:
 
         TABLE_NAME = "dataset"
 
-        CREATE_TABLE = f"""
-                CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    {Cols.DATASET_NAME} TEXT NOT NULL,
-                    {Cols.TIMESERIES_COLUMN} TEXT
-                );
-            """
-
     class Model:
         class Cols:
-            DATASET_NAME = "dataset_name"
+            DATASET_ID = "dataset_id"
             TARGET_COL = "target_col"
             DROP_COLS = "drop_cols"
             NULL_FILL_STRAT = "null_fill_strategy"
@@ -339,16 +331,31 @@ class DatasetUtils:
 
         TABLE_NAME = "model"
 
-        CREATE_TABLE = f"""
-                CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+    @classmethod
+    def create_dataset_table_sql(cls):
+        Cols = cls.Dataset.Cols
+        return f"""
+                CREATE TABLE IF NOT EXISTS {cls.Dataset.TABLE_NAME} (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     {Cols.DATASET_NAME} TEXT NOT NULL,
+                    {Cols.TIMESERIES_COLUMN} TEXT
+                );
+            """
+
+    @classmethod
+    def create_model_table_sql(cls):
+        Cols = cls.Model.Cols
+        return f"""
+                CREATE TABLE IF NOT EXISTS {cls.Model.TABLE_NAME} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.DATASET_ID} INTEGER NOT NULL,
                     {Cols.TARGET_COL} TEXT NOT NULL,
                     {Cols.DROP_COLS} TEXT,
                     {Cols.NULL_FILL_STRAT} TEXT,
                     {Cols.MODEL} TEXT,
                     {Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE} TEXT,
-                    {Cols.VALIDATION_SPLIT} TEXT
+                    {Cols.VALIDATION_SPLIT} TEXT,
+                    FOREIGN KEY ({Cols.DATASET_ID}) REFERENCES {cls.Dataset.TABLE_NAME}(id)
                 );
             """
 
@@ -356,8 +363,8 @@ class DatasetUtils:
     def init_tables(cls):
         with sqlite3.connect(cls.get_path()) as conn:
             cursor = conn.cursor()
-            cursor.execute(cls.Dataset.CREATE_TABLE)
-            cursor.execute(cls.Model.CREATE_TABLE)
+            cursor.execute(cls.create_dataset_table_sql())
+            cursor.execute(cls.create_model_table_sql())
             conn.commit()
 
     @classmethod
