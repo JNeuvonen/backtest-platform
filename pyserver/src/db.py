@@ -14,7 +14,7 @@ from dataset import (
     read_dataset_to_mem,
 )
 from log import LogExceptionContext, get_logger
-from request_types import ModelData
+from request_types import BodyModelData
 from utils import df_fill_nulls
 
 
@@ -440,7 +440,7 @@ class DatasetUtils:
                 conn.commit()
 
     @classmethod
-    def create_model_entry(cls, dataset_id: int, model_data: ModelData):
+    def create_model_entry(cls, dataset_id: int, model_data: BodyModelData):
         with LogExceptionContext():
             with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
