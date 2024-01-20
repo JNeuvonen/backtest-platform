@@ -3,7 +3,6 @@ import { BsDatabase } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { LINKS, PATHS } from "../../utils/constants";
 import { useActivePath } from "../../hooks/useActivePath";
-import { IconType } from "react-icons";
 
 export interface SideNavItem {
   link: string;
