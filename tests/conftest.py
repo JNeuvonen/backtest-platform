@@ -28,7 +28,6 @@ from utils import rm_file
 from db import DatasetUtils, exec_sql
 from config import append_app_data_path
 from constants import DB_DATASETS
-from sql_statements import CREATE_DATASET_UTILS_TABLE
 
 
 def t_binance_path_to_dataset_name(binance_path: str):
@@ -68,7 +67,7 @@ def t_rm_db():
 @pytest.fixture
 def cleanup_db():
     t_rm_db()
-    exec_sql(DatasetUtils.get_path(), CREATE_DATASET_UTILS_TABLE)
+    DatasetUtils.init_tables()
     yield
 
 
