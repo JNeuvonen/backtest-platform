@@ -327,11 +327,37 @@ class DatasetUtils:
                 );
             """
 
+    class Model:
+        class Cols:
+            DATASET_NAME = "dataset_name"
+            TARGET_COL = "target_col"
+            DROP_COLS = "drop_cols"
+            NULL_FILL_STRAT = "null_fill_strategy"
+            MODEL = "model_code"
+            HYPER_PARAMS_AND_OPTIMIZER_CODE = "optimizer_and_criterion_code"
+            VALIDATION_SPLIT = "validation_split"
+
+        TABLE_NAME = "model"
+
+        CREATE_TABLE = f"""
+                CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.DATASET_NAME} TEXT NOT NULL,
+                    {Cols.TARGET_COL} TEXT NOT NULL,
+                    {Cols.DROP_COLS} TEXT,
+                    {Cols.NULL_FILL_STRAT} TEXT,
+                    {Cols.MODEL} TEXT,
+                    {Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE} TEXT,
+                    {Cols.VALIDATION_SPLIT} TEXT
+                );
+            """
+
     @classmethod
     def init_tables(cls):
         with sqlite3.connect(cls.get_path()) as conn:
             cursor = conn.cursor()
             cursor.execute(cls.Dataset.CREATE_TABLE)
+            cursor.execute(cls.Model.CREATE_TABLE)
             conn.commit()
 
     @classmethod
