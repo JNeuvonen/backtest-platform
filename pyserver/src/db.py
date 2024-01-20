@@ -1,4 +1,3 @@
-from enum import Enum
 import logging
 import sqlite3
 import statistics
@@ -311,88 +310,94 @@ def get_column_names(conn: sqlite3.Connection, table_name: str) -> List[str]:
 
 
 class DatasetUtils:
-    TABLE_NAME = "dataset_util"
     DB_PATH = "datasets_util.db"
 
-    class Columns(Enum):
-        DATASET_NAME = "dataset_name"
-        TIMESERIES_COLUMN = "timeseries_column"
+    class Dataset:
+        class Cols:
+            DATASET_NAME = "dataset_name"
+            TIMESERIES_COLUMN = "timeseries_column"
 
-    @staticmethod
-    def get_path():
-        return append_app_data_path(DatasetUtils.DB_PATH)
+        TABLE_NAME = "dataset"
 
-    @staticmethod
-    def update_dataset_name(old_name, new_name):
+        CREATE_TABLE = f"""
+                CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.DATASET_NAME} TEXT NOT NULL,
+                    {Cols.TIMESERIES_COLUMN} TEXT
+                );
+            """
+
+    @classmethod
+    def init_tables(cls):
+        with sqlite3.connect(cls.get_path()) as conn:
+            cursor = conn.cursor()
+            cursor.execute(cls.Dataset.CREATE_TABLE)
+            conn.commit()
+
+    @classmethod
+    def get_path(cls):
+        return append_app_data_path(cls.DB_PATH)
+
+    @classmethod
+    def update_dataset_name(cls, old_name, new_name):
         with LogExceptionContext():
-            with sqlite3.connect(DatasetUtils.get_path()) as conn:
+            with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
-                update_query = f"""
-                    UPDATE {DatasetUtils.TABLE_NAME}
-                    SET {DatasetUtils.Columns.DATASET_NAME.value} = ?
-                    WHERE {DatasetUtils.Columns.DATASET_NAME.value} = ?
-                """
-                cursor.execute(update_query, (new_name, old_name))
+                cursor.execute(
+                    f"""
+                    UPDATE {cls.Dataset.TABLE_NAME}
+                    SET {cls.Dataset.Cols.DATASET_NAME} = ?
+                    WHERE {cls.Dataset.Cols.DATASET_NAME} = ?
+                    """,
+                    (new_name, old_name),
+                )
                 conn.commit()
             return True
 
-    @staticmethod
-    def get_timeseries_col(dataset_name: str):
+    @classmethod
+    def get_timeseries_col(cls, dataset_name: str):
         with LogExceptionContext():
-            with sqlite3.connect(DatasetUtils.get_path()) as conn:
-                DB_UTIL_COLS = DatasetUtils.Columns
+            with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
-                query = f"SELECT {DB_UTIL_COLS.TIMESERIES_COLUMN.value} FROM {DatasetUtils.TABLE_NAME} WHERE {DB_UTIL_COLS.DATASET_NAME.value} = ?;"
-                cursor.execute(query, (dataset_name,))
-                rows = cursor.fetchall()
+                cursor.execute(
+                    f"SELECT {cls.Dataset.Cols.TIMESERIES_COLUMN} FROM {cls.Dataset.TABLE_NAME} WHERE {cls.Dataset.Cols.DATASET_NAME}                         = ?;",
+                    (dataset_name,),
+                )
+                row = cursor.fetchone()
                 cursor.close()
-                timeseries_col = None
-                try:
-                    timeseries_col = rows[0][0]
-                except Exception:
-                    pass
-                return timeseries_col
+                return row[0] if row else None
 
-    @staticmethod
+    @classmethod
     def update_timeseries_col(
-        dataset_name: str,
-        new_timeseries_col: str,
-        renaming_timeseries_col: bool,
+        cls, dataset_name: str, new_timeseries_col: str, renaming_timeseries_col: bool
     ):
         with LogExceptionContext():
-            if renaming_timeseries_col is False:
-                column_exists = get_column_from_dataset(
-                    dataset_name, new_timeseries_col
+            if not renaming_timeseries_col and not get_column_from_dataset(
+                dataset_name, new_timeseries_col
+            ):
+                raise HTTPException(
+                    status_code=404,
+                    detail="New column does not exist in the dataset",
                 )
 
-                if column_exists is None:
-                    raise HTTPException(
-                        status_code=404,
-                        detail="New column does not exist in the dataset",
-                    )
-
-            with sqlite3.connect(DatasetUtils.get_path()) as conn:
-                col_timeseries = DatasetUtils.Columns.TIMESERIES_COLUMN.value
-                col_dataset_name = DatasetUtils.Columns.DATASET_NAME.value
-                query = f"""UPDATE {DatasetUtils.TABLE_NAME} SET {col_timeseries} = ?
-                WHERE {col_dataset_name} = ?;"""
+            with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
-                cursor.execute(query, (new_timeseries_col, dataset_name))
+                cursor.execute(
+                    f"""UPDATE {cls.Dataset.TABLE_NAME} SET {cls.Dataset.Cols.TIMESERIES_COLUMN} = ?
+                    WHERE {cls.Dataset.Cols.DATASET_NAME} = ?;""",
+                    (new_timeseries_col, dataset_name),
+                )
                 conn.commit()
                 cursor.close()
 
-    @staticmethod
-    def create_db_utils_entry(dataset_name: str, timeseries_column: str):
+    @classmethod
+    def create_db_utils_entry(cls, dataset_name: str, timeseries_column: str):
         with LogExceptionContext():
-            with sqlite3.connect(DatasetUtils.get_path()) as conn:
-                DB_UTIL_COLS = DatasetUtils.Columns
+            with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    f"""INSERT INTO {DatasetUtils.TABLE_NAME} ({DB_UTIL_COLS.DATASET_NAME.value}, 
-                                    {DB_UTIL_COLS.TIMESERIES_COLUMN.value}) VALUES (?, ?)""",
-                    (
-                        dataset_name,
-                        timeseries_column,
-                    ),
+                    f"""INSERT INTO {cls.Dataset.TABLE_NAME} ({cls.Dataset.Cols.DATASET_NAME}, 
+                        {cls.Dataset.Cols.TIMESERIES_COLUMN}) VALUES (?, ?)""",
+                    (dataset_name, timeseries_column),
                 )
                 conn.commit()
