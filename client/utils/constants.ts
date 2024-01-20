@@ -27,7 +27,7 @@ export const PATHS = {
 };
 
 export const LINKS = {
-  datasets: "Datasets",
+  datasets: "Data",
   simulate: "Simulate",
 };
 

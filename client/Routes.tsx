@@ -3,10 +3,10 @@ import { Route, Routes } from "react-router-dom";
 import { Home } from "./pages";
 import { PATHS } from "./utils/constants";
 import { BrowseDatasetsPage } from "./pages/Datasets";
-import { DatasetIndex } from "./pages/dataset";
-import { DatasetInfoPage } from "./pages/dataset/info";
-import { DatasetEditorPage } from "./pages/dataset/editor";
-import { DatasetColumnInfoPage } from "./pages/dataset/column";
+import { DatasetIndex } from "./pages/data";
+import { DatasetInfoPage } from "./pages/data/info";
+import { DatasetEditorPage } from "./pages/data/editor";
+import { DatasetColumnInfoPage } from "./pages/data/column";
 
 export const AppRoutes = () => {
   return (
