@@ -3,10 +3,14 @@ import { ChakraTabs } from "../../components/layout/Tabs";
 import { DatasetInfoPage } from "./info";
 import { DatasetEditorPage } from "./editor";
 import useQueryParams from "../../hooks/useQueryParams";
-import { DatasetModelPage } from "./model";
+import { DatasetModelCreatePage } from "./model/create";
 
-const TAB_LABELS = ["Info", "Editor", "Create model"];
-const TABS = [<DatasetInfoPage />, <DatasetEditorPage />, <DatasetModelPage />];
+const TAB_LABELS = ["Info", "Editor", "Models"];
+const TABS = [
+  <DatasetInfoPage />,
+  <DatasetEditorPage />,
+  <DatasetModelCreatePage />,
+];
 
 interface TabQueryParams {
   defaultTab: string | undefined;
