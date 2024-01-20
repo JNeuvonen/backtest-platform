@@ -329,6 +329,7 @@ class DatasetUtils:
             DROP_COLS = "drop_cols"
             NULL_FILL_STRAT = "null_fill_strategy"
             MODEL = "model_code"
+            NAME = "model_name"
             HYPER_PARAMS_AND_OPTIMIZER_CODE = "optimizer_and_criterion_code"
             VALIDATION_SPLIT = "validation_split"
 
@@ -356,6 +357,7 @@ class DatasetUtils:
                     {Cols.DROP_COLS} TEXT,
                     {Cols.NULL_FILL_STRAT} TEXT,
                     {Cols.MODEL} TEXT,
+                    {Cols.NAME} TEXT UNIQUE,
                     {Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE} TEXT,
                     {Cols.VALIDATION_SPLIT} TEXT,
                     FOREIGN KEY ({Cols.DATASET_ID}) REFERENCES {cls.Dataset.TABLE_NAME}({cls.Dataset.Cols.PRIMARY_KEY})
@@ -447,15 +449,16 @@ class DatasetUtils:
                 cursor.execute(
                     f"""INSERT INTO {cls.Model.TABLE_NAME} 
                         ({cls.Model.Cols.DATASET_ID}, {cls.Model.Cols.TARGET_COL}, {cls.Model.Cols.DROP_COLS}, 
-                         {cls.Model.Cols.NULL_FILL_STRAT}, {cls.Model.Cols.MODEL}, {cls.Model.Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE},
+                         {cls.Model.Cols.NULL_FILL_STRAT}, {cls.Model.Cols.MODEL}, {cls.Model.Cols.NAME}, {cls.Model.Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE},
                          {cls.Model.Cols.VALIDATION_SPLIT}) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         dataset_id,
                         model_data.target_col,
                         ",".join(model_data.drop_cols),
                         model_data.null_fill_strategy,
                         model_data.model,
+                        model_data.name,
                         model_data.hyper_params_and_optimizer_code,
                         ",".join(map(str, model_data.validation_split)),
                     ),

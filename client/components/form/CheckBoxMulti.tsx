@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, Input } from "@chakra-ui/react";
+import { Input } from "@chakra-ui/react";
 import React, { CSSProperties, useState } from "react";
 import { ChakraCheckbox } from "../chakra/checkbox";
 

@@ -1,4 +1,5 @@
 import { AddColumnsReqPayload } from "../context/editor";
+import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
@@ -32,6 +33,15 @@ export async function execPythonOnDataset(
     method: "POST",
     url,
     payload: { code, null_fill_strategy: nullFillStrategy },
+  });
+}
+
+export async function createModel(datasetName: string, body: ModelDataPayload) {
+  const url = URLS.create_model(datasetName);
+  return buildRequest({
+    method: "POST",
+    url,
+    payload: body,
   });
 }
 

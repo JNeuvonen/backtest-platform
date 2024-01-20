@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Title from "../../../components/Title";
+import Title from "../../../components/typography/Title";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { useDatasetQuery } from "../../../clients/queries/queries";
 import {
@@ -7,18 +7,13 @@ import {
   SelectWithTextFilter,
 } from "../../../components/SelectFilter";
 import { SingleValue } from "react-select";
-import {
-  Button,
-  Divider,
-  FormControl,
-  FormLabel,
-  Spinner,
-} from "@chakra-ui/react";
+import { Button, FormControl, Spinner, useToast } from "@chakra-ui/react";
 import { ChakraSelect } from "../../../components/chakra/select";
 import {
   CodeHelper,
   DOM_IDS,
   NULL_FILL_STRATEGIES,
+  NullFillStrategy,
 } from "../../../utils/constants";
 import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { CodeEditor } from "../../../components/CodeEditor";
@@ -30,6 +25,9 @@ import {
   CheckboxValue,
 } from "../../../components/form/CheckBoxMulti";
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
+import { FormSubmitBar } from "../../../components/form/CancelSubmitBar";
+import { ChakraInput } from "../../../components/chakra/input";
+import { createModel } from "../../../clients/requests";
 
 type PathParams = {
   datasetName: string;
@@ -67,12 +65,29 @@ const getHyperParamsExample = () => {
   return code.get();
 };
 
-export const DatasetModelCreatePage = () => {
+interface Props {
+  cancelCallback?: () => void;
+}
+
+export interface ModelDataPayload {
+  name: string;
+  target_col: string;
+  drop_cols: string[];
+  null_fill_strategy: NullFillStrategy;
+  model: string;
+  hyper_params_and_optimizer_code: string;
+  validation_split: number[];
+}
+
+export const DatasetModelCreatePage = ({ cancelCallback }: Props) => {
   const { datasetName } = usePathParams<PathParams>();
   const { data } = useDatasetQuery(datasetName);
   const [targetColumn, setTargetColumn] = useState<string>("");
   const [columnsToDrop, setColumnsToDrop] = useState<CheckboxValue[]>([]);
   const [dropColumnsVisible, setDropColumnsVisible] = useState(false);
+  const [modelName, setModelName] = useState("");
+  const [nullFillStrategy, setNullFillStrategy] =
+    useState<NullFillStrategy>("CLOSEST");
   const [modelCode, setModelCode] = useState(getModelDefaultExample());
   const [hyperParamsCode, setHyperParamsCode] = useState(
     getHyperParamsExample()
@@ -80,6 +95,7 @@ export const DatasetModelCreatePage = () => {
   const [validSplitSize, setValidSplitSize] = useState([80, 100]);
   const [disableValSplit, setDisableValSplit] = useState(false);
   const forceUpdate = useForceUpdate();
+  const toast = useToast();
 
   useEffect(() => {
     if (data?.status === 200) {
@@ -102,6 +118,36 @@ export const DatasetModelCreatePage = () => {
       </div>
     );
   }
+
+  const submit = async () => {
+    const body: ModelDataPayload = {
+      name: modelName,
+      target_col: targetColumn,
+      drop_cols: columnsToDrop.map((item) => item.label),
+      null_fill_strategy: nullFillStrategy,
+      model: modelCode,
+      hyper_params_and_optimizer_code: hyperParamsCode,
+      validation_split: validSplitSize,
+    };
+
+    const res = await createModel(datasetName, body);
+
+    if (res.status === 200) {
+      toast({
+        title: "Created model",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      if (cancelCallback) cancelCallback();
+    }
+  };
+
+  const submitIsDisabled = () => {
+    return (
+      !targetColumn || (validSplitSize[0] === 0 && validSplitSize[1] === 100)
+    );
+  };
 
   return (
     <div>
@@ -128,6 +174,15 @@ export const DatasetModelCreatePage = () => {
           options={NULL_FILL_STRATEGIES}
           id={DOM_IDS.select_null_fill_strat}
           defaultValueIndex={0}
+          onChange={(value) => {
+            setNullFillStrategy(value as NullFillStrategy);
+          }}
+        />
+
+        <ChakraInput
+          label="Model name"
+          placeholder="Unique name"
+          onChange={setModelName}
         />
       </ToolBarStyle>
       <CodeEditor
@@ -145,6 +200,21 @@ export const DatasetModelCreatePage = () => {
         height="100px"
         label="Hyper parameters and optimizer"
       />
+
+      <div style={{ marginTop: "16px" }}>
+        <ChakraCheckbox
+          label="Do not use validation split"
+          isChecked={disableValSplit}
+          onChange={() => setDisableValSplit(!disableValSplit)}
+        />
+        {!disableValSplit && (
+          <ValidationSplitSlider
+            sliderValue={validSplitSize}
+            setSliderValue={setValidSplitSize}
+            containerStyle={{ maxWidth: "300px", marginTop: "8px" }}
+          />
+        )}
+      </div>
 
       <FormControl style={{ marginTop: "16px" }}>
         <Button
@@ -164,24 +234,11 @@ export const DatasetModelCreatePage = () => {
         )}
       </FormControl>
 
-      <Divider />
-
-      <Title>Validation split</Title>
-
-      <div style={{ marginTop: "16px" }}>
-        <ChakraCheckbox
-          label="Do not use validation split"
-          isChecked={disableValSplit}
-          onChange={() => setDisableValSplit(!disableValSplit)}
-        />
-        {!disableValSplit && (
-          <ValidationSplitSlider
-            sliderValue={validSplitSize}
-            setSliderValue={setValidSplitSize}
-            containerStyle={{ maxWidth: "300px", marginTop: "8px" }}
-          />
-        )}
-      </div>
+      <FormSubmitBar
+        cancelCallback={cancelCallback}
+        submitDisabled={submitIsDisabled()}
+        submitCallback={submit}
+      />
     </div>
   );
 };

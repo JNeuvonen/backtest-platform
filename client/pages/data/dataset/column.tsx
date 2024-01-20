@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Title from "../../../components/Title";
+import Title from "../../../components/typography/Title";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { useColumnQuery } from "../../../clients/queries/queries";
 import { SmallTable } from "../../../components/tables/Small";

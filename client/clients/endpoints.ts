@@ -42,4 +42,7 @@ export const URLS = {
 
   exec_python_on_dataset: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/exec-python`,
+
+  create_model: (datasetName: string) =>
+    BASE_URL + API.dataset.root + `/${datasetName}/create-model`,
 };
