@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useLocation } from "react-router-dom";
 
 type QueryParams<T = {}> = {
