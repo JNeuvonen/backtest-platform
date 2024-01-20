@@ -150,6 +150,12 @@ class URL:
         )
 
     @classmethod
+    def create_model(cls, dataset_name):
+        return cls._datasets_route() + RoutePaths.CREATE_MODEL.format(
+            dataset_name=dataset_name
+        )
+
+    @classmethod
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):
         return (
             cls._datasets_route()
