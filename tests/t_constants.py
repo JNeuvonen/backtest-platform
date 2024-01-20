@@ -176,3 +176,9 @@ class URL:
             + RoutePaths.UPLOAD_TIMESERIES_DATA
             + f"?dataset_name={table_name}&timeseries_col={timeseries_col}"
         )
+
+    @classmethod
+    def get_dataset_models(cls, dataset_name: str):
+        return cls._datasets_route() + RoutePaths.FETCH_MODELS.format(
+            dataset_name=dataset_name
+        )

@@ -51,6 +51,7 @@ class RoutePaths:
     EXEC_PYTHON_ON_DATASET = "/{dataset_name}/exec-python"
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
     CREATE_MODEL = "/{dataset_name}/create-model"
+    FETCH_MODELS = "/{dataset_name}/fetch-all"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -192,5 +193,18 @@ async def route_create_model(dataset_name: str, body: BodyModelData):
             raise HTTPException(
                 detail=f"No ID found for {dataset_name}", status_code=400
             )
+
         DatasetUtils.create_model_entry(dataset_id, body)
         return {"Message": "OK"}
+
+
+@router.get(RoutePaths.FETCH_MODELS)
+async def route_fetch_models(dataset_name: str):
+    with HttpResponseContext():
+        dataset_id = DatasetUtils.fetch_dataset_id_by_name(dataset_name)
+        if dataset_id is None:
+            raise HTTPException(
+                detail=f"No ID found for {dataset_name}", status_code=400
+            )
+        models = DatasetUtils.fetch_models_by_dataset_id(dataset_id)
+        return {"data": models}

@@ -489,3 +489,15 @@ class DatasetUtils:
             result = cursor.fetchone()
             cursor.close()
             return result[0] if result else None
+
+    @classmethod
+    def fetch_models_by_dataset_id(cls, dataset_id: int):
+        with sqlite3.connect(cls.get_path()) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                f"""SELECT * FROM {cls.Model.TABLE_NAME} WHERE {cls.Model.Cols.DATASET_ID} = ?;""",
+                (dataset_id,),
+            )
+            models = cursor.fetchall()
+            cursor.close()
+            return models

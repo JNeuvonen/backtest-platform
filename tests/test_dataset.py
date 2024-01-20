@@ -1,7 +1,6 @@
 from typing import List
 import pytest
 import sys
-import requests
 
 from decimal import Decimal
 from tests.fixtures import criterion_basic, linear_model_basic
@@ -290,3 +289,19 @@ def test_route_create_model(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     )
 
     Post.create_model(fixt_btc_small_1h.name, body)
+
+
+@pytest.mark.acceptance
+def test_route_fetch_models(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    body = create_model_body(
+        name="Example model",
+        target_col=BinanceCols.OPEN_PRICE,
+        drop_cols=[],
+        null_fill_strategy="NONE",
+        model=linear_model_basic(),
+        hyper_params_and_optimizer_code=criterion_basic(),
+        validation_split=[70, 100],
+    )
+    Post.create_model(fixt_btc_small_1h.name, body)
+    models = Fetch.get_dataset_models(fixt_btc_small_1h.name)
+    assert len(models) == 1

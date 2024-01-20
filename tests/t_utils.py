@@ -101,6 +101,12 @@ class Fetch:
             res_json = res.json()
             return res_json["column"], res_json["timeseries_col"]
 
+    @staticmethod
+    def get_dataset_models(dataset_name: str):
+        with Req("get", URL.get_dataset_models(dataset_name)) as res:
+            res_json = res.json()
+            return res_json["data"]
+
 
 class Post:
     @staticmethod
