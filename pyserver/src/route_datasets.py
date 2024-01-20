@@ -18,7 +18,13 @@ from db import (
     rename_column,
     rename_table,
 )
-from request_types import ModelData
+from request_types import (
+    BodyExecPython,
+    BodyModelData,
+    BodyRenameColumn,
+    BodyUpdateDatasetName,
+    BodyUpdateTimeseriesCol,
+)
 from utils import (
     PythonCode,
     add_to_datasets_db,
@@ -45,11 +51,6 @@ class RoutePaths:
     EXEC_PYTHON_ON_DATASET = "/{dataset_name}/exec-python"
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
     CREATE_MODEL = "/{dataset_name}/create-model"
-
-
-class BodyExecPython(BaseModel):
-    code: str
-    null_fill_strategy: str = "NONE"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -122,19 +123,11 @@ async def route_dataset_add_columns(
         return {"messsage": "OK"}
 
 
-class BodyUpdateTimeseriesCol(BaseModel):
-    new_timeseries_col: str
-
-
 @router.put(RoutePaths.UPDATE_TIMESERIES_COL)
 async def route_update_timeseries_col(dataset_name: str, body: BodyUpdateTimeseriesCol):
     with HttpResponseContext():
         DatasetUtils.update_timeseries_col(dataset_name, body.new_timeseries_col, False)
         return {"message": "OK"}
-
-
-class BodyUpdateDatasetName(BaseModel):
-    new_dataset_name: str
 
 
 @router.put(RoutePaths.UPDATE_DATASET_NAME)
@@ -149,11 +142,6 @@ async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetNa
 async def route_all_columns():
     with HttpResponseContext():
         return {"table_col_map": get_all_tables_and_columns(AppConstants.DB_DATASETS)}
-
-
-class BodyRenameColumn(BaseModel):
-    old_col_name: str
-    new_col_name: str
 
 
 @router.post(RoutePaths.RENAME_COLUMN)
@@ -197,7 +185,7 @@ async def route_upload_timeseries_data(
 
 
 @router.post(RoutePaths.CREATE_MODEL)
-async def route_create_model(dataset_name: str, body: ModelData):
+async def route_create_model(dataset_name: str, body: BodyModelData):
     with HttpResponseContext():
         dataset_id = DatasetUtils.fetch_dataset_id_by_name(dataset_name)
         if dataset_id is None:
