@@ -1,6 +1,7 @@
 import { Editor, EditorProps, OnMount } from "@monaco-editor/react";
 import React, { CSSProperties } from "react";
 import { CodePresets } from "./CodePresets";
+import { FormControl, FormLabel } from "@chakra-ui/react";
 
 interface Props {
   code: string;
@@ -11,6 +12,7 @@ interface Props {
   height?: string;
   fontSize?: number;
   editorDidMount?: OnMount;
+  label?: string;
 }
 
 export const CodeEditor = ({
@@ -21,10 +23,12 @@ export const CodeEditor = ({
   height = "400px",
   fontSize = 20,
   editorDidMount,
+  label,
 }: Props) => {
   const handleCodeChange = (newValue: string | undefined) => {
     setCode(newValue ?? "");
   };
+
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     if (editorDidMount) {
       editorDidMount(editor, monaco);
@@ -39,6 +43,34 @@ export const CodeEditor = ({
     minimap: { enabled: false },
     fontSize: fontSize,
   };
+
+  if (label) {
+    return (
+      <div
+        style={{
+          ...style,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <FormControl style={codeContainerStyles}>
+          <FormLabel>{label}</FormLabel>
+          <Editor
+            height={height}
+            defaultLanguage="python"
+            theme="vs-dark"
+            value={code}
+            onChange={handleCodeChange}
+            onMount={handleEditorDidMount}
+            width={"100%"}
+            options={editorOptions}
+          />
+        </FormControl>
+        <CodePresets />
+      </div>
+    );
+  }
   return (
     <div
       style={{
