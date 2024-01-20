@@ -4,7 +4,7 @@ import asyncio
 from typing import List
 from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrategy
 from context import HttpResponseContext
-from fastapi import APIRouter, Query, UploadFile
+from fastapi import APIRouter, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from db import (
     DatasetUtils,
@@ -18,6 +18,7 @@ from db import (
     rename_column,
     rename_table,
 )
+from request_types import ModelData
 from utils import (
     PythonCode,
     add_to_datasets_db,
@@ -195,17 +196,13 @@ async def route_upload_timeseries_data(
         return {"message": "OK", "shape": df.shape}
 
 
-class BodyCreateModel(BaseModel):
-    name: str
-    target_col: str
-    drop_cols: List[str]
-    null_fill_strategy: str
-    model: str
-    hyper_params_and_optimizer_code: str
-    validation_split: List[int]
-
-
 @router.post(RoutePaths.CREATE_MODEL)
-async def route_create_model(dataset_name: str, body: BodyCreateModel):
+async def route_create_model(dataset_name: str, body: ModelData):
     with HttpResponseContext():
+        dataset_id = DatasetUtils.fetch_dataset_id_by_name(dataset_name)
+        if dataset_id is None:
+            raise HTTPException(
+                detail=f"No ID found for {dataset_name}", status_code=400
+            )
+        DatasetUtils.create_model_entry(dataset_id, body)
         return {"Message": "OK"}
