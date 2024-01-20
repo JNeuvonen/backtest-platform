@@ -6,7 +6,6 @@ from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrate
 from context import HttpResponseContext
 from fastapi import APIRouter, Query, UploadFile
 from pydantic import BaseModel
-from dataset import read_dataset_to_mem
 from db import (
     DatasetUtils,
     add_columns_to_table,
@@ -44,6 +43,7 @@ class RoutePaths:
     EXEC_PYTHON_ON_COL = "/{dataset_name}/exec-python/{column_name}"
     EXEC_PYTHON_ON_DATASET = "/{dataset_name}/exec-python"
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
+    CREATE_MODEL = "/{dataset_name}/create-model"
 
 
 class BodyExecPython(BaseModel):
@@ -193,3 +193,19 @@ async def route_upload_timeseries_data(
         add_to_datasets_db(df, dataset_name)
         DatasetUtils.create_db_utils_entry(dataset_name, timeseries_col)
         return {"message": "OK", "shape": df.shape}
+
+
+class BodyCreateModel(BaseModel):
+    name: str
+    target_col: str
+    drop_cols: List[str]
+    null_fill_strategy: str
+    model: str
+    hyper_params_and_optimizer_code: str
+    validation_split: List[int]
+
+
+@router.post(RoutePaths.CREATE_MODEL)
+async def route_create_model(dataset_name: str, body: BodyCreateModel):
+    with HttpResponseContext():
+        return {"Message": "OK"}
