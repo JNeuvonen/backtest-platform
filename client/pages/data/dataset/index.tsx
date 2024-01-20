@@ -7,9 +7,9 @@ import { DatasetModelCreatePage } from "../model/create";
 
 const TAB_LABELS = ["Info", "Editor", "Models"];
 const TABS = [
-  <DatasetInfoPage />,
-  <DatasetEditorPage />,
-  <DatasetModelCreatePage />,
+  <DatasetInfoPage key={"1"} />,
+  <DatasetEditorPage key={"2"} />,
+  <DatasetModelCreatePage key={"3"} />,
 ];
 
 interface TabQueryParams {
