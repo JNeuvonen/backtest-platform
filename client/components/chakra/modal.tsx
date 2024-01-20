@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { CSSProperties, ReactNode } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -25,7 +25,7 @@ export const ChakraModal: React.FC<CustomModalProps> = ({
   title,
   children,
   footerContent,
-  modalContentStyle,
+  modalContentStyle = {},
   ...props
 }) => {
   return (
