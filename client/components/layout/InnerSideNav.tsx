@@ -6,7 +6,7 @@ import { useActivePath } from "../../hooks/useActivePath";
 interface Props {
   sideNavItems: SideNavItem[];
   pathActiveItemDepth: number;
-  fallbackPath: string;
+  fallbackPath?: string;
   formatPath?: (path: string) => string;
 }
 

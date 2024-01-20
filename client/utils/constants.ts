@@ -12,13 +12,14 @@ export const CODE = {
 
 export const PATHS = {
   data: {
-    path: "/datasets",
-    dataset: `/datasets/${PATH_KEYS.dataset}`,
-    info: `/datasets/${PATH_KEYS.dataset}/info`,
-    column: `/datasets/${PATH_KEYS.dataset}/info/${PATH_KEYS.column}`,
-    editor: `/datasets/${PATH_KEYS.dataset}/editor`,
+    index: "/data",
+    dataset: {
+      index: `/data/datasets/${PATH_KEYS.dataset}/info`,
+      column: `/data/datasets/${PATH_KEYS.dataset}/info/${PATH_KEYS.column}`,
+      editor: `/data/datasets/${PATH_KEYS.dataset}/editor`,
+    },
     model: {
-      path: `/datasets/${PATH_KEYS.dataset}/model`,
+      index: `/data/model/${PATH_KEYS.dataset}/info`,
     },
   },
   simulate: {
@@ -36,8 +37,9 @@ export const CONSTANTS = {
 };
 
 export const LAYOUT = {
-  side_nav_width: 110,
-  layout_padding: 16,
+  side_nav_width_px: 110,
+  layout_padding_px: 16,
+  inner_side_nav_width_px: 120,
 };
 
 export const TAURI_COMMANDS = {

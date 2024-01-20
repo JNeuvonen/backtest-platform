@@ -43,7 +43,7 @@ export const DatasetTable = ({ tables }: Props) => {
               <Tr key={item.table_name}>
                 <Td>
                   <Link
-                    to={`${PATHS.data.info.replace(
+                    to={`${PATHS.data.dataset.index.replace(
                       PATH_KEYS.dataset,
                       item.table_name
                     )}`}

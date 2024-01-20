@@ -13,11 +13,13 @@ export type Platform = "" | "macos" | "windows" | "linux";
 interface AppContextType {
   platform: Platform;
   contentIndentPx: number;
+  innerSideNavWidth: number;
 }
 
 export const AppContext = createContext<AppContextType>({
   platform: "macos",
-  contentIndentPx: LAYOUT.side_nav_width,
+  contentIndentPx: LAYOUT.side_nav_width_px,
+  innerSideNavWidth: LAYOUT.inner_side_nav_width_px,
 });
 
 interface AppProviderProps {
@@ -26,8 +28,9 @@ interface AppProviderProps {
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [platform, setPlatform] = useState<Platform>("");
-  const [contentIndentPx] = useState(LAYOUT.side_nav_width);
-  const [layoutPaddingPx] = useState(LAYOUT.layout_padding);
+  const [contentIndentPx] = useState(LAYOUT.side_nav_width_px);
+  const [layoutPaddingPx] = useState(LAYOUT.layout_padding_px);
+  const [innerSideNavWidth] = useState(LAYOUT.inner_side_nav_width_px);
 
   useEffect(() => {
     const fetchAppData = async () => {
@@ -44,7 +47,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   return (
     <AppContext.Provider
-      value={{ platform, contentIndentPx: contentIndentPx + layoutPaddingPx }}
+      value={{
+        platform,
+        contentIndentPx: contentIndentPx + layoutPaddingPx,
+        innerSideNavWidth,
+      }}
     >
       {children}
     </AppContext.Provider>
