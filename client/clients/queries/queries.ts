@@ -4,11 +4,13 @@ import {
   fetchAllTickers,
   fetchColumn,
   fetchDataset,
+  fetchDatasetModels,
   fetchDatasets,
 } from "../requests";
 import {
   BinanceTickersResponse,
   ColumnResponse,
+  DatasetModelResponse,
   DatasetResponse,
   DatasetsResponse,
 } from "./response-types";
@@ -46,5 +48,14 @@ export function useColumnQuery(
   return useQuery<ColumnResponse, unknown>({
     queryKey: [QUERY_KEYS.fetch_column, datasetName, columnName],
     queryFn: () => fetchColumn(datasetName, columnName),
+  });
+}
+
+export function useDatasetModelsQuery(
+  datasetName: string
+): UseQueryResult<DatasetModelResponse, unknown> {
+  return useQuery<DatasetModelResponse, unknown>({
+    queryKey: [QUERY_KEYS.fetch_datasets_models, datasetName],
+    queryFn: () => fetchDatasetModels(datasetName),
   });
 }

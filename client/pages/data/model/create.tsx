@@ -123,7 +123,9 @@ export const DatasetModelCreatePage = ({ cancelCallback }: Props) => {
     const body: ModelDataPayload = {
       name: modelName,
       target_col: targetColumn,
-      drop_cols: columnsToDrop.map((item) => item.label),
+      drop_cols: columnsToDrop
+        .filter((item) => item.isChecked)
+        .map((item) => item.label),
       null_fill_strategy: nullFillStrategy,
       model: modelCode,
       hyper_params_and_optimizer_code: hyperParamsCode,

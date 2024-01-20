@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
@@ -61,6 +62,13 @@ export async function fetchColumn(datasetName: string, columnName: string) {
 export async function fetchAllTickers() {
   const url = URLS.binance_get_all_tickers;
   return buildRequest({ method: "GET", url });
+}
+
+export async function fetchDatasetModels(datasetName: string) {
+  return buildRequest({
+    method: "GET",
+    url: URLS.fetch_dataset_models(datasetName),
+  });
 }
 
 export async function renameColumnName(

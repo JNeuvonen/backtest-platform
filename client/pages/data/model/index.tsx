@@ -4,12 +4,16 @@ import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { Button } from "@chakra-ui/react";
 import { DatasetModelCreatePage } from "./create";
+import { useDatasetModelsQuery } from "../../../clients/queries/queries";
+import { usePathParams } from "../../../hooks/usePathParams";
 
 // const TAB_LABELS = ["Available", "Create", "Train"];
 export const DatasetModelIndex = () => {
   // const { path } = usePath();
 
   const createModelModal = useModal();
+  const { datasetName } = usePathParams<{ datasetName: string }>();
+  const { data } = useDatasetModelsQuery(datasetName);
 
   return (
     <div>

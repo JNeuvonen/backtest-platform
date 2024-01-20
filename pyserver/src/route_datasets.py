@@ -50,8 +50,8 @@ class RoutePaths:
     EXEC_PYTHON_ON_COL = "/{dataset_name}/exec-python/{column_name}"
     EXEC_PYTHON_ON_DATASET = "/{dataset_name}/exec-python"
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
-    CREATE_MODEL = "/{dataset_name}/create-model"
-    FETCH_MODELS = "/{dataset_name}/fetch-all"
+    CREATE_MODEL = "/{dataset_name}/models/create"
+    FETCH_MODELS = "/{dataset_name}/models/"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)

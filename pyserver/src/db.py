@@ -13,6 +13,7 @@ from dataset import (
     read_columns_to_mem,
     read_dataset_to_mem,
 )
+from db_objects import ModelObject
 from log import LogExceptionContext, get_logger
 from request_types import BodyModelData
 from utils import df_fill_nulls
@@ -499,5 +500,5 @@ class DatasetUtils:
                 (dataset_id,),
             )
             models = cursor.fetchall()
-            cursor.close()
+            models = [ModelObject.from_db_row(row) for row in models]
             return models

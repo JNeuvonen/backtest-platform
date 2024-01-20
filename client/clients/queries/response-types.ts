@@ -1,3 +1,5 @@
+import { NullFillStrategy } from "../../utils/constants";
+
 export interface DatasetMetadata {
   columns: string[];
   timeseries_col: string | null;
@@ -30,6 +32,25 @@ export interface DatasetResponse {
     dataset: Dataset;
   };
   status: number;
+}
+
+export interface DatasetModelResponse {
+  res: {
+    data: DatasetModel;
+  };
+  status: number;
+}
+
+export interface DatasetModel {
+  dataset_id: number;
+  drop_cols: string[];
+  hyper_params_and_optimizer_code: string;
+  model: string;
+  model_id: number;
+  name: string;
+  null_fill_strat: NullFillStrategy;
+  target_col: string;
+  validation_split: number[];
 }
 
 export interface Dataset {
