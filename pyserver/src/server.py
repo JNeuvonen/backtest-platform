@@ -6,11 +6,9 @@ from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from db import (
     DatasetUtils,
-    exec_sql,
 )
 from route_binance import router as binance_router
 from route_datasets import router as datasets_router
-from sql_statements import CREATE_DATASET_UTILS_TABLE
 from streams import router as streams_router
 
 
@@ -19,7 +17,7 @@ async def lifespan(
     app: FastAPI,
 ):  # pylint: disable=unused-argument, redefined-outer-name
     """The code before the yield statement will be executed on boot. The code after the yield statement will be executed as a cleanup on application close."""
-    exec_sql(DatasetUtils.get_path(), CREATE_DATASET_UTILS_TABLE)
+    DatasetUtils.init_tables()
     yield
 
 
