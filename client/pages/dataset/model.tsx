@@ -7,7 +7,15 @@ import {
   SelectWithTextFilter,
 } from "../../components/SelectFilter";
 import { SingleValue } from "react-select";
-import { Spinner } from "@chakra-ui/react";
+import {
+  Button,
+  Checkbox,
+  RangeSlider,
+  RangeSliderFilledTrack,
+  RangeSliderThumb,
+  RangeSliderTrack,
+  Spinner,
+} from "@chakra-ui/react";
 import { ChakraSelect } from "../../components/chakra/select";
 import {
   CodeHelper,
@@ -16,13 +24,17 @@ import {
 } from "../../utils/constants";
 import { ToolBarStyle } from "../../components/ToolbarStyle";
 import { CodeEditor } from "../../components/CodeEditor";
-import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
+import { ChakraTooltip } from "../../components/Tooltip";
+import { useAppContext } from "../../context/app";
+import { KEYBIND_MSGS } from "../../utils/content";
+import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
+import { ChakraCheckbox } from "../../components/chakra/checkbox";
 
 type PathParams = {
   datasetName: string;
 };
 
-const getCodeDefaultValue = () => {
+const getModelDefaultExample = () => {
   const code = new CodeHelper();
 
   code.appendLine("class Model(nn.Module):");
@@ -43,11 +55,28 @@ const getCodeDefaultValue = () => {
   return code.get();
 };
 
+const getHyperParamsExample = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("criterion = nn.MSELoss()");
+  code.appendLine(
+    "optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.01)"
+  );
+
+  return code.get();
+};
+
 export const DatasetModelPage = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
   const [targetColumn, setTargetColumn] = useState<string>("");
-  const [code, setCode] = useState(getCodeDefaultValue());
+  const [modelCode, setModelCode] = useState(getModelDefaultExample());
+  const [hyperParamsCode, setHyperParamsCode] = useState(
+    getHyperParamsExample()
+  );
+  const [validSplitSize, setValidSplitSize] = useState([80, 100]);
+  const [disableValSplit, setDisableValSplit] = useState(false);
+  const { platform } = useAppContext();
 
   if (!data || !data?.res) {
     return (
@@ -61,7 +90,13 @@ export const DatasetModelPage = () => {
   return (
     <div>
       <Title>Create Model</Title>
+
       <ToolBarStyle style={{ marginTop: "16px" }}>
+        <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
+          <Button style={{ height: "35px", marginBottom: "16px" }}>Save</Button>
+        </ChakraTooltip>
+      </ToolBarStyle>
+      <ToolBarStyle>
         <SelectWithTextFilter
           containerStyle={{ width: "300px" }}
           label="Target column"
@@ -87,11 +122,35 @@ export const DatasetModelPage = () => {
         />
       </ToolBarStyle>
       <CodeEditor
-        code={code}
-        setCode={setCode}
+        label="Model code"
+        code={modelCode}
+        setCode={setModelCode}
         style={{ marginTop: "16px" }}
         fontSize={13}
       />
+      <CodeEditor
+        code={hyperParamsCode}
+        setCode={setHyperParamsCode}
+        style={{ marginTop: "16px" }}
+        fontSize={13}
+        height="100px"
+        label="Hyper parameters and optimizer"
+      />
+
+      <div style={{ marginTop: "16px" }}>
+        <ChakraCheckbox
+          label="Do not use validation split"
+          isChecked={disableValSplit}
+          onChange={() => setDisableValSplit(!disableValSplit)}
+        />
+        {!disableValSplit && (
+          <ValidationSplitSlider
+            sliderValue={validSplitSize}
+            setSliderValue={setValidSplitSize}
+            containerStyle={{ maxWidth: "300px", marginTop: "8px" }}
+          />
+        )}
+      </div>
     </div>
   );
 };
