@@ -57,8 +57,8 @@ const getHyperParamsExample = () => {
 
 export const DatasetModelCreatePage = () => {
   const { datasetName } = usePathParams<PathParams>();
-  const { data, isLoading, refetch } = useDatasetQuery(datasetName);
-  const [targetColumn, setTargetColumn] = useState<string>("");
+  const { data } = useDatasetQuery(datasetName);
+  const [setTargetColumn] = useState<string>("");
   const [modelCode, setModelCode] = useState(getModelDefaultExample());
   const [hyperParamsCode, setHyperParamsCode] = useState(
     getHyperParamsExample()
