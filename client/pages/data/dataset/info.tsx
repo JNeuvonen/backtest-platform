@@ -1,31 +1,31 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDatasetQuery } from "../../clients/queries/queries";
+import { useDatasetQuery } from "../../../clients/queries/queries";
 import { Box, Button, Spinner, useToast } from "@chakra-ui/react";
-import { GenericTable } from "../../components/tables/GenericTable";
-import { ChakraModal } from "../../components/chakra/modal";
-import { useModal } from "../../hooks/useOpen";
-import { BUTTON_VARIANTS } from "../../theme";
-import { ConfirmInput } from "../../components/form/confirm-input";
-import { buildRequest } from "../../clients/fetch";
-import { URLS } from "../../clients/endpoints";
-import { replaceNthPathItem } from "../../utils/path";
-import { useMessageListener } from "../../hooks/useMessageListener";
+import { GenericTable } from "../../../components/tables/GenericTable";
+import { ChakraModal } from "../../../components/chakra/modal";
+import { useModal } from "../../../hooks/useOpen";
+import { BUTTON_VARIANTS } from "../../../theme";
+import { ConfirmInput } from "../../../components/form/confirm-input";
+import { buildRequest } from "../../../clients/fetch";
+import { URLS } from "../../../clients/endpoints";
+import { replaceNthPathItem } from "../../../utils/path";
+import { useMessageListener } from "../../../hooks/useMessageListener";
 import {
   CODE,
   DOM_EVENT_CHANNELS,
   DOM_IDS,
   NullFillStrategy,
-} from "../../utils/constants";
-import { ColumnModal } from "../../components/RenameColumnModal";
-import { PythonIcon } from "../../components/icons/python";
-import { RunPythonOnAllCols } from "../../components/RunPythonOnAllCols";
-import { FormSubmitBar } from "../../components/form/CancelSubmitBar";
-import { createPythonCode } from "../../utils/str";
-import { usePathParams } from "../../hooks/usePathParams";
-import { ConfirmModal } from "../../components/form/confirm";
-import { execPythonOnDataset } from "../../clients/requests";
-import { getValueById } from "../../utils/dom";
+} from "../../../utils/constants";
+import { ColumnModal } from "../../../components/RenameColumnModal";
+import { PythonIcon } from "../../../components/icons/python";
+import { RunPythonOnAllCols } from "../../../components/RunPythonOnAllCols";
+import { FormSubmitBar } from "../../../components/form/CancelSubmitBar";
+import { createPythonCode } from "../../../utils/str";
+import { usePathParams } from "../../../hooks/usePathParams";
+import { ConfirmModal } from "../../../components/form/confirm";
+import { execPythonOnDataset } from "../../../clients/requests";
+import { getValueById } from "../../../utils/dom";
 
 type DatasetDetailParams = {
   datasetName: string;

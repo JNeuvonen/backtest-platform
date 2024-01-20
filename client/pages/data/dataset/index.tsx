@@ -1,9 +1,9 @@
 import React from "react";
-import { ChakraTabs } from "../../components/layout/Tabs";
+import { ChakraTabs } from "../../../components/layout/Tabs";
 import { DatasetInfoPage } from "./info";
 import { DatasetEditorPage } from "./editor";
-import useQueryParams from "../../hooks/useQueryParams";
-import { DatasetModelCreatePage } from "./model/create";
+import useQueryParams from "../../../hooks/useQueryParams";
+import { DatasetModelCreatePage } from "../model/create";
 
 const TAB_LABELS = ["Info", "Editor", "Models"];
 const TABS = [
