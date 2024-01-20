@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 import os
+from typing import List
 import pandas as pd
 import requests
 from pyserver.src.config import append_app_data_path
@@ -58,6 +59,26 @@ def t_generate_big_dataframe(data: DatasetMetadata, target_size_bytes: int):
     return big_dataframe
 
 
+def create_model_body(
+    name: str,
+    target_col: str,
+    drop_cols: List[str],
+    null_fill_strategy: str,
+    model: str,
+    hyper_params_and_optimizer_code: str,
+    validation_split: List[int],
+):
+    return {
+        "name": name,
+        "target_col": target_col,
+        "drop_cols": drop_cols,
+        "null_fill_strategy": null_fill_strategy,
+        "model": model,
+        "hyper_params_and_optimizer_code": hyper_params_and_optimizer_code,
+        "validation_split": validation_split,
+    }
+
+
 class Fetch:
     @staticmethod
     def get_tables():
@@ -108,6 +129,11 @@ class Post:
         with Req("post", URL.exec_python_on_dataset(dataset_name), json=body) as res:
             return res.json()
 
+    @staticmethod
+    def create_model(dataset_name, body):
+        with Req("post", URL.create_model(dataset_name), json=body) as res:
+            return res.json()
+
 
 class Put:
     @staticmethod
@@ -119,3 +145,26 @@ class Put:
     def update_timeseries_col(dataset_name: str, body):
         with Req("put", URL.update_timeseries_col(dataset_name), json=body) as res:
             return res.json()
+
+
+class CodeHelper:
+    def __init__(self):
+        self.indent_level = 0
+        self.code = ""
+
+    def append_line(self, line: str):
+        new_line = "    " * self.indent_level + line + "\n"
+        self.code += new_line
+
+    def add_indent(self):
+        self.indent_level += 1
+
+    def reset_indent(self):
+        self.indent_level = 0
+
+    def reduce_indent(self):
+        if self.indent_level > 0:
+            self.indent_level -= 1
+
+    def get(self):
+        return self.code
