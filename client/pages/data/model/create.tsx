@@ -18,7 +18,6 @@ import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { ValidationSplitSlider } from "../../../components/ValidationSplitSlider";
 import { ChakraCheckbox } from "../../../components/chakra/checkbox";
-import { SaveButton } from "../../../components/buttons/save";
 
 type PathParams = {
   datasetName: string;
@@ -78,11 +77,6 @@ export const DatasetModelCreatePage = () => {
 
   return (
     <div>
-      <Title>Create Model</Title>
-
-      <ToolBarStyle style={{ marginTop: "16px" }}>
-        <SaveButton />
-      </ToolBarStyle>
       <ToolBarStyle>
         <SelectWithTextFilter
           containerStyle={{ width: "300px" }}
