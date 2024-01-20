@@ -14,6 +14,7 @@ from dataset import (
     read_dataset_to_mem,
 )
 from log import LogExceptionContext, get_logger
+from request_types import ModelData
 from utils import df_fill_nulls
 
 
@@ -314,6 +315,7 @@ class DatasetUtils:
 
     class Dataset:
         class Cols:
+            PRIMARY_KEY = "id"
             DATASET_NAME = "dataset_name"
             TIMESERIES_COLUMN = "timeseries_column"
 
@@ -321,6 +323,7 @@ class DatasetUtils:
 
     class Model:
         class Cols:
+            PRIMARY_KEY = "id"
             DATASET_ID = "dataset_id"
             TARGET_COL = "target_col"
             DROP_COLS = "drop_cols"
@@ -336,8 +339,8 @@ class DatasetUtils:
         Cols = cls.Dataset.Cols
         return f"""
                 CREATE TABLE IF NOT EXISTS {cls.Dataset.TABLE_NAME} (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    {Cols.DATASET_NAME} TEXT NOT NULL,
+                    {Cols.PRIMARY_KEY} INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.DATASET_NAME} TEXT NOT NULL UNIQUE,
                     {Cols.TIMESERIES_COLUMN} TEXT
                 );
             """
@@ -347,7 +350,7 @@ class DatasetUtils:
         Cols = cls.Model.Cols
         return f"""
                 CREATE TABLE IF NOT EXISTS {cls.Model.TABLE_NAME} (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.PRIMARY_KEY} INTEGER PRIMARY KEY AUTOINCREMENT,
                     {Cols.DATASET_ID} INTEGER NOT NULL,
                     {Cols.TARGET_COL} TEXT NOT NULL,
                     {Cols.DROP_COLS} TEXT,
@@ -355,17 +358,18 @@ class DatasetUtils:
                     {Cols.MODEL} TEXT,
                     {Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE} TEXT,
                     {Cols.VALIDATION_SPLIT} TEXT,
-                    FOREIGN KEY ({Cols.DATASET_ID}) REFERENCES {cls.Dataset.TABLE_NAME}(id)
+                    FOREIGN KEY ({Cols.DATASET_ID}) REFERENCES {cls.Dataset.TABLE_NAME}({cls.Dataset.Cols.PRIMARY_KEY})
                 );
             """
 
     @classmethod
     def init_tables(cls):
-        with sqlite3.connect(cls.get_path()) as conn:
-            cursor = conn.cursor()
-            cursor.execute(cls.create_dataset_table_sql())
-            cursor.execute(cls.create_model_table_sql())
-            conn.commit()
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(cls.create_dataset_table_sql())
+                cursor.execute(cls.create_model_table_sql())
+                conn.commit()
 
     @classmethod
     def get_path(cls):
@@ -434,3 +438,51 @@ class DatasetUtils:
                     (dataset_name, timeseries_column),
                 )
                 conn.commit()
+
+    @classmethod
+    def create_model_entry(cls, dataset_id: int, model_data: ModelData):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""INSERT INTO {cls.Model.TABLE_NAME} 
+                        ({cls.Model.Cols.DATASET_ID}, {cls.Model.Cols.TARGET_COL}, {cls.Model.Cols.DROP_COLS}, 
+                         {cls.Model.Cols.NULL_FILL_STRAT}, {cls.Model.Cols.MODEL}, {cls.Model.Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE},
+                         {cls.Model.Cols.VALIDATION_SPLIT}) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        dataset_id,
+                        model_data.target_col,
+                        ",".join(model_data.drop_cols),
+                        model_data.null_fill_strategy,
+                        model_data.model,
+                        model_data.hyper_params_and_optimizer_code,
+                        ",".join(map(str, model_data.validation_split)),
+                    ),
+                )
+                conn.commit()
+
+    @classmethod
+    def fetch_model_by_id(cls, model_id: int):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT * FROM {cls.Model.TABLE_NAME} WHERE {cls.Model.Cols.PRIMARY_KEY} = ?;""",
+                    (model_id,),
+                )
+                model_data = cursor.fetchone()
+                cursor.close()
+                return model_data
+
+    @classmethod
+    def fetch_dataset_id_by_name(cls, dataset_name: str):
+        with sqlite3.connect(cls.get_path()) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                f"""SELECT {cls.Dataset.Cols.PRIMARY_KEY} FROM {cls.Dataset.TABLE_NAME} WHERE {cls.Dataset.Cols.DATASET_NAME} = ?;""",
+                (dataset_name,),
+            )
+            result = cursor.fetchone()
+            cursor.close()
+            return result[0] if result else None
