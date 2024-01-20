@@ -7,16 +7,16 @@ const usePath = () => {
     const handleLocationChange = () => setPath(window.location.pathname);
 
     window.history.pushState = ((f) =>
-      function pushState() {
-        const ret = f.apply(this, arguments);
+      function pushState(...args) {
+        const ret = f.apply(this, args);
         window.dispatchEvent(new Event("pushstate"));
         window.dispatchEvent(new Event("locationchange"));
         return ret;
       })(window.history.pushState);
 
     window.history.replaceState = ((f) =>
-      function replaceState() {
-        const ret = f.apply(this, arguments);
+      function replaceState(...args) {
+        const ret = f.apply(this, args);
         window.dispatchEvent(new Event("replacestate"));
         window.dispatchEvent(new Event("locationchange"));
         return ret;
