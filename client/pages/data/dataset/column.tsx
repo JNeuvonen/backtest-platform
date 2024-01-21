@@ -19,7 +19,7 @@ import { CODE } from "../../../utils/constants";
 import { MdOutlineSubdirectoryArrowLeft } from "react-icons/md";
 import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { useNavigate } from "react-router-dom";
-import { getDatasetEditorUrl } from "../../../utils/navigate";
+import { getDatasetEditorPath } from "../../../utils/navigate";
 import { CodeEditor } from "../../../components/CodeEditor";
 
 interface RouteParams {
@@ -133,7 +133,7 @@ export const DatasetColumnInfoPage = () => {
           <Button
             variant={BUTTON_VARIANTS.grey}
             leftIcon={<MdOutlineSubdirectoryArrowLeft />}
-            onClick={() => navigate(getDatasetEditorUrl(datasetName))}
+            onClick={() => navigate(getDatasetEditorPath(datasetName))}
           >
             Return to dataset
           </Button>

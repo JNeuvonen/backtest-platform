@@ -10,11 +10,13 @@ import {
 
 import React, { CSSProperties } from "react";
 
+export type RowItem = string[] | number[] | (string | number[]);
+
 interface Props {
   columns: string[];
   columnOnClickFunc?: (item: string) => void;
-  rowOnClickFunc?: (item: string[] | number[] | (string | number)[]) => void;
-  rows: string[][] | number[][] | (string | number)[][];
+  rowOnClickFunc?: (item: RowItem) => void;
+  rows: RowItem[];
   containerStyles?: CSSProperties;
 }
 

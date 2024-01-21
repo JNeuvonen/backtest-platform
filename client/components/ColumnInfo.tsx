@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { getDatasetColumnInfo } from "../utils/navigate";
+import { getDatasetColumnInfoPath } from "../utils/navigate";
 
 interface Props {
   datasetName: string;
@@ -12,7 +12,7 @@ export const ColumnInfo = ({ datasetName, columnName }: Props) => {
     <div>
       <Link
         className="link-default"
-        to={getDatasetColumnInfo(datasetName, columnName)}
+        to={getDatasetColumnInfoPath(datasetName, columnName)}
       >
         Detailed column page
       </Link>
