@@ -25,7 +25,7 @@ import {
   CheckboxValue,
 } from "../../../components/form/CheckBoxMulti";
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
-import { FormSubmitBar } from "../../../components/form/CancelSubmitBar";
+import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
 import { createModel } from "../../../clients/requests";
 
