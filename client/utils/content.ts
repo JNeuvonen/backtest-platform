@@ -17,3 +17,7 @@ export const KEYBIND_MSGS = {
 export const getParenthesisSize = (size: number, fallbackValue = null) => {
   return size ? `(${size})` : fallbackValue;
 };
+
+export const formatValidationSplit = (validationSplit: [number, number]) => {
+  return `${validationSplit[0]}-${validationSplit[1]}`;
+};
