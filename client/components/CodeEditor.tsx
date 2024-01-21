@@ -15,6 +15,7 @@ interface Props {
   label?: string;
   readOnly?: boolean;
   disableCodePresets?: boolean;
+  autoFocus?: boolean;
 }
 
 export const CodeEditor = ({
@@ -28,6 +29,7 @@ export const CodeEditor = ({
   label,
   readOnly = false,
   disableCodePresets = false,
+  autoFocus = true,
 }: Props) => {
   const handleCodeChange = (newValue: string | undefined) => {
     if (setCode) {
@@ -41,7 +43,9 @@ export const CodeEditor = ({
     } else {
       editor.setValue(code);
       editor.setPosition({ lineNumber: 100, column: 200 });
-      editor.focus();
+      if (autoFocus) {
+        editor.focus();
+      }
     }
   };
 
