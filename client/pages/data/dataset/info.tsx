@@ -9,7 +9,7 @@ import { BUTTON_VARIANTS } from "../../../theme";
 import { ConfirmInput } from "../../../components/form/confirm-input";
 import { buildRequest } from "../../../clients/fetch";
 import { URLS } from "../../../clients/endpoints";
-import { replaceNthPathItem } from "../../../utils/path";
+import { replaceNthPathItem } from "../../../utils/navigate";
 import { useMessageListener } from "../../../hooks/useMessageListener";
 import {
   CODE,

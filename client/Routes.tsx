@@ -5,6 +5,7 @@ import { DatasetColumnInfoPage } from "./pages/data/dataset/column";
 import { DataRouteIndex } from "./pages";
 import { DatasetIndex } from "./pages/data/dataset/index";
 import { DatasetModelIndex } from "./pages/data/model";
+import { ModelInfoPage } from "./pages/data/model/info";
 
 export const AppRoutes = () => {
   return (
@@ -12,7 +13,9 @@ export const AppRoutes = () => {
       <Route path="/" element={<div>root</div>} />
       <Route path={PATHS.data.index} element={<DataRouteIndex />}>
         <Route path={PATHS.data.dataset.index} element={<DatasetIndex />} />
-        <Route path={PATHS.data.model.index} element={<DatasetModelIndex />} />
+        <Route path={PATHS.data.model.index} element={<DatasetModelIndex />}>
+          <Route path={PATHS.data.model.info} element={<ModelInfoPage />} />
+        </Route>
         <Route path={PATHS.data.dataset.editor} element={<DatasetIndex />} />
       </Route>
       <Route
