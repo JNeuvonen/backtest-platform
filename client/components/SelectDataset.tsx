@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DatasetMetadata } from "../clients/queries/response-types";
 import { OptionType, SelectWithTextFilter } from "./SelectFilter";
 import { MultiValue, SingleValue } from "react-select";
-import { FormSubmitBar } from "./form/CancelSubmitBar";
+import { FormSubmitBar } from "./form/FormSubmitBar";
 import { useKeyListener } from "../hooks/useKeyListener";
 
 interface Props {
