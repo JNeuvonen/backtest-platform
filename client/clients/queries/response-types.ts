@@ -41,6 +41,13 @@ export interface DatasetModelResponse {
   status: number;
 }
 
+export interface FetchModelByNameRes {
+  res: {
+    model: DatasetModel;
+  };
+  status: number;
+}
+
 export interface DatasetModel {
   dataset_id: number;
   drop_cols: string[];
