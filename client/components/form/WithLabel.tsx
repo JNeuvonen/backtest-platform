@@ -4,7 +4,7 @@ import { CSSProperties } from "react";
 
 interface Props {
   children: React.ReactNode;
-  label: string;
+  label?: string | JSX.Element;
   containerStyles?: CSSProperties;
 }
 
