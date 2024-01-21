@@ -1,5 +1,4 @@
 import React from "react";
-// import usePath from "../../../hooks/usePath";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { Button, Spinner } from "@chakra-ui/react";
@@ -8,18 +7,31 @@ import { useDatasetModelsQuery } from "../../../clients/queries/queries";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { RowItem, SmallTable } from "../../../components/tables/Small";
 import { formatValidationSplit } from "../../../utils/content";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getModelInfoPath } from "../../../utils/navigate";
 import { PATHS, PATH_KEYS } from "../../../utils/constants";
 import usePath from "../../../hooks/usePath";
+import { ModelInfoPage } from "./info";
+import useQueryParams from "../../../hooks/useQueryParams";
+import { ChakraTabs } from "../../../components/layout/Tabs";
 
-// const TAB_LABELS = ["Available", "Create", "Train"];
+const TAB_LABELS = ["Info", "Train", "Simulate"];
+const TABS = [
+  <ModelInfoPage key={"1"} />,
+  <div key={"2"}>train</div>,
+  <div key={"3"}>sim</div>,
+];
+
+interface QueryParams {
+  defaultTab: string | undefined;
+}
 
 const MODEL_COLUMNS = ["Name", "Target Column", "Validation Split"];
 const ROOT_PATH = PATHS.data.model.index;
 
 export const DatasetModelIndex = () => {
   const { path } = usePath();
+  const { defaultTab } = useQueryParams<QueryParams>();
 
   const createModelModal = useModal();
   const { datasetName } = usePathParams<{ datasetName: string }>();
@@ -71,7 +83,13 @@ export const DatasetModelIndex = () => {
         </>
       )}
 
-      <Outlet />
+      {!pathIsRoot() && (
+        <ChakraTabs
+          labels={TAB_LABELS}
+          tabs={TABS}
+          defaultTab={defaultTab ? Number(defaultTab) : 0}
+        />
+      )}
     </div>
   );
 };
