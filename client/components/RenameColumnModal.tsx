@@ -4,7 +4,7 @@ import { renameColumnName } from "../clients/requests";
 import { dispatchDomEvent } from "../context/log";
 import { DOM_EVENT_CHANNELS } from "../utils/constants";
 import { Button, Input, Spinner, useToast } from "@chakra-ui/react";
-import { FormSubmitBar } from "./form/CancelSubmitBar";
+import { FormSubmitBar } from "./form/FormSubmitBar";
 import { ConfirmModal } from "./form/confirm";
 import { useColumnQuery } from "../clients/queries/queries";
 import { URLS } from "../clients/endpoints";
