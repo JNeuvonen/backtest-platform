@@ -1,9 +1,9 @@
-import { url } from "inspector";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
+import { FetchModelByNameRes } from "./queries/response-types";
 
 export async function fetchDatasets() {
   const url = URLS.get_tables;
@@ -65,10 +65,21 @@ export async function fetchAllTickers() {
 }
 
 export async function fetchDatasetModels(datasetName: string) {
-  return buildRequest({
+  const res = await buildRequest({
     method: "GET",
     url: URLS.fetch_dataset_models(datasetName),
   });
+
+  return res;
+}
+
+export async function fetchModelByName(modelName: string) {
+  console.log(modelName);
+  const res: FetchModelByNameRes = await buildRequest({
+    method: "GET",
+    url: URLS.fetch_model_by_name(modelName),
+  });
+  return res.res.model ? res.res.model : null;
 }
 
 export async function renameColumnName(
