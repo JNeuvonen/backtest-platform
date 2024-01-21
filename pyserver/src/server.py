@@ -9,6 +9,7 @@ from db import (
 )
 from route_binance import router as binance_router
 from route_datasets import router as datasets_router
+from route_model import router as model_router
 from streams import router as streams_router
 
 
@@ -25,12 +26,14 @@ class Routers:
     BINANCE = "/binance"
     STREAMS = "/streams"
     DATASET = "/dataset"
+    MODEL = "/model"
 
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(binance_router, prefix=Routers.BINANCE)
 app.include_router(streams_router, prefix=Routers.STREAMS)
 app.include_router(datasets_router, prefix=Routers.DATASET)
+app.include_router(model_router, prefix=Routers.MODEL)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

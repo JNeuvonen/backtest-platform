@@ -5,6 +5,7 @@ from pandas.compat import platform
 import pytest
 import time
 import sys
+from tests.fixtures import criterion_basic, linear_model_basic
 from tests.t_conf import SERVER_SOURCE_DIR
 
 from tests.t_constants import (
@@ -17,6 +18,8 @@ from tests.t_constants import (
 from tests.t_download_data import download_historical_binance_data
 from tests.t_env import is_fast_test_mode
 from tests.t_utils import (
+    Post,
+    create_model_body,
     t_add_binance_dataset_to_db,
     t_generate_big_dataframe,
 )
@@ -25,7 +28,7 @@ sys.path.append(SERVER_SOURCE_DIR)
 
 import server
 from utils import rm_file
-from db import DatasetUtils, exec_sql
+from db import DatasetUtils
 from config import append_app_data_path
 from constants import DB_DATASETS
 
@@ -106,6 +109,25 @@ def fixt_btc_small_1h():
     dataset = BinanceData.BTCUSDT_1H_2023_06
     t_add_binance_dataset_to_db(dataset)
     return dataset
+
+
+@pytest.fixture
+def create_basic_model(fixt_btc_small_1h):
+    """
+    Creates a basic model using the 'fixt_btc_small_1h' fixture.
+    The 'fixt_btc_small_1h' fixture is executed as a dependency.
+    """
+    body = create_model_body(
+        name=Constants.EXAMPLE_MODEL_NAME,
+        target_col=BinanceCols.OPEN_PRICE,
+        drop_cols=[],
+        null_fill_strategy="NONE",
+        model=linear_model_basic(),
+        hyper_params_and_optimizer_code=criterion_basic(),
+        validation_split=[70, 100],
+    )
+    Post.create_model(fixt_btc_small_1h.name, body)
+    return fixt_btc_small_1h
 
 
 @pytest.fixture
