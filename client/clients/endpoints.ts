@@ -13,6 +13,9 @@ const API = {
   streams: {
     log: "ws://localhost:8000/streams/subscribe-log",
   },
+  model: {
+    root: "/model",
+  },
 };
 
 const BASE_URL = CONSTANTS.base_url;
@@ -48,4 +51,6 @@ export const URLS = {
 
   fetch_dataset_models: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/models`,
+  fetch_model_by_name: (modelName: string) =>
+    BASE_URL + API.model.root + `/${modelName}`,
 };
