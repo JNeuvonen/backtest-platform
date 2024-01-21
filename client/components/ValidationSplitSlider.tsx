@@ -10,14 +10,16 @@ import {
 
 interface Props {
   sliderValue: number[];
-  setSliderValue: React.Dispatch<React.SetStateAction<number[]>>;
+  setSliderValue?: React.Dispatch<React.SetStateAction<number[]>>;
   containerStyle?: CSSProperties;
+  isReadOnly?: boolean;
 }
 
 export function ValidationSplitSlider({
   sliderValue,
   setSliderValue,
   containerStyle,
+  isReadOnly = false,
 }: Props) {
   return (
     <FormControl style={containerStyle}>
@@ -28,7 +30,10 @@ export function ValidationSplitSlider({
         min={0}
         max={100}
         value={sliderValue}
-        onChange={(val) => setSliderValue(val)}
+        onChange={(val) => {
+          if (setSliderValue) setSliderValue(val);
+        }}
+        isDisabled={isReadOnly}
       >
         <RangeSliderTrack>
           <RangeSliderFilledTrack />
