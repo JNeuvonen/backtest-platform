@@ -14,12 +14,14 @@ import usePath from "../../../hooks/usePath";
 import { ModelInfoPage } from "./info";
 import useQueryParams from "../../../hooks/useQueryParams";
 import { ChakraTabs } from "../../../components/layout/Tabs";
+import { ModelTrainPage } from "./train";
+import { ModelSimulatePage } from "./sim";
 
 const TAB_LABELS = ["Info", "Train", "Simulate"];
 const TABS = [
   <ModelInfoPage key={"1"} />,
-  <div key={"2"}>train</div>,
-  <div key={"3"}>sim</div>,
+  <ModelTrainPage key={"2"} />,
+  <ModelSimulatePage key={"3"} />,
 ];
 
 interface QueryParams {
