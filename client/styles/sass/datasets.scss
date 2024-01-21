@@ -7,19 +7,28 @@
 .basic-table {
   border: 1px solid $bg-primary-shade-two;
   background-color: $bg-primary-shade-one;
-  th {
-    border-bottom: 1px solid $bg-primary-shade-two;
-    color: $content-primary;
-  }
+
+  th,
   td {
     border-bottom: 1px solid $bg-primary-shade-two;
     color: $content-primary;
   }
-}
 
-.table-th-hover:hover {
-  background-color: $bg-primary-shade-two;
-  cursor: pointer;
+  th {
+    &:hover {
+      background-color: $bg-primary-shade-three;
+    }
+  }
+
+  tr {
+    &:hover {
+      background-color: $bg-primary-shade-three;
+
+      td {
+        background-color: $bg-primary-shade-three;
+      }
+    }
+  }
 }
 
 .column-modal {
