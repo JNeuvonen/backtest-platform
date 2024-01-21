@@ -481,24 +481,39 @@ class DatasetUtils:
 
     @classmethod
     def fetch_dataset_id_by_name(cls, dataset_name: str):
-        with sqlite3.connect(cls.get_path()) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                f"""SELECT {cls.Dataset.Cols.PRIMARY_KEY} FROM {cls.Dataset.TABLE_NAME} WHERE {cls.Dataset.Cols.DATASET_NAME} = ?;""",
-                (dataset_name,),
-            )
-            result = cursor.fetchone()
-            cursor.close()
-            return result[0] if result else None
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT {cls.Dataset.Cols.PRIMARY_KEY} FROM {cls.Dataset.TABLE_NAME} WHERE {cls.Dataset.Cols.DATASET_NAME} = ?;""",
+                    (dataset_name,),
+                )
+                result = cursor.fetchone()
+                cursor.close()
+                return result[0] if result else None
 
     @classmethod
     def fetch_models_by_dataset_id(cls, dataset_id: int):
-        with sqlite3.connect(cls.get_path()) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                f"""SELECT * FROM {cls.Model.TABLE_NAME} WHERE {cls.Model.Cols.DATASET_ID} = ?;""",
-                (dataset_id,),
-            )
-            models = cursor.fetchall()
-            models = [ModelObject.from_db_row(row) for row in models]
-            return models
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT * FROM {cls.Model.TABLE_NAME} WHERE {cls.Model.Cols.DATASET_ID} = ?;""",
+                    (dataset_id,),
+                )
+                models = cursor.fetchall()
+                models = [ModelObject.from_db_row(row) for row in models]
+                return models
+
+    @classmethod
+    def fetch_model_by_name(cls, model_name: str):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT * FROM {cls.Model.TABLE_NAME} WHERE {cls.Model.Cols.NAME} = ?;""",
+                    (model_name,),
+                )
+                model_data = cursor.fetchone()
+                cursor.close()
+                return ModelObject.from_db_row(model_data) if model_data else None
