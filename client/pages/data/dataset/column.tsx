@@ -11,7 +11,7 @@ import { BUTTON_VARIANTS } from "../../../theme";
 import { PythonIcon } from "../../../components/icons/python";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
-import { FormSubmitBar } from "../../../components/form/CancelSubmitBar";
+import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { createPythonCode } from "../../../utils/str";
 import { ConfirmModal } from "../../../components/form/confirm";
 import { execPythonOnDatasetCol } from "../../../clients/requests";
