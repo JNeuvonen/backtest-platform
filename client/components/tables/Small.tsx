@@ -13,13 +13,15 @@ import React, { CSSProperties } from "react";
 interface Props {
   columns: string[];
   columnOnClickFunc?: (item: string) => void;
+  rowOnClickFunc?: (item: string[] | number[] | (string | number)[]) => void;
   rows: string[][] | number[][] | (string | number)[][];
-  containerStyles: CSSProperties;
+  containerStyles?: CSSProperties;
 }
 
 export const SmallTable = ({
   columns,
   columnOnClickFunc,
+  rowOnClickFunc,
   rows,
   containerStyles,
 }: Props) => {
@@ -28,34 +30,34 @@ export const SmallTable = ({
       <Table size="sm" className="basic-table">
         <Thead>
           <Tr>
-            {columns.map((item) => {
-              return (
-                <Th
-                  key={item}
-                  className={"table-th-hover"}
-                  onClick={() => {
-                    if (!columnOnClickFunc) return;
-                    columnOnClickFunc(item);
-                  }}
-                >
-                  {item}
-                </Th>
-              );
-            })}
+            {columns.map((item) => (
+              <Th
+                key={item}
+                onClick={() => columnOnClickFunc?.(item)}
+                style={{
+                  cursor: columnOnClickFunc ? "pointer" : undefined,
+                }}
+              >
+                {item}
+              </Th>
+            ))}
           </Tr>
         </Thead>
         <Tbody>
-          {rows.map(
-            (item: string[] | number[] | (string | number)[], i: number) => {
-              return (
-                <Tr key={i}>
-                  {item.map((rowItem: string | number, j: number) => {
-                    return <Td key={`${i}-${j}`}>{rowItem}</Td>;
-                  })}
-                </Tr>
-              );
-            }
-          )}
+          {rows.map((row, i: number) => (
+            <Tr
+              key={i}
+              className="table-row-hover" // Add class for hover style
+              onClick={() => rowOnClickFunc?.(row)}
+              style={{
+                cursor: rowOnClickFunc ? "pointer" : undefined,
+              }}
+            >
+              {row.map((rowItem, j: number) => (
+                <Td key={`${i}-${j}`}>{rowItem}</Td>
+              ))}
+            </Tr>
+          ))}
         </Tbody>
       </Table>
     </TableContainer>
