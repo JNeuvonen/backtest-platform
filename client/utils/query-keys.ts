@@ -4,4 +4,5 @@ export const QUERY_KEYS = {
   fetch_column: "fetch-column",
   fetch_binance_tickers: "fetch-binance-tickers",
   fetch_datasets_models: "fetch-datasets-models",
+  fetch_dataset_model_by_name: "fetch-dataset-model-by-name",
 };
