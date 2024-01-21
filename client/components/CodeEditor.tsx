@@ -5,7 +5,7 @@ import { FormControl, FormLabel } from "@chakra-ui/react";
 
 interface Props {
   code: string;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
+  setCode?: React.Dispatch<React.SetStateAction<string>>;
   style?: CSSProperties;
   codeContainerStyles?: CSSProperties;
   presets?: string;
@@ -13,6 +13,8 @@ interface Props {
   fontSize?: number;
   editorDidMount?: OnMount;
   label?: string;
+  readOnly?: boolean;
+  disableCodePresets?: boolean;
 }
 
 export const CodeEditor = ({
@@ -24,9 +26,13 @@ export const CodeEditor = ({
   fontSize = 20,
   editorDidMount,
   label,
+  readOnly = false,
+  disableCodePresets = false,
 }: Props) => {
   const handleCodeChange = (newValue: string | undefined) => {
-    setCode(newValue ?? "");
+    if (setCode) {
+      setCode(newValue ?? "");
+    }
   };
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
@@ -42,6 +48,7 @@ export const CodeEditor = ({
   const editorOptions: EditorProps["options"] = {
     minimap: { enabled: false },
     fontSize: fontSize,
+    readOnly,
   };
 
   if (label) {
@@ -67,7 +74,8 @@ export const CodeEditor = ({
             options={editorOptions}
           />
         </FormControl>
-        <CodePresets />
+
+        {!disableCodePresets && <CodePresets />}
       </div>
     );
   }
@@ -92,7 +100,8 @@ export const CodeEditor = ({
           options={editorOptions}
         />
       </div>
-      <CodePresets />
+
+      {!disableCodePresets && <CodePresets />}
     </div>
   );
 };
