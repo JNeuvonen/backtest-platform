@@ -37,3 +37,16 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+code {
+  background-color: $bg-secondary;
+  color: $content-primary;
+  padding: 0.5em;
+  border-radius: 4px;
+  line-height: 1.5;
+  font-family: monospace;
+  display: block;
+  margin: 10px 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
