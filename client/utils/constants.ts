@@ -123,7 +123,8 @@ export class CodeHelper {
   reduceIndent() {
     this.indentLevel -= 1;
   }
+
   get() {
-    return this.code;
+    return this.code.replace(/\n$/, "");
   }
 }
