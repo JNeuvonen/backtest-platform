@@ -4,7 +4,8 @@ from tests.t_conf import SERVER_SOURCE_DIR
 sys.path.append(SERVER_SOURCE_DIR)
 
 from server import Routers
-from route_datasets import RoutePaths
+from route_datasets import RoutePaths as DatasetRoutePaths
+from route_model import RoutePaths as ModelRoutePaths
 
 
 class FixturePaths:
@@ -15,6 +16,7 @@ class FixturePaths:
 class Constants:
     TESTS_FOLDER = "/tests"
     BIG_TEST_FILE = "big_testfile.csv"
+    EXAMPLE_MODEL_NAME = "Example model"
 
 
 class DatasetMetadata:
@@ -106,52 +108,62 @@ class URL:
         return cls.BASE_URL + Routers.DATASET
 
     @classmethod
+    def _models_route(cls):
+        return cls.BASE_URL + Routers.MODEL
+
+    @classmethod
+    def get_model_by_name(cls, model_name):
+        return cls._models_route() + ModelRoutePaths.FETCH_MODEL.format(
+            model_name=model_name
+        )
+
+    @classmethod
     def t_get_tables(cls):
-        return cls._datasets_route() + RoutePaths.ALL_TABLES
+        return cls._datasets_route() + DatasetRoutePaths.ALL_TABLES
 
     @classmethod
     def t_get_rename_column(cls, dataset_name: str):
-        return cls._datasets_route() + RoutePaths.RENAME_COLUMN.format(
+        return cls._datasets_route() + DatasetRoutePaths.RENAME_COLUMN.format(
             dataset_name=dataset_name
         )
 
     @classmethod
     def get_column_detailed_info(cls, dataset_name: str, column_name: str):
-        return cls._datasets_route() + RoutePaths.GET_DATASET_COL_INFO.format(
+        return cls._datasets_route() + DatasetRoutePaths.GET_DATASET_COL_INFO.format(
             dataset_name=dataset_name, column_name=column_name
         )
 
     @classmethod
     def update_timeseries_col(cls, dataset_name: str):
-        return cls._datasets_route() + RoutePaths.UPDATE_TIMESERIES_COL.format(
+        return cls._datasets_route() + DatasetRoutePaths.UPDATE_TIMESERIES_COL.format(
             dataset_name=dataset_name
         )
 
     @classmethod
     def t_get_all_columns(cls):
-        return cls._datasets_route() + RoutePaths.ROOT
+        return cls._datasets_route() + DatasetRoutePaths.ROOT
 
     @classmethod
     def t_get_dataset_by_name(cls, dataset_name: str):
-        return cls._datasets_route() + RoutePaths.GET_DATASET_BY_NAME.format(
+        return cls._datasets_route() + DatasetRoutePaths.GET_DATASET_BY_NAME.format(
             dataset_name=dataset_name
         )
 
     @classmethod
     def exec_python_on_col(cls, dataset_name, column_name):
-        return cls._datasets_route() + RoutePaths.EXEC_PYTHON_ON_COL.format(
+        return cls._datasets_route() + DatasetRoutePaths.EXEC_PYTHON_ON_COL.format(
             dataset_name=dataset_name, column_name=column_name
         )
 
     @classmethod
     def exec_python_on_dataset(cls, dataset_name):
-        return cls._datasets_route() + RoutePaths.EXEC_PYTHON_ON_DATASET.format(
+        return cls._datasets_route() + DatasetRoutePaths.EXEC_PYTHON_ON_DATASET.format(
             dataset_name=dataset_name
         )
 
     @classmethod
     def create_model(cls, dataset_name):
-        return cls._datasets_route() + RoutePaths.CREATE_MODEL.format(
+        return cls._datasets_route() + DatasetRoutePaths.CREATE_MODEL.format(
             dataset_name=dataset_name
         )
 
@@ -159,13 +171,13 @@ class URL:
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):
         return (
             cls._datasets_route()
-            + RoutePaths.ADD_COLUMNS.format(dataset_name=dataset_name)
+            + DatasetRoutePaths.ADD_COLUMNS.format(dataset_name=dataset_name)
             + f"?is_test_mode=True&null_fill_strategy={null_fill_strategy}"
         )
 
     @classmethod
     def t_update_dataset_name(cls, dataset_name: str):
-        return cls._datasets_route() + RoutePaths.UPDATE_DATASET_NAME.format(
+        return cls._datasets_route() + DatasetRoutePaths.UPDATE_DATASET_NAME.format(
             dataset_name=dataset_name
         )
 
@@ -173,12 +185,12 @@ class URL:
     def t_get_upload_dataset_url(cls, table_name: str, timeseries_col: str):
         return (
             cls._datasets_route()
-            + RoutePaths.UPLOAD_TIMESERIES_DATA
+            + DatasetRoutePaths.UPLOAD_TIMESERIES_DATA
             + f"?dataset_name={table_name}&timeseries_col={timeseries_col}"
         )
 
     @classmethod
     def get_dataset_models(cls, dataset_name: str):
-        return cls._datasets_route() + RoutePaths.FETCH_MODELS.format(
+        return cls._datasets_route() + DatasetRoutePaths.FETCH_MODELS.format(
             dataset_name=dataset_name
         )

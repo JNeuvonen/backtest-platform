@@ -1,14 +1,20 @@
 from contextlib import contextmanager
 import os
+import sys
 from typing import List
 import pandas as pd
 import requests
-from pyserver.src.config import append_app_data_path
-from pyserver.src.constants import BINANCE_DATA_COLS
-from pyserver.src.db import DatasetUtils
-from pyserver.src.utils import add_to_datasets_db
+from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import URL, DatasetMetadata
 from tests.t_context import t_file
+
+
+sys.path.append(SERVER_SOURCE_DIR)
+
+from config import append_app_data_path
+from constants import BINANCE_DATA_COLS
+from db import DatasetUtils
+from utils import add_to_datasets_db
 
 
 @contextmanager
@@ -106,6 +112,12 @@ class Fetch:
         with Req("get", URL.get_dataset_models(dataset_name)) as res:
             res_json = res.json()
             return res_json["data"]
+
+    @staticmethod
+    def get_model_by_name(model_name: str):
+        with Req("get", URL.get_model_by_name(model_name)) as res:
+            res_json = res.json()
+            return res_json["model"]
 
 
 class Post:
