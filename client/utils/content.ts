@@ -21,3 +21,7 @@ export const getParenthesisSize = (size: number, fallbackValue = null) => {
 export const formatValidationSplit = (validationSplit: [number, number]) => {
   return `${validationSplit[0]}-${validationSplit[1]}`;
 };
+
+export function formatCodeBlock(codeString: string): string {
+  return codeString.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
+}
