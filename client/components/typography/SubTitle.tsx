@@ -7,7 +7,7 @@ interface Props {
   fontSize?: number;
 }
 
-const SubTitle: React.FC<Props> = ({
+export const SubTitle: React.FC<Props> = ({
   style = { fontWeight: 700 },
   tagType = "h3",
   children,
@@ -17,5 +17,3 @@ const SubTitle: React.FC<Props> = ({
   const Tag = tagType as keyof JSX.IntrinsicElements;
   return <Tag style={style}>{children}</Tag>;
 };
-
-export default SubTitle;

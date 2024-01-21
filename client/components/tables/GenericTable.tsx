@@ -22,6 +22,7 @@ export const GenericTable = ({ columns, rows, columnOnClickFunc }: Props) => {
                     if (!columnOnClickFunc) return;
                     columnOnClickFunc(item);
                   }}
+                  style={{ cursor: columnOnClickFunc ? "pointer" : undefined }}
                 >
                   {item}
                 </Th>

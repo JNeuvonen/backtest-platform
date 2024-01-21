@@ -1,12 +1,10 @@
 import React from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
-import Title from "../../../components/typography/Title";
 import { useModelQuery } from "../../../clients/queries/queries";
 import { Spinner } from "@chakra-ui/react";
 import { CodeEditor } from "../../../components/CodeEditor";
-import { WithLabel } from "../../../components/form/WithLabel";
-import { formatValidationSplit } from "../../../utils/content";
 import { ValidationSplitSlider } from "../../../components/ValidationSplitSlider";
+import { SubTitle } from "../../../components/typography/SubTitle";
 
 interface RouteParams {
   datasetName: string;
@@ -27,7 +25,8 @@ export const ModelInfoPage = () => {
 
   return (
     <div>
-      <Title>{modelName}</Title>
+      <SubTitle>Model: {data.name}</SubTitle>
+      <SubTitle>Target column: {data.target_col}</SubTitle>
       <CodeEditor
         code={data.model}
         readOnly={true}
