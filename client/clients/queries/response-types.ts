@@ -36,7 +36,7 @@ export interface DatasetResponse {
 
 export interface DatasetModelResponse {
   res: {
-    data: DatasetModel;
+    data: DatasetModel[];
   };
   status: number;
 }
@@ -50,7 +50,7 @@ export interface DatasetModel {
   name: string;
   null_fill_strat: NullFillStrategy;
   target_col: string;
-  validation_split: number[];
+  validation_split: [number, number];
 }
 
 export interface Dataset {
