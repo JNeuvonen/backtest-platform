@@ -23,10 +23,13 @@ def linear_model_basic():
 
 def criterion_basic():
     helper = PyCode()
+    helper.append_line("def get_criterion_and_optimizer(model):")
+    helper.add_indent()
     helper.append_line("criterion = nn.MSELoss()")
     helper.append_line(
         "optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.01)"
     )
+    helper.append_line("return criterion, optimizer")
 
     return helper.get()
 
