@@ -4,6 +4,7 @@ import sys
 from typing import List
 import pandas as pd
 import requests
+from pyserver.src.request_types import BodyCreateTrain
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import URL, DatasetMetadata
 from tests.t_context import t_file
@@ -85,6 +86,22 @@ def create_model_body(
     }
 
 
+def create_train_job_body(
+    num_epochs: int,
+    save_model_after_every_epoch: bool,
+    backtest_on_val_set: bool,
+    enter_trade_criteria: str,
+    exit_trade_criteria: str,
+):
+    return {
+        "num_epochs": num_epochs,
+        "save_model_after_every_epoch": save_model_after_every_epoch,
+        "backtest_on_val_set": backtest_on_val_set,
+        "enter_trade_criteria": enter_trade_criteria,
+        "exit_trade_criteria": exit_trade_criteria,
+    }
+
+
 class Fetch:
     @staticmethod
     def get_tables():
@@ -150,6 +167,11 @@ class Post:
     @staticmethod
     def create_model(dataset_name, body):
         with Req("post", URL.create_model(dataset_name), json=body) as res:
+            return res.json()
+
+    @staticmethod
+    def create_train_job(model_name: str, body):
+        with Req("post", URL.create_train_job(model_name), json=body) as res:
             return res.json()
 
 
