@@ -590,6 +590,7 @@ class DatasetUtils:
                 )
                 train_job_data = cursor.fetchone()
                 cursor.close()
+
                 return (
                     TrainJobObject.from_db_row(train_job_data)
                     if train_job_data
