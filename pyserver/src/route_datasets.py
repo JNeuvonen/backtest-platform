@@ -6,6 +6,7 @@ from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrate
 from context import HttpResponseContext
 from fastapi import APIRouter, HTTPException, Query, UploadFile
 from pydantic import BaseModel
+from dataset import df_fill_nulls_on_all_cols
 from db import (
     DatasetUtils,
     add_columns_to_table,
@@ -28,7 +29,6 @@ from request_types import (
 from utils import (
     PythonCode,
     add_to_datasets_db,
-    df_fill_nulls_on_all_cols,
     read_file_to_dataframe,
 )
 
