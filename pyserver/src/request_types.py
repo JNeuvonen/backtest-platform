@@ -1,12 +1,14 @@
 from typing import List
 from pydantic import BaseModel
 
+from constants import NullFillStrategy
+
 
 class BodyModelData(BaseModel):
     name: str
     target_col: str
     drop_cols: List[str]
-    null_fill_strategy: str
+    null_fill_strategy: NullFillStrategy
     model: str
     hyper_params_and_optimizer_code: str
     validation_split: List[int]
