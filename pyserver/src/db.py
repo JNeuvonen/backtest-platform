@@ -9,14 +9,14 @@ from config import append_app_data_path
 from constants import AppConstants, DomEventChannels, NullFillStrategy
 from dataset import (
     combine_datasets,
+    df_fill_nulls,
     get_col_prefix,
     read_columns_to_mem,
     read_dataset_to_mem,
 )
-from db_objects import ModelObject, TrainJobObject
+from db_objects import DatasetObject, ModelObject, TrainJobObject
 from log import LogExceptionContext, get_logger
 from request_types import BodyCreateTrain, BodyModelData
-from utils import df_fill_nulls
 
 
 def create_connection(db_file: str):
@@ -608,3 +608,16 @@ class DatasetUtils:
                 )
                 train_jobs = cursor.fetchall()
                 return [TrainJobObject.from_db_row(job) for job in train_jobs]
+
+    @classmethod
+    def fetch_dataset_by_id(cls, dataset_id: int):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT * FROM {cls.Dataset.TABLE_NAME} WHERE {cls.Dataset.Cols.PRIMARY_KEY} = ?;""",
+                    (dataset_id,),
+                )
+                dataset_data = cursor.fetchone()
+                cursor.close()
+                return DatasetObject.from_db_row(dataset_data) if dataset_data else None
