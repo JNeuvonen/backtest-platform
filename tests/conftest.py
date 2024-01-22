@@ -30,7 +30,7 @@ import server
 from utils import rm_file
 from db import DatasetUtils
 from config import append_app_data_path
-from constants import DB_DATASETS
+from constants import DB_DATASETS, NullFillStrategy
 
 
 def t_binance_path_to_dataset_name(binance_path: str):
@@ -121,7 +121,7 @@ def create_basic_model(fixt_btc_small_1h):
         name=Constants.EXAMPLE_MODEL_NAME,
         target_col=BinanceCols.OPEN_PRICE,
         drop_cols=[],
-        null_fill_strategy="NONE",
+        null_fill_strategy=NullFillStrategy.CLOSEST.value,
         model=linear_model_basic(),
         hyper_params_and_optimizer_code=criterion_basic(),
         validation_split=[70, 100],
