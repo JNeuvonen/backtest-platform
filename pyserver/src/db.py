@@ -341,6 +341,15 @@ class DatasetUtils:
 
         TABLE_NAME = "model"
 
+    class ModelWeights:
+        class Cols:
+            PRIMARY_KEY = "id"
+            TRAIN_JOB_ID = "train_job_id"
+            EPOCH = "epoch"
+            WEIGHTS = "weights"
+
+        TABLE_NAME = "model_weights"
+
     class TrainJob:
         class Cols:
             PRIMARY_KEY = "id"
@@ -353,6 +362,19 @@ class DatasetUtils:
             EXIT_TRADE_CRITERIA = "exit_trade_criteria"
 
         TABLE_NAME = "train_job"
+
+    @classmethod
+    def create_model_weights_table(cls):
+        Cols = cls.ModelWeights.Cols
+        return f"""
+                CREATE TABLE IF NOT EXISTS {cls.ModelWeights.TABLE_NAME} (
+                    {Cols.PRIMARY_KEY} INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.TRAIN_JOB_ID} INTEGER NOT NULL,
+                    {Cols.EPOCH} INTEGER NOT NULL,
+                    {Cols.WEIGHTS} BLOB NOT NULL,
+                    FOREIGN KEY ({Cols.TRAIN_JOB_ID}) REFERENCES {cls.TrainJob.TABLE_NAME}({cls.TrainJob.Cols.PRIMARY_KEY})
+                );
+            """
 
     @classmethod
     def create_dataset_table(cls):
@@ -374,7 +396,7 @@ class DatasetUtils:
                     {Cols.DATASET_ID} INTEGER NOT NULL,
                     {Cols.TARGET_COL} TEXT NOT NULL,
                     {Cols.DROP_COLS} TEXT,
-                    {Cols.NULL_FILL_STRAT} TEXT,
+                    {Cols.NULL_FILL_STRAT} INTEGER,
                     {Cols.MODEL} TEXT,
                     {Cols.NAME} TEXT UNIQUE,
                     {Cols.HYPER_PARAMS_AND_OPTIMIZER_CODE} TEXT,
@@ -408,6 +430,7 @@ class DatasetUtils:
                 cursor.execute(cls.create_dataset_table())
                 cursor.execute(cls.create_model_table())
                 cursor.execute(cls.create_train_job_table())
+                cursor.execute(cls.create_model_weights_table())
                 conn.commit()
 
     @classmethod
@@ -493,7 +516,7 @@ class DatasetUtils:
                         dataset_id,
                         model_data.target_col,
                         ",".join(model_data.drop_cols),
-                        model_data.null_fill_strategy,
+                        model_data.null_fill_strategy.value,
                         model_data.model,
                         model_data.name,
                         model_data.hyper_params_and_optimizer_code,
@@ -621,3 +644,16 @@ class DatasetUtils:
                 dataset_data = cursor.fetchone()
                 cursor.close()
                 return DatasetObject.from_db_row(dataset_data) if dataset_data else None
+
+    @classmethod
+    def create_model_weights_entry(cls, train_job_id: int, epoch: int, weights: bytes):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""INSERT INTO {cls.ModelWeights.TABLE_NAME} 
+                        ({cls.ModelWeights.Cols.TRAIN_JOB_ID}, {cls.ModelWeights.Cols.EPOCH}, {cls.ModelWeights.Cols.WEIGHTS}) 
+                        VALUES (?, ?, ?)""",
+                    (train_job_id, epoch, weights),
+                )
+                conn.commit()
