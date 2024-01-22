@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { useModelQuery } from "../clients/queries/queries";
 import { usePathParams } from "../hooks/usePathParams";
