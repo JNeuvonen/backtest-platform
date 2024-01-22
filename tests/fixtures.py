@@ -1,8 +1,9 @@
-from tests.t_utils import CodeHelper, create_train_job_body
+from pyserver.src.code_gen import PyCode
+from tests.t_utils import create_train_job_body
 
 
 def linear_model_basic():
-    helper = CodeHelper()
+    helper = PyCode()
     helper.append_line("class Model(nn.Module):")
     helper.add_indent()
     helper.append_line("def __init__(self, n_input_params):")
@@ -19,7 +20,7 @@ def linear_model_basic():
 
 
 def criterion_basic():
-    helper = CodeHelper()
+    helper = PyCode()
     helper.append_line("criterion = nn.MSELoss()")
     helper.append_line(
         "optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.01)"
@@ -29,11 +30,11 @@ def criterion_basic():
 
 
 def create_train_job_basic():
-    enter_trade_criteria = CodeHelper()
+    enter_trade_criteria = PyCode()
     enter_trade_criteria.append_line("prediction = get_prediction()")
     enter_trade_criteria.append_line("return prediction > 1.01")
 
-    exit_trade_criteria = CodeHelper()
+    exit_trade_criteria = PyCode()
     exit_trade_criteria.append_line("prediction = get_prediction()")
     exit_trade_criteria.append_line("return prediction < 0.99")
 
