@@ -42,47 +42,6 @@ async def read_file_to_dataframe(
         return pd.read_csv(BytesIO(file_bytes))
 
 
-def df_fill_nulls_on_all_cols(dataset_name: str, strategy: NullFillStrategy):
-    if strategy is NullFillStrategy.NONE:
-        return
-    with LogExceptionContext():
-        dataset = read_dataset_to_mem(dataset_name)
-
-        for item in dataset.columns:
-            df_fill_nulls(dataset, item, strategy)
-
-        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
-            dataset.to_sql(dataset_name, conn, if_exists="replace", index=False)
-
-
-def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
-    if strategy == NullFillStrategy.ZERO:
-        df[column].fillna(0, inplace=True)
-
-    elif strategy == NullFillStrategy.MEAN:
-        mean_value = df[column].mean()
-        df[column].fillna(mean_value, inplace=True)
-
-    elif strategy == NullFillStrategy.CLOSEST:
-        if df[column].isnull().any():
-            ffill = df[column].ffill()
-            bfill = df[column].bfill()
-
-            ffill_mask = df[column].ffill().notnull()
-            bfill_mask = df[column].bfill().notnull()
-
-            index_series = pd.Series(df.index, index=df.index)
-
-            ffill_dist = (
-                index_series[ffill_mask].reindex_like(df, method="ffill") - df.index
-            )
-            bfill_dist = df.index - index_series[bfill_mask].reindex_like(
-                df, method="bfill"
-            )
-
-            df[column] = np.where(ffill_dist <= bfill_dist, ffill, bfill)
-
-
 class PythonCode:
     INDENT = "    "
     DATASET_SYMBOL = "dataset"
