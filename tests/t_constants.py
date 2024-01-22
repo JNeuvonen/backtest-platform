@@ -168,6 +168,12 @@ class URL:
         )
 
     @classmethod
+    def create_train_job(cls, model_name):
+        return cls._models_route() + ModelRoutePaths.CREATE_TRAIN_JOB.format(
+            model_name=model_name
+        )
+
+    @classmethod
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):
         return (
             cls._datasets_route()
