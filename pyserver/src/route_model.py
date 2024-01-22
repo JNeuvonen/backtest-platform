@@ -2,6 +2,8 @@ from fastapi import APIRouter
 
 from context import HttpResponseContext
 from db import DatasetUtils
+from pyserver.src.code_gen import CodeGen
+from pyserver.src.db_objects import TrainJobObject
 from pyserver.src.request_types import BodyCreateTrain
 
 
@@ -25,9 +27,18 @@ async def route_fetch_model(model_name: str):
 async def route_create_train_job(model_name: str, body: BodyCreateTrain):
     with HttpResponseContext():
         train_job_name = DatasetUtils.create_train_job(model_name, body)
+
         train_job = DatasetUtils.get_train_job(
             train_job_name, DatasetUtils.TrainJob.Cols.NAME
         )
+        model = DatasetUtils.fetch_model_by_name(model_name)
+
+        if train_job is None or model is None:
+            # should never execute, just to make mypy happy
+            raise ValueError("No model or train job found")
+
+        code_gen = CodeGen()
+        code_gen.train_job(model, train_job)
         return {"message": "OK"}
 
 
