@@ -3,6 +3,7 @@ import pytest
 import sys
 
 from decimal import Decimal
+from pyserver.src.constants import NullFillStrategy
 from tests.fixtures import criterion_basic, linear_model_basic
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
@@ -282,7 +283,7 @@ def test_route_create_model(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
         name="Example model",
         target_col=BinanceCols.OPEN_PRICE,
         drop_cols=[],
-        null_fill_strategy="NONE",
+        null_fill_strategy=NullFillStrategy.CLOSEST.value,
         model=linear_model_basic(),
         hyper_params_and_optimizer_code=criterion_basic(),
         validation_split=[70, 100],
@@ -297,7 +298,7 @@ def test_route_fetch_models(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
         name="Example model",
         target_col=BinanceCols.OPEN_PRICE,
         drop_cols=[],
-        null_fill_strategy="NONE",
+        null_fill_strategy=NullFillStrategy.CLOSEST.value,
         model=linear_model_basic(),
         hyper_params_and_optimizer_code=criterion_basic(),
         validation_split=[70, 100],
