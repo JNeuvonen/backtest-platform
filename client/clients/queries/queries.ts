@@ -11,12 +11,10 @@ import {
 import {
   BinanceTickersResponse,
   ColumnResponse,
-  Dataset,
   DatasetModel,
   DatasetModelResponse,
   DatasetResponse,
   DatasetsResponse,
-  FetchModelByNameRes,
 } from "./response-types";
 
 export function useDatasetsQuery(): UseQueryResult<DatasetsResponse, unknown> {
