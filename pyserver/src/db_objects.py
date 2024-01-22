@@ -31,3 +31,32 @@ class ModelObject:
 
     def __repr__(self):
         return f"<ModelObject {self.model_id}: {self.name}>"
+
+
+class TrainJobObject:
+    def __init__(
+        self,
+        job_id,
+        name,
+        model_name,
+        num_epochs,
+        save_model_every_epoch,
+        backtest_on_validation_set,
+        enter_trade_criteria,
+        exit_trade_criteria,
+    ):
+        self.name = name
+        self.job_id = job_id
+        self.model_name = model_name
+        self.num_epochs = num_epochs
+        self.save_model_every_epoch = save_model_every_epoch
+        self.backtest_on_validation_set = backtest_on_validation_set
+        self.enter_trade_criteria = enter_trade_criteria
+        self.exit_trade_criteria = exit_trade_criteria
+
+    @classmethod
+    def from_db_row(cls, row):
+        return cls(*row)
+
+    def __repr__(self):
+        return f"<TrainJobObject {self.job_id}: {self.model_name}>"
