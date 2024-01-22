@@ -4,7 +4,6 @@ import sys
 from typing import List
 import pandas as pd
 import requests
-from pyserver.src.request_types import BodyCreateTrain
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import URL, DatasetMetadata
 from tests.t_context import t_file
