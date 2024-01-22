@@ -1,5 +1,7 @@
-from pyserver.src.code_gen import PyCode
 from tests.t_utils import create_train_job_body
+
+from tests.t_conf import SERVER_SOURCE_DIR
+from code_gen import PyCode
 
 
 def linear_model_basic():
