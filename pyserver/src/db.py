@@ -1,6 +1,7 @@
 import logging
 import sqlite3
 import statistics
+import pickle
 from typing import List
 from fastapi import HTTPException
 
@@ -657,3 +658,17 @@ class DatasetUtils:
                     (train_job_id, epoch, weights),
                 )
                 conn.commit()
+
+    @classmethod
+    def fetch_model_weights_by_epoch(cls, train_job_id: int, epoch: int):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT {cls.ModelWeights.Cols.WEIGHTS} FROM {cls.ModelWeights.TABLE_NAME} 
+                       WHERE {cls.ModelWeights.Cols.TRAIN_JOB_ID} = ? AND {cls.ModelWeights.Cols.EPOCH} = ?;""",
+                    (train_job_id, epoch),
+                )
+                weights_data = cursor.fetchone()
+                cursor.close()
+                return pickle.loads(weights_data[0]) if weights_data else None
