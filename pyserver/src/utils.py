@@ -83,3 +83,24 @@ class PythonCode:
             + f'\n{cls.INDENT}{cls.INDENT}{cls.DATASET_SYMBOL}.to_sql("{dataset_name}", conn, if_exists="replace", index=False)'
             + f'\nrun_on_dataset(read_dataset_to_mem("{dataset_name}"))'
         )
+
+
+class GlobalSymbols:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(GlobalSymbols, cls).__new__(cls)
+            cls.GLOBALS_ON_APP_LAUNCH = set(globals().keys())
+        return cls._instance
+
+    @staticmethod
+    def cleanup_globals():
+        current_globals = set(globals().keys())
+        new_globals = current_globals - GlobalSymbols.GLOBALS_ON_APP_LAUNCH
+
+        for global_var in new_globals:
+            del globals()[global_var]
+
+
+global_symbols = GlobalSymbols()
