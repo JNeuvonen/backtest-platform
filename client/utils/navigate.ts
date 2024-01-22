@@ -1,4 +1,5 @@
-import { PATHS, PATH_KEYS } from "./constants";
+import { defaults } from "lodash";
+import { NullFillStrategy, PATHS, PATH_KEYS } from "./constants";
 
 export const getDatasetEditorPath = (datasetName: string) => {
   return (
@@ -30,4 +31,23 @@ export const replaceNthPathItem = (nthItemFromEnd: number, newItem: string) => {
   const pathParts = window.location.pathname.split("/");
   pathParts[pathParts.length - 1 - nthItemFromEnd] = newItem;
   return pathParts.join("/");
+};
+
+export const nullFillStratToInt = (nullFillStrat: NullFillStrategy) => {
+  switch (nullFillStrat) {
+    case "NONE":
+      return 1;
+
+    case "ZERO":
+      return 2;
+
+    case "MEAN":
+      return 3;
+
+    case "CLOSEST":
+      return 4;
+
+    default:
+      return 1;
+  }
 };
