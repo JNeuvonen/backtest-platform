@@ -69,7 +69,7 @@ def create_model_body(
     name: str,
     target_col: str,
     drop_cols: List[str],
-    null_fill_strategy: str,
+    null_fill_strategy,
     model: str,
     hyper_params_and_optimizer_code: str,
     validation_split: List[int],
