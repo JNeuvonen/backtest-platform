@@ -60,3 +60,17 @@ class TrainJobObject:
 
     def __repr__(self):
         return f"<TrainJobObject {self.job_id}: {self.model_name}>"
+
+
+class DatasetObject:
+    def __init__(self, dataset_id, dataset_name, timeseries_column):
+        self.dataset_id = dataset_id
+        self.dataset_name = dataset_name
+        self.timeseries_column = timeseries_column
+
+    @classmethod
+    def from_db_row(cls, row):
+        return cls(*row)
+
+    def __repr__(self):
+        return f"<DatasetObject {self.dataset_id}: {self.dataset_name}>"
