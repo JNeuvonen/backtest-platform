@@ -1,4 +1,4 @@
-from tests.t_utils import CodeHelper
+from tests.t_utils import CodeHelper, create_train_job_body
 
 
 def linear_model_basic():
@@ -26,3 +26,22 @@ def criterion_basic():
     )
 
     return helper.get()
+
+
+def create_train_job_basic():
+    enter_trade_criteria = CodeHelper()
+    enter_trade_criteria.append_line("prediction = get_prediction()")
+    enter_trade_criteria.append_line("return prediction > 1.01")
+
+    exit_trade_criteria = CodeHelper()
+    exit_trade_criteria.append_line("prediction = get_prediction()")
+    exit_trade_criteria.append_line("return prediction < 0.99")
+
+    body = create_train_job_body(
+        num_epochs=100,
+        save_model_after_every_epoch=True,
+        backtest_on_val_set=True,
+        enter_trade_criteria=enter_trade_criteria.get(),
+        exit_trade_criteria=exit_trade_criteria.get(),
+    )
+    return body
