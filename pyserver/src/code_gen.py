@@ -2,14 +2,15 @@ from db import DatasetUtils
 from db_objects import ModelObject, TrainJobObject
 from log import LogExceptionContext
 from utils import global_symbols
-from config import append_app_data_path
 
-# Used by code gen
+# Used by generated python code
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from dataset import load_train_data
+import pickle
+from config import append_app_data_path
 
 
 class PyCode:
@@ -73,7 +74,7 @@ class CodeGen:
             self.code.add_indent()
 
             self.code.append_line(
-                f"x_train, y_train = load_train_data({self.code.stringify(dataset.dataset_name)}, {self.code.stringify(model.target_col)}, {model.null_fill_strat})"
+                f"x_train, y_train = load_train_data('{dataset.dataset_name}', '{model.target_col}', {model.null_fill_strat})"
             )
             self.code.append_line("dataset = TensorDataset(x_train, y_train)")
 
@@ -114,12 +115,13 @@ class CodeGen:
             self.code.reduce_indent()
 
             self.code.append_line(
-                f"model_path = append_app_data_path('{train_job.model_name}' + str(epoch)  + '.pt')"
+                "model_weights_bytes = pickle.dumps(model.state_dict())"
             )
-            self.code.append_line("torch.save(model.state_dict(), model_path)")
+            self.code.append_line(
+                f"DatasetUtils.create_model_weights_entry('{train_job.job_id}', epoch, model_weights_bytes)"
+            )
 
             self.code.reset_indent()
             self.code.append_line("train()")
 
-            curr_code = self.code.get()
-            exec(curr_code, globals())
+            exec(self.code.get(), globals())
