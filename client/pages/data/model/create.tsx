@@ -28,6 +28,7 @@ import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
 import { createModel } from "../../../clients/requests";
+import { nullFillStratToInt } from "../../../utils/navigate";
 
 type PathParams = {
   datasetName: string;
@@ -73,7 +74,7 @@ export interface ModelDataPayload {
   name: string;
   target_col: string;
   drop_cols: string[];
-  null_fill_strategy: NullFillStrategy;
+  null_fill_strategy: number;
   model: string;
   hyper_params_and_optimizer_code: string;
   validation_split: number[];
@@ -126,7 +127,7 @@ export const DatasetModelCreatePage = ({ cancelCallback }: Props) => {
       drop_cols: columnsToDrop
         .filter((item) => item.isChecked)
         .map((item) => item.label),
-      null_fill_strategy: nullFillStrategy,
+      null_fill_strategy: nullFillStratToInt(nullFillStrategy),
       model: modelCode,
       hyper_params_and_optimizer_code: hyperParamsCode,
       validation_split: validSplitSize,
