@@ -130,6 +130,7 @@ def load_train_data(
 ):
     df = read_dataset_to_mem(dataset_name)
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
+    df.dropna(how="any", inplace=True)
     target = df.pop(target_column)
 
     x_train = torch.Tensor(df.values.astype(np.float32))
