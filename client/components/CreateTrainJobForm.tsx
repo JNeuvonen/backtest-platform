@@ -2,7 +2,6 @@ import React from "react";
 import { useModelQuery } from "../clients/queries/queries";
 import { usePathParams } from "../hooks/usePathParams";
 import {
-  Button,
   Checkbox,
   NumberInput,
   NumberInputField,
@@ -33,15 +32,15 @@ interface TrainJobForm {
 
 const generateEnterTradeExample = () => {
   const code = new CodeHelper();
-  code.appendLine("last_prediction = get_prediction()");
-  code.appendLine("return last_prediction > 1.01");
+  code.appendLine("prediction = get_prediction()");
+  code.appendLine("return prediction > 1.01");
   return code.get();
 };
 
 const generateExitTradeExample = () => {
   const code = new CodeHelper();
-  code.appendLine("last_prediction = get_prediction()");
-  code.appendLine("return last_prediction < 0.99");
+  code.appendLine("prediction = get_prediction()");
+  code.appendLine("return prediction < 0.99");
   return code.get();
 };
 
@@ -57,13 +56,13 @@ export const CreateTrainJobForm = ({ onClose }: Props) => {
     );
   }
 
-  const onSubmit = async () => {};
+  const onSubmit = async (values: TrainJobForm) => {};
 
   return (
     <div>
       <Formik
-        onSubmit={(values: TrainJobForm, actions) => {
-          console.log(values);
+        onSubmit={(values: TrainJobForm) => {
+          onSubmit(values);
         }}
         initialValues={{
           numEpochs: 100,
