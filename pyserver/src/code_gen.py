@@ -1,3 +1,8 @@
+from dataset import load_train_data
+from db import DatasetUtils
+from db_objects import ModelObject, TrainJobObject
+
+
 class PyCode:
     def __init__(self):
         self.indent_level = 0
@@ -25,5 +30,8 @@ class CodeGen:
     def __init__(self):
         self.code = PyCode()
 
-    def train_job(self, model, train_job):
+    def train_job(self, model: ModelObject, train_job: TrainJobObject):
+        model_code = model.model
+        dataset = DatasetUtils.fetch_dataset_by_id(model.dataset_id)
+
         pass
