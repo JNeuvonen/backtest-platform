@@ -2,9 +2,8 @@ from fastapi import APIRouter
 
 from context import HttpResponseContext
 from db import DatasetUtils
-from pyserver.src.code_gen import CodeGen
-from pyserver.src.db_objects import TrainJobObject
-from pyserver.src.request_types import BodyCreateTrain
+from code_gen import CodeGen
+from request_types import BodyCreateTrain
 
 
 router = APIRouter()
