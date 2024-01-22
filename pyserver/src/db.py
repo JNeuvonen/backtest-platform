@@ -15,7 +15,7 @@ from dataset import (
 )
 from db_objects import ModelObject
 from log import LogExceptionContext, get_logger
-from request_types import BodyModelData
+from request_types import BodyCreateTrain, BodyModelData
 from utils import df_fill_nulls
 
 
@@ -336,8 +336,20 @@ class DatasetUtils:
 
         TABLE_NAME = "model"
 
+    class TrainJob:
+        class Cols:
+            PRIMARY_KEY = "id"
+            MODEL_NAME = "model_name"
+            NUM_EPOCHS = "num_epochs"
+            SAVE_MODEL_EVERY_EPOCH = "save_model_every_epoch"
+            BACKTEST_ON_VALIDATION_SET = "backtest_on_validation_set"
+            ENTER_TRADE_CRITERIA = "enter_trade_criteria"
+            EXIT_TRADE_CRITERIA = "exit_trade_criteria"
+
+        TABLE_NAME = "train_job"
+
     @classmethod
-    def create_dataset_table_sql(cls):
+    def create_dataset_table(cls):
         Cols = cls.Dataset.Cols
         return f"""
                 CREATE TABLE IF NOT EXISTS {cls.Dataset.TABLE_NAME} (
@@ -348,7 +360,7 @@ class DatasetUtils:
             """
 
     @classmethod
-    def create_model_table_sql(cls):
+    def create_model_table(cls):
         Cols = cls.Model.Cols
         return f"""
                 CREATE TABLE IF NOT EXISTS {cls.Model.TABLE_NAME} (
@@ -366,12 +378,29 @@ class DatasetUtils:
             """
 
     @classmethod
+    def create_train_job_table(cls):
+        Cols = cls.TrainJob.Cols
+        return f"""
+                CREATE TABLE IF NOT EXISTS {cls.TrainJob.TABLE_NAME} (
+                    {Cols.PRIMARY_KEY} INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.MODEL_NAME} TEXT NOT NULL,
+                    {Cols.NUM_EPOCHS} INTEGER NOT NULL,
+                    {Cols.SAVE_MODEL_EVERY_EPOCH} BOOLEAN NOT NULL,
+                    {Cols.BACKTEST_ON_VALIDATION_SET} BOOLEAN NOT NULL,
+                    {Cols.ENTER_TRADE_CRITERIA} TEXT,
+                    {Cols.EXIT_TRADE_CRITERIA} TEXT,
+                    FOREIGN KEY ({Cols.MODEL_NAME}) REFERENCES {cls.Model.TABLE_NAME}({cls.Model.Cols.NAME})
+                );
+            """
+
+    @classmethod
     def init_tables(cls):
         with LogExceptionContext():
             with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
-                cursor.execute(cls.create_dataset_table_sql())
-                cursor.execute(cls.create_model_table_sql())
+                cursor.execute(cls.create_dataset_table())
+                cursor.execute(cls.create_model_table())
+                cursor.execute(cls.create_train_job_table())
                 conn.commit()
 
     @classmethod
@@ -517,3 +546,25 @@ class DatasetUtils:
                 model_data = cursor.fetchone()
                 cursor.close()
                 return ModelObject.from_db_row(model_data) if model_data else None
+
+    @classmethod
+    def create_train_job(cls, model_name: str, request_body: BodyCreateTrain):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""INSERT INTO {cls.TrainJob.TABLE_NAME} 
+                        ({cls.TrainJob.Cols.MODEL_NAME}, {cls.TrainJob.Cols.NUM_EPOCHS}, 
+                         {cls.TrainJob.Cols.SAVE_MODEL_EVERY_EPOCH}, {cls.TrainJob.Cols.BACKTEST_ON_VALIDATION_SET}, 
+                         {cls.TrainJob.Cols.ENTER_TRADE_CRITERIA}, {cls.TrainJob.Cols.EXIT_TRADE_CRITERIA}) 
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (
+                        model_name,
+                        request_body.num_epochs,
+                        request_body.save_model_after_every_epoch,
+                        request_body.backtest_on_val_set,
+                        request_body.enter_trade_criteria,
+                        request_body.exit_trade_criteria,
+                    ),
+                )
+                conn.commit()
