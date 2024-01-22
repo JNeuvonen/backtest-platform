@@ -127,7 +127,7 @@ def create_basic_model(fixt_btc_small_1h):
         validation_split=[70, 100],
     )
     Post.create_model(fixt_btc_small_1h.name, body)
-    return fixt_btc_small_1h
+    return fixt_btc_small_1h, body
 
 
 @pytest.fixture
