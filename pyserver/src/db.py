@@ -13,7 +13,7 @@ from dataset import (
     read_columns_to_mem,
     read_dataset_to_mem,
 )
-from db_objects import ModelObject
+from db_objects import ModelObject, TrainJobObject
 from log import LogExceptionContext, get_logger
 from request_types import BodyCreateTrain, BodyModelData
 from utils import df_fill_nulls
@@ -311,6 +311,11 @@ def get_column_names(conn: sqlite3.Connection, table_name: str) -> List[str]:
         return columns
 
 
+def generate_name_for_train_job(model_name: str):
+    train_jobs = DatasetUtils.fetch_train_jobs_by_model(model_name)
+    return f"{len(train_jobs)}: {model_name}"
+
+
 class DatasetUtils:
     DB_PATH = "datasets_util.db"
 
@@ -339,6 +344,7 @@ class DatasetUtils:
     class TrainJob:
         class Cols:
             PRIMARY_KEY = "id"
+            NAME = "name"
             MODEL_NAME = "model_name"
             NUM_EPOCHS = "num_epochs"
             SAVE_MODEL_EVERY_EPOCH = "save_model_every_epoch"
@@ -383,6 +389,7 @@ class DatasetUtils:
         return f"""
                 CREATE TABLE IF NOT EXISTS {cls.TrainJob.TABLE_NAME} (
                     {Cols.PRIMARY_KEY} INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {Cols.NAME} TEXT NOT NULL UNIQUE,
                     {Cols.MODEL_NAME} TEXT NOT NULL,
                     {Cols.NUM_EPOCHS} INTEGER NOT NULL,
                     {Cols.SAVE_MODEL_EVERY_EPOCH} BOOLEAN NOT NULL,
@@ -550,15 +557,17 @@ class DatasetUtils:
     @classmethod
     def create_train_job(cls, model_name: str, request_body: BodyCreateTrain):
         with LogExceptionContext():
+            train_job_name = generate_name_for_train_job(model_name)
             with sqlite3.connect(cls.get_path()) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     f"""INSERT INTO {cls.TrainJob.TABLE_NAME} 
-                        ({cls.TrainJob.Cols.MODEL_NAME}, {cls.TrainJob.Cols.NUM_EPOCHS}, 
+                        ({cls.TrainJob.Cols.NAME}, {cls.TrainJob.Cols.MODEL_NAME}, {cls.TrainJob.Cols.NUM_EPOCHS}, 
                          {cls.TrainJob.Cols.SAVE_MODEL_EVERY_EPOCH}, {cls.TrainJob.Cols.BACKTEST_ON_VALIDATION_SET}, 
                          {cls.TrainJob.Cols.ENTER_TRADE_CRITERIA}, {cls.TrainJob.Cols.EXIT_TRADE_CRITERIA}) 
-                       VALUES (?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
                     (
+                        train_job_name,
                         model_name,
                         request_body.num_epochs,
                         request_body.save_model_after_every_epoch,
@@ -568,3 +577,33 @@ class DatasetUtils:
                     ),
                 )
                 conn.commit()
+            return train_job_name
+
+    @classmethod
+    def get_train_job(cls, value, field="id"):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT * FROM {cls.TrainJob.TABLE_NAME} WHERE {field} = ?;""",
+                    (value,),
+                )
+                train_job_data = cursor.fetchone()
+                cursor.close()
+                return (
+                    TrainJobObject.from_db_row(train_job_data)
+                    if train_job_data
+                    else None
+                )
+
+    @classmethod
+    def fetch_train_jobs_by_model(cls, model_name):
+        with LogExceptionContext():
+            with sqlite3.connect(cls.get_path()) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""SELECT * FROM {cls.TrainJob.TABLE_NAME} WHERE {cls.TrainJob.Cols.MODEL_NAME} = ?;""",
+                    (model_name,),
+                )
+                train_jobs = cursor.fetchall()
+                return [TrainJobObject.from_db_row(job) for job in train_jobs]
