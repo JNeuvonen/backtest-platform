@@ -18,7 +18,7 @@ def test_create_train_job(cleanup_db, create_basic_model: DatasetMetadata):
 
 
 @pytest.mark.acceptance
-def test_toggling_is_training_status(cleanup_db, create_train_job):
+def test_changing_is_training_status(cleanup_db, create_train_job):
     train_job = create_train_job[2]
 
     TrainJobQuery.set_training_status(train_job.id, True)
