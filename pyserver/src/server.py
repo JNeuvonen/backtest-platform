@@ -4,13 +4,12 @@ import uvicorn
 
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from db import (
-    DatasetUtils,
-)
+from log import LogExceptionContext
 from route_binance import router as binance_router
 from route_datasets import router as datasets_router
 from route_model import router as model_router
 from streams import router as streams_router
+from orm import create_tables
 
 
 @asynccontextmanager
@@ -18,7 +17,9 @@ async def lifespan(
     app: FastAPI,
 ):  # pylint: disable=unused-argument, redefined-outer-name
     """The code before the yield statement will be executed on boot. The code after the yield statement will be executed as a cleanup on application close."""
-    DatasetUtils.init_tables()
+
+    with LogExceptionContext("Succesfully initiated tables"):
+        create_tables()
     yield
 
 
