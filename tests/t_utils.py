@@ -171,7 +171,7 @@ class Post:
     @staticmethod
     def create_train_job(model_name: str, body):
         with Req("post", URL.create_train_job(model_name), json=body) as res:
-            return res.json()
+            return res.json()["id"]
 
 
 class Put:
