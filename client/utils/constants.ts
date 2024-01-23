@@ -128,3 +128,8 @@ export class CodeHelper {
     return this.code.replace(/\n$/, "");
   }
 }
+
+export const formatValidationSplit = (valSplit: string) => {
+  const parts = valSplit.split(",");
+  return [Number(parts[0]), Number(parts[1])];
+};
