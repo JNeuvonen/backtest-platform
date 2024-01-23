@@ -2,7 +2,7 @@ from db_objects import ModelObject, TrainJobObject
 from log import LogExceptionContext
 from ml_train_template import TRAIN_TEMPLATE
 from orm import DatasetQuery, Model, TrainJob, ModelWeightsQuery
-from utils import global_symbols
+from utils import convert_val_split_str_to_arr, global_symbols
 
 
 class PyCodeBuilder:
@@ -56,35 +56,34 @@ class PyCode:
         self.indent_level = 0
 
 
-class CodeGen:
-    def __init__(self):
-        self.code = PyCode()
-        self.global_manager = global_symbols
+async def start_train_loop(
+    model: Model, train_job: TrainJob, batch_size=32, shuffle=True
+):
+    with LogExceptionContext():
+        global_symbols.cleanup_globals()
+        template = TRAIN_TEMPLATE
 
-    def train_job(self, model: Model, train_job: TrainJob, batch_size=32, shuffle=True):
-        with LogExceptionContext():
-            global_symbols.cleanup_globals()
-            template = TRAIN_TEMPLATE
+        dataset = DatasetQuery.fetch_dataset_by_id(model.dataset_id)
 
-            dataset = DatasetQuery.fetch_dataset_by_id(model.dataset_id)
+        if dataset is None:
+            raise ValueError(f"No dataset was found for {model.dataset_id}")
 
-            if dataset is None:
-                raise ValueError(f"No dataset was found for {model.dataset_id}")
+        replacements = {
+            "{MODEL_CLASS}": model.model_code,
+            "{DATASET_NAME}": f"'{dataset.dataset_name}'",
+            "{TARGET_COL}": f"'{model.target_col}'",
+            "{NULL_FILL_STRATEGY}": model.null_fill_strategy,
+            "{BATCH_SIZE}": batch_size,
+            "{SHUFFLE}": shuffle,
+            "{CRITERION_AND_OPTIMIZER}": model.optimizer_and_criterion_code,
+            "{NUM_EPOCHS}": train_job.num_epochs,
+            "{TRAIN_JOB_ID}": train_job.id,
+            "{SAVE_MODEL_EVERY_EPOCH}": train_job.save_model_every_epoch,
+            "{TRAIN_VAL_SPLIT}": convert_val_split_str_to_arr(model.validation_split),
+            "{EXIT_TRADE_CRITERIA_FUNC}": train_job.exit_trade_criteria,
+        }
 
-            replacements = {
-                "{MODEL_CLASS}": model.model_code,
-                "{DATASET_NAME}": f"'{dataset.dataset_name}'",
-                "{TARGET_COL}": f"'{model.target_col}'",
-                "{NULL_FILL_STRATEGY}": model.null_fill_strategy,
-                "{BATCH_SIZE}": batch_size,
-                "{SHUFFLE}": shuffle,
-                "{CRITERION_AND_OPTIMIZER}": model.optimizer_and_criterion_code,
-                "{NUM_EPOCHS}": train_job.num_epochs,
-                "{TRAIN_JOB_ID}": train_job.id,
-                "{SAVE_MODEL_EVERY_EPOCH}": train_job.save_model_every_epoch,
-            }
+        for key, value in replacements.items():
+            template = template.replace(key, str(value))
 
-            for key, value in replacements.items():
-                template = template.replace(key, str(value))
-
-            exec(template, globals())
+        exec(template, globals())
