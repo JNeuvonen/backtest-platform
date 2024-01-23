@@ -1,4 +1,3 @@
-import { defaults } from "lodash";
 import { NullFillStrategy, PATHS, PATH_KEYS } from "./constants";
 
 export const getDatasetEditorPath = (datasetName: string) => {
