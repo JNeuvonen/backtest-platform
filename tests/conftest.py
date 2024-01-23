@@ -28,9 +28,9 @@ sys.path.append(SERVER_SOURCE_DIR)
 
 import server
 from utils import rm_file
-from db import DatasetUtils
 from config import append_app_data_path
-from constants import DB_DATASETS, NullFillStrategy
+from constants import DB_DATASETS, NullFillStrategy, DATASET_UTILS_DB_PATH
+from orm import create_tables, drop_tables, db_delete_all_data
 
 
 def t_binance_path_to_dataset_name(binance_path: str):
@@ -62,16 +62,11 @@ def download_data():
     )
 
 
-def t_rm_db():
-    rm_file(append_app_data_path(DatasetUtils.DB_PATH))
-    rm_file(append_app_data_path(DB_DATASETS))
-
-
 @pytest.fixture
 def cleanup_db():
-    t_rm_db()
-    DatasetUtils.init_tables()
+    db_delete_all_data()
     yield
+    db_delete_all_data()
 
 
 @pytest.fixture
@@ -165,16 +160,22 @@ def t_kill_process_on_port(port):
         pass
 
 
+def del_db_files():
+    rm_file(append_app_data_path(Constants.BIG_TEST_FILE))
+    rm_file(append_app_data_path(DATASET_UTILS_DB_PATH))
+    rm_file(append_app_data_path(DB_DATASETS))
+
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
+    del_db_files()
+    create_tables()
     t_kill_process_on_port(8000)
     download_data()
-    t_rm_db()
     process = multiprocessing.Process(target=t_init_server)
     process.start()
     time.sleep(3)
     yield
     process.terminate()
     process.join()
-    t_rm_db()
-    rm_file(append_app_data_path(Constants.BIG_TEST_FILE))
+    del_db_files()
