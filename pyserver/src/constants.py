@@ -21,6 +21,8 @@ DB_DATASETS = "datasets.db"
 
 STREAMING_DEFAULT_CHUNK_SIZE = 1024
 
+DATASET_UTILS_DB_PATH = "datasets_util.db"
+
 
 class DomEventChannels(Enum):
     REFETCH_ALL_DATASETS = "refetch_all_datasets"
