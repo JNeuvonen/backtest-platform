@@ -13,8 +13,8 @@ sys.path.append(SERVER_SOURCE_DIR)
 
 from config import append_app_data_path
 from constants import BINANCE_DATA_COLS
-from db import DatasetUtils
 from utils import add_to_datasets_db
+from orm import DatasetQuery
 
 
 @contextmanager
@@ -46,7 +46,7 @@ def t_add_binance_dataset_to_db(dataset: DatasetMetadata):
     df = read_csv_to_df(dataset.path)
     df.columns = BINANCE_DATA_COLS
     add_to_datasets_db(df, dataset.name)
-    DatasetUtils.create_db_utils_entry(dataset.name, dataset.timeseries_col)
+    DatasetQuery.create_dataset_entry(dataset.name, dataset.timeseries_col)
 
 
 def t_generate_big_dataframe(data: DatasetMetadata, target_size_bytes: int):
