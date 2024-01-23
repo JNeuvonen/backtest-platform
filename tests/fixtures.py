@@ -34,17 +34,19 @@ def criterion_basic():
     return helper.get()
 
 
-def create_train_job_basic():
+def create_train_job_basic(num_epochs=100):
     enter_trade_criteria = PyCode()
-    enter_trade_criteria.append_line("prediction = get_prediction()")
+    enter_trade_criteria.append_line("def get_enter_trade_criteria(prediction):")
+    enter_trade_criteria.add_indent()
     enter_trade_criteria.append_line("return prediction > 1.01")
 
     exit_trade_criteria = PyCode()
-    exit_trade_criteria.append_line("prediction = get_prediction()")
-    exit_trade_criteria.append_line("return prediction < 0.99")
+    enter_trade_criteria.append_line("def get_exit_trade_criteria(prediction):")
+    enter_trade_criteria.add_indent()
+    enter_trade_criteria.append_line("return prediction < 0.99")
 
     body = create_train_job_body(
-        num_epochs=100,
+        num_epochs=num_epochs,
         save_model_after_every_epoch=True,
         backtest_on_val_set=True,
         enter_trade_criteria=enter_trade_criteria.get(),
