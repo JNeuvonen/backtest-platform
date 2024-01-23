@@ -61,6 +61,7 @@ class TrainJob(Base):
     __tablename__ = "train_job"
 
     id = Column(Integer, primary_key=True)
+    is_training = Column(Boolean)
     name = Column(String)
     model_name = Column(String)
     num_epochs = Column(Integer)
@@ -216,10 +217,11 @@ class TrainJobQuery:
                     backtest_on_validation_set=request_body.backtest_on_val_set,
                     enter_trade_criteria=request_body.enter_trade_criteria,
                     exit_trade_criteria=request_body.exit_trade_criteria,
+                    is_training=False,
                 )
                 session.add(new_train_job)
                 session.commit()
-            return train_job_name
+                return new_train_job.id
 
     @staticmethod
     def get_train_job(value, field="id"):
@@ -239,6 +241,20 @@ class TrainJobQuery:
                     .all()
                 )
                 return train_jobs
+
+    @staticmethod
+    def set_training_status(train_job_id: int, is_training: bool):
+        with LogExceptionContext():
+            with Session() as session:
+                train_job = (
+                    session.query(TrainJob).filter(TrainJob.id == train_job_id).first()
+                )
+                if train_job:
+                    train_job.is_training = is_training
+                    session.commit()
+                    return True
+                else:
+                    return False
 
 
 class ModelWeightsQuery:
