@@ -16,6 +16,11 @@ from dataset import read_dataset_to_mem
 from log import LogExceptionContext
 
 
+def convert_val_split_str_to_arr(val_split_str: str):
+    parts = val_split_str.split(",")
+    return [int(parts[0]), int(parts[1])]
+
+
 def rm_file(path):
     if os.path.isfile(path):
         os.remove(path)
