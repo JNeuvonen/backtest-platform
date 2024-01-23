@@ -5,7 +5,7 @@ from pandas.compat import platform
 import pytest
 import time
 import sys
-from tests.fixtures import criterion_basic, linear_model_basic
+from tests.fixtures import create_train_job_basic, criterion_basic, linear_model_basic
 from tests.t_conf import SERVER_SOURCE_DIR
 
 from tests.t_constants import (
@@ -30,7 +30,7 @@ import server
 from utils import rm_file
 from config import append_app_data_path
 from constants import DB_DATASETS, NullFillStrategy, DATASET_UTILS_DB_PATH
-from orm import create_tables, drop_tables, db_delete_all_data
+from orm import create_tables, db_delete_all_data, TrainJobQuery
 
 
 def t_binance_path_to_dataset_name(binance_path: str):
@@ -123,6 +123,15 @@ def create_basic_model(fixt_btc_small_1h):
     )
     Post.create_model(fixt_btc_small_1h.name, body)
     return fixt_btc_small_1h, body
+
+
+@pytest.fixture
+def create_train_job(create_basic_model):
+    train_job_id = Post.create_train_job(
+        Constants.EXAMPLE_MODEL_NAME, body=create_train_job_basic()
+    )
+    train_job = TrainJobQuery.get_train_job(train_job_id)
+    return create_basic_model[0], create_basic_model[1], train_job
 
 
 @pytest.fixture
