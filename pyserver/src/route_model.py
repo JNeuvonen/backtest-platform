@@ -25,9 +25,9 @@ async def route_fetch_model(model_name: str):
 @router.post(RoutePaths.CREATE_TRAIN_JOB)
 async def route_create_train_job(model_name: str, body: BodyCreateTrain):
     with HttpResponseContext():
-        train_job_name = TrainJobQuery.create_train_job(model_name, body)
+        train_job_id = TrainJobQuery.create_train_job(model_name, body)
 
-        train_job = TrainJobQuery.get_train_job(train_job_name, "name")
+        train_job = TrainJobQuery.get_train_job(train_job_id)
         model = ModelQuery.fetch_model_by_name(model_name)
 
         if train_job is None or model is None:
@@ -36,7 +36,7 @@ async def route_create_train_job(model_name: str, body: BodyCreateTrain):
 
         code_gen = CodeGen()
         code_gen.train_job(model, train_job)
-        return {"message": "OK"}
+        return {"id": train_job_id}
 
 
 @router.get(RoutePaths.TRAIN_JOB_BY_ID)
