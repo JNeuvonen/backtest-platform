@@ -18,6 +18,19 @@ def test_create_train_job(cleanup_db, create_basic_model: DatasetMetadata):
 
 
 @pytest.mark.acceptance
+def test_create_train_job_finished_with_status_false(
+    cleanup_db, create_basic_model: DatasetMetadata
+):
+    id = Post.create_train_job(
+        Constants.EXAMPLE_MODEL_NAME, body=create_train_job_basic()
+    )
+
+    train_job = TrainJobQuery.get_train_job(id)
+
+    assert train_job.is_training is False
+
+
+@pytest.mark.acceptance
 def test_changing_is_training_status(cleanup_db, create_train_job):
     train_job = create_train_job[2]
 
