@@ -74,7 +74,6 @@ export async function fetchDatasetModels(datasetName: string) {
 }
 
 export async function fetchModelByName(modelName: string) {
-  console.log(modelName);
   const res: FetchModelByNameRes = await buildRequest({
     method: "GET",
     url: URLS.fetch_model_by_name(modelName),
