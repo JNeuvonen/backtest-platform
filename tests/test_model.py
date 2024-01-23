@@ -20,12 +20,9 @@ def test_create_train_job(cleanup_db, create_basic_model: DatasetMetadata):
 @pytest.mark.acceptance
 def test_toggling_is_training_status(cleanup_db, create_train_job):
     train_job = create_train_job[2]
-    TrainJobQuery.set_training_status(train_job.id, True)
-    train_job_1 = TrainJobQuery.get_train_job(train_job.id)
 
-    assert train_job_1.is_training is True
+    TrainJobQuery.set_training_status(train_job.id, True)
+    assert TrainJobQuery.get_train_job(train_job.id).is_training is True
 
     TrainJobQuery.set_training_status(train_job.id, False)
-
-    train_job_2 = TrainJobQuery.get_train_job(train_job.id)
-    assert train_job_2.is_training is False
+    assert TrainJobQuery.get_train_job(train_job.id).is_training is False
