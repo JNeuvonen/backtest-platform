@@ -5,8 +5,9 @@ import pandas as pd
 
 from binance import Client
 from constants import BINANCE_DATA_COLS, AppConstants, DomEventChannels
-from db import DatasetUtils, create_connection
+from db import create_connection
 from log import LogExceptionContext, get_logger
+from orm import DatasetQuery
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -47,7 +48,7 @@ async def save_historical_klines(symbol, interval):
 
         table_name = symbol.lower() + "_" + interval
         klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
-        DatasetUtils.create_db_utils_entry(table_name, "kline_open_time")
+        DatasetQuery.create_dataset_entry(table_name, "kline_open_time")
         logger.log(
             f"Downloaded klines on {symbol} with {interval} interval",
             logging.INFO,
