@@ -259,7 +259,7 @@ def make_exe():
     # Python packages.
     exe.add_python_resources(exe.read_package_root(
         path="/Users/jarnoneuvonen/Code/backtest-engine/pyserver/src/",
-        packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "db_objects", "code_gen"],
+        packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "db_objects", "code_gen", "orm"],
     ))
 
     # Discover Python files from a virtualenv and add them to our embedded
