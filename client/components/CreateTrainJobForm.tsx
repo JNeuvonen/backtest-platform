@@ -33,14 +33,16 @@ interface TrainJobForm {
 
 const generateEnterTradeExample = () => {
   const code = new CodeHelper();
-  code.appendLine("prediction = get_prediction()");
+  code.appendLine("def get_enter_trade_criteria(prediction):");
+  code.addIndent();
   code.appendLine("return prediction > 1.01");
   return code.get();
 };
 
 const generateExitTradeExample = () => {
   const code = new CodeHelper();
-  code.appendLine("prediction = get_prediction()");
+  code.appendLine("def get_exit_trade_criteria(prediction):");
+  code.addIndent();
   code.appendLine("return prediction < 0.99");
   return code.get();
 };
