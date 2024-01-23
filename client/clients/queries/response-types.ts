@@ -51,13 +51,13 @@ export interface FetchModelByNameRes {
 export interface DatasetModel {
   dataset_id: number;
   drop_cols: string[];
-  hyper_params_and_optimizer_code: string;
-  model: string;
+  optimizer_and_criterion_code: string;
+  model_code: string;
   model_id: number;
-  name: string;
+  model_name: string;
   null_fill_strat: NullFillStrategy;
   target_col: string;
-  validation_split: [number, number];
+  validation_split: string;
 }
 
 export interface Dataset {
