@@ -126,13 +126,32 @@ def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str]):
 
 
 def load_train_data(
-    dataset_name: str, target_column: str, null_fill_strategy: NullFillStrategy
+    dataset_name: str,
+    target_column: str,
+    null_fill_strategy: NullFillStrategy,
+    train_val_split: List[int] | None = None,
 ):
     df = read_dataset_to_mem(dataset_name)
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
     df.dropna(how="any", inplace=True)
     target = df.pop(target_column)
 
-    x_train = torch.Tensor(df.values.astype(np.float32))
-    y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
-    return x_train, y_train
+    if train_val_split:
+        split_idx = int(len(df) * train_val_split[0] / 100)
+        train_df = df[:split_idx]
+        val_df = df[split_idx:]
+        train_target = target[:split_idx]
+        val_target = target[split_idx:]
+
+        x_train = torch.Tensor(train_df.values.astype(np.float32))
+        y_train = torch.Tensor(
+            train_target.to_numpy().reshape(-1, 1).astype(np.float64)
+        )
+        x_val = torch.Tensor(val_df.values.astype(np.float32))
+        y_val = torch.Tensor(val_target.to_numpy().reshape(-1, 1).astype(np.float64))
+
+        return x_train, y_train, x_val, y_val
+    else:
+        x_train = torch.Tensor(df.values.astype(np.float32))
+        y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
+        return x_train, y_train, None, None
