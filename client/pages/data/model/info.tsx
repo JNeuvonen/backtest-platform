@@ -5,6 +5,7 @@ import { Spinner } from "@chakra-ui/react";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { ValidationSplitSlider } from "../../../components/ValidationSplitSlider";
 import { SubTitle } from "../../../components/typography/SubTitle";
+import { formatValidationSplit } from "../../../utils/constants";
 
 interface RouteParams {
   datasetName: string;
@@ -23,12 +24,14 @@ export const ModelInfoPage = () => {
     );
   }
 
+  console.log(data);
+
   return (
     <div>
-      <SubTitle>Model: {data.name}</SubTitle>
+      <SubTitle>Model: {data.model_name}</SubTitle>
       <SubTitle>Target column: {data.target_col}</SubTitle>
       <CodeEditor
-        code={data.model}
+        code={data.model_code}
         readOnly={true}
         fontSize={15}
         disableCodePresets={true}
@@ -36,7 +39,7 @@ export const ModelInfoPage = () => {
         label={"Model"}
       />
       <CodeEditor
-        code={data.hyper_params_and_optimizer_code}
+        code={data.optimizer_and_criterion_code}
         readOnly={true}
         fontSize={15}
         disableCodePresets={true}
@@ -45,8 +48,9 @@ export const ModelInfoPage = () => {
         height="200px"
       />
       <ValidationSplitSlider
-        sliderValue={data.validation_split}
+        sliderValue={formatValidationSplit(data.validation_split)}
         containerStyle={{ width: "250px", marginTop: "16px" }}
+        isReadOnly={true}
       />
     </div>
   );
