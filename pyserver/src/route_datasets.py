@@ -8,7 +8,6 @@ from fastapi import APIRouter, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from dataset import df_fill_nulls_on_all_cols
 from db import (
-    DatasetUtils,
     add_columns_to_table,
     delete_dataset_cols,
     exec_python,
@@ -19,6 +18,7 @@ from db import (
     rename_column,
     rename_table,
 )
+from orm import DatasetQuery, ModelQuery
 from request_types import (
     BodyExecPython,
     BodyModelData,
@@ -92,7 +92,7 @@ async def route_get_dataset_by_name(dataset_name: str) -> dict:
 @router.get(RoutePaths.GET_DATASET_COL_INFO)
 async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dict:
     with HttpResponseContext():
-        timeseries_col = DatasetUtils.get_timeseries_col(dataset_name)
+        timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
         col_info = get_column_detailed_info(dataset_name, column_name, timeseries_col)
         return {"column": col_info, "timeseries_col": timeseries_col}
 
@@ -127,7 +127,7 @@ async def route_dataset_add_columns(
 @router.put(RoutePaths.UPDATE_TIMESERIES_COL)
 async def route_update_timeseries_col(dataset_name: str, body: BodyUpdateTimeseriesCol):
     with HttpResponseContext():
-        DatasetUtils.update_timeseries_col(dataset_name, body.new_timeseries_col, False)
+        DatasetQuery.update_timeseries_col(dataset_name, body.new_timeseries_col)
         return {"message": "OK"}
 
 
@@ -135,7 +135,7 @@ async def route_update_timeseries_col(dataset_name: str, body: BodyUpdateTimeser
 async def route_update_dataset_name(dataset_name: str, body: BodyUpdateDatasetName):
     with HttpResponseContext():
         rename_table(AppConstants.DB_DATASETS, dataset_name, body.new_dataset_name)
-        DatasetUtils.update_dataset_name(dataset_name, body.new_dataset_name)
+        DatasetQuery.update_dataset_name(dataset_name, body.new_dataset_name)
         return {"message": "OK"}
 
 
@@ -150,8 +150,8 @@ async def route_rename_column(dataset_name: str, body: BodyRenameColumn):
     with HttpResponseContext(
         f"Renamed column on table: {dataset_name} from {body.old_col_name} to {body.new_col_name}"
     ):
-        if body.old_col_name == DatasetUtils.get_timeseries_col(dataset_name):
-            DatasetUtils.update_timeseries_col(dataset_name, body.new_col_name, True)
+        if body.old_col_name == DatasetQuery.get_timeseries_col(dataset_name):
+            DatasetQuery.update_timeseries_col(dataset_name, body.new_col_name)
 
         rename_column(
             AppConstants.DB_DATASETS,
@@ -181,30 +181,30 @@ async def route_upload_timeseries_data(
     with HttpResponseContext():
         df = await read_file_to_dataframe(file, STREAMING_DEFAULT_CHUNK_SIZE)
         add_to_datasets_db(df, dataset_name)
-        DatasetUtils.create_db_utils_entry(dataset_name, timeseries_col)
+        DatasetQuery.create_dataset_entry(dataset_name, timeseries_col)
         return {"message": "OK", "shape": df.shape}
 
 
 @router.post(RoutePaths.CREATE_MODEL)
 async def route_create_model(dataset_name: str, body: BodyModelData):
     with HttpResponseContext():
-        dataset_id = DatasetUtils.fetch_dataset_id_by_name(dataset_name)
+        dataset_id = DatasetQuery.fetch_dataset_id_by_name(dataset_name)
         if dataset_id is None:
             raise HTTPException(
                 detail=f"No ID found for {dataset_name}", status_code=400
             )
 
-        DatasetUtils.create_model_entry(dataset_id, body)
+        ModelQuery.create_model_entry(dataset_id, body)
         return {"Message": "OK"}
 
 
 @router.get(RoutePaths.FETCH_MODELS)
 async def route_fetch_models(dataset_name: str):
     with HttpResponseContext():
-        dataset_id = DatasetUtils.fetch_dataset_id_by_name(dataset_name)
+        dataset_id = DatasetQuery.fetch_dataset_id_by_name(dataset_name)
         if dataset_id is None:
             raise HTTPException(
                 detail=f"No ID found for {dataset_name}", status_code=400
             )
-        models = DatasetUtils.fetch_models_by_dataset_id(dataset_id)
+        models = ModelQuery.fetch_models_by_dataset_id(dataset_id)
         return {"data": models}
