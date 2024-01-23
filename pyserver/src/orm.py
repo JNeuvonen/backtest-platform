@@ -217,7 +217,7 @@ class TrainJobQuery:
                     backtest_on_validation_set=request_body.backtest_on_val_set,
                     enter_trade_criteria=request_body.enter_trade_criteria,
                     exit_trade_criteria=request_body.exit_trade_criteria,
-                    is_training=False,
+                    is_training=True,
                 )
                 session.add(new_train_job)
                 session.commit()
