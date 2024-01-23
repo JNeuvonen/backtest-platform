@@ -81,7 +81,9 @@ class CodeGen:
                 "{CRITERION_AND_OPTIMIZER}": model.optimizer_and_criterion_code,
                 "{NUM_EPOCHS}": train_job.num_epochs,
                 "{TRAIN_JOB_ID}": train_job.id,
+                "{SAVE_MODEL_EVERY_EPOCH}": train_job.save_model_every_epoch,
             }
+
             for key, value in replacements.items():
                 template = template.replace(key, str(value))
 
