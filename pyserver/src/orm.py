@@ -224,6 +224,15 @@ class TrainJobQuery:
                 return new_train_job.id
 
     @staticmethod
+    def is_job_training(id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                query = session.query(TrainJob)
+                train_job = query.filter(getattr(TrainJob, "id") == id).first()
+
+                return train_job.is_training
+
+    @staticmethod
     def get_train_job(value, field="id"):
         with LogExceptionContext():
             with Session() as session:
