@@ -1,6 +1,6 @@
-from db import DatasetUtils
 from db_objects import ModelObject, TrainJobObject
 from log import LogExceptionContext
+from orm import DatasetQuery, Model, TrainJob, ModelWeightsQuery
 from utils import global_symbols
 
 # Used by generated python code
@@ -54,19 +54,17 @@ class CodeGen:
         self.code = PyCode()
         self.global_manager = global_symbols
 
-    def train_job(
-        self, model: ModelObject, train_job: TrainJobObject, batch_size=32, shuffle=True
-    ):
+    def train_job(self, model: Model, train_job: TrainJob, batch_size=32, shuffle=True):
         with LogExceptionContext():
             global_symbols.cleanup_globals()
 
-            dataset = DatasetUtils.fetch_dataset_by_id(model.dataset_id)
+            dataset = DatasetQuery.fetch_dataset_by_id(model.dataset_id)
 
             if dataset is None:
                 raise ValueError(f"No dataset was found for {model.dataset_id}")
 
-            exec(model.model, globals())
-            exec(model.hyper_params_and_optimizer_code, globals())
+            exec(model.model_code, globals())
+            exec(model.optimizer_and_criterion_code, globals())
 
             self.code.reset_code()
 
@@ -74,7 +72,7 @@ class CodeGen:
             self.code.add_indent()
 
             self.code.append_line(
-                f"x_train, y_train = load_train_data('{dataset.dataset_name}', '{model.target_col}', {model.null_fill_strat})"
+                f"x_train, y_train = load_train_data('{dataset.dataset_name}', '{model.target_col}', {model.null_fill_strategy})"
             )
             self.code.append_line("dataset = TensorDataset(x_train, y_train)")
 
@@ -118,7 +116,7 @@ class CodeGen:
                 "model_weights_bytes = pickle.dumps(model.state_dict())"
             )
             self.code.append_line(
-                f"DatasetUtils.create_model_weights_entry('{train_job.job_id}', epoch, model_weights_bytes)"
+                f"ModelWeightsQuery.create_model_weights_entry('{train_job.id}', epoch, model_weights_bytes)"
             )
 
             self.code.reset_indent()
