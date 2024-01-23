@@ -40,7 +40,7 @@ export const DatasetModelIndex = () => {
   const { data } = useDatasetModelsQuery(datasetName);
   const navigate = useNavigate();
 
-  if (!data?.res) {
+  if (!data || !data?.res || data.status !== 200) {
     return (
       <div>
         <Spinner />
@@ -73,7 +73,7 @@ export const DatasetModelIndex = () => {
             columns={MODEL_COLUMNS}
             rows={modelsArr.map((item) => {
               return [
-                item.name,
+                item.model_name,
                 item.target_col,
                 formatValidationSplit(item.validation_split),
               ];
