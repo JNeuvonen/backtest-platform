@@ -15,6 +15,7 @@ from constants import DomEventChannels
 {CRITERION_AND_OPTIMIZER}
 
 def train():
+    save_every_epoch = {SAVE_MODEL_EVERY_EPOCH}
     logger = get_logger()
     x_train, y_train = load_train_data({DATASET_NAME}, {TARGET_COL}, {NULL_FILL_STRATEGY})
     dataset = TensorDataset(x_train, y_train)
@@ -35,9 +36,10 @@ def train():
             loss.backward()
             optimizer.step()
 
+        if save_every_epoch is True:
+            model_weights_dump = pickle.dumps(model.state_dict())
+            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump)
 
-        model_weights_dump = pickle.dumps(model.state_dict())
-        ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump)
         logger.log(
             f"Epoch [{epoch}/{NUM_EPOCHS}] complete, Loss: {loss.item():.4f}",
             logging.INFO,
