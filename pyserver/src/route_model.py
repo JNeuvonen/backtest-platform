@@ -1,8 +1,10 @@
+import asyncio
 from fastapi import APIRouter
 
 from context import HttpResponseContext
-from code_gen import CodeGen
 from orm import ModelQuery, TrainJobQuery
+from code_gen import start_train_loop
+from config import is_testing
 from request_types import BodyCreateTrain
 
 
@@ -34,8 +36,12 @@ async def route_create_train_job(model_name: str, body: BodyCreateTrain):
             # should never execute, just to make mypy happy
             raise ValueError("No model or train job found")
 
-        code_gen = CodeGen()
-        code_gen.train_job(model, train_job)
+        if is_testing() is False:
+            asyncio.create_task(start_train_loop(model, train_job))
+            return {"id": train_job_id}
+
+        ##blocking in test mode
+        await start_train_loop(model, train_job)
         return {"id": train_job_id}
 
 
