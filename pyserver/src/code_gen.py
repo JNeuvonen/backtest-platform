@@ -1,4 +1,3 @@
-from db_objects import ModelObject, TrainJobObject
 from log import LogExceptionContext
 from ml_train_template import TRAIN_TEMPLATE
 from orm import DatasetQuery, Model, TrainJob, ModelWeightsQuery
@@ -80,7 +79,6 @@ async def start_train_loop(
             "{TRAIN_JOB_ID}": train_job.id,
             "{SAVE_MODEL_EVERY_EPOCH}": train_job.save_model_every_epoch,
             "{TRAIN_VAL_SPLIT}": convert_val_split_str_to_arr(model.validation_split),
-            "{EXIT_TRADE_CRITERIA_FUNC}": train_job.exit_trade_criteria,
         }
 
         for key, value in replacements.items():
