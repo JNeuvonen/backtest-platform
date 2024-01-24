@@ -10,7 +10,7 @@ import {
 
 import React, { CSSProperties } from "react";
 
-export type RowItem = string[] | number[] | (string | number[]);
+export type RowItem = (string | number | JSX.Element)[];
 
 interface Props {
   columns: string[];
@@ -55,7 +55,7 @@ export const SmallTable = ({
                 cursor: rowOnClickFunc ? "pointer" : undefined,
               }}
             >
-              {row.map((rowItem, j: number) => (
+              {row.map((rowItem: string | number | JSX.Element, j: number) => (
                 <Td key={`${i}-${j}`}>{rowItem}</Td>
               ))}
             </Tr>
