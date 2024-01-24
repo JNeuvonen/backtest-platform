@@ -102,6 +102,13 @@ def train():
 
 
     if canceled_by_user_request is False:
+        logger.log(
+            f"Finished training. Epochs completed: {NUM_EPOCHS}/{NUM_EPOCHS}",
+            logging.INFO,
+            True,
+            True,
+            DomEventChannels.REFETCH_ALL_DATASETS.value,
+        )
         TrainJobQuery.set_training_status({TRAIN_JOB_ID}, False)
 train()
 """
