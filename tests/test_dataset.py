@@ -3,7 +3,6 @@ import pytest
 import sys
 
 from decimal import Decimal
-from pyserver.src.constants import NullFillStrategy
 from tests.fixtures import criterion_basic, linear_model_basic
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
@@ -20,6 +19,7 @@ from tests.t_utils import (
 sys.path.append(SERVER_SOURCE_DIR)
 
 from utils import PythonCode
+from constants import NullFillStrategy
 
 
 @pytest.mark.acceptance

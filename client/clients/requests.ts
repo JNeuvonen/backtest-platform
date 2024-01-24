@@ -1,4 +1,3 @@
-import { TrainJobForm } from "../components/CreateTrainJobForm";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
