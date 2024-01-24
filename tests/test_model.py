@@ -39,3 +39,15 @@ def test_changing_is_training_status(cleanup_db, create_train_job):
 
     TrainJobQuery.set_training_status(train_job.id, False)
     assert TrainJobQuery.get_train_job(train_job.id).is_training is False
+
+
+@pytest.mark.acceptance
+def test_route_fetch_all_metadata_by_name(cleanup_db, create_train_job):
+    model = create_train_job[1]
+
+    Post.create_train_job(Constants.EXAMPLE_MODEL_NAME, body=create_train_job_basic())
+    all_metadata = Fetch.all_metadata_by_model_name(model["name"])
+
+    assert len(all_metadata) == 2
+    assert len(all_metadata[0]["weights"]) == 100
+    assert len(all_metadata[1]["weights"]) == 100
