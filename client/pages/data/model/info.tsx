@@ -24,8 +24,6 @@ export const ModelInfoPage = () => {
     );
   }
 
-  console.log(data);
-
   return (
     <div>
       <SubTitle>Model: {data.model_name}</SubTitle>
