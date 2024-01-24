@@ -3,8 +3,13 @@ import pandas as pd
 import torch
 import numpy as np
 from typing import List
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-from constants import AppConstants, NullFillStrategy
+from constants import (
+    AppConstants,
+    NullFillStrategy,
+    ScalingStrategy,
+)
 from log import LogExceptionContext
 
 
@@ -125,15 +130,21 @@ def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str]):
         return None
 
 
-def load_train_data(
+def load_data(
     dataset_name: str,
     target_column: str,
     null_fill_strategy: NullFillStrategy,
     train_val_split: List[int] | None = None,
+    scaling_strategy: ScalingStrategy = ScalingStrategy.STANDARD,
 ):
     df = read_dataset_to_mem(dataset_name)
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
     df.dropna(how="any", inplace=True)
+
+    if scaling_strategy == ScalingStrategy.MIN_MAX:
+        scaler = MinMaxScaler()
+    elif scaling_strategy == ScalingStrategy.STANDARD:
+        scaler = StandardScaler()
     target = df.pop(target_column)
 
     if train_val_split:
