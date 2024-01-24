@@ -40,5 +40,6 @@ class NullFillStrategy(Enum):
 
 
 class ScalingStrategy(Enum):
-    MIN_MAX = 1
-    STANDARD = 2
+    NONE = 1
+    MIN_MAX = 2
+    STANDARD = 3
