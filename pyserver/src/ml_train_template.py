@@ -82,7 +82,7 @@ def train():
 
         if save_every_epoch is True:
             model_weights_dump = pickle.dumps(model.state_dict())
-            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, loss)
+            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean)
 
         #check for cancel
         is_train_job_active = TrainJobQuery.is_job_training({TRAIN_JOB_ID})
