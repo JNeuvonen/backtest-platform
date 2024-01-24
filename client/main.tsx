@@ -8,8 +8,16 @@ import "./styles/css/styles.css";
 import { LogProvider } from "./context/log";
 import { AppProvider } from "./context/app";
 import "monaco-editor/min/vs/editor/editor.main.css";
+import { appWindow } from "@tauri-apps/api/window";
+import { CONSTANTS } from "./utils/constants";
 
 const queryClient = new QueryClient();
+
+appWindow.onCloseRequested(() => {
+  fetch(CONSTANTS.base_url + "/shutdown", {
+    method: "POST",
+  });
+});
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
