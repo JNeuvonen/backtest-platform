@@ -118,6 +118,12 @@ class URL:
         )
 
     @classmethod
+    def get_all_metadata_by_model_name(cls, model_name):
+        return cls._models_route() + ModelRoutePaths.ALL_METADATA_BY_MODEL_NAME.format(
+            model_name=model_name
+        )
+
+    @classmethod
     def t_get_tables(cls):
         return cls._datasets_route() + DatasetRoutePaths.ALL_TABLES
 
