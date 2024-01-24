@@ -18,10 +18,10 @@ export const getParenthesisSize = (size: number, fallbackValue = null) => {
   return size ? `(${size})` : fallbackValue;
 };
 
-export const formatValidationSplit = (validationSplit: [number, number]) => {
-  return `${validationSplit[0]}-${validationSplit[1]}`;
-};
-
 export function formatCodeBlock(codeString: string): string {
   return codeString.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
 }
+
+export const displayValidationSplit = (validationSplit: [number, number]) => {
+  return `${validationSplit[0]}-${validationSplit[1]}`;
+};
