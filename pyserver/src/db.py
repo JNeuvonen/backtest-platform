@@ -15,7 +15,6 @@ from dataset import (
     read_columns_to_mem,
     read_dataset_to_mem,
 )
-from db_objects import DatasetObject, ModelObject, TrainJobObject
 from log import LogExceptionContext, get_logger
 from orm import DatasetQuery
 from request_types import BodyCreateTrain, BodyModelData
