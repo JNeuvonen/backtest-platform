@@ -86,7 +86,7 @@ export interface NullCounts {
 export interface TrainJob {
   id: number;
   name: string;
-  curr_epoch: number;
+  epochs_ran: number;
   num_epochs: number;
   is_training: boolean;
   model_name: string;
