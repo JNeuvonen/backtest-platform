@@ -57,12 +57,13 @@ const getModelDefaultExample = () => {
 
 const getHyperParamsExample = () => {
   const code = new CodeHelper();
-
+  code.appendLine("def get_criterion_and_optimizer(model):");
+  code.addIndent();
   code.appendLine("criterion = nn.MSELoss()");
   code.appendLine(
     "optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.01)"
   );
-
+  code.appendLine("return criterion, optimizer");
   return code.get();
 };
 
