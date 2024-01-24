@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Float,
     LargeBinary,
     create_engine,
     Column,
@@ -13,7 +14,7 @@ from sqlalchemy import create_engine
 from config import append_app_data_path
 from constants import DATASET_UTILS_DB_PATH
 from log import LogExceptionContext
-from request_types import BodyModelData
+from request_types import BodyCreateTrain, BodyModelData
 
 DATABASE_URI = f"sqlite:///{append_app_data_path(DATASET_UTILS_DB_PATH)}"
 
@@ -53,7 +54,7 @@ class ModelWeights(Base):
     train_job_id = Column(Integer, ForeignKey("train_job.id"))
     epoch = Column(Integer)
     weights = Column(LargeBinary, nullable=False)
-
+    loss = Column(Float)
     train_job = relationship("TrainJob")
 
 
@@ -205,7 +206,7 @@ class ModelQuery:
 
 class TrainJobQuery:
     @staticmethod
-    def create_train_job(model_name: str, request_body):
+    def create_train_job(model_name: str, request_body: BodyCreateTrain):
         with LogExceptionContext():
             train_job_name = generate_name_for_train_job(model_name)
             with Session() as session:
@@ -215,8 +216,6 @@ class TrainJobQuery:
                     num_epochs=request_body.num_epochs,
                     save_model_every_epoch=request_body.save_model_after_every_epoch,
                     backtest_on_validation_set=request_body.backtest_on_val_set,
-                    enter_trade_criteria=request_body.enter_trade_criteria,
-                    exit_trade_criteria=request_body.exit_trade_criteria,
                     is_training=True,
                 )
                 session.add(new_train_job)
@@ -268,11 +267,13 @@ class TrainJobQuery:
 
 class ModelWeightsQuery:
     @staticmethod
-    def create_model_weights_entry(train_job_id: int, epoch: int, weights: bytes):
+    def create_model_weights_entry(
+        train_job_id: int, epoch: int, weights: bytes, loss: float
+    ):
         with LogExceptionContext():
             with Session() as session:
                 new_model_weight = ModelWeights(
-                    train_job_id=train_job_id, epoch=epoch, weights=weights
+                    train_job_id=train_job_id, epoch=epoch, weights=weights, loss=loss
                 )
                 session.add(new_model_weight)
                 session.commit()
