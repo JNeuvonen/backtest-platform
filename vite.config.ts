@@ -18,21 +18,12 @@ export default defineConfig(async () => ({
   server: {
     port: 1420,
     strictPort: true,
-    ignored: [
-      resolve("src-tauri/binaries/**"),
-      resolve("src-tauri/target/**"),
-      resolve(
-        "src-tauri/target/debug/binaries/build/aarch64-apple-darwin/debug/install/lib/torch/utils/model_dump/skeleton.html"
-      ),
-    ],
+    ignored: [resolve("src-tauri/**")],
   },
   watch: {
-    ignored: [
-      resolve("src-tauri/binaries/**"),
-      resolve("src-tauri/target/**"),
-      resolve(
-        "src-tauri/target/debug/binaries/build/aarch64-apple-darwin/debug/install/lib/torch/utils/model_dump/skeleton.html"
-      ),
-    ],
+    ignored: [resolve("src-tauri/**")],
+  },
+  rollupOptions: {
+    external: [resolve("src-tauri/target")],
   },
 }));
