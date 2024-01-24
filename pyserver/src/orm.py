@@ -68,7 +68,7 @@ class TrainJob(Base):
     name = Column(String)
     model_name = Column(String)
     num_epochs = Column(Integer)
-    curr_epoch = Column(Integer, default=0, nullable=False)
+    epochs_ran = Column(Integer, default=0, nullable=False)
     save_model_every_epoch = Column(Boolean)
     backtest_on_validation_set = Column(Boolean)
 
@@ -88,11 +88,6 @@ def drop_tables():
 
 def create_tables():
     Base.metadata.create_all(engine)
-
-
-def generate_name_for_train_job(model_name: str):
-    train_jobs = TrainJobQuery.fetch_train_jobs_by_model(model_name)
-    return f"{len(train_jobs)}: {model_name}"
 
 
 class DatasetQuery:
@@ -209,10 +204,8 @@ class TrainJobQuery:
     @staticmethod
     def create_train_job(model_name: str, request_body: BodyCreateTrain):
         with LogExceptionContext():
-            train_job_name = generate_name_for_train_job(model_name)
             with Session() as session:
                 new_train_job = TrainJob(
-                    name=train_job_name,
                     model_name=model_name,
                     num_epochs=request_body.num_epochs,
                     save_model_every_epoch=request_body.save_model_after_every_epoch,
@@ -227,7 +220,7 @@ class TrainJobQuery:
     def set_curr_epoch(train_job_id: int, epoch: int):
         with Session() as session:
             session.query(TrainJob).filter(TrainJob.id == train_job_id).update(
-                {"curr_epoch": epoch}
+                {"epochs_ran": epoch}
             )
             session.commit()
 
@@ -293,6 +286,18 @@ class TrainJobQuery:
                     }
                     ret.append(ret_item)
                 return ret
+
+    @classmethod
+    def on_shutdown_cleanup(cls):
+        with LogExceptionContext():
+            with Session() as session:
+                train_jobs = (
+                    session.query(TrainJob).filter(TrainJob.is_training == True).all()
+                )
+                print(train_jobs)
+                for item in train_jobs:
+                    item.is_training = False
+                session.commit()
 
 
 class ModelWeightsQuery:
