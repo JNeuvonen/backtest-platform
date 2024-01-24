@@ -34,15 +34,13 @@ async def route_create_train_job(model_name: str, body: BodyCreateTrain):
         model = ModelQuery.fetch_model_by_name(model_name)
 
         if train_job is None or model is None:
-            # should never execute, just to make mypy happy
             raise ValueError("No model or train job found")
 
-        if is_testing() is False:
-            asyncio.create_task(start_train_loop(model, train_job))
+        if is_testing():
+            await start_train_loop(model, train_job)
             return {"id": train_job_id}
 
-        ##blocking in test mode
-        await start_train_loop(model, train_job)
+        asyncio.create_task(start_train_loop(model, train_job))
         return {"id": train_job_id}
 
 
