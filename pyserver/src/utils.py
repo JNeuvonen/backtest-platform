@@ -1,3 +1,4 @@
+import threading
 from io import BytesIO
 import os
 from fastapi import UploadFile
@@ -14,6 +15,7 @@ from constants import (
 from config import append_app_data_path
 from dataset import read_dataset_to_mem
 from log import LogExceptionContext
+from orm import TrainJobQuery
 
 
 def convert_val_split_str_to_arr(val_split_str: str):
@@ -109,3 +111,13 @@ class GlobalSymbols:
 
 
 global_symbols = GlobalSymbols()
+
+
+def run_in_thread(fn, *args, **kwargs):
+    thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+    thread.start()
+    return thread
+
+
+def on_shutdown_cleanup():
+    TrainJobQuery.on_shutdown_cleanup()
