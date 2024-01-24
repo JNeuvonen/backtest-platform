@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite & npm run sass",
-    "build": "npm run lint && npm i && chmod +x ./scripts/build.sh && ./scripts/build.sh && tsc && vite build",
+    "build": "npm i && npm run lint&& chmod +x ./scripts/build.sh && ./scripts/build.sh && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "sass": "sass --watch client/styles/sass/styles.scss:client/styles/css/styles.css",
