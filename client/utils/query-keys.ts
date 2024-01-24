@@ -5,4 +5,5 @@ export const QUERY_KEYS = {
   fetch_binance_tickers: "fetch-binance-tickers",
   fetch_datasets_models: "fetch-datasets-models",
   fetch_dataset_model_by_name: "fetch-dataset-model-by-name",
+  fetch_all_model_training_metadata: "fetch-all-model-training-metadata",
 };
