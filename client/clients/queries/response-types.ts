@@ -83,6 +83,24 @@ export interface NullCounts {
   taker_buy_quote_asset_volume: number;
 }
 
+export interface TrainJob {
+  id: number;
+  name: string;
+  curr_epoch: number;
+  num_epochs: number;
+  is_training: boolean;
+  model_name: string;
+  backtest_on_validation_set: boolean;
+  save_model_every_epoch: boolean;
+}
+
+export interface EpochInfo {
+  epoch: number;
+  id: number;
+  train_loss: number;
+  val_loss: number;
+}
+
 export interface StatsByCol {
   kline_open_time: StatsCol;
   open_price: StatsCol;
