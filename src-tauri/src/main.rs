@@ -1,8 +1,13 @@
 use std::{
     fs,
     path::Path,
-    process::{Command, Stdio},
+    process::{Child, Command, Stdio},
+    sync::{Arc, Mutex},
 };
+
+use tauri::{Manager, WindowEvent};
+
+static SERVER_PROCESS: Mutex<Option<Arc<Mutex<Child>>>> = Mutex::new(None);
 
 #[tauri::command]
 fn fetch_env(key: String) -> Option<String> {
@@ -24,6 +29,7 @@ fn fetch_platform() -> String {
 
 fn main() {
     dotenv::dotenv().ok();
+
     tauri::Builder::default()
         .setup(|app| {
             let app_data_path = app
@@ -35,11 +41,12 @@ fn main() {
                 .to_string();
 
             if !Path::new(&app_data_path).exists() {
-                //init app data dir in prod
+                // Initialize app data dir in production
                 fs::create_dir_all(&app_data_path).expect("Failed to create app data directory");
             }
+
             if cfg!(debug_assertions) {
-                let _fastapi_server = Command::new("python")
+                Command::new("python")
                     .current_dir("../pyserver/src")
                     .arg("-m")
                     .arg("uvicorn")
@@ -48,7 +55,7 @@ fn main() {
                     .env("APP_DATA_PATH", &app_data_path)
                     .env("ENV", "DEV")
                     .spawn()
-                    .expect("Failed to start FastAPI server");
+                    .expect("Failed to start FastAPI server")
             } else {
                 let binary_path = app
                     .path_resolver()
@@ -59,16 +66,13 @@ fn main() {
                     .unwrap()
                     .to_string();
 
-                let _fastapi_server = Command::new(binary_path)
+                Command::new(binary_path)
                     .stdout(Stdio::piped())
                     .env("APP_DATA_PATH", &app_data_path)
                     .env("ENV", "PROD")
                     .spawn()
-                    .expect("Failed to start FastAPI server");
-            }
-
-            // Start the FastAPI server using the correct path
-
+                    .expect("Failed to start FastAPI server")
+            };
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![fetch_env, fetch_platform])
