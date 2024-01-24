@@ -1,10 +1,11 @@
 import os
 from contextlib import asynccontextmanager
+from utils import on_shutdown_cleanup
 import uvicorn
 
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from log import LogExceptionContext
+from log import LogExceptionContext, get_logger
 from route_binance import router as binance_router
 from route_datasets import router as datasets_router
 from route_model import router as model_router
@@ -43,8 +44,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "tests")
+
+
+@app.post("/shutdown")
+def shutdown_server():
+    on_shutdown_cleanup()
+    logger = get_logger()
+    logger.info("Application is shutting down")
+    os._exit(0)
 
 
 @app.get("/", response_class=Response)
