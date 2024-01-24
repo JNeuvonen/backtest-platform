@@ -141,18 +141,30 @@ def load_data(
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
     df.dropna(how="any", inplace=True)
 
+    scaler = None
+
     if scaling_strategy == ScalingStrategy.MIN_MAX:
         scaler = MinMaxScaler()
     elif scaling_strategy == ScalingStrategy.STANDARD:
         scaler = StandardScaler()
-    target = df.pop(target_column)
 
     if train_val_split:
-        split_idx = int(len(df) * train_val_split[0] / 100)
-        train_df = df[:split_idx]
-        val_df = df[split_idx:]
-        train_target = target[:split_idx]
-        val_target = target[split_idx:]
+        split_start_index = int(len(df) * train_val_split[0] / 100)
+        split_end_index = int(len(df) * train_val_split[1] / 100)
+
+        val_df = df.iloc[split_start_index : min(split_end_index + 1, len(df))]
+        train_df_1 = df.iloc[:split_start_index]
+        train_df_2 = df.iloc[split_end_index + 1 :]
+        train_df = pd.concat([train_df_1, train_df_2])
+
+        if scaler is not None:
+            train_df[train_df.columns] = scaler.fit_transform(
+                train_df[train_df.columns]
+            )
+            val_df[val_df.columns] = scaler.transform(val_df[val_df.columns])
+
+        train_target = train_df.pop(target_column)
+        val_target = val_df.pop(target_column)
 
         x_train = torch.Tensor(train_df.values.astype(np.float32))
         y_train = torch.Tensor(
@@ -163,6 +175,10 @@ def load_data(
 
         return x_train, y_train, x_val, y_val
     else:
+        if scaler is not None:
+            df[df.columns] = scaler.fit_transform(df[df.columns])
+
+        target = df.pop(target_column)
         x_train = torch.Tensor(df.values.astype(np.float32))
         y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
         return x_train, y_train, None, None
