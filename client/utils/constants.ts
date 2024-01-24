@@ -129,7 +129,7 @@ export class CodeHelper {
   }
 }
 
-export const formatValidationSplit = (valSplit: string) => {
+export const formatValidationSplit = (valSplit: string): [number, number] => {
   const parts = valSplit.split(",");
   return [Number(parts[0]), Number(parts[1])];
 };
