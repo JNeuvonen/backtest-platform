@@ -3,6 +3,7 @@ import os
 import sys
 from typing import List
 import pandas as pd
+from pandas.core.algorithms import mode
 import requests
 from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import URL, DatasetMetadata
@@ -134,6 +135,12 @@ class Fetch:
         with Req("get", URL.get_model_by_name(model_name)) as res:
             res_json = res.json()
             return res_json["model"]
+
+    @staticmethod
+    def all_metadata_by_model_name(model_name: str):
+        with Req("get", URL.get_all_metadata_by_model_name(model_name)) as res:
+            res_json = res.json()
+            return res_json["data"]
 
 
 class Post:
