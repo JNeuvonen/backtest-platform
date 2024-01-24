@@ -98,6 +98,8 @@ def train():
             canceled_by_user_request = True
             break
 
+        TrainJobQuery.set_curr_epoch({TRAIN_JOB_ID}, epoch)
+
 
     if canceled_by_user_request is False:
         TrainJobQuery.set_training_status({TRAIN_JOB_ID}, False)
