@@ -36,7 +36,7 @@ def train():
     last_log_time = time.time() - 5
 
     
-    for epoch in range({NUM_EPOCHS}):
+    for epoch in range(1, {NUM_EPOCHS} + 1):
         model.train()
         total_train_loss = 0
         for inputs, labels in train_loader:
