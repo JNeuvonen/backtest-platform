@@ -6,16 +6,20 @@ import { DatasetModelCreatePage } from "./create";
 import { useDatasetModelsQuery } from "../../../clients/queries/queries";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { RowItem, SmallTable } from "../../../components/tables/Small";
-import { formatValidationSplit } from "../../../utils/content";
 import { useNavigate } from "react-router-dom";
 import { getModelInfoPath } from "../../../utils/navigate";
-import { PATHS, PATH_KEYS } from "../../../utils/constants";
+import {
+  PATHS,
+  PATH_KEYS,
+  formatValidationSplit,
+} from "../../../utils/constants";
 import usePath from "../../../hooks/usePath";
 import { ModelInfoPage } from "./info";
 import useQueryParams from "../../../hooks/useQueryParams";
 import { ChakraTabs } from "../../../components/layout/Tabs";
-import { ModelTrainPage } from "./train";
+import { ModelTrainPage } from "./Train";
 import { ModelSimulatePage } from "./sim";
+import { displayValidationSplit } from "../../../utils/content";
 
 const TAB_LABELS = ["Info", "Train", "Simulate"];
 const TABS = [
@@ -75,7 +79,9 @@ export const DatasetModelIndex = () => {
               return [
                 item.model_name,
                 item.target_col,
-                formatValidationSplit(item.validation_split),
+                displayValidationSplit(
+                  formatValidationSplit(item.validation_split)
+                ),
               ];
             })}
             rowOnClickFunc={(item: RowItem) => {
