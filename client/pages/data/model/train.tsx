@@ -1,6 +1,9 @@
 import React from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
-import { useModelQuery } from "../../../clients/queries/queries";
+import {
+  useModelQuery,
+  useModelTrainMetadata,
+} from "../../../clients/queries/queries";
 import { Button, Spinner } from "@chakra-ui/react";
 import { useModal } from "../../../hooks/useOpen";
 import { SmallTable } from "../../../components/tables/Small";
@@ -15,16 +18,19 @@ interface RouteParams {
 
 export const ModelTrainPage = () => {
   const { modelName } = usePathParams<RouteParams>();
-  const { data } = useModelQuery(modelName);
+  const { data: modelData } = useModelQuery(modelName);
+  const { data: allTrainingMetadata } = useModelTrainMetadata(modelName);
   const createTrainJobModal = useModal();
 
-  if (!data) {
+  if (!modelData || !allTrainingMetadata) {
     return (
       <div>
         <Spinner />
       </div>
     );
   }
+
+  console.log(allTrainingMetadata);
 
   return (
     <div>
