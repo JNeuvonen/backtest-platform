@@ -1,3 +1,4 @@
+import { TrainJobForm } from "../components/CreateTrainJobForm";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
@@ -95,4 +96,13 @@ export async function renameColumnName(
       new_col_name: newName,
     },
   });
+}
+
+export async function createTrainJob(modelName: string, trainJobForm: object) {
+  const res = await buildRequest({
+    method: "POST",
+    url: URLS.create_train_job(modelName),
+    payload: trainJobForm,
+  });
+  return res;
 }
