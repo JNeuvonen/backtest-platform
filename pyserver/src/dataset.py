@@ -158,10 +158,10 @@ def load_data(
         train_df = pd.concat([train_df_1, train_df_2])
 
         if scaler is not None:
-            train_df[train_df.columns] = scaler.fit_transform(
+            train_df.loc[:, train_df.columns] = scaler.fit_transform(
                 train_df[train_df.columns]
             )
-            val_df[val_df.columns] = scaler.transform(val_df[val_df.columns])
+            val_df.loc[:, val_df.columns] = scaler.transform(val_df[val_df.columns])
 
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
