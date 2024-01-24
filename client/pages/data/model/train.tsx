@@ -4,17 +4,29 @@ import {
   useModelQuery,
   useModelTrainMetadata,
 } from "../../../clients/queries/queries";
-import { Button, Spinner } from "@chakra-ui/react";
+import { Button, Checkbox, Spinner } from "@chakra-ui/react";
 import { useModal } from "../../../hooks/useOpen";
 import { SmallTable } from "../../../components/tables/Small";
 import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { CreateTrainJobForm } from "../../../components/CreateTrainJobForm";
+import { MdPlayArrow } from "react-icons/md";
+import { MdOutlinePause } from "react-icons/md";
+import { BUTTON_VARIANTS } from "../../../theme";
 
 interface RouteParams {
   datasetName: string;
   modelName: string;
 }
+
+const COLUMNS = [
+  "Nr",
+  "Epochs",
+  "Is training",
+  "Backtest on validation set",
+  "Save weights on every epoch",
+  "Control",
+];
 
 export const ModelTrainPage = () => {
   const { modelName } = usePathParams<RouteParams>();
@@ -30,8 +42,6 @@ export const ModelTrainPage = () => {
     );
   }
 
-  console.log(allTrainingMetadata);
-
   return (
     <div>
       <ToolBarStyle style={{ marginTop: "16px" }}>
@@ -46,7 +56,52 @@ export const ModelTrainPage = () => {
         <CreateTrainJobForm onClose={createTrainJobModal.onClose} />
       </ChakraModal>
 
-      <SmallTable columns={[]} rows={[[]]} />
+      <SmallTable
+        columns={COLUMNS}
+        rows={allTrainingMetadata.map((item, i) => {
+          return [
+            i + 1,
+            `${item.train.epochs_ran}/${item.train.num_epochs}`,
+            <Checkbox
+              isChecked={item.train.is_training}
+              disabled={true}
+              key={0}
+            />,
+            <Checkbox
+              isChecked={item.train.backtest_on_validation_set}
+              disabled={true}
+              key={1}
+            />,
+            <Checkbox
+              isChecked={item.train.save_model_every_epoch}
+              disabled={true}
+              key={2}
+            />,
+            <div style={{ display: "flex", gap: "4px" }} key={3}>
+              {item.train.is_training ? (
+                <Button
+                  leftIcon={<MdOutlinePause />}
+                  variant={BUTTON_VARIANTS.grey}
+                  style={{ height: "28px" }}
+                  key={4}
+                >
+                  Pause
+                </Button>
+              ) : (
+                <Button
+                  leftIcon={<MdPlayArrow />}
+                  variant={BUTTON_VARIANTS.grey}
+                  style={{ height: "28px" }}
+                  key={5}
+                >
+                  Train
+                </Button>
+              )}
+            </div>,
+          ];
+        })}
+        containerStyles={{ marginTop: "16px" }}
+      />
     </div>
   );
 };
