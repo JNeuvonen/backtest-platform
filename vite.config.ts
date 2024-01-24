@@ -1,5 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
+
+function resolve(dir) {
+  return path.resolve(__dirname, dir);
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -13,6 +18,21 @@ export default defineConfig(async () => ({
   server: {
     port: 1420,
     strictPort: true,
-    ignored: ["**/src/tauri/binaries/**"],
+    ignored: [
+      resolve("src-tauri/binaries/**"),
+      resolve("src-tauri/target/**"),
+      resolve(
+        "src-tauri/target/debug/binaries/build/aarch64-apple-darwin/debug/install/lib/torch/utils/model_dump/skeleton.html"
+      ),
+    ],
+  },
+  watch: {
+    ignored: [
+      resolve("src-tauri/binaries/**"),
+      resolve("src-tauri/target/**"),
+      resolve(
+        "src-tauri/target/debug/binaries/build/aarch64-apple-darwin/debug/install/lib/torch/utils/model_dump/skeleton.html"
+      ),
+    ],
   },
 }));
