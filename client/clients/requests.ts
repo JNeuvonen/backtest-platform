@@ -3,7 +3,11 @@ import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
-import { FetchModelByNameRes } from "./queries/response-types";
+import {
+  EpochInfo,
+  FetchModelByNameRes,
+  TrainJob,
+} from "./queries/response-types";
 
 export async function fetchDatasets() {
   const url = URLS.get_tables;
@@ -104,4 +108,18 @@ export async function createTrainJob(modelName: string, trainJobForm: object) {
     payload: trainJobForm,
   });
   return res;
+}
+
+export type AllTrainingMetadata = { train: TrainJob; weights: EpochInfo }[];
+
+export async function fetchAllTrainingMetadataForModel(modelName: string) {
+  const res = await buildRequest({
+    method: "GET",
+    url: URLS.fetch_all_training_metadata(modelName),
+  });
+
+  if (res.res) {
+    return res.res["data"] as AllTrainingMetadata;
+  }
+  return null;
 }
