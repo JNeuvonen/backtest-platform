@@ -55,4 +55,6 @@ export const URLS = {
     BASE_URL + API.model.root + `/${modelName}`,
   create_train_job: (modelName: string) =>
     BASE_URL + API.model.root + `/${modelName}/create-train`,
+  fetch_all_training_metadata: (modelName: string) =>
+    BASE_URL + API.model.root + `/${modelName}/trains`,
 };
