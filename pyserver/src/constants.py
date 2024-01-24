@@ -37,3 +37,8 @@ class NullFillStrategy(Enum):
     ZERO = 2
     MEAN = 3
     CLOSEST = 4
+
+
+class ScalingStrategy(Enum):
+    MIN_MAX = 1
+    STANDARD = 2
