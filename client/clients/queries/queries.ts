@@ -1,7 +1,9 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../../utils/query-keys";
 import {
+  AllTrainingMetadata,
   fetchAllTickers,
+  fetchAllTrainingMetadataForModel,
   fetchColumn,
   fetchDataset,
   fetchDatasetModels,
@@ -68,5 +70,14 @@ export function useModelQuery(
   return useQuery<DatasetModel | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_dataset_model_by_name, modelName],
     queryFn: () => fetchModelByName(modelName),
+  });
+}
+
+export function useModelTrainMetadata(
+  modelName: string
+): UseQueryResult<AllTrainingMetadata | null, unknown> {
+  return useQuery<AllTrainingMetadata | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_all_model_training_metadata, modelName],
+    queryFn: () => fetchAllTrainingMetadataForModel(modelName),
   });
 }
