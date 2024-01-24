@@ -1,7 +1,9 @@
+import threading
+from config import is_testing
 from log import LogExceptionContext
 from ml_train_template import TRAIN_TEMPLATE
 from orm import DatasetQuery, Model, TrainJob, ModelWeightsQuery
-from utils import convert_val_split_str_to_arr, global_symbols
+from utils import convert_val_split_str_to_arr, global_symbols, run_in_thread
 
 
 class PyCodeBuilder:
@@ -84,4 +86,7 @@ async def start_train_loop(
         for key, value in replacements.items():
             template = template.replace(key, str(value))
 
-        exec(template, globals())
+        if is_testing():
+            exec(template, globals())
+        else:
+            run_in_thread(exec, template, globals())
