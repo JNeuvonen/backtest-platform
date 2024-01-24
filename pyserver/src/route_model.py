@@ -15,6 +15,7 @@ class RoutePaths:
     FETCH_MODEL = "/{model_name}"
     CREATE_TRAIN_JOB = "/{model_name}/create-train"
     TRAIN_JOB_BY_ID = "/train/{id}"
+    ALL_METADATA_BY_MODEL_NAME = "/{model_name}/trains"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
@@ -50,3 +51,10 @@ async def route_fetch_train_job(id: int):
     with HttpResponseContext():
         train = TrainJobQuery.get_train_job(id)
         return {"train": train}
+
+
+@router.get(RoutePaths.ALL_METADATA_BY_MODEL_NAME)
+async def route_fetch_all_metadata_by_name(model_name: str):
+    with HttpResponseContext():
+        ret = TrainJobQuery.fetch_all_metadata_by_name(model_name)
+        return {"data": ret}
