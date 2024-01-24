@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy import (
     Float,
     LargeBinary,
@@ -67,10 +68,9 @@ class TrainJob(Base):
     name = Column(String)
     model_name = Column(String)
     num_epochs = Column(Integer)
+    curr_epoch = Column(Integer, default=0, nullable=False)
     save_model_every_epoch = Column(Boolean)
     backtest_on_validation_set = Column(Boolean)
-    enter_trade_criteria = Column(String)
-    exit_trade_criteria = Column(String)
 
     model_weights = relationship("ModelWeights", overlaps="train_job")
 
@@ -224,6 +224,14 @@ class TrainJobQuery:
                 return new_train_job.id
 
     @staticmethod
+    def set_curr_epoch(train_job_id: int, epoch: int):
+        with Session() as session:
+            session.query(TrainJob).filter(TrainJob.id == train_job_id).update(
+                {"curr_epoch": epoch}
+            )
+            session.commit()
+
+    @staticmethod
     def is_job_training(id: int):
         with LogExceptionContext():
             with Session() as session:
@@ -265,6 +273,27 @@ class TrainJobQuery:
                 else:
                     return False
 
+    @classmethod
+    def fetch_all_metadata_by_name(cls, model_name: str):
+        with LogExceptionContext():
+            with Session() as session:
+                train_jobs: List[TrainJob] = (
+                    session.query(TrainJob)
+                    .filter(TrainJob.model_name == model_name)
+                    .all()
+                )
+
+                ret = []
+                for item in train_jobs:
+                    ret_item = {
+                        "train": item,
+                        "weights": ModelWeightsQuery.fetch_model_weights_by_train_job_id(
+                            item.id
+                        ),
+                    }
+                    ret.append(ret_item)
+                return ret
+
 
 class ModelWeightsQuery:
     @staticmethod
@@ -300,3 +329,29 @@ class ModelWeightsQuery:
                     .scalar()
                 )
                 return weights_data
+
+    @staticmethod
+    def fetch_model_weights_by_train_job_id(train_job_id: int):
+        with Session() as session:
+            weights_metadata = (
+                session.query(
+                    ModelWeights.id,
+                    ModelWeights.epoch,
+                    ModelWeights.train_loss,
+                    ModelWeights.val_loss,
+                )
+                .filter(ModelWeights.train_job_id == train_job_id)
+                .all()
+            )
+
+            weights_metadata_dict = [
+                {
+                    "id": weight.id,
+                    "epoch": weight.epoch,
+                    "train_loss": weight.train_loss,
+                    "val_loss": weight.val_loss,
+                }
+                for weight in weights_metadata
+            ]
+
+            return weights_metadata_dict
