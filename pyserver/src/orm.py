@@ -54,8 +54,9 @@ class ModelWeights(Base):
     train_job_id = Column(Integer, ForeignKey("train_job.id"))
     epoch = Column(Integer)
     weights = Column(LargeBinary, nullable=False)
-    loss = Column(Float)
     train_job = relationship("TrainJob")
+    train_loss = Column(Float)
+    val_loss = Column(Float)
 
 
 class TrainJob(Base):
@@ -268,12 +269,20 @@ class TrainJobQuery:
 class ModelWeightsQuery:
     @staticmethod
     def create_model_weights_entry(
-        train_job_id: int, epoch: int, weights: bytes, loss: float
+        train_job_id: int,
+        epoch: int,
+        weights: bytes,
+        train_loss: float,
+        val_loss: float,
     ):
         with LogExceptionContext():
             with Session() as session:
                 new_model_weight = ModelWeights(
-                    train_job_id=train_job_id, epoch=epoch, weights=weights, loss=loss
+                    train_job_id=train_job_id,
+                    epoch=epoch,
+                    weights=weights,
+                    train_loss=train_loss,
+                    val_loss=val_loss,
                 )
                 session.add(new_model_weight)
                 session.commit()
