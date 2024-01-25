@@ -74,10 +74,16 @@ export const GET_KLINE_OPTIONS = () => {
   return klineOptions;
 };
 
+export type BACKEND_MSG_SIGNALS = "OPEN_TRAINING_TOOLBAR";
+
+export const SIGNAL_OPEN_TRAINING_TOOLBAR: BACKEND_MSG_SIGNALS =
+  "OPEN_TRAINING_TOOLBAR";
+
 export const DOM_EVENT_CHANNELS = {
   refetch_all_datasets: "refetch_all_datasets",
   refetch_dataset: "refetch_dataset",
   refetch_dataset_columns: "refetch_dataset_columns",
+  refetch_component: "refetch_component",
 };
 
 export type NullFillStrategy = "CLOSEST" | "MEAN" | "ZERO" | "NONE";
