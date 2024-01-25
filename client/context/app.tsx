@@ -43,6 +43,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [trainLosses, setTrainLosses] = useState<number[]>([]);
   const [valLosses, setValLosses] = useState<number[]>([]);
   const [epochTime, setEpochTime] = useState<number>(0);
+  const [trainJobId, setTrainJobId] = useState("");
 
   useEffect(() => {
     const fetchAppData = async () => {
@@ -73,13 +74,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const parseEpochMessage = (msg: string) => {
     try {
-      const data = msg.split(":")[1].split("/");
+      const data = msg.split("\n")[1].split("/");
 
       const epochsRan = data[0];
       const maxEpochs = data[1];
       const trainLoss = data[2];
       const valLoss = data[3];
       const epochTime = data[4];
+      const trainJobId = data[5];
 
       setEpochsRan(Number(epochsRan));
       setMaximumEpochs(Number(maxEpochs));
@@ -89,6 +91,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       ]);
       setValLosses((prevValLosses) => [...prevValLosses, Number(valLoss)]);
       setEpochTime(Number(epochTime));
+      setTrainJobId(trainJobId);
     } catch {}
   };
 
