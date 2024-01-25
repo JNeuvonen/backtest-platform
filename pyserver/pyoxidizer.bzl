@@ -257,8 +257,9 @@ def make_exe():
     # Read Python files from a local directory and add them to our embedded
     # context, taking just the resources belonging to the `foo` and `bar`
     # Python packages.
+    source_path = VARS.get("PYSERVER_PATH")
     exe.add_python_resources(exe.read_package_root(
-        path="/Users/jarnoneuvonen/Code/backtest-engine/pyserver/src/",
+        path=source_path,
         packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "code_gen", "orm", "ml_train_template"],
     ))
 
