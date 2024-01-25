@@ -24,6 +24,7 @@ interface AppContextType {
   trainLosses: number[];
   valLosses: number[];
   epochTime: number;
+  trainJobId: string;
 }
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -110,6 +111,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         trainLosses,
         valLosses,
         epochTime,
+        trainJobId,
       }}
     >
       {children}

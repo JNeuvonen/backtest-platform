@@ -123,3 +123,11 @@ export async function fetchAllTrainingMetadataForModel(modelName: string) {
   }
   return null;
 }
+
+export async function stopTrain(trainJobId: string) {
+  const res = await buildRequest({
+    method: "POST",
+    url: URLS.stop_train(trainJobId),
+  });
+  return res;
+}

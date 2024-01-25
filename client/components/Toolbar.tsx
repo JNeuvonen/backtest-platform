@@ -5,6 +5,8 @@ import { COLOR_BG_PRIMARY, COLOR_BG_PRIMARY_SHADE_TWO } from "../utils/colors";
 import { Button } from "@chakra-ui/react";
 import { BUTTON_VARIANTS } from "../theme";
 import { MdOutlinePause } from "react-icons/md";
+import { roundNumberDropRemaining } from "../utils/number";
+import { stopTrain } from "../clients/requests";
 
 const TrainingToolbar = () => {
   const {
@@ -14,7 +16,12 @@ const TrainingToolbar = () => {
     maximumEpochs,
     trainLosses,
     valLosses,
+    trainJobId,
   } = useAppContext();
+
+  const cancelTrain = async () => {
+    await stopTrain(trainJobId);
+  };
   return (
     <div
       style={{
@@ -35,8 +42,8 @@ const TrainingToolbar = () => {
     >
       <div>
         Epoch: {epochsRan}/{maximumEpochs}, Train loss:{" "}
-        {trainLosses[trainLosses.length - 1]}, Val loss:{" "}
-        {valLosses[valLosses.length - 1]}
+        {roundNumberDropRemaining(trainLosses[trainLosses.length - 1], 3)}, Val
+        loss: {roundNumberDropRemaining(valLosses[valLosses.length - 1], 3)}
       </div>
       <div>
         <Button
@@ -44,6 +51,7 @@ const TrainingToolbar = () => {
           variant={BUTTON_VARIANTS.grey}
           style={{ height: "28px" }}
           key={4}
+          onClick={cancelTrain}
         >
           Pause
         </Button>

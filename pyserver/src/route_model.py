@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 
 from context import HttpResponseContext
 from orm import ModelQuery, TrainJobQuery
@@ -16,7 +16,7 @@ class RoutePaths:
     CREATE_TRAIN_JOB = "/{model_name}/create-train"
     TRAIN_JOB_BY_ID = "/train/{id}"
     ALL_METADATA_BY_MODEL_NAME = "/{model_name}/trains"
-    STOP_TRAIN = "/{model_name}/trains/{train_job_id}"
+    STOP_TRAIN = "/train/stop/{train_job_id}"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
@@ -57,3 +57,12 @@ async def route_fetch_all_metadata_by_name(model_name: str):
     with HttpResponseContext():
         ret = TrainJobQuery.fetch_all_metadata_by_name(model_name)
         return {"data": ret}
+
+
+@router.post(RoutePaths.STOP_TRAIN)
+async def route_stop_train(train_job_id: int):
+    with HttpResponseContext():
+        TrainJobQuery.set_training_status(train_job_id, False)
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
