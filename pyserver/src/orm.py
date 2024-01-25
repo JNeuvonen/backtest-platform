@@ -201,6 +201,19 @@ class ModelQuery:
 
 
 class TrainJobQuery:
+    @classmethod
+    def get_train_job_detailed(cls, train_job_id: int):
+        train_job: TrainJob = cls.get_train_job(train_job_id)
+        model: Model = ModelQuery.fetch_model_by_name(train_job.model_name)
+        dataset: Dataset = DatasetQuery.fetch_dataset_by_id(model.dataset_id)
+        epochs = ModelWeightsQuery.fetch_model_weights_by_train_job_id(train_job_id)
+        return {
+            "train_job": train_job,
+            "model": model,
+            "dataset": dataset,
+            "epochs": epochs,
+        }
+
     @staticmethod
     def create_train_job(model_name: str, request_body: BodyCreateTrain):
         with LogExceptionContext():

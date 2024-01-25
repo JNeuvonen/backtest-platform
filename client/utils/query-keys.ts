@@ -6,4 +6,5 @@ export const QUERY_KEYS = {
   fetch_datasets_models: "fetch-datasets-models",
   fetch_dataset_model_by_name: "fetch-dataset-model-by-name",
   fetch_all_model_training_metadata: "fetch-all-model-training-metadata",
+  fetch_train_job_detailed: "fetch_train_job_detailed",
 };

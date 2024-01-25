@@ -17,6 +17,7 @@ class RoutePaths:
     TRAIN_JOB_BY_ID = "/train/{id}"
     ALL_METADATA_BY_MODEL_NAME = "/{model_name}/trains"
     STOP_TRAIN = "/train/stop/{train_job_id}"
+    TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID = "/train/{train_job_id}/detailed"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
@@ -66,3 +67,9 @@ async def route_stop_train(train_job_id: int):
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
+
+
+@router.get(RoutePaths.TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID)
+async def route_fetch_train_job_detailed(train_job_id: int):
+    with HttpResponseContext():
+        return {"data": TrainJobQuery.get_train_job_detailed(train_job_id)}
