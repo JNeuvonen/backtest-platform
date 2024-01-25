@@ -7,6 +7,7 @@ import React, {
   useEffect,
 } from "react";
 import { URLS } from "../clients/endpoints";
+import { SIGNAL_OPEN_TRAINING_TOOLBAR } from "../utils/constants";
 
 interface LogContextType {
   logs: LogMessage[];
@@ -70,6 +71,10 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
       socket.onmessage = (event) => {
         if (event.data === "health") return;
         const data: LogMessage = JSON.parse(event.data);
+
+        if (data.msg === SIGNAL_OPEN_TRAINING_TOOLBAR) {
+        }
+
         if (data.dom_event) {
           dispatchDomEvent({ channel: data.dom_event, data: data.msg });
         }
