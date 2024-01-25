@@ -68,7 +68,8 @@ const getHyperParamsExample = () => {
 };
 
 interface Props {
-  cancelCallback?: () => void;
+  cancelCallback: () => void;
+  submitCallback: () => void;
 }
 
 export interface ModelDataPayload {
@@ -81,7 +82,10 @@ export interface ModelDataPayload {
   validation_split: number[];
 }
 
-export const DatasetModelCreatePage = ({ cancelCallback }: Props) => {
+export const DatasetModelCreatePage = ({
+  cancelCallback,
+  submitCallback,
+}: Props) => {
   const { datasetName } = usePathParams<PathParams>();
   const { data } = useDatasetQuery(datasetName);
   const [targetColumn, setTargetColumn] = useState<string>("");
@@ -143,7 +147,7 @@ export const DatasetModelCreatePage = ({ cancelCallback }: Props) => {
         duration: 5000,
         isClosable: true,
       });
-      if (cancelCallback) cancelCallback();
+      submitCallback();
     }
   };
 

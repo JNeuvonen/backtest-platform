@@ -41,7 +41,7 @@ export const DatasetModelIndex = () => {
 
   const createModelModal = useModal();
   const { datasetName } = usePathParams<{ datasetName: string }>();
-  const { data } = useDatasetModelsQuery(datasetName);
+  const { data, refetch } = useDatasetModelsQuery(datasetName);
   const navigate = useNavigate();
 
   if (!data || !data?.res || data.status !== 200) {
@@ -67,7 +67,13 @@ export const DatasetModelIndex = () => {
             title="Create Model"
             modalContentStyle={{ maxWidth: "80%" }}
           >
-            <DatasetModelCreatePage cancelCallback={createModelModal.onClose} />
+            <DatasetModelCreatePage
+              cancelCallback={createModelModal.onClose}
+              submitCallback={() => {
+                createModelModal.onClose();
+                refetch();
+              }}
+            />
           </ChakraModal>
 
           <Button onClick={createModelModal.onOpen}>Create</Button>

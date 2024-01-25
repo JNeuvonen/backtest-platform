@@ -13,6 +13,8 @@ import { CreateTrainJobForm } from "../../../components/CreateTrainJobForm";
 import { MdPlayArrow } from "react-icons/md";
 import { MdOutlinePause } from "react-icons/md";
 import { BUTTON_VARIANTS } from "../../../theme";
+import { useMessageListener } from "../../../hooks/useMessageListener";
+import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
 
 interface RouteParams {
   datasetName: string;
@@ -30,9 +32,19 @@ const COLUMNS = [
 
 export const ModelTrainPage = () => {
   const { modelName } = usePathParams<RouteParams>();
-  const { data: modelData } = useModelQuery(modelName);
-  const { data: allTrainingMetadata } = useModelTrainMetadata(modelName);
+  const { data: modelData, refetch: refetchModelData } =
+    useModelQuery(modelName);
+  const { data: allTrainingMetadata, refetch: refetchAllTrainingMetadata } =
+    useModelTrainMetadata(modelName);
   const createTrainJobModal = useModal();
+
+  useMessageListener({
+    messageName: DOM_EVENT_CHANNELS.refetch_component,
+    messageCallback: () => {
+      refetchModelData();
+      refetchAllTrainingMetadata();
+    },
+  });
 
   if (!modelData || !allTrainingMetadata) {
     return (
