@@ -26,6 +26,7 @@ DATASET_UTILS_DB_PATH = "datasets_util.db"
 
 class DomEventChannels(Enum):
     REFETCH_ALL_DATASETS = "refetch_all_datasets"
+    REFETCH_COMPONENT = "refetch_component"
 
 
 class AppConstants:
