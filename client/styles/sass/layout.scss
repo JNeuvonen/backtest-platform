@@ -4,6 +4,7 @@ $side-nav-width: 110px;
 $inner-side-nav: 120px;
 
 .side-nav {
+  top: 0;
   background-color: $bg-primary;
   width: $side-nav-width;
   height: 100vh;
@@ -11,6 +12,7 @@ $inner-side-nav: 120px;
   padding: 8px;
   padding-right: 9px;
   border-right: 1px solid $bg-primary-shade-two;
+  z-index: 100;
 
   &__nav-items {
     margin-top: 30px;
@@ -37,6 +39,7 @@ $inner-side-nav: 120px;
     padding: 16px;
     background-color: #212121;
     min-height: 100vh;
+    z-index: 1;
   }
 
   &__page-side-nav {
@@ -47,6 +50,7 @@ $inner-side-nav: 120px;
     left: $side-nav-width;
     top: 0;
     width: $inner-side-nav;
+    z-index: 100;
     border-right: 1px solid $bg-primary-shade-two;
   }
 
