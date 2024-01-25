@@ -2,6 +2,7 @@ export const PATH_KEYS = {
   dataset: ":datasetName",
   column: ":columnName",
   model: ":modelName",
+  train: ":trainJobId",
 };
 
 export const CODE = {
@@ -22,11 +23,13 @@ export const PATHS = {
     model: {
       index: `/data/model/${PATH_KEYS.dataset}/`,
       info: `/data/model/${PATH_KEYS.dataset}/info/${PATH_KEYS.model}`,
+      train: `/data/model/${PATH_KEYS.dataset}/info/${PATH_KEYS.model}/${PATH_KEYS.train}`,
     },
   },
   simulate: {
     path: "/simulate",
   },
+  train: `/data/train-job/${PATH_KEYS.train}`,
 };
 
 export const LINKS = {
