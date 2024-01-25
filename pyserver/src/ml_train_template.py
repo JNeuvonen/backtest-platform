@@ -35,6 +35,12 @@ def train():
     train_job_state = TrainJobQuery.get_train_job({TRAIN_JOB_ID})
     last_log_time = time.time() - 5
 
+
+    logger.log(
+        f"OPEN_TRAINING_TOOLBAR",
+        logging.DEBUG,
+    )
+
     
     for epoch in range(1, {NUM_EPOCHS} + 1):
         model.train()
@@ -69,7 +75,7 @@ def train():
                 logging.INFO,
                 True,
                 True,
-                DomEventChannels.REFETCH_ALL_DATASETS.value,
+                DomEventChannels.REFETCH_COMPONENT.value,
             )
             last_log_time = time.time()
         else:
@@ -93,7 +99,7 @@ def train():
                 logging.INFO,
                 True,
                 True,
-                DomEventChannels.REFETCH_ALL_DATASETS.value,
+                DomEventChannels.REFETCH_COMPONENT.value,
             )
             canceled_by_user_request = True
             break
@@ -107,7 +113,7 @@ def train():
             logging.INFO,
             True,
             True,
-            DomEventChannels.REFETCH_ALL_DATASETS.value,
+            DomEventChannels.REFETCH_COMPONENT.value,
         )
         TrainJobQuery.set_training_status({TRAIN_JOB_ID}, False)
 train()
