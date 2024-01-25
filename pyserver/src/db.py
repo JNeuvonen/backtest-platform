@@ -1,7 +1,6 @@
 import logging
 import sqlite3
-import statistics
-import pickle
+import math
 from typing import List
 from fastapi import HTTPException
 
@@ -93,21 +92,69 @@ def get_table_row_count(cursor: sqlite3.Cursor, table_name: str) -> int:
     return cursor.fetchone()[0]
 
 
-def get_col_stats(cursor: sqlite3.Cursor, table_name: str, column_name: str):
-    cursor.execute(
-        f"SELECT {column_name} FROM {table_name} WHERE {column_name} IS NOT NULL"
-    )
-    values = [row[0] for row in cursor.fetchall()]
+def check_column_data_types(cursor, table_name, column_name):
+    try:
+        query = f"""
+        SELECT {column_name}, typeof({column_name}) 
+        FROM {table_name} 
+        WHERE {column_name} IS NOT NULL AND typeof({column_name}) NOT IN ('integer', 'real')
+        """
+        cursor.execute(query)
+        non_numeric_values = cursor.fetchall()
 
-    if not values:
+        if non_numeric_values:
+            print("Non-numeric values found:")
+            for value in non_numeric_values:
+                print(value)
+        else:
+            print("All values are numeric.")
+
+    except Exception as e:
+        print("An error occurred:", e)
+
+
+def get_col_stats(cursor: sqlite3.Cursor, table_name: str, column_name: str):
+    try:
+        cursor.execute(
+            f"SELECT {column_name} FROM {table_name} WHERE {column_name} IS NOT NULL"
+        )
+    except Exception as e:
+        print(f"Database Error: {e}")
         return None
 
+    numeric_values = [
+        row[0] for row in cursor.fetchall() if isinstance(row[0], (int, float))
+    ]
+
+    if not numeric_values:
+        return None
+
+    n = len(numeric_values)
+
+    sum_values = sum(x for x in numeric_values if not math.isinf(x))
+    mean = sum_values / n if n > 0 else None
+    sorted_values = sorted(x for x in numeric_values if not math.isinf(x))
+    n_sorted = len(sorted_values)
+    median = (
+        sorted_values[n_sorted // 2]
+        if n_sorted % 2 != 0
+        else (sorted_values[n_sorted // 2 - 1] + sorted_values[n_sorted // 2]) / 2
+        if n_sorted > 0
+        else None
+    )
+    variance = (
+        sum((x - mean) ** 2 for x in sorted_values) / (n_sorted - 1)
+        if n_sorted > 1
+        else None
+    )
+    std_dev = math.sqrt(variance) if variance is not None else None
+
     return {
-        "mean": statistics.mean(values),
-        "median": statistics.median(values),
-        "min": min(values),
-        "max": max(values),
-        "std_dev": statistics.stdev(values) if len(values) > 1 else 0,
+        "mean": mean,
+        "median": median,
+        "min": min(sorted_values) if sorted_values else None,
+        "max": max(sorted_values) if sorted_values else None,
+        "std_dev": std_dev,
     }
 
 
@@ -223,6 +270,15 @@ def get_column_from_dataset(table_name: str, column_name: str):
             return result[0] if result is not None else None
 
 
+def get_column_data_type(cursor, table_name, column_name):
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    columns_info = cursor.fetchall()
+    for col in columns_info:
+        if col[1] == column_name:
+            return col[2]  # Returns the data type of the column
+    return None
+
+
 def get_dataset_table(table_name: str):
     with LogExceptionContext():
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
@@ -230,11 +286,6 @@ def get_dataset_table(table_name: str):
             cursor.execute(f"PRAGMA table_info({table_name})")
             columns_info = cursor.fetchall()
             columns = [row[1] for row in columns_info]
-            numerical_columns = [
-                row[1]
-                for row in columns_info
-                if row[2] in ("INTEGER", "REAL", "NUMERIC")
-            ]
 
             head, tail = get_first_last_five_rows(cursor, table_name)
             null_counts = {
@@ -242,10 +293,6 @@ def get_dataset_table(table_name: str):
                 for column in columns
             }
             row_count = get_table_row_count(cursor, table_name)
-            numerical_stats = {
-                column: get_col_stats(cursor, table_name, column)
-                for column in numerical_columns
-            }
 
             return {
                 "columns": columns,
@@ -253,9 +300,20 @@ def get_dataset_table(table_name: str):
                 "tail": tail,
                 "null_counts": null_counts,
                 "row_count": row_count,
-                "stats_by_col": numerical_stats,
+                "stats_by_col": [],
                 "timeseries_col": DatasetQuery.get_timeseries_col(table_name),
             }
+
+
+def safe_float_convert(value):
+    try:
+        num = float(value)
+        if math.isfinite(num):
+            return num
+        else:
+            return None  # or some default value you prefer for non-finite numbers
+    except (ValueError, TypeError):
+        return None
 
 
 def exec_sql(db_path: str, sql_statement: str):
@@ -268,23 +326,35 @@ def exec_sql(db_path: str, sql_statement: str):
 
 
 def get_column_detailed_info(
-    table_name: str,
-    col_name: str,
-    timeseries_col_name: str | None,
+    table_name: str, col_name: str, timeseries_col_name: str | None
 ):
     with LogExceptionContext():
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
             cursor = conn.cursor()
-            cursor.execute(f"SELECT {col_name} from {table_name}")
-            rows = cursor.fetchall()
+
+            try:
+                cursor.execute(f"SELECT {col_name} from {table_name}")
+            except Exception as e:
+                print(f"Database Error: {e}")
+                return None
+
+            rows = [(safe_float_convert(row[0]),) for row in cursor.fetchall()]
             null_count = get_col_null_count(cursor, table_name, col_name)
             stats = get_col_stats(cursor, table_name, col_name)
 
             if timeseries_col_name is not None:
-                cursor.execute(f"SELECT {timeseries_col_name} from {table_name}")
-                kline_open_time = cursor.fetchall()
+                try:
+                    cursor.execute(f"SELECT {timeseries_col_name} from {table_name}")
+                except Exception as e:
+                    print(f"Database Error: {e}")
+                    return None
+
+                kline_open_time = [
+                    safe_float_convert(row[0]) for row in cursor.fetchall()
+                ]
             else:
                 kline_open_time = None
+
             return {
                 "rows": rows,
                 "null_count": null_count,
