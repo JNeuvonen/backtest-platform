@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { Button, Spinner } from "@chakra-ui/react";
@@ -9,6 +9,7 @@ import { RowItem, SmallTable } from "../../../components/tables/Small";
 import { useNavigate } from "react-router-dom";
 import { getModelInfoPath } from "../../../utils/navigate";
 import {
+  LAYOUT,
   PATHS,
   PATH_KEYS,
   formatValidationSplit,
@@ -20,6 +21,7 @@ import { ChakraTabs } from "../../../components/layout/Tabs";
 import { ModelTrainPage } from "./Train";
 import { ModelSimulatePage } from "./sim";
 import { displayValidationSplit } from "../../../utils/content";
+import { useAppContext } from "../../../context/App";
 
 const TAB_LABELS = ["Info", "Train", "Simulate"];
 const TABS = [
@@ -38,11 +40,17 @@ const ROOT_PATH = PATHS.data.model.index;
 export const DatasetModelIndex = () => {
   const { path } = usePath();
   const { defaultTab } = useQueryParams<QueryParams>();
+  const { setInnerSideNavWidth } = useAppContext();
 
   const createModelModal = useModal();
   const { datasetName } = usePathParams<{ datasetName: string }>();
   const { data, refetch } = useDatasetModelsQuery(datasetName);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setInnerSideNavWidth(LAYOUT.inner_side_nav_width_px);
+    return () => setInnerSideNavWidth(0);
+  }, []);
 
   if (!data || !data?.res || data.status !== 200) {
     return (
