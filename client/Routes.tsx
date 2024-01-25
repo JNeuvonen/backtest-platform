@@ -6,6 +6,7 @@ import { DataRouteIndex } from "./pages";
 import { DatasetIndex } from "./pages/data/dataset/index";
 import { DatasetModelIndex } from "./pages/data/model";
 import { ModelInfoPage } from "./pages/data/model/info";
+import { TrainJobPage } from "./pages/trainjob";
 
 export const AppRoutes = () => {
   return (
@@ -23,7 +24,7 @@ export const AppRoutes = () => {
         element={<DatasetColumnInfoPage />}
       />
 
-      <Route path={PATHS.train} element={<div>Train</div>} />
+      <Route path={PATHS.train} element={<TrainJobPage />} />
       <Route path={PATHS.simulate.path} element={<div>sim</div>} />
     </Routes>
   );
