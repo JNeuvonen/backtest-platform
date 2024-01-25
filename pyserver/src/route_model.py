@@ -16,6 +16,7 @@ class RoutePaths:
     CREATE_TRAIN_JOB = "/{model_name}/create-train"
     TRAIN_JOB_BY_ID = "/train/{id}"
     ALL_METADATA_BY_MODEL_NAME = "/{model_name}/trains"
+    STOP_TRAIN = "/{model_name}/trains/{train_job_id}"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
