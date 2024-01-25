@@ -42,6 +42,7 @@ export const LAYOUT = {
   side_nav_width_px: 110,
   layout_padding_px: 16,
   inner_side_nav_width_px: 120,
+  training_toolbar_height: 50,
 };
 
 export const TAURI_COMMANDS = {
@@ -74,10 +75,15 @@ export const GET_KLINE_OPTIONS = () => {
   return klineOptions;
 };
 
-export type BACKEND_MSG_SIGNALS = "OPEN_TRAINING_TOOLBAR";
+export type BACKEND_MSG_SIGNALS =
+  | "SIGNAL_OPEN_TRAINING_TOOLBAR"
+  | "SIGNAL_CLOSE_TOOLBAR"
+  | "SIGNAL_EPOCH_COMPLETE";
 
 export const SIGNAL_OPEN_TRAINING_TOOLBAR: BACKEND_MSG_SIGNALS =
-  "OPEN_TRAINING_TOOLBAR";
+  "SIGNAL_OPEN_TRAINING_TOOLBAR";
+export const SIGNAL_CLOSE_TOOLBAR: BACKEND_MSG_SIGNALS = "SIGNAL_CLOSE_TOOLBAR";
+export const SIGNAL_EPOCH_COMPLETE = "SIGNAL_EPOCH_COMPLETE";
 
 export const DOM_EVENT_CHANNELS = {
   refetch_all_datasets: "refetch_all_datasets",
