@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowseDatasetsPage } from "./Datasets";
 import { InnerSideNav } from "../components/layout/InnerSideNav";
 import { BsDatabase } from "react-icons/bs";
-import { PATHS, PATH_KEYS } from "../utils/constants";
+import { LAYOUT, PATHS, PATH_KEYS } from "../utils/constants";
 import usePath from "../hooks/usePath";
 import { usePathParams } from "../hooks/usePathParams";
 import { OutletContent } from "../components/layout/TwoNavsIndent";
+import { useAppContext } from "../context/App";
 
 const SIDE_NAV_ITEMS = [
   {
@@ -23,6 +24,12 @@ const SIDE_NAV_ITEMS = [
 export const DataRouteIndex = () => {
   const { path } = usePath();
   const { datasetName } = usePathParams<{ datasetName: string }>();
+  const { setInnerSideNavWidth } = useAppContext();
+
+  useEffect(() => {
+    setInnerSideNavWidth(LAYOUT.inner_side_nav_width_px);
+    return () => setInnerSideNavWidth(0);
+  }, []);
   return (
     <div>
       {path !== PATHS.data.index && (
