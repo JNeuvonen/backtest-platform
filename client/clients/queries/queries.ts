@@ -2,6 +2,7 @@ import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../../utils/query-keys";
 import {
   AllTrainingMetadata,
+  TrainDataDetailed,
   fetchAllTickers,
   fetchAllTrainingMetadataForModel,
   fetchColumn,
@@ -9,6 +10,7 @@ import {
   fetchDatasetModels,
   fetchDatasets,
   fetchModelByName,
+  fetchTrainjobDetailed,
 } from "../requests";
 import {
   BinanceTickersResponse,
@@ -79,5 +81,14 @@ export function useModelTrainMetadata(
   return useQuery<AllTrainingMetadata | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_all_model_training_metadata, modelName],
     queryFn: () => fetchAllTrainingMetadataForModel(modelName),
+  });
+}
+
+export function useTrainJobDetailed(
+  trainJobId: string
+): UseQueryResult<TrainDataDetailed | null, unknown> {
+  return useQuery<TrainDataDetailed | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_train_job_detailed, trainJobId],
+    queryFn: () => fetchTrainjobDetailed(trainJobId),
   });
 }

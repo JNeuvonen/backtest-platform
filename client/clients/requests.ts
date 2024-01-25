@@ -4,6 +4,8 @@ import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 import {
+  Dataset,
+  DatasetModel,
   EpochInfo,
   FetchModelByNameRes,
   TrainJob,
@@ -130,4 +132,23 @@ export async function stopTrain(trainJobId: string) {
     url: URLS.stop_train(trainJobId),
   });
   return res;
+}
+
+export type TrainDataDetailed = {
+  dataset: Dataset;
+  model: DatasetModel;
+  train_job: TrainJob;
+  epochs: EpochInfo[];
+};
+
+export async function fetchTrainjobDetailed(trainJobId: string) {
+  const res = await buildRequest({
+    method: "GET",
+    url: URLS.fetch_train_job_detailed(trainJobId),
+  });
+
+  if (res.res) {
+    return res.res["data"] as TrainDataDetailed;
+  }
+  return null;
 }
