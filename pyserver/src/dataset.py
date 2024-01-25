@@ -139,6 +139,7 @@ def load_data(
 ):
     df = read_dataset_to_mem(dataset_name)
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(how="any", inplace=True)
 
     scaler = None
