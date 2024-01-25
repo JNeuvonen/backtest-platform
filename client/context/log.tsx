@@ -7,7 +7,12 @@ import React, {
   useEffect,
 } from "react";
 import { URLS } from "../clients/endpoints";
-import { SIGNAL_OPEN_TRAINING_TOOLBAR } from "../utils/constants";
+import {
+  SIGNAL_CLOSE_TOOLBAR,
+  SIGNAL_EPOCH_COMPLETE,
+  SIGNAL_OPEN_TRAINING_TOOLBAR,
+} from "../utils/constants";
+import { useAppContext } from "./App";
 
 interface LogContextType {
   logs: LogMessage[];
@@ -48,6 +53,8 @@ export const dispatchDomEvent = ({
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
   const [logs, setLogs] = useState<LogMessage[]>([]);
   const toast = useToast();
+  const { openTrainingToolbar, closeToolbar, parseEpochMessage } =
+    useAppContext();
 
   const getToastStatus = (
     logLevel: number
@@ -65,6 +72,22 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     return "success";
   };
 
+  const checkForBackendSignals = (msg: string) => {
+    if (msg.includes(SIGNAL_EPOCH_COMPLETE)) {
+      parseEpochMessage(msg);
+      return;
+    }
+
+    switch (msg) {
+      case SIGNAL_OPEN_TRAINING_TOOLBAR:
+        openTrainingToolbar();
+        return;
+      case SIGNAL_CLOSE_TOOLBAR:
+        closeToolbar();
+        return;
+    }
+  };
+
   useEffect(() => {
     const timerId = setTimeout(() => {
       socket = new WebSocket(URLS.ws_streams_log);
@@ -72,8 +95,7 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
         if (event.data === "health") return;
         const data: LogMessage = JSON.parse(event.data);
 
-        if (data.msg === SIGNAL_OPEN_TRAINING_TOOLBAR) {
-        }
+        checkForBackendSignals(data.msg);
 
         if (data.dom_event) {
           dispatchDomEvent({ channel: data.dom_event, data: data.msg });
