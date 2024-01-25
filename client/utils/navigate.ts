@@ -22,6 +22,21 @@ export const getModelInfoPath = (datasetName: string, modelName: string) => {
     .replace(PATH_KEYS.model, modelName);
 };
 
+export const getTrainJobPath = (
+  datasetName: string,
+  modelName: string,
+  trainJobId: string
+) => {
+  return PATHS.data.model.train
+    .replace(PATH_KEYS.dataset, datasetName)
+    .replace(PATH_KEYS.model, modelName)
+    .replace(PATH_KEYS.train, trainJobId);
+};
+
+export const getTrainJobFromToolbar = (trainJobId: string) => {
+  return PATHS.train.replace(PATH_KEYS.train, trainJobId);
+};
+
 export const getQueryParamDefaultTab = (idx: number) => {
   return `?defaultTab=${idx}`;
 };
