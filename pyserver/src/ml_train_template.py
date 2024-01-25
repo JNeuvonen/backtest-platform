@@ -35,11 +35,12 @@ def train():
     logger = get_logger()
     train_job_state = TrainJobQuery.get_train_job({TRAIN_JOB_ID})
 
-
     logger.log(
         Signals.OPEN_TRAINING_TOOLBAR,
         logging.DEBUG,
     )
+
+    timer = time.time() - 1
     
     for epoch in range(1, {NUM_EPOCHS} + 1):
         model.train()
@@ -72,13 +73,29 @@ def train():
         epoch_duration = epoch_end_time - epoch_start_time
         epoch_duration_str = str(timedelta(seconds=int(epoch_duration)))
 
+        if timer < epoch_end_time - 1:
+            timer = time.time()
+            logger.log(
+                f"Finished training by user request",
+                logging.INFO,
+                False,
+                False,
+                DomEventChannels.REFETCH_COMPONENT.value,
+            )
+            logger.log(
+                Signals.OPEN_TRAINING_TOOLBAR,
+                logging.DEBUG,
+            )
+
+
         logger.log(
             Signals.EPOCH_COMPLETE.format(
                 EPOCHS_RAN=epoch, 
-                MAX_EPOCHS=int({NUM_EPOCHS}), 
+                MAX_EPOCHS={NUM_EPOCHS}, 
                 TRAIN_LOSS=train_loss_mean, 
                 VAL_LOSS=val_loss_mean, 
-                EPOCH_TIME=epoch_duration_str
+                EPOCH_TIME=epoch_duration_str,
+                TRAIN_JOB_ID={TRAIN_JOB_ID},
             ),
             logging.DEBUG,
         )
