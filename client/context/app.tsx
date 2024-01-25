@@ -25,6 +25,7 @@ interface AppContextType {
   valLosses: number[];
   epochTime: number;
   trainJobId: string;
+  setInnerSideNavWidth: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -37,7 +38,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [platform, setPlatform] = useState<Platform>("");
   const [contentIndentPx] = useState(LAYOUT.side_nav_width_px);
   const [layoutPaddingPx] = useState(LAYOUT.layout_padding_px);
-  const [innerSideNavWidth] = useState(LAYOUT.inner_side_nav_width_px);
+  const [innerSideNavWidth, setInnerSideNavWidth] = useState(0);
   const [toolbarMode, setToolbarMode] = useState<ToolbarMode>("");
   const [epochsRan, setEpochsRan] = useState(0);
   const [maximumEpochs, setMaximumEpochs] = useState(0);
@@ -112,6 +113,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         valLosses,
         epochTime,
         trainJobId,
+        setInnerSideNavWidth,
       }}
     >
       {children}
