@@ -1,13 +1,8 @@
 use std::{
     fs,
     path::Path,
-    process::{Child, Command, Stdio},
-    sync::{Arc, Mutex},
+    process::{Command, Stdio},
 };
-
-use tauri::{Manager, WindowEvent};
-
-static SERVER_PROCESS: Mutex<Option<Arc<Mutex<Child>>>> = Mutex::new(None);
 
 #[tauri::command]
 fn fetch_env(key: String) -> Option<String> {
