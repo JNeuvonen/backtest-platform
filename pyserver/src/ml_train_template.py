@@ -10,7 +10,8 @@ import pickle
 from config import append_app_data_path
 from orm import ModelWeightsQuery, TrainJobQuery
 from log import get_logger
-from constants import DomEventChannels
+from constants import DomEventChannels, Signals
+from datetime import timedelta
 
 {MODEL_CLASS}
 {CRITERION_AND_OPTIMIZER}
@@ -33,18 +34,17 @@ def train():
     save_every_epoch = {SAVE_MODEL_EVERY_EPOCH}
     logger = get_logger()
     train_job_state = TrainJobQuery.get_train_job({TRAIN_JOB_ID})
-    last_log_time = time.time() - 5
 
 
     logger.log(
-        f"OPEN_TRAINING_TOOLBAR",
+        Signals.OPEN_TRAINING_TOOLBAR,
         logging.DEBUG,
     )
-
     
     for epoch in range(1, {NUM_EPOCHS} + 1):
         model.train()
         total_train_loss = 0
+        epoch_start_time = time.time()
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
@@ -67,24 +67,21 @@ def train():
 
         train_loss_mean = total_train_loss / len(train_loader)
         val_loss_mean = total_val_loss / len(val_loader)
-        current_time = time.time()
 
-        if current_time - last_log_time >= 5:
-            logger.log(
-                f"Epoch [{epoch}/{NUM_EPOCHS}] complete, Train Loss: {train_loss_mean:.4f}, Val Loss: {val_loss_mean:.4f}",
-                logging.INFO,
-                True,
-                True,
-                DomEventChannels.REFETCH_COMPONENT.value,
-            )
-            last_log_time = time.time()
-        else:
-            #not displayed to the UI
-            logger.log(
-                f"Epoch [{epoch}/{NUM_EPOCHS}] complete, Train Loss: {train_loss_mean:.4f}, Val Loss: {val_loss_mean:.4f}",
-                logging.INFO,
-            )
+        epoch_end_time = time.time()
+        epoch_duration = epoch_end_time - epoch_start_time
+        epoch_duration_str = str(timedelta(seconds=int(epoch_duration)))
 
+        logger.log(
+            Signals.EPOCH_COMPLETE.format(
+                EPOCHS_RAN=epoch, 
+                MAX_EPOCHS=int({NUM_EPOCHS}), 
+                TRAIN_LOSS=train_loss_mean, 
+                VAL_LOSS=val_loss_mean, 
+                EPOCH_TIME=epoch_duration_str
+            ),
+            logging.DEBUG,
+        )
 
         if save_every_epoch is True:
             model_weights_dump = pickle.dumps(model.state_dict())
@@ -116,5 +113,11 @@ def train():
             DomEventChannels.REFETCH_COMPONENT.value,
         )
         TrainJobQuery.set_training_status({TRAIN_JOB_ID}, False)
+
+
+    logger.log(
+        Signals.CLOSE_TOOLBAR,
+        logging.DEBUG,
+    )
 train()
 """
