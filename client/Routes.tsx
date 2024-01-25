@@ -22,6 +22,8 @@ export const AppRoutes = () => {
         path={PATHS.data.dataset.column}
         element={<DatasetColumnInfoPage />}
       />
+
+      <Route path={PATHS.train} element={<div>Train</div>} />
       <Route path={PATHS.simulate.path} element={<div>sim</div>} />
     </Routes>
   );
