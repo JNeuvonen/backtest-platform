@@ -2,11 +2,19 @@ import React from "react";
 import { useAppContext } from "../context/App";
 import { LAYOUT } from "../utils/constants";
 import { COLOR_BG_PRIMARY, COLOR_BG_PRIMARY_SHADE_TWO } from "../utils/colors";
-import { Progress } from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
+import { BUTTON_VARIANTS } from "../theme";
+import { MdOutlinePause } from "react-icons/md";
 
 const TrainingToolbar = () => {
-  const { innerSideNavWidth, contentIndentPx, epochsRan, maximumEpochs } =
-    useAppContext();
+  const {
+    innerSideNavWidth,
+    contentIndentPx,
+    epochsRan,
+    maximumEpochs,
+    trainLosses,
+    valLosses,
+  } = useAppContext();
   return (
     <div
       style={{
@@ -26,9 +34,20 @@ const TrainingToolbar = () => {
       }}
     >
       <div>
-        Epoch: {epochsRan}/{maximumEpochs}
+        Epoch: {epochsRan}/{maximumEpochs}, Train loss:{" "}
+        {trainLosses[trainLosses.length - 1]}, Val loss:{" "}
+        {valLosses[valLosses.length - 1]}
       </div>
-      <div>test</div>
+      <div>
+        <Button
+          leftIcon={<MdOutlinePause />}
+          variant={BUTTON_VARIANTS.grey}
+          style={{ height: "28px" }}
+          key={4}
+        >
+          Pause
+        </Button>
+      </div>
     </div>
   );
 };
