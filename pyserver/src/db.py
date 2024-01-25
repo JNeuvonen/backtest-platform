@@ -2,10 +2,8 @@ import logging
 import sqlite3
 import math
 from typing import List
-from fastapi import HTTPException
 
 
-from config import append_app_data_path
 from constants import AppConstants, DomEventChannels, NullFillStrategy
 from dataset import (
     combine_datasets,
@@ -16,7 +14,6 @@ from dataset import (
 )
 from log import LogExceptionContext, get_logger
 from orm import DatasetQuery
-from request_types import BodyCreateTrain, BodyModelData
 
 
 def create_connection(db_file: str):
@@ -143,9 +140,7 @@ def get_col_stats(cursor: sqlite3.Cursor, table_name: str, column_name: str):
         else None
     )
     variance = (
-        sum((x - mean) ** 2 for x in sorted_values) / (n_sorted - 1)
-        if n_sorted > 1
-        else None
+        sum((x - mean) ** 2 for x in sorted_values) / n_sorted if n_sorted > 1 else None
     )
     std_dev = math.sqrt(variance) if variance is not None else None
 
