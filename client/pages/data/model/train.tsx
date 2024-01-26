@@ -15,6 +15,8 @@ import { MdOutlinePause } from "react-icons/md";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { useMessageListener } from "../../../hooks/useMessageListener";
 import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
+import { Link } from "react-router-dom";
+import { getTrainJobPath } from "../../../utils/navigate";
 
 interface RouteParams {
   datasetName: string;
@@ -31,7 +33,7 @@ const COLUMNS = [
 ];
 
 export const ModelTrainPage = () => {
-  const { modelName } = usePathParams<RouteParams>();
+  const { modelName, datasetName } = usePathParams<RouteParams>();
   const { data: modelData, refetch: refetchModelData } =
     useModelQuery(modelName);
   const { data: allTrainingMetadata, refetch: refetchAllTrainingMetadata } =
@@ -72,7 +74,16 @@ export const ModelTrainPage = () => {
         columns={COLUMNS}
         rows={allTrainingMetadata.map((item, i) => {
           return [
-            i + 1,
+            <Link
+              className="link-default"
+              to={getTrainJobPath(
+                datasetName,
+                modelName,
+                String(item.train.id)
+              )}
+            >
+              {i + 1}
+            </Link>,
             `${item.train.epochs_ran}/${item.train.num_epochs}`,
             <Checkbox
               isChecked={item.train.is_training}
