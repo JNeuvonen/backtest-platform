@@ -68,6 +68,7 @@ export interface Dataset {
   row_count: number;
   stats_by_col: StatsByCol;
   timeseries_col: string;
+  dataset_name: string;
 }
 
 export interface NullCounts {
