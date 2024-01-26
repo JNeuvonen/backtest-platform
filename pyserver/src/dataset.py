@@ -11,6 +11,7 @@ from constants import (
     ScalingStrategy,
 )
 from log import LogExceptionContext
+from orm import DatasetQuery
 
 
 def get_select_columns_str(columns: List[str]):
@@ -137,6 +138,7 @@ def load_data(
     train_val_split: List[int] | None = None,
     scaling_strategy: ScalingStrategy = ScalingStrategy.STANDARD,
 ):
+    timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
     df = read_dataset_to_mem(dataset_name)
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -159,6 +161,7 @@ def load_data(
         train_df = pd.concat([train_df_1, train_df_2])
 
         val_target_before_scaling = val_df[target_column]
+        val_kline_open_times = val_df[timeseries_col]
 
         if scaler is not None:
             train_df.loc[:, train_df.columns] = scaler.fit_transform(
@@ -176,7 +179,14 @@ def load_data(
         x_val = torch.Tensor(val_df.values.astype(np.float32))
         y_val = torch.Tensor(val_target.to_numpy().reshape(-1, 1).astype(np.float64))
 
-        return x_train, y_train, x_val, y_val, val_target_before_scaling
+        return (
+            x_train,
+            y_train,
+            x_val,
+            y_val,
+            val_target_before_scaling,
+            val_kline_open_times,
+        )
     else:
         if scaler is not None:
             df[df.columns] = scaler.fit_transform(df[df.columns])
@@ -184,4 +194,4 @@ def load_data(
         target = df.pop(target_column)
         x_train = torch.Tensor(df.values.astype(np.float32))
         y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
-        return x_train, y_train, None, None, None
+        return x_train, y_train, None, None, None, None
