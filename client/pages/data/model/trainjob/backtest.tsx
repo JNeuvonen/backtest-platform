@@ -70,6 +70,7 @@ export const BacktestModelPage = () => {
         initialValues={{
           selectedModel: null,
           tradingCriteria: getTradeCriteriaDefaultCode(),
+          priceColumn: null,
         }}
         onSubmit={handleSubmit}
       >
@@ -86,6 +87,21 @@ export const BacktestModelPage = () => {
               />
             )}
           </Field>
+
+          <div style={{ marginTop: "16px" }}>
+            <Field name="priceColumn">
+              {({ field }) => (
+                <ChakraSelect
+                  label="Select price column"
+                  options={generateSelectWeightsOptions(data.epochs)}
+                  onChange={(value) =>
+                    field.onChange({ target: { name: "priceColumn", value } })
+                  }
+                  containerStyle={{ width: "350px" }}
+                />
+              )}
+            </Field>
+          </div>
 
           <div style={{ marginTop: "16px" }}>
             <Field name="tradingCriteria">
