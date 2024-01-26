@@ -76,11 +76,39 @@ class TrainJob(Base):
     save_model_every_epoch = Column(Boolean)
     backtest_on_validation_set = Column(Boolean)
     validation_target_before_scale = Column(String)
+    validation_kline_open_times = Column(String)
 
     model_weights = relationship("ModelWeights", overlaps="train_job")
 
     def serialize_target_before_scale(self, val_targets_before_scale):
         self.validation_target_before_scale = json.dumps(val_targets_before_scale)
+
+    def serialize_kline_open_times(self, kline_open_times):
+        self.validation_kline_open_times = json.dumps(kline_open_times)
+
+
+class Backtest(Base):
+    __tablename__ = "backtest"
+    id = Column(Integer, primary_key=True)
+    enter_and_exit_trade_criteria = Column(String)
+    data = Column(String)
+    model_weights_id = Column(Integer, ForeignKey("model_weights.id"))
+
+    def serialize_data(self, backtest_data):
+        self.data = json.dumps(backtest_data)
+
+
+class Trade(Base):
+    __tablename__ = "trade"
+    id = Column(Integer, primary_key=True)
+    start_price = Column(Float)
+    end_price = Column(Float)
+    start_time = Column(Integer)
+    end_time = Column(Integer)
+    direction = Column(String)
+    net_result = Column(Float)
+    percent_result = Column(Float)
+    backtest_id = Column(Integer, ForeignKey("backtest.id"))
 
 
 def db_delete_all_data():
@@ -238,13 +266,18 @@ class TrainJobQuery:
                 return new_train_job.id
 
     @staticmethod
-    def set_val_target_before_scaling(train_job_id: int, data: List[float]):
+    def set_klines_and_price_before_scale(
+        train_job_id: int,
+        target_before_scaling: List[float],
+        kline_open_times: List[float],
+    ):
         with Session() as session:
             query = session.query(TrainJob)
             train_job: TrainJob = query.filter(
                 getattr(TrainJob, "id") == train_job_id
             ).first()
-            train_job.serialize_target_before_scale(data)
+            train_job.serialize_target_before_scale(target_before_scaling)
+            train_job.serialize_kline_open_times(kline_open_times)
             session.commit()
 
     @staticmethod
@@ -395,3 +428,95 @@ class ModelWeightsQuery:
             ]
 
             return weights_metadata_dict
+
+
+class BacktestQuery:
+    @staticmethod
+    def create_backtest_entry(enter_exit_criteria: str, data, model_weights_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                new_backtest = Backtest(
+                    enter_and_exit_trade_criteria=enter_exit_criteria,
+                    data=json.dumps(data),
+                    model_weights_id=model_weights_id,
+                )
+                session.add(new_backtest)
+                session.commit()
+                return new_backtest.id
+
+    @staticmethod
+    def fetch_backtest_by_id(backtest_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                backtest_data = (
+                    session.query(Backtest).filter(Backtest.id == backtest_id).first()
+                )
+                return backtest_data
+
+    @staticmethod
+    def update_backtest_data(backtest_id: int, new_data: dict):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Backtest).filter(Backtest.id == backtest_id).update(
+                    {"data": json.dumps(new_data)}
+                )
+                session.commit()
+
+
+class TradeQuery:
+    @staticmethod
+    def create_many_trade_entry(backtest_id: int, trade_data: List[dict]):
+        if len(trade_data) == 0:
+            return
+
+        with LogExceptionContext():
+            with Session() as session:
+                trades = [
+                    Trade(
+                        backtest_id=backtest_id,
+                        start_price=trade["open_price"],
+                        end_price=trade["end_price"],
+                        start_time=trade["start_time"],
+                        end_time=trade["end_time"],
+                        direction=trade["direction"],
+                        net_result=trade["net_result"],
+                        percent_result=trade["percent_result"],
+                    )
+                    for trade in trade_data
+                ]
+                session.bulk_save_objects(trades)
+                session.commit()
+
+    @staticmethod
+    def create_trade_entry(backtest_id: int, trade_data: dict):
+        with LogExceptionContext():
+            with Session() as session:
+                new_trade = Trade(
+                    backtest_id=backtest_id,
+                    start_price=trade_data["start_price"],
+                    end_price=trade_data["end_price"],
+                    start_time=trade_data["start_time"],
+                    end_time=trade_data["end_time"],
+                    direction=trade_data["direction"],
+                    net_result=trade_data["net_result"],
+                    percent_result=trade_data["percent_result"],
+                )
+                session.add(new_trade)
+                session.commit()
+                return new_trade.id
+
+    @staticmethod
+    def fetch_trades_by_backtest_id(backtest_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                trades = (
+                    session.query(Trade).filter(Trade.backtest_id == backtest_id).all()
+                )
+                return trades
+
+    @staticmethod
+    def update_trade(trade_id: int, updated_data: dict):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Trade).filter(Trade.id == trade_id).update(updated_data)
+                session.commit()
