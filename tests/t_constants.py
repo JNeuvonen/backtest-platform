@@ -180,6 +180,12 @@ class URL:
         )
 
     @classmethod
+    def create_backtest(cls, train_job_id: int):
+        return cls._models_route() + ModelRoutePaths.RUN_BACKTEST.format(
+            train_job_id=train_job_id
+        )
+
+    @classmethod
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):
         return (
             cls._datasets_route()
