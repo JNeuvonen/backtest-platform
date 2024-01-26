@@ -102,6 +102,14 @@ def create_train_job_body(
     }
 
 
+def create_backtest_body(price_column: str, epoch_nr: int, enter_trade_criteria: str):
+    return {
+        "price_column": price_column,
+        "epoch_nr": epoch_nr,
+        "enter_and_exit_criteria": enter_trade_criteria,
+    }
+
+
 class Fetch:
     @staticmethod
     def get_tables():
@@ -179,6 +187,11 @@ class Post:
     def create_train_job(model_name: str, body):
         with Req("post", URL.create_train_job(model_name), json=body) as res:
             return res.json()["id"]
+
+    @staticmethod
+    def create_backtest(train_job_id, body):
+        with Req("post", URL.create_backtest(train_job_id), json=body) as res:
+            return res
 
 
 class Put:
