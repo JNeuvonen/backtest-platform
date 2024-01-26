@@ -68,7 +68,7 @@ const getHyperParamsExample = () => {
 };
 
 interface Props {
-  cancelCallback: () => void;
+  cancelCallback?: () => void;
   submitCallback: () => void;
 }
 
