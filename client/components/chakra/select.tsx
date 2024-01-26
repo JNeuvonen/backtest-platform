@@ -1,7 +1,7 @@
 import React, { CSSProperties } from "react";
 import { FormControl, FormLabel, Select } from "@chakra-ui/react";
 
-interface SelectOption {
+export interface SelectOption {
   label: string;
   value: string;
 }
@@ -9,7 +9,7 @@ interface SelectOption {
 interface ChakraSelectProps {
   label: string;
   options: SelectOption[];
-  id: string;
+  id?: string;
   onChange?: (value: string) => void;
   containerStyle?: CSSProperties;
   defaultValueIndex?: number;
@@ -23,6 +23,7 @@ export const ChakraSelect: React.FC<ChakraSelectProps> = ({
   containerStyle = { maxWidth: "200px" },
   defaultValueIndex = 0,
 }) => {
+  if (options.length === 0) return null;
   return (
     <FormControl style={containerStyle}>
       <FormLabel htmlFor={id}>{label}</FormLabel>
