@@ -27,8 +27,8 @@ def get_select_columns_str(columns: List[str]):
     return columns_str
 
 
-def df_fill_nulls_on_dataframe(df: pd.DataFrame, strategy: NullFillStrategy):
-    if strategy is NullFillStrategy.NONE:
+def df_fill_nulls_on_dataframe(df: pd.DataFrame, strategy: NullFillStrategy | None):
+    if strategy is NullFillStrategy.NONE or strategy is None:
         return
     with LogExceptionContext():
         for col in df.columns:
@@ -133,7 +133,7 @@ def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str]):
 def load_data(
     dataset_name: str,
     target_column: str,
-    null_fill_strategy: NullFillStrategy,
+    null_fill_strategy: NullFillStrategy | None,
     train_val_split: List[int] | None = None,
     scaling_strategy: ScalingStrategy = ScalingStrategy.STANDARD,
 ):
@@ -158,6 +158,8 @@ def load_data(
         train_df_2 = df.iloc[split_end_index + 1 :]
         train_df = pd.concat([train_df_1, train_df_2])
 
+        val_target_before_scaling = val_df[target_column]
+
         if scaler is not None:
             train_df.loc[:, train_df.columns] = scaler.fit_transform(
                 train_df[train_df.columns]
@@ -174,7 +176,7 @@ def load_data(
         x_val = torch.Tensor(val_df.values.astype(np.float32))
         y_val = torch.Tensor(val_target.to_numpy().reshape(-1, 1).astype(np.float64))
 
-        return x_train, y_train, x_val, y_val
+        return x_train, y_train, x_val, y_val, val_target_before_scaling
     else:
         if scaler is not None:
             df[df.columns] = scaler.fit_transform(df[df.columns])
@@ -182,4 +184,4 @@ def load_data(
         target = df.pop(target_column)
         x_train = torch.Tensor(df.values.astype(np.float32))
         y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
-        return x_train, y_train, None, None
+        return x_train, y_train, None, None, None
