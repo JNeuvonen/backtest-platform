@@ -18,6 +18,7 @@ export const AppRoutes = () => {
           <Route path={PATHS.data.model.info} element={<ModelInfoPage />} />
         </Route>
         <Route path={PATHS.data.dataset.editor} element={<DatasetIndex />} />
+        <Route path={PATHS.data.model.train} element={<TrainJobPage />} />
       </Route>
       <Route
         path={PATHS.data.dataset.column}
