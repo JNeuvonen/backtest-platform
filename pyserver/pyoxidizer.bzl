@@ -260,7 +260,7 @@ def make_exe():
     source_path = VARS.get("PYSERVER_PATH")
     exe.add_python_resources(exe.read_package_root(
         path=source_path,
-        packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "code_gen", "orm", "ml_train_template", "backtest"],
+        packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "code_gen", "orm", "code_gen_template", "backtest"],
     ))
 
     # Discover Python files from a virtualenv and add them to our embedded
