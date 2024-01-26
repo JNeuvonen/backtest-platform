@@ -1,11 +1,12 @@
 import asyncio
 from fastapi import APIRouter, Response, status
+from backtest import run_backtest
 
 from context import HttpResponseContext
 from orm import ModelQuery, TrainJobQuery
 from code_gen import start_train_loop
 from config import is_testing
-from request_types import BodyCreateTrain
+from request_types import BodyCreateTrain, BodyRunBacktest
 
 
 router = APIRouter()
@@ -18,6 +19,7 @@ class RoutePaths:
     ALL_METADATA_BY_MODEL_NAME = "/{model_name}/trains"
     STOP_TRAIN = "/train/stop/{train_job_id}"
     TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID = "/train/{train_job_id}/detailed"
+    RUN_BACKTEST = "/backtest/{train_job_id}/run"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
@@ -73,3 +75,12 @@ async def route_stop_train(train_job_id: int):
 async def route_fetch_train_job_detailed(train_job_id: int):
     with HttpResponseContext():
         return {"data": TrainJobQuery.get_train_job_detailed(train_job_id)}
+
+
+@router.post(RoutePaths.RUN_BACKTEST)
+async def route_run_backtest(train_job_id: int, body: BodyRunBacktest):
+    with HttpResponseContext():
+        run_backtest(train_job_id, body)
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
