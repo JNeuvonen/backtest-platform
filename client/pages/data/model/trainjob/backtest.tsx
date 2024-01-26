@@ -1,16 +1,28 @@
 import React from "react";
-import { useTrainJobDetailed } from "../../../../clients/queries/queries";
+import {
+  useDatasetsQuery,
+  useTrainJobDetailed,
+} from "../../../../clients/queries/queries";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { Button, Spinner } from "@chakra-ui/react";
 import {
   ChakraSelect,
   SelectOption,
 } from "../../../../components/chakra/select";
-import { EpochInfo } from "../../../../clients/queries/response-types";
+import {
+  DatasetMetadata,
+  DatasetResponse,
+  EpochInfo,
+} from "../../../../clients/queries/response-types";
 import { roundNumberDropRemaining } from "../../../../utils/number";
 import { Formik, Form, Field } from "formik";
 import { CodeEditor } from "../../../../components/CodeEditor";
 import { CodeHelper } from "../../../../utils/constants";
+import {
+  OptionType,
+  SelectWithTextFilter,
+} from "../../../../components/SelectFilter";
+import { SingleValue } from "react-select";
 
 interface BacktestForm {
   selectedModel: string | null;
@@ -36,8 +48,10 @@ export const BacktestModelPage = () => {
     datasetName?: string;
   }>();
   const { data } = useTrainJobDetailed(trainJobId);
+  const { data: allDatasets } = useDatasetsQuery();
+  console.log(allDatasets);
 
-  if (!data) {
+  if (!data || !allDatasets || !allDatasets.res) {
     return (
       <div>
         <Spinner />
@@ -60,6 +74,24 @@ export const BacktestModelPage = () => {
     return ret;
   };
 
+  const generatePickColumnOptions = (tables: DatasetMetadata[]) => {
+    const ret = [] as OptionType[];
+
+    for (let i = 0; i < tables.length; i++) {
+      const item = tables[i];
+
+      const tableName = item.table_name;
+      for (let j = 0; j < item.columns.length; j++) {
+        const col = item.columns[j];
+        ret.push({
+          label: `${tableName}, ${col}`,
+          value: `${tableName}, ${col}`,
+        });
+      }
+    }
+    return ret;
+  };
+
   const handleSubmit = (values: BacktestForm) => {
     console.log(values);
   };
@@ -74,55 +106,58 @@ export const BacktestModelPage = () => {
         }}
         onSubmit={handleSubmit}
       >
-        <Form>
-          <Field name="selectedModel">
-            {({ field }) => (
-              <ChakraSelect
-                label="Select Model"
-                options={generateSelectWeightsOptions(data.epochs)}
-                onChange={(value) =>
-                  field.onChange({ target: { name: "selectedModel", value } })
-                }
-                containerStyle={{ width: "350px" }}
-              />
-            )}
-          </Field>
-
-          <div style={{ marginTop: "16px" }}>
-            <Field name="priceColumn">
+        {({ setFieldValue }) => (
+          <Form>
+            <Field name="selectedModel">
               {({ field }) => (
                 <ChakraSelect
-                  label="Select price column"
+                  label="Select Model"
                   options={generateSelectWeightsOptions(data.epochs)}
                   onChange={(value) =>
-                    field.onChange({ target: { name: "priceColumn", value } })
+                    field.onChange({ target: { name: "selectedModel", value } })
                   }
                   containerStyle={{ width: "350px" }}
                 />
               )}
             </Field>
-          </div>
 
-          <div style={{ marginTop: "16px" }}>
-            <Field name="tradingCriteria">
-              {({ field, form }) => {
-                return (
-                  <CodeEditor
-                    code={field.value}
-                    setCode={(newCode) =>
-                      form.setFieldValue("tradingCriteria", newCode)
-                    }
-                    label="Criteria for exit and enter"
-                    fontSize={14}
-                  />
-                );
-              }}
-            </Field>
-          </div>
-          <Button type="submit" marginTop={"16px"}>
-            Submit
-          </Button>
-        </Form>
+            <div style={{ marginTop: "16px" }}>
+              <Field
+                name="priceColumn"
+                as={SelectWithTextFilter}
+                options={generatePickColumnOptions(allDatasets.res.tables)}
+                onChange={(selectedOptions: SingleValue<OptionType>) =>
+                  setFieldValue("priceColumn", selectedOptions)
+                }
+                label="Select price column"
+                containerStyle={{ width: "350px" }}
+                isMulti={false}
+                closeMenuOnSelect={false}
+              />
+            </div>
+
+            <div style={{ marginTop: "16px" }}>
+              <Field name="tradingCriteria">
+                {({ field, form }) => {
+                  return (
+                    <CodeEditor
+                      code={field.value}
+                      setCode={(newCode) =>
+                        form.setFieldValue("tradingCriteria", newCode)
+                      }
+                      label="Criteria for exit and enter"
+                      fontSize={14}
+                    />
+                  );
+                }}
+              </Field>
+            </div>
+
+            <Button type="submit" marginTop={"16px"}>
+              Submit
+            </Button>
+          </Form>
+        )}
       </Formik>
     </div>
   );
