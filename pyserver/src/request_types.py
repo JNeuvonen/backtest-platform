@@ -36,3 +36,9 @@ class BodyCreateTrain(BaseModel):
     num_epochs: int
     save_model_after_every_epoch: bool
     backtest_on_val_set: bool
+
+
+class BodyRunBacktest(BaseModel):
+    price_column: str
+    epoch_nr: int
+    enter_and_exit_criteria: str
