@@ -59,15 +59,16 @@ def create_train_job_basic(num_epochs=NUM_EPOCHS_DEFAULT):
 
 
 def create_backtest():
-    enter_and_exit_criteria_code = """
-    def enter_trade_criteria(prediction):
-        return prediction > 1.01
-
-    def exit_trade_criteria(prediction):
-        return exit > 1.01
-    """
+    code_trade_criteria = PyCode()
+    code_trade_criteria.append_line("def get_enter_trade_criteria(prediction):")
+    code_trade_criteria.add_indent()
+    code_trade_criteria.append_line("return prediction > 1.01")
+    code_trade_criteria.reduce_indent()
+    code_trade_criteria.append_line("def get_exit_trade_criteria(prediction):")
+    code_trade_criteria.add_indent()
+    code_trade_criteria.append_line("return prediction < 0.99")
     return create_backtest_body(
         price_column="Open price",
-        epoch_nr=30,
-        enter_trade_criteria=enter_and_exit_criteria_code,
+        epoch_nr=3,
+        enter_trade_criteria=code_trade_criteria.get(),
     )
