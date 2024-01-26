@@ -16,6 +16,10 @@ export const getDatasetColumnInfoPath = (
     .replace(PATH_KEYS.column, columnName);
 };
 
+export const getDatasetInfoPagePath = (datasetName: string) => {
+  return PATHS.data.dataset.index.replace(PATH_KEYS.dataset, datasetName);
+};
+
 export const getModelInfoPath = (datasetName: string, modelName: string) => {
   return PATHS.data.model.info
     .replace(PATH_KEYS.dataset, datasetName)
