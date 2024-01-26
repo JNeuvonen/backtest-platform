@@ -1,6 +1,6 @@
 import pytest
 from pyserver.src.orm import TrainJobQuery
-from tests.fixtures import create_train_job_basic
+from tests.fixtures import NUM_EPOCHS_DEFAULT, create_backtest, create_train_job_basic
 from tests.t_constants import Constants, DatasetMetadata
 
 from tests.t_utils import Fetch, Post
@@ -49,5 +49,11 @@ def test_route_fetch_all_metadata_by_name(cleanup_db, create_train_job):
     all_metadata = Fetch.all_metadata_by_model_name(model["name"])
 
     assert len(all_metadata) == 2
-    assert len(all_metadata[0]["weights"]) == 100
-    assert len(all_metadata[1]["weights"]) == 100
+    assert len(all_metadata[0]["weights"]) == NUM_EPOCHS_DEFAULT
+    assert len(all_metadata[1]["weights"]) == NUM_EPOCHS_DEFAULT
+
+
+@pytest.mark.acceptance
+def test_route_create_backtest(cleanup_db, create_train_job):
+    train_job = create_train_job[2]
+    Post.create_backtest(train_job.id, create_backtest())
