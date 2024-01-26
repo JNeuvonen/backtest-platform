@@ -1,4 +1,5 @@
 from typing import List
+from pandas.io.parquet import json
 from sqlalchemy import (
     Float,
     LargeBinary,
@@ -44,7 +45,6 @@ class Model(Base):
     model_name = Column(String)
     optimizer_and_criterion_code = Column(String)
     validation_split = Column(String)
-
     dataset = relationship("Dataset")
 
 
@@ -58,6 +58,10 @@ class ModelWeights(Base):
     train_job = relationship("TrainJob")
     train_loss = Column(Float)
     val_loss = Column(Float)
+    val_predictions = Column(String)
+
+    def serialize_val_predictions(self, list_preds):
+        self.val_predictions = json.dumps(list_preds)
 
 
 class TrainJob(Base):
@@ -71,8 +75,12 @@ class TrainJob(Base):
     epochs_ran = Column(Integer, default=0, nullable=False)
     save_model_every_epoch = Column(Boolean)
     backtest_on_validation_set = Column(Boolean)
+    validation_target_before_scale = Column(String)
 
     model_weights = relationship("ModelWeights", overlaps="train_job")
+
+    def serialize_target_before_scale(self, val_targets_before_scale):
+        self.validation_target_before_scale = json.dumps(val_targets_before_scale)
 
 
 def db_delete_all_data():
@@ -230,6 +238,16 @@ class TrainJobQuery:
                 return new_train_job.id
 
     @staticmethod
+    def set_val_target_before_scaling(train_job_id: int, data: List[float]):
+        with Session() as session:
+            query = session.query(TrainJob)
+            train_job: TrainJob = query.filter(
+                getattr(TrainJob, "id") == train_job_id
+            ).first()
+            train_job.serialize_target_before_scale(data)
+            session.commit()
+
+    @staticmethod
     def set_curr_epoch(train_job_id: int, epoch: int):
         with Session() as session:
             session.query(TrainJob).filter(TrainJob.id == train_job_id).update(
@@ -321,6 +339,7 @@ class ModelWeightsQuery:
         weights: bytes,
         train_loss: float,
         val_loss: float,
+        val_predictions: List[float],
     ):
         with LogExceptionContext():
             with Session() as session:
@@ -331,6 +350,7 @@ class ModelWeightsQuery:
                     train_loss=train_loss,
                     val_loss=val_loss,
                 )
+                new_model_weight.serialize_val_predictions(val_predictions)
                 session.add(new_model_weight)
                 session.commit()
 
@@ -357,6 +377,7 @@ class ModelWeightsQuery:
                     ModelWeights.epoch,
                     ModelWeights.train_loss,
                     ModelWeights.val_loss,
+                    ModelWeights.val_predictions,
                 )
                 .filter(ModelWeights.train_job_id == train_job_id)
                 .all()
@@ -368,6 +389,7 @@ class ModelWeightsQuery:
                     "epoch": weight.epoch,
                     "train_loss": weight.train_loss,
                     "val_loss": weight.val_loss,
+                    "val_predictions": weight.val_predictions,
                 }
                 for weight in weights_metadata
             ]
