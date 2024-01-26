@@ -19,16 +19,11 @@ import { ModelInfoPage } from "./info";
 import useQueryParams from "../../../hooks/useQueryParams";
 import { ChakraTabs } from "../../../components/layout/Tabs";
 import { ModelTrainPage } from "./Train";
-import { ModelSimulatePage } from "./sim";
 import { displayValidationSplit } from "../../../utils/content";
 import { useAppContext } from "../../../context/App";
 
-const TAB_LABELS = ["Info", "Train", "Simulate"];
-const TABS = [
-  <ModelInfoPage key={"1"} />,
-  <ModelTrainPage key={"2"} />,
-  <ModelSimulatePage key={"3"} />,
-];
+const TAB_LABELS = ["Info", "Train"];
+const TABS = [<ModelInfoPage key={"1"} />, <ModelTrainPage key={"2"} />];
 
 interface QueryParams {
   defaultTab: string | undefined;
