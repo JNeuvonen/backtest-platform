@@ -1,4 +1,4 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import {
   LineChart,
   Line,
@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 
 interface TwoLineChartProps {
@@ -14,8 +15,8 @@ interface TwoLineChartProps {
   xKey: string;
   line1Key: string;
   line2Key: string;
-  width: number;
   height: number;
+  containerStyles?: CSSProperties;
 }
 
 export const ShareYAxisTwoLineChart = ({
@@ -23,16 +24,17 @@ export const ShareYAxisTwoLineChart = ({
   xKey,
   line1Key,
   line2Key,
-  width,
   height,
 }: TwoLineChartProps) => (
-  <LineChart width={width} height={height} data={data}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey={xKey} />
-    <YAxis />
-    <Tooltip />
-    <Legend />
-    <Line type="monotone" dataKey={line1Key} stroke="#8884d8" />
-    <Line type="monotone" dataKey={line2Key} stroke="#82ca9d" />
-  </LineChart>
+  <ResponsiveContainer width={"100%"} height={height}>
+    <LineChart data={data}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey={xKey} />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      <Line type="monotone" dataKey={line1Key} stroke="green" />
+      <Line type="monotone" dataKey={line2Key} stroke="red" />
+    </LineChart>
+  </ResponsiveContainer>
 );
