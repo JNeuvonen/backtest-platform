@@ -1,4 +1,4 @@
-from tests.t_utils import create_train_job_body
+from tests.t_utils import create_backtest_body, create_train_job_body
 
 from tests.t_conf import SERVER_SOURCE_DIR
 from code_gen import PyCode
@@ -34,7 +34,10 @@ def criterion_basic():
     return helper.get()
 
 
-def create_train_job_basic(num_epochs=100):
+NUM_EPOCHS_DEFAULT = 10
+
+
+def create_train_job_basic(num_epochs=NUM_EPOCHS_DEFAULT):
     enter_trade_criteria = PyCode()
     enter_trade_criteria.append_line("def get_enter_trade_criteria(prediction):")
     enter_trade_criteria.add_indent()
@@ -53,3 +56,18 @@ def create_train_job_basic(num_epochs=100):
         exit_trade_criteria=exit_trade_criteria.get(),
     )
     return body
+
+
+def create_backtest():
+    enter_and_exit_criteria_code = """
+    def enter_trade_criteria(prediction):
+        return prediction > 1.01
+
+    def exit_trade_criteria(prediction):
+        return exit > 1.01
+    """
+    return create_backtest_body(
+        price_column="Open price",
+        epoch_nr=30,
+        enter_trade_criteria=enter_and_exit_criteria_code,
+    )
