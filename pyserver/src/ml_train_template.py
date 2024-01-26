@@ -18,12 +18,14 @@ from datetime import timedelta
 
 def train():
 
-    x_train, y_train, x_val, y_val = load_data({DATASET_NAME}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT})
+    x_train, y_train, x_val, y_val, y_val_before_scale = load_data({DATASET_NAME}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT})
+
+    TrainJobQuery.set_val_target_before_scaling({TRAIN_JOB_ID}, y_val_before_scale.values.tolist())
 
     train_dataset = TensorDataset(x_train, y_train)
     val_dataset = TensorDataset(x_val, y_val)
     train_loader = DataLoader(train_dataset, batch_size={BATCH_SIZE}, shuffle={SHUFFLE})
-    val_loader = DataLoader(val_dataset, batch_size={BATCH_SIZE}, shuffle=False)
+    val_loader = DataLoader(val_dataset)
 
     model = Model(x_train.shape[1])
     criterion, optimizer = get_criterion_and_optimizer(model)
@@ -60,10 +62,12 @@ def train():
 
         model.eval()
         total_val_loss = 0
+        validation_predictions = []
         with torch.no_grad():
             for val_inputs, val_labels in val_loader:
                 val_inputs, val_labels = val_inputs.to(device), val_labels.to(device)
                 val_outputs = model(val_inputs)
+                validation_predictions.extend(val_outputs.cpu().numpy().tolist())
                 total_val_loss += criterion(val_outputs, val_labels).item()
 
         train_loss_mean = total_train_loss / len(train_loader)
@@ -102,7 +106,7 @@ def train():
 
         if save_every_epoch is True:
             model_weights_dump = pickle.dumps(model.state_dict())
-            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean)
+            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean, validation_predictions)
 
         #check for cancel
         is_train_job_active = TrainJobQuery.is_job_training({TRAIN_JOB_ID})
