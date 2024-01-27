@@ -118,6 +118,15 @@ def test_route_update_timeseries_col(cleanup_db, fixt_btc_small_1h: DatasetMetad
 
 
 @pytest.mark.acceptance
+def test_route_update_target_col(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    _ = cleanup_db
+    Put.update_target_col(fixt_btc_small_1h.name, BinanceCols.LOW_PRICE)
+    dataset = Fetch.get_dataset_by_name(fixt_btc_small_1h.name)
+    target_col = dataset["target_col"]
+    assert target_col == BinanceCols.LOW_PRICE
+
+
+@pytest.mark.acceptance
 def test_route_dataset_add_cols(cleanup_db, fixt_add_all_downloaded_datasets):
     BTC_1MO = BinanceData.BTCUSDT_1MO
     AAVE_1MO = BinanceData.AAVEUSDT_1MO
