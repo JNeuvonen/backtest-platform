@@ -41,8 +41,11 @@ export const buildRequest = async ({
       ...options,
       method,
     });
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType?.includes("application/json");
+    const data = isJson ? await response.json() : await response.text();
     const statusCode = response.status;
-    return { res: await response.json(), status: statusCode };
+    return { res: data, status: statusCode };
   } catch (error) {
     return error;
   }
