@@ -1,8 +1,9 @@
-import threading
 from code_gen_template import TRAIN_TEMPLATE
 from config import is_testing
 from log import LogExceptionContext
-from orm import DatasetQuery, Model, TrainJob, ModelWeightsQuery
+from query_dataset import DatasetQuery
+from query_model import Model
+from query_trainjob import TrainJob
 from utils import convert_val_split_str_to_arr, global_symbols, run_in_thread
 
 
