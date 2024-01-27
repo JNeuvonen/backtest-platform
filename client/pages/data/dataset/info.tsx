@@ -26,6 +26,8 @@ import { usePathParams } from "../../../hooks/usePathParams";
 import { ConfirmModal } from "../../../components/form/confirm";
 import { execPythonOnDataset } from "../../../clients/requests";
 import { getValueById } from "../../../utils/dom";
+import { ChakraPopover } from "../../../components/chakra/popover";
+import { SelectWithTextFilter } from "../../../components/SelectFilter";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -55,6 +57,7 @@ export const DatasetInfoPage = () => {
   const columnModal = useModal();
   const runPythonModal = useModal();
   const confirmRunPythonModal = useModal();
+  const setTargetColumnModal = useModal();
 
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
 
@@ -134,6 +137,17 @@ export const DatasetInfoPage = () => {
     }
   };
 
+  const setTargetColumn = async () => {};
+
+  const getTargetColumnOptions = () => {
+    return dataset.columns.map((item) => {
+      return {
+        label: item,
+        value: item,
+      };
+    });
+  };
+
   const columns = dataset.columns;
 
   return (
@@ -203,6 +217,36 @@ export const DatasetInfoPage = () => {
           />
         </Box>
         <Box display={"flex"} gap={"16px"}>
+          <Button
+            variant={BUTTON_VARIANTS.grey}
+            onClick={runPythonModal.modalOpen}
+          >
+            Create copy
+          </Button>
+          <Button
+            variant={BUTTON_VARIANTS.grey}
+            onClick={runPythonModal.modalOpen}
+          >
+            Set candle open time column
+          </Button>
+          <ChakraPopover
+            isOpen={setTargetColumnModal.isOpen}
+            setOpen={setTargetColumnModal.onOpen}
+            onClose={setTargetColumnModal.onClose}
+            headerText="Set target column"
+            body={
+              <>
+                <SelectWithTextFilter
+                  options={getTargetColumnOptions()}
+                  isMulti={false}
+                  placeholder="Select column"
+                  onChange={(selectedOption) => {}}
+                />
+              </>
+            }
+          >
+            <Button variant={BUTTON_VARIANTS.grey}>Set target column</Button>
+          </ChakraPopover>
           <Button
             variant={BUTTON_VARIANTS.grey}
             leftIcon={<PythonIcon width={24} height={24} />}
