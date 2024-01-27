@@ -4,7 +4,7 @@ import asyncio
 from typing import List
 from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrategy
 from context import HttpResponseContext
-from fastapi import APIRouter, HTTPException, Query, UploadFile
+from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, status
 from pydantic import BaseModel
 from dataset import df_fill_nulls_on_all_cols
 from db import (
@@ -212,7 +212,10 @@ async def route_fetch_models(dataset_name: str):
         return {"data": models}
 
 
-@router.post(RoutePaths.SET_TARGET_COLUMN)
+@router.put(RoutePaths.SET_TARGET_COLUMN)
 async def route_post_target_col(dataset_name: str, target_column: str):
     with HttpResponseContext():
-        pass
+        DatasetQuery.update_target_column(dataset_name, target_column)
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
