@@ -23,20 +23,22 @@ import {
   SelectWithTextFilter,
 } from "../../../../components/SelectFilter";
 import { SingleValue } from "react-select";
+import { runBacktest } from "../../../../clients/requests";
 
-interface BacktestForm {
+export interface BacktestForm {
   selectedModel: string | null;
+  enterAndExitCriteria: string;
 }
 
 const getTradeCriteriaDefaultCode = () => {
   const code = new CodeHelper();
-  code.appendLine("def enter_trade_criteria(prediction):");
+  code.appendLine("def get_enter_trade_criteria(prediction):");
   code.addIndent();
   code.appendLine("return prediction > 1.01");
   code.appendLine("");
   code.reduceIndent();
 
-  code.appendLine("def exit_trade_criteria(prediction):");
+  code.appendLine("def get_exit_trade_criteria(prediction):");
   code.addIndent();
   code.appendLine("return prediction < 0.99");
   return code.get();
@@ -49,7 +51,6 @@ export const BacktestModelPage = () => {
   }>();
   const { data } = useTrainJobDetailed(trainJobId);
   const { data: allDatasets } = useDatasetsQuery();
-  console.log(allDatasets);
 
   if (!data || !allDatasets || !allDatasets.res) {
     return (
@@ -74,26 +75,19 @@ export const BacktestModelPage = () => {
     return ret;
   };
 
-  const generatePickColumnOptions = (tables: DatasetMetadata[]) => {
-    const ret = [] as OptionType[];
+  const handleSubmit = async (values: BacktestForm) => {
+    const payload = {
+      epoch_nr: Number(values.selectedModel),
+      enter_and_exit_criteria: values.enterAndExitCriteria,
+    };
 
-    for (let i = 0; i < tables.length; i++) {
-      const item = tables[i];
+    const res = await runBacktest(trainJobId, payload);
 
-      const tableName = item.table_name;
-      for (let j = 0; j < item.columns.length; j++) {
-        const col = item.columns[j];
-        ret.push({
-          label: `${tableName}, ${col}`,
-          value: `${tableName}, ${col}`,
-        });
-      }
+    if (res.status === 200) {
+      console.log(res);
+    } else {
+      console.log("fail: ", res);
     }
-    return ret;
-  };
-
-  const handleSubmit = (values: BacktestForm) => {
-    console.log(values);
   };
 
   return (
@@ -101,12 +95,11 @@ export const BacktestModelPage = () => {
       <Formik
         initialValues={{
           selectedModel: null,
-          tradingCriteria: getTradeCriteriaDefaultCode(),
-          priceColumn: null,
+          enterAndExitCriteria: getTradeCriteriaDefaultCode(),
         }}
         onSubmit={handleSubmit}
       >
-        {({ setFieldValue }) => (
+        {() => (
           <Form>
             <Field name="selectedModel">
               {({ field }) => (
@@ -122,28 +115,13 @@ export const BacktestModelPage = () => {
             </Field>
 
             <div style={{ marginTop: "16px" }}>
-              <Field
-                name="priceColumn"
-                as={SelectWithTextFilter}
-                options={generatePickColumnOptions(allDatasets.res.tables)}
-                onChange={(selectedOptions: SingleValue<OptionType>) =>
-                  setFieldValue("priceColumn", selectedOptions)
-                }
-                label="Select price column"
-                containerStyle={{ width: "350px" }}
-                isMulti={false}
-                closeMenuOnSelect={false}
-              />
-            </div>
-
-            <div style={{ marginTop: "16px" }}>
-              <Field name="tradingCriteria">
+              <Field name="enterAndExitCriteria">
                 {({ field, form }) => {
                   return (
                     <CodeEditor
                       code={field.value}
                       setCode={(newCode) =>
-                        form.setFieldValue("tradingCriteria", newCode)
+                        form.setFieldValue("enterAndExitCriteria", newCode)
                       }
                       label="Criteria for exit and enter"
                       fontSize={14}
@@ -154,7 +132,7 @@ export const BacktestModelPage = () => {
             </div>
 
             <Button type="submit" marginTop={"16px"}>
-              Submit
+              Run backtest
             </Button>
           </Form>
         )}
