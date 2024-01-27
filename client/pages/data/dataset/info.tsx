@@ -24,10 +24,17 @@ import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { createPythonCode } from "../../../utils/str";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { ConfirmModal } from "../../../components/form/confirm";
-import { execPythonOnDataset } from "../../../clients/requests";
+import {
+  execPythonOnDataset,
+  setTargetColumnReq,
+} from "../../../clients/requests";
 import { getValueById } from "../../../utils/dom";
 import { ChakraPopover } from "../../../components/chakra/popover";
-import { SelectWithTextFilter } from "../../../components/SelectFilter";
+import {
+  OptionType,
+  SelectWithTextFilter,
+} from "../../../components/SelectFilter";
+import { MultiValue, SingleValue } from "react-select";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -137,9 +144,21 @@ export const DatasetInfoPage = () => {
     }
   };
 
-  const setTargetColumn = async () => {};
+  const setTargetColumn = async (targetCol: string) => {
+    const res = await setTargetColumnReq(datasetName, targetCol);
+    if (res.status === 200) {
+      toast({
+        title: "Changed target column",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      setTargetColumnModal.onClose();
+      refetch();
+    }
+  };
 
-  const getTargetColumnOptions = () => {
+  const getColumnOptions = () => {
     return dataset.columns.map((item) => {
       return {
         label: item,
@@ -237,10 +256,17 @@ export const DatasetInfoPage = () => {
             body={
               <>
                 <SelectWithTextFilter
-                  options={getTargetColumnOptions()}
+                  options={getColumnOptions()}
                   isMulti={false}
-                  placeholder="Select column"
-                  onChange={(selectedOption) => {}}
+                  placeholder={data.res.dataset.target_col}
+                  onChange={(
+                    selectedOptions:
+                      | SingleValue<OptionType>
+                      | MultiValue<OptionType>
+                  ) => {
+                    const option = selectedOptions as SingleValue<OptionType>;
+                    if (option) setTargetColumn(option.value as string);
+                  }}
                 />
               </>
             }
