@@ -9,7 +9,7 @@ class Dataset(Base):
     id = Column(Integer, primary_key=True)
     dataset_name = Column(String)
     timeseries_column = Column(String)
-    price_column = Column(String)
+    target_column = Column(String)
 
 
 class DatasetQuery:
@@ -87,3 +87,13 @@ class DatasetQuery:
                     .scalar()
                 )
                 return result
+
+    @staticmethod
+    def get_target_col(dataset_name: str):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Dataset.target_column)
+                    .filter(Dataset.dataset_name == dataset_name)
+                    .scalar()
+                )
