@@ -8,7 +8,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from dataset import load_data
 import pickle
 from config import append_app_data_path
-from orm import ModelWeightsQuery, TrainJobQuery
+from query_weights import ModelWeightsQuery 
+from query_trainjob import TrainJobQuery
 from log import get_logger
 from constants import DomEventChannels, Signals
 from datetime import timedelta
@@ -42,7 +43,7 @@ def train():
         logging.DEBUG,
     )
 
-    timer = time.time() - 1
+    timer = time.time() - 0
     
     for epoch in range(1, {NUM_EPOCHS} + 1):
         model.train()
