@@ -69,6 +69,7 @@ export interface Dataset {
   stats_by_col: StatsByCol;
   timeseries_col: string;
   dataset_name: string;
+  target_col: string;
 }
 
 export interface NullCounts {
