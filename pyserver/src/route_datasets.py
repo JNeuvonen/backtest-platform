@@ -18,7 +18,8 @@ from db import (
     rename_column,
     rename_table,
 )
-from orm import DatasetQuery, ModelQuery
+from query_dataset import DatasetQuery
+from query_model import ModelQuery
 from request_types import (
     BodyExecPython,
     BodyModelData,
@@ -52,6 +53,7 @@ class RoutePaths:
     UPLOAD_TIMESERIES_DATA = "/upload-timeseries-dataset"
     CREATE_MODEL = "/{dataset_name}/models/create"
     FETCH_MODELS = "/{dataset_name}/models/"
+    SET_TARGET_COLUMN = "/{dataset_name}/target-column"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -208,3 +210,9 @@ async def route_fetch_models(dataset_name: str):
             )
         models = ModelQuery.fetch_models_by_dataset_id(dataset_id)
         return {"data": models}
+
+
+@router.post(RoutePaths.SET_TARGET_COLUMN)
+async def route_post_target_col(dataset_name: str, target_column: str):
+    with HttpResponseContext():
+        pass
