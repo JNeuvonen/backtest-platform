@@ -73,7 +73,7 @@ async def start_train_loop(
         replacements = {
             "{MODEL_CLASS}": model.model_code,
             "{DATASET_NAME}": f"'{dataset.dataset_name}'",
-            "{TARGET_COL}": f"'{model.target_col}'",
+            "{TARGET_COL}": f"'{dataset.target_column}'",
             "{NULL_FILL_STRATEGY}": model.null_fill_strategy,
             "{BATCH_SIZE}": batch_size,
             "{SHUFFLE}": shuffle,

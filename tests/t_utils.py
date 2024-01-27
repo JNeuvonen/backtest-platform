@@ -47,7 +47,9 @@ def t_add_binance_dataset_to_db(dataset: DatasetMetadata):
     df = read_csv_to_df(dataset.path)
     df.columns = BINANCE_DATA_COLS
     add_to_datasets_db(df, dataset.name)
-    DatasetQuery.create_dataset_entry(dataset.name, dataset.timeseries_col)
+    DatasetQuery.create_dataset_entry(
+        dataset.name, dataset.timeseries_col, dataset.target_col
+    )
 
 
 def t_generate_big_dataframe(data: DatasetMetadata, target_size_bytes: int):
@@ -68,7 +70,6 @@ def t_generate_big_dataframe(data: DatasetMetadata, target_size_bytes: int):
 
 def create_model_body(
     name: str,
-    target_col: str,
     drop_cols: List[str],
     null_fill_strategy,
     model: str,
@@ -77,7 +78,6 @@ def create_model_body(
 ):
     return {
         "name": name,
-        "target_col": target_col,
         "drop_cols": drop_cols,
         "null_fill_strategy": null_fill_strategy,
         "model": model,

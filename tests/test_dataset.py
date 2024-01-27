@@ -290,7 +290,6 @@ def test_route_exec_python_on_dataset(cleanup_db, fixt_btc_small_1h: DatasetMeta
 def test_route_create_model(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     body = create_model_body(
         name="Example model",
-        target_col=BinanceCols.OPEN_PRICE,
         drop_cols=[],
         null_fill_strategy=NullFillStrategy.CLOSEST.value,
         model=linear_model_basic(),
@@ -305,7 +304,6 @@ def test_route_create_model(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
 def test_route_fetch_models(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     body = create_model_body(
         name="Example model",
-        target_col=BinanceCols.OPEN_PRICE,
         drop_cols=[],
         null_fill_strategy=NullFillStrategy.CLOSEST.value,
         model=linear_model_basic(),

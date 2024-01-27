@@ -6,7 +6,6 @@ from constants import NullFillStrategy
 
 class BodyModelData(BaseModel):
     name: str
-    target_col: str
     drop_cols: List[str]
     null_fill_strategy: NullFillStrategy
     model: str

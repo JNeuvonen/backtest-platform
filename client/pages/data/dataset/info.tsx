@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDatasetQuery } from "../../../clients/queries/queries";
-import { Box, Button, Spinner, useToast } from "@chakra-ui/react";
+import { Box, Button, Select, Spinner, useToast } from "@chakra-ui/react";
 import { GenericTable } from "../../../components/tables/GenericTable";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
@@ -36,6 +36,7 @@ import {
 } from "../../../components/SelectFilter";
 import { MultiValue, SingleValue } from "react-select";
 import { CreateCopyPopover } from "../../../components/CreateCopyPopover";
+import { SelectTargetColumnPopover } from "../../../components/SelectTargetColumnPopover";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -315,21 +316,11 @@ export const DatasetInfoPage = () => {
             onClose={targetColumnPopover.onClose}
             headerText="Set target column"
             body={
-              <>
-                <SelectWithTextFilter
-                  options={getColumnOptions()}
-                  isMulti={false}
-                  placeholder={data.res.dataset.target_col}
-                  onChange={(
-                    selectedOptions:
-                      | SingleValue<OptionType>
-                      | MultiValue<OptionType>
-                  ) => {
-                    const option = selectedOptions as SingleValue<OptionType>;
-                    if (option) setTargetColumn(option.value as string);
-                  }}
-                />
-              </>
+              <SelectTargetColumnPopover
+                options={getColumnOptions()}
+                placeholder={data.res.dataset.target_col}
+                selectCallback={setTargetColumn}
+              />
             }
           >
             <Button variant={BUTTON_VARIANTS.grey}>Set target column</Button>

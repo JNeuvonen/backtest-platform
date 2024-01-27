@@ -2,6 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from log import LogExceptionContext
 from orm import Base, Session
+from query_dataset import Dataset
 from request_types import BodyModelData
 
 
@@ -22,12 +23,12 @@ class Model(Base):
 
 class ModelQuery:
     @staticmethod
-    def create_model_entry(dataset_id: int, model_data: BodyModelData):
+    def create_model_entry(dataset: Dataset, model_data: BodyModelData):
         with LogExceptionContext():
             with Session() as session:
                 new_model = Model(
-                    dataset_id=dataset_id,
-                    target_col=model_data.target_col,
+                    dataset_id=dataset.id,
+                    target_col=dataset.target_column,
                     drop_cols=",".join(model_data.drop_cols),
                     null_fill_strategy=model_data.null_fill_strategy.value,
                     model_code=model_data.model,

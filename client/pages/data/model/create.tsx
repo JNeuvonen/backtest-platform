@@ -7,7 +7,15 @@ import {
   SelectWithTextFilter,
 } from "../../../components/SelectFilter";
 import { SingleValue } from "react-select";
-import { Button, FormControl, Spinner, useToast } from "@chakra-ui/react";
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Spinner,
+  useToast,
+  Text,
+  Badge,
+} from "@chakra-ui/react";
 import { ChakraSelect } from "../../../components/chakra/select";
 import {
   CodeHelper,
@@ -19,7 +27,7 @@ import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { ValidationSplitSlider } from "../../../components/ValidationSplitSlider";
 import { ChakraCheckbox } from "../../../components/chakra/checkbox";
-import { BUTTON_VARIANTS } from "../../../theme";
+import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../../../theme";
 import {
   CheckboxMulti,
   CheckboxValue,
@@ -29,6 +37,7 @@ import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
 import { createModel } from "../../../clients/requests";
 import { nullFillStratToInt } from "../../../utils/navigate";
+import { WithLabel } from "../../../components/form/WithLabel";
 
 type PathParams = {
   datasetName: string;
@@ -159,23 +168,10 @@ export const DatasetModelCreatePage = ({
 
   return (
     <div>
-      <ToolBarStyle>
-        <SelectWithTextFilter
-          containerStyle={{ width: "300px" }}
-          label="Target column"
-          options={data.res.dataset.columns.map((col) => {
-            return {
-              value: col,
-              label: col,
-            };
-          })}
-          isMulti={false}
-          placeholder="Select column"
-          onChange={(selectedOption) => {
-            const option = selectedOption as SingleValue<OptionType>;
-            setTargetColumn(option?.value as string);
-          }}
-        />
+      <FormLabel>
+        Target: <Badge colorScheme="green">{data.res.dataset.target_col}</Badge>
+      </FormLabel>
+      <ToolBarStyle style={{ marginTop: "16px" }}>
         <ChakraSelect
           containerStyle={{ width: "200px" }}
           label={"Null fill strategy"}
@@ -186,7 +182,6 @@ export const DatasetModelCreatePage = ({
             setNullFillStrategy(value as NullFillStrategy);
           }}
         />
-
         <ChakraInput
           label="Model name"
           placeholder="Unique name"

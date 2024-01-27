@@ -82,7 +82,10 @@ def fixt_init_large_csv():
 
     df.to_csv(append_app_data_path(Constants.BIG_TEST_FILE), index=False)
     return DatasetMetadata(
-        Constants.BIG_TEST_FILE, "btc_big_test_file", BinanceCols.KLINE_OPEN_TIME
+        Constants.BIG_TEST_FILE,
+        "btc_big_test_file",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
     )
 
 
@@ -115,7 +118,6 @@ def create_basic_model(fixt_btc_small_1h):
     """
     body = create_model_body(
         name=Constants.EXAMPLE_MODEL_NAME,
-        target_col=BinanceCols.OPEN_PRICE,
         drop_cols=[],
         null_fill_strategy=NullFillStrategy.CLOSEST.value,
         model=linear_model_basic(),

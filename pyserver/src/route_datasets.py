@@ -6,7 +6,7 @@ from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrate
 from context import HttpResponseContext
 from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, status
 from pydantic import BaseModel
-from dataset import df_fill_nulls_on_all_cols, read_dataset_to_mem
+from dataset import df_fill_nulls_on_all_cols
 from db import (
     add_columns_to_table,
     create_copy,
@@ -192,13 +192,13 @@ async def route_upload_timeseries_data(
 @router.post(RoutePaths.CREATE_MODEL)
 async def route_create_model(dataset_name: str, body: BodyModelData):
     with HttpResponseContext():
-        dataset_id = DatasetQuery.fetch_dataset_id_by_name(dataset_name)
-        if dataset_id is None:
+        dataset = DatasetQuery.fetch_dataset_by_name(dataset_name)
+        if dataset is None:
             raise HTTPException(
-                detail=f"No ID found for {dataset_name}", status_code=400
+                detail=f"No dataset found for {dataset_name}", status_code=400
             )
 
-        ModelQuery.create_model_entry(dataset_id, body)
+        ModelQuery.create_model_entry(dataset, body)
         return {"Message": "OK"}
 
 

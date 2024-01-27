@@ -101,3 +101,13 @@ class DatasetQuery:
                     .filter(Dataset.dataset_name == dataset_name)
                     .scalar()
                 )
+
+    @staticmethod
+    def fetch_dataset_by_name(dataset_name: str):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Dataset)
+                    .filter(Dataset.dataset_name == dataset_name)
+                    .first()
+                )
