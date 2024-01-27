@@ -11,7 +11,7 @@ from constants import (
     ScalingStrategy,
 )
 from log import LogExceptionContext
-from orm import DatasetQuery
+from query_dataset import DatasetQuery
 
 
 def get_select_columns_str(columns: List[str]):
@@ -160,8 +160,8 @@ def load_data(
         train_df_2 = df.iloc[split_end_index + 1 :]
         train_df = pd.concat([train_df_1, train_df_2])
 
-        val_target_before_scaling = val_df[target_column]
-        val_kline_open_times = val_df[timeseries_col]
+        val_target_before_scaling = val_df[target_column].copy()
+        val_kline_open_times = val_df[timeseries_col].copy()
 
         if scaler is not None:
             train_df.loc[:, train_df.columns] = scaler.fit_transform(
