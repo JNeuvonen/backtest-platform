@@ -3,7 +3,8 @@ from fastapi import APIRouter, Response, status
 from backtest import run_backtest
 
 from context import HttpResponseContext
-from orm import ModelQuery, TrainJobQuery
+from query_model import ModelQuery
+from query_trainjob import TrainJobQuery
 from code_gen import start_train_loop
 from config import is_testing
 from request_types import BodyCreateTrain, BodyRunBacktest
@@ -80,7 +81,5 @@ async def route_fetch_train_job_detailed(train_job_id: int):
 @router.post(RoutePaths.RUN_BACKTEST)
 async def route_run_backtest(train_job_id: int, body: BodyRunBacktest):
     with HttpResponseContext():
-        run_backtest(train_job_id, body)
-        return Response(
-            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
-        )
+        res = run_backtest(train_job_id, body)
+        return {"data": res}
