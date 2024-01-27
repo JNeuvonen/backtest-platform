@@ -7,7 +7,7 @@ from binance import Client
 from constants import BINANCE_DATA_COLS, AppConstants, DomEventChannels
 from db import create_connection
 from log import LogExceptionContext, get_logger
-from orm import DatasetQuery
+from query_dataset import DatasetQuery
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
