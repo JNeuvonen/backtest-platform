@@ -258,9 +258,10 @@ def make_exe():
     # context, taking just the resources belonging to the `foo` and `bar`
     # Python packages.
     source_path = VARS.get("PYSERVER_PATH")
+    print(source_path)
     exe.add_python_resources(exe.read_package_root(
         path=source_path,
-        packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "code_gen", "orm", "code_gen_template", "backtest"],
+        packages=["server", "route_binance", "route_model", "context", "utils", "request_types", "dataset", "config", "streams", "api_binance", "db","route_datasets", "constants", "log", "code_gen", "orm", "code_gen_template", "backtest", "query_dataset", "query_model", "query_trainjob", "query_backtest", "query_weights", "query_trade"],
     ))
 
     # Discover Python files from a virtualenv and add them to our embedded
