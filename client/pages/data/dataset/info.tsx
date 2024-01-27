@@ -65,6 +65,7 @@ export const DatasetInfoPage = () => {
   const runPythonModal = useModal();
   const confirmRunPythonModal = useModal();
   const setTargetColumnModal = useModal();
+  const setKlineOpenTimeColumnModal = useModal();
 
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
 
@@ -158,6 +159,31 @@ export const DatasetInfoPage = () => {
     }
   };
 
+  const setKlineOpenTimeColumn = async (klineOpenTimeColumn: string) => {
+    const url = URLS.set_time_column(datasetName);
+    const request = fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        new_timeseries_col: klineOpenTimeColumn,
+      }),
+      method: "PUT",
+    });
+    request.then((res) => {
+      if (res.status === 200) {
+        toast({
+          title: "Changed candle open time column",
+          status: "info",
+          duration: 5000,
+          isClosable: true,
+        });
+        refetch();
+        setKlineOpenTimeColumnModal.onClose();
+      }
+    });
+  };
+
   const getColumnOptions = () => {
     return dataset.columns.map((item) => {
       return {
@@ -242,12 +268,34 @@ export const DatasetInfoPage = () => {
           >
             Create copy
           </Button>
-          <Button
-            variant={BUTTON_VARIANTS.grey}
-            onClick={runPythonModal.modalOpen}
+
+          <ChakraPopover
+            isOpen={setKlineOpenTimeColumnModal.isOpen}
+            setOpen={setKlineOpenTimeColumnModal.onOpen}
+            onClose={setKlineOpenTimeColumnModal.onClose}
+            headerText="Set target column"
+            body={
+              <>
+                <SelectWithTextFilter
+                  options={getColumnOptions()}
+                  isMulti={false}
+                  placeholder={data.res.dataset.timeseries_col}
+                  onChange={(
+                    selectedOptions:
+                      | SingleValue<OptionType>
+                      | MultiValue<OptionType>
+                  ) => {
+                    const option = selectedOptions as SingleValue<OptionType>;
+                    if (option) setKlineOpenTimeColumn(option.value as string);
+                  }}
+                />
+              </>
+            }
           >
-            Set candle open time column
-          </Button>
+            <Button variant={BUTTON_VARIANTS.grey}>
+              Set candle open time column
+            </Button>
+          </ChakraPopover>
           <ChakraPopover
             isOpen={setTargetColumnModal.isOpen}
             setOpen={setTargetColumnModal.onOpen}
