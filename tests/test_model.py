@@ -1,9 +1,14 @@
 import pytest
-from pyserver.src.orm import TrainJobQuery
 from tests.fixtures import NUM_EPOCHS_DEFAULT, create_backtest, create_train_job_basic
+from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import Constants, DatasetMetadata
 
 from tests.t_utils import Fetch, Post
+
+import sys
+
+sys.path.append(SERVER_SOURCE_DIR)
+from query_trainjob import TrainJobQuery
 
 
 @pytest.mark.acceptance
