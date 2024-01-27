@@ -297,6 +297,7 @@ def get_dataset_table(table_name: str):
                 "row_count": row_count,
                 "stats_by_col": [],
                 "timeseries_col": DatasetQuery.get_timeseries_col(table_name),
+                "target_col": DatasetQuery.get_target_col(table_name),
             }
 
 
