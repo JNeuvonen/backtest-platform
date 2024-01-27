@@ -162,3 +162,14 @@ export async function runBacktest(trainJobId: string, body: object) {
   });
   return res;
 }
+
+export async function setTargetColumnReq(
+  datasetName: string,
+  targetColumn: string
+) {
+  const res = await buildRequest({
+    method: "PUT",
+    url: URLS.setTargetColumn(datasetName, targetColumn),
+  });
+  return res;
+}
