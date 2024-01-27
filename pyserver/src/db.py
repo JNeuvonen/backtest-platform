@@ -13,7 +13,7 @@ from dataset import (
     read_dataset_to_mem,
 )
 from log import LogExceptionContext, get_logger
-from orm import DatasetQuery
+from query_dataset import DatasetQuery
 
 
 def create_connection(db_file: str):
