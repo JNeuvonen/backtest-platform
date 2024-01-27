@@ -215,6 +215,13 @@ async def add_columns_to_table(
             )
 
 
+def create_copy(table_name: str, copy_table_name: str):
+    with LogExceptionContext():
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            df = read_dataset_to_mem(table_name)
+            df.to_sql(copy_table_name, conn, if_exists="fail", index=False)
+
+
 def get_all_tables_and_columns(db_path: str):
     with LogExceptionContext():
         with sqlite3.connect(db_path) as conn:

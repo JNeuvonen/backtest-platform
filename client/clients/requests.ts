@@ -1,6 +1,5 @@
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
-import { BacktestForm } from "../pages/data/model/trainjob/backtest";
 import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
@@ -170,6 +169,17 @@ export async function setTargetColumnReq(
   const res = await buildRequest({
     method: "PUT",
     url: URLS.setTargetColumn(datasetName, targetColumn),
+  });
+  return res;
+}
+
+export async function createCopyOfDataset(
+  datasetName: string,
+  copyName: string
+) {
+  const res = await buildRequest({
+    method: "POST",
+    url: URLS.createDatasetCopy(datasetName, copyName),
   });
   return res;
 }

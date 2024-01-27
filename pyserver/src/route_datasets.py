@@ -6,9 +6,10 @@ from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrate
 from context import HttpResponseContext
 from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, status
 from pydantic import BaseModel
-from dataset import df_fill_nulls_on_all_cols
+from dataset import df_fill_nulls_on_all_cols, read_dataset_to_mem
 from db import (
     add_columns_to_table,
+    create_copy,
     delete_dataset_cols,
     exec_python,
     get_all_tables_and_columns,
@@ -54,6 +55,7 @@ class RoutePaths:
     CREATE_MODEL = "/{dataset_name}/models/create"
     FETCH_MODELS = "/{dataset_name}/models/"
     SET_TARGET_COLUMN = "/{dataset_name}/target-column"
+    COPY = "/{dataset_name}/copy"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -216,6 +218,16 @@ async def route_fetch_models(dataset_name: str):
 async def route_post_target_col(dataset_name: str, target_column: str):
     with HttpResponseContext():
         DatasetQuery.update_target_column(dataset_name, target_column)
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
+
+
+@router.post(RoutePaths.COPY)
+async def route_copy_dataset(dataset_name: str, new_dataset_name: str):
+    print(dataset_name, new_dataset_name)
+    with HttpResponseContext():
+        create_copy(dataset_name, new_dataset_name)
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )

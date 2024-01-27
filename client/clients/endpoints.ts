@@ -69,4 +69,9 @@ export const URLS = {
     BASE_URL +
     API.dataset.root +
     `/${datasetName}/target-column?target_column=${targetColumn}`,
+
+  createDatasetCopy: (datasetName: string, copyName: string) =>
+    BASE_URL +
+    API.dataset.root +
+    `/${datasetName}/copy?new_dataset_name=${copyName}`,
 };

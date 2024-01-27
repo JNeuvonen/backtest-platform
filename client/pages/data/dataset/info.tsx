@@ -35,6 +35,7 @@ import {
   SelectWithTextFilter,
 } from "../../../components/SelectFilter";
 import { MultiValue, SingleValue } from "react-select";
+import { CreateCopyPopover } from "../../../components/CreateCopyPopover";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -64,8 +65,9 @@ export const DatasetInfoPage = () => {
   const columnModal = useModal();
   const runPythonModal = useModal();
   const confirmRunPythonModal = useModal();
-  const setTargetColumnModal = useModal();
-  const setKlineOpenTimeColumnModal = useModal();
+  const targetColumnPopover = useModal();
+  const klineOpenTimePopover = useModal();
+  const createCopyPopover = useModal();
 
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
 
@@ -154,7 +156,7 @@ export const DatasetInfoPage = () => {
         duration: 5000,
         isClosable: true,
       });
-      setTargetColumnModal.onClose();
+      targetColumnPopover.onClose();
       refetch();
     }
   };
@@ -179,7 +181,7 @@ export const DatasetInfoPage = () => {
           isClosable: true,
         });
         refetch();
-        setKlineOpenTimeColumnModal.onClose();
+        klineOpenTimePopover.onClose();
       }
     });
   };
@@ -262,18 +264,29 @@ export const DatasetInfoPage = () => {
           />
         </Box>
         <Box display={"flex"} gap={"16px"}>
-          <Button
-            variant={BUTTON_VARIANTS.grey}
-            onClick={runPythonModal.modalOpen}
+          <ChakraPopover
+            isOpen={createCopyPopover.isOpen}
+            setOpen={createCopyPopover.onOpen}
+            onClose={createCopyPopover.onClose}
+            headerText="Create a copy of the dataset"
+            body={
+              <CreateCopyPopover
+                datasetName={datasetName}
+                successCallback={() => {
+                  createCopyPopover.onClose();
+                  console.log(window.location.pathname);
+                }}
+              />
+            }
           >
-            Create copy
-          </Button>
+            <Button variant={BUTTON_VARIANTS.grey}>Create copy</Button>
+          </ChakraPopover>
 
           <ChakraPopover
-            isOpen={setKlineOpenTimeColumnModal.isOpen}
-            setOpen={setKlineOpenTimeColumnModal.onOpen}
-            onClose={setKlineOpenTimeColumnModal.onClose}
-            headerText="Set target column"
+            isOpen={klineOpenTimePopover.isOpen}
+            setOpen={klineOpenTimePopover.onOpen}
+            onClose={klineOpenTimePopover.onClose}
+            headerText="Set candle open time column"
             body={
               <>
                 <SelectWithTextFilter
@@ -297,9 +310,9 @@ export const DatasetInfoPage = () => {
             </Button>
           </ChakraPopover>
           <ChakraPopover
-            isOpen={setTargetColumnModal.isOpen}
-            setOpen={setTargetColumnModal.onOpen}
-            onClose={setTargetColumnModal.onClose}
+            isOpen={targetColumnPopover.isOpen}
+            setOpen={targetColumnPopover.onOpen}
+            onClose={targetColumnPopover.onClose}
             headerText="Set target column"
             body={
               <>
