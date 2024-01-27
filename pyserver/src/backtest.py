@@ -2,15 +2,10 @@ import json
 from typing import Dict, List
 
 from log import LogExceptionContext
-from orm import (
-    BacktestQuery,
-    Dataset,
-    Model,
-    ModelWeights,
-    TradeQuery,
-    TrainJob,
-    TrainJobQuery,
-)
+from query_trade import TradeQuery
+from query_weights import ModelWeights
+from query_trainjob import TrainJob, TrainJobQuery
+from query_backtest import BacktestQuery
 from request_types import BodyRunBacktest
 from code_gen_template import BACKTEST_TEMPLATE
 
@@ -185,6 +180,7 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
         epochs: List[ModelWeights] = train_job_detailed["epochs"]
 
         target_col = json.loads(train_job.validation_target_before_scale)
+        print(target_col)
         kline_open_time = json.loads(train_job.validation_kline_open_times)
         predictions = json.loads(epochs[backtestInfo.epoch_nr]["val_predictions"])
 
