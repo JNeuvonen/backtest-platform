@@ -204,3 +204,8 @@ class Put:
     def update_timeseries_col(dataset_name: str, body):
         with Req("put", URL.update_timeseries_col(dataset_name), json=body) as res:
             return res.json()
+
+    @staticmethod
+    def update_target_col(dataset_name: str, target_col: str):
+        with Req("put", URL.update_target_col(dataset_name, target_col)) as res:
+            return res
