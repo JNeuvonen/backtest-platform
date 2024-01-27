@@ -30,7 +30,8 @@ import server
 from utils import rm_file
 from config import append_app_data_path
 from constants import DB_DATASETS, NullFillStrategy, DATASET_UTILS_DB_PATH
-from orm import create_tables, db_delete_all_data, TrainJobQuery
+from orm import create_tables, db_delete_all_data
+from query_trainjob import TrainJobQuery
 
 
 def t_binance_path_to_dataset_name(binance_path: str):
