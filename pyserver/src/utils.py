@@ -15,7 +15,7 @@ from constants import (
 from config import append_app_data_path
 from dataset import read_dataset_to_mem
 from log import LogExceptionContext
-from orm import TrainJobQuery
+from query_trainjob import TrainJobQuery
 
 
 def convert_val_split_str_to_arr(val_split_str: str):
