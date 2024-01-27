@@ -220,6 +220,13 @@ def create_copy(table_name: str, copy_table_name: str):
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
             df = read_dataset_to_mem(table_name)
             df.to_sql(copy_table_name, conn, if_exists="fail", index=False)
+            timeseries_col = DatasetQuery.get_timeseries_col(table_name)
+            target_col = DatasetQuery.get_target_col(table_name)
+            DatasetQuery.create_dataset_entry(
+                dataset_name=copy_table_name,
+                timeseries_column=timeseries_col,
+                target_column=target_col,
+            )
 
 
 def get_all_tables_and_columns(db_path: str):

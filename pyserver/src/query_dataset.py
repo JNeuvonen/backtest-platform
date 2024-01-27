@@ -68,11 +68,15 @@ class DatasetQuery:
                 session.commit()
 
     @staticmethod
-    def create_dataset_entry(dataset_name: str, timeseries_column: str):
+    def create_dataset_entry(
+        dataset_name: str, timeseries_column: str, target_column: str | None = None
+    ):
         with LogExceptionContext():
             with Session() as session:
                 new_dataset = Dataset(
-                    dataset_name=dataset_name, timeseries_column=timeseries_column
+                    dataset_name=dataset_name,
+                    timeseries_column=timeseries_column,
+                    target_column=target_column,
                 )
                 session.add(new_dataset)
                 session.commit()
