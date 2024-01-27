@@ -15,7 +15,7 @@ sys.path.append(SERVER_SOURCE_DIR)
 from config import append_app_data_path
 from constants import BINANCE_DATA_COLS
 from utils import add_to_datasets_db
-from orm import DatasetQuery
+from query_dataset import DatasetQuery
 
 
 @contextmanager
