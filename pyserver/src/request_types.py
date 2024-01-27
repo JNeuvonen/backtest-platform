@@ -39,6 +39,5 @@ class BodyCreateTrain(BaseModel):
 
 
 class BodyRunBacktest(BaseModel):
-    price_column: str
     epoch_nr: int
     enter_and_exit_criteria: str
