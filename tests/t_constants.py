@@ -146,6 +146,14 @@ class URL:
         )
 
     @classmethod
+    def update_target_col(cls, dataset_name: str, target_col: str):
+        return (
+            cls._datasets_route()
+            + DatasetRoutePaths.SET_TARGET_COLUMN.format(dataset_name=dataset_name)
+            + f"?target_column={target_col}"
+        )
+
+    @classmethod
     def t_get_all_columns(cls):
         return cls._datasets_route() + DatasetRoutePaths.ROOT
 
