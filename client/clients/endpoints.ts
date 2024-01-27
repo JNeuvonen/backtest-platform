@@ -61,4 +61,7 @@ export const URLS = {
     BASE_URL + API.model.root + `/train/stop/${trainJobId}`,
   fetch_train_job_detailed: (trainJobId: string) =>
     BASE_URL + API.model.root + `/train/${trainJobId}/detailed`,
+
+  create_backtest: (trainJobId: string) =>
+    BASE_URL + API.model.root + `/backtest/${trainJobId}/run`,
 };
