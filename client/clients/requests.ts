@@ -1,5 +1,6 @@
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
+import { BacktestForm } from "../pages/data/model/trainjob/backtest";
 import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
@@ -151,4 +152,13 @@ export async function fetchTrainjobDetailed(trainJobId: string) {
     return res.res["data"] as TrainDataDetailed;
   }
   return null;
+}
+
+export async function runBacktest(trainJobId: string, body: object) {
+  const res = await buildRequest({
+    method: "POST",
+    url: URLS.create_backtest(trainJobId),
+    payload: body,
+  });
+  return res;
 }
