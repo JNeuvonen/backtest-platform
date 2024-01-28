@@ -9,20 +9,11 @@ import {
   ChakraSelect,
   SelectOption,
 } from "../../../../components/chakra/select";
-import {
-  DatasetMetadata,
-  DatasetResponse,
-  EpochInfo,
-} from "../../../../clients/queries/response-types";
+import { EpochInfo } from "../../../../clients/queries/response-types";
 import { roundNumberDropRemaining } from "../../../../utils/number";
 import { Formik, Form, Field } from "formik";
 import { CodeEditor } from "../../../../components/CodeEditor";
 import { CodeHelper } from "../../../../utils/constants";
-import {
-  OptionType,
-  SelectWithTextFilter,
-} from "../../../../components/SelectFilter";
-import { SingleValue } from "react-select";
 import { runBacktest } from "../../../../clients/requests";
 
 export interface BacktestForm {
