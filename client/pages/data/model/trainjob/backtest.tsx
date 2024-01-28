@@ -43,7 +43,7 @@ export const BacktestModelPage = () => {
   const { data } = useTrainJobDetailed(trainJobId);
   const { data: allDatasets } = useDatasetsQuery();
 
-  if (!data || !allDatasets || !allDatasets.res) {
+  if (!data || !allDatasets) {
     return (
       <div>
         <Spinner />
