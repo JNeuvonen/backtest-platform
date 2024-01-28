@@ -3,17 +3,11 @@ import Title from "../../../components/typography/Title";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { useDatasetQuery } from "../../../clients/queries/queries";
 import {
-  OptionType,
-  SelectWithTextFilter,
-} from "../../../components/SelectFilter";
-import { SingleValue } from "react-select";
-import {
   Button,
   FormControl,
   FormLabel,
   Spinner,
   useToast,
-  Text,
   Badge,
 } from "@chakra-ui/react";
 import { ChakraSelect } from "../../../components/chakra/select";
@@ -27,7 +21,7 @@ import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { CodeEditor } from "../../../components/CodeEditor";
 import { ValidationSplitSlider } from "../../../components/ValidationSplitSlider";
 import { ChakraCheckbox } from "../../../components/chakra/checkbox";
-import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../../../theme";
+import { BUTTON_VARIANTS } from "../../../theme";
 import {
   CheckboxMulti,
   CheckboxValue,
@@ -35,9 +29,12 @@ import {
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
-import { createModel } from "../../../clients/requests";
+import { createModel, setTargetColumnReq } from "../../../clients/requests";
 import { nullFillStratToInt } from "../../../utils/navigate";
-import { WithLabel } from "../../../components/form/WithLabel";
+import { ChakraPopover } from "../../../components/chakra/popover";
+import { SelectTargetColumnPopover } from "../../../components/SelectTargetColumnPopover";
+import { useModal } from "../../../hooks/useOpen";
+import { getDatasetColumnOptions } from "../../../utils/dataset";
 
 type PathParams = {
   datasetName: string;
@@ -83,7 +80,6 @@ interface Props {
 
 export interface ModelDataPayload {
   name: string;
-  target_col: string;
   drop_cols: string[];
   null_fill_strategy: number;
   model: string;
@@ -96,8 +92,7 @@ export const DatasetModelCreatePage = ({
   submitCallback,
 }: Props) => {
   const { datasetName } = usePathParams<PathParams>();
-  const { data } = useDatasetQuery(datasetName);
-  const [targetColumn, setTargetColumn] = useState<string>("");
+  const { data, refetch } = useDatasetQuery(datasetName);
   const [columnsToDrop, setColumnsToDrop] = useState<CheckboxValue[]>([]);
   const [dropColumnsVisible, setDropColumnsVisible] = useState(false);
   const [modelName, setModelName] = useState("");
@@ -109,6 +104,7 @@ export const DatasetModelCreatePage = ({
   );
   const [validSplitSize, setValidSplitSize] = useState([80, 100]);
   const [disableValSplit, setDisableValSplit] = useState(false);
+  const targetColumnPopover = useModal();
   const forceUpdate = useForceUpdate();
   const toast = useToast();
 
@@ -134,10 +130,23 @@ export const DatasetModelCreatePage = ({
     );
   }
 
+  const setTargetColumn = async (targetCol: string) => {
+    const res = await setTargetColumnReq(datasetName, targetCol);
+    if (res.status === 200) {
+      toast({
+        title: "Changed target column",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      targetColumnPopover.onClose();
+      refetch();
+    }
+  };
+
   const submit = async () => {
     const body: ModelDataPayload = {
       name: modelName,
-      target_col: targetColumn,
       drop_cols: columnsToDrop
         .filter((item) => item.isChecked)
         .map((item) => item.label),
@@ -162,15 +171,37 @@ export const DatasetModelCreatePage = ({
 
   const submitIsDisabled = () => {
     return (
-      !targetColumn || (validSplitSize[0] === 0 && validSplitSize[1] === 100)
+      !data.res.dataset.target_col ||
+      (validSplitSize[0] === 0 && validSplitSize[1] === 100) ||
+      !modelName
     );
   };
 
   return (
     <div>
-      <FormLabel>
-        Target: <Badge colorScheme="green">{data.res.dataset.target_col}</Badge>
-      </FormLabel>
+      {data.res.dataset.target_col ? (
+        <FormLabel>
+          Target:{" "}
+          <Badge colorScheme="green">{data.res.dataset.target_col}</Badge>
+        </FormLabel>
+      ) : (
+        <ChakraPopover
+          isOpen={targetColumnPopover.isOpen}
+          setOpen={targetColumnPopover.onOpen}
+          onClose={targetColumnPopover.onClose}
+          headerText="Set target column"
+          body={
+            <SelectTargetColumnPopover
+              options={getDatasetColumnOptions(data.res.dataset)}
+              placeholder={data.res.dataset.target_col}
+              selectCallback={setTargetColumn}
+            />
+          }
+        >
+          <Button variant={BUTTON_VARIANTS.nofill}>Set target column</Button>
+        </ChakraPopover>
+      )}
+
       <ToolBarStyle style={{ marginTop: "16px" }}>
         <ChakraSelect
           containerStyle={{ width: "200px" }}
