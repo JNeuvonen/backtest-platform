@@ -121,3 +121,7 @@ def run_in_thread(fn, *args, **kwargs):
 
 def on_shutdown_cleanup():
     TrainJobQuery.on_shutdown_cleanup()
+
+
+def to_dict(obj):
+    return {attr: getattr(obj, attr) for attr in vars(obj)}
