@@ -70,6 +70,11 @@ export const URLS = {
     API.dataset.root +
     `/${datasetName}/target-column?target_column=${targetColumn}`,
 
+  setPriceColumn: (datasetName: string, priceColumn: string) =>
+    BASE_URL +
+    API.dataset.root +
+    `/${datasetName}/price-column?price_column=${priceColumn}`,
+
   createDatasetCopy: (datasetName: string, copyName: string) =>
     BASE_URL +
     API.dataset.root +
