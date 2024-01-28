@@ -50,6 +50,7 @@ def train():
         total_train_loss = 0
         epoch_start_time = time.time()
         for inputs, labels in train_loader:
+            print(labels)
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             l1_lambda = 0.01
@@ -69,7 +70,9 @@ def train():
                 val_inputs, val_labels = val_inputs.to(device), val_labels.to(device)
                 val_outputs = model(val_inputs)
                 validation_predictions.extend(val_outputs.cpu().numpy().tolist())
-                total_val_loss += criterion(val_outputs, val_labels).item()
+                l1_lambda = 0.01
+                l1_norm = sum(p.abs().sum() for p in model.parameters())
+                total_val_loss += criterion(val_outputs, val_labels).item() + l1_lambda * l1_norm
 
         train_loss_mean = total_train_loss / len(train_loader)
         val_loss_mean = total_val_loss / len(val_loader)
