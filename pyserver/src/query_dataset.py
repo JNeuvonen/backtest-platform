@@ -1,6 +1,15 @@
+from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, update
 from log import LogExceptionContext
 from orm import Base, Session
+
+
+class DatasetBody(BaseModel):
+    id: int
+    dataset_name: str
+    timeseries_column: str
+    price_column: str
+    target_column: str
 
 
 class Dataset(Base):
@@ -9,10 +18,22 @@ class Dataset(Base):
     id = Column(Integer, primary_key=True)
     dataset_name = Column(String)
     timeseries_column = Column(String)
+    price_column = Column(String)
     target_column = Column(String)
 
 
 class DatasetQuery:
+    @staticmethod
+    def update_dataset(dataset_name: str, update_fields: DatasetBody):
+        with LogExceptionContext():
+            with Session() as session:
+                session.execute(
+                    update(Dataset)
+                    .where(Dataset.dataset_name == dataset_name)
+                    .values(**update_fields.model_dump())
+                )
+                session.commit()
+
     @staticmethod
     def update_timeseries_col(dataset_name: str, new_timeseries_col: str):
         with LogExceptionContext():
@@ -111,3 +132,14 @@ class DatasetQuery:
                     .filter(Dataset.dataset_name == dataset_name)
                     .first()
                 )
+
+    @staticmethod
+    def update_price_column(dataset_name: str, new_price_column: str):
+        with LogExceptionContext():
+            with Session() as session:
+                session.execute(
+                    update(Dataset)
+                    .where(Dataset.dataset_name == dataset_name)
+                    .values(price_column=new_price_column)
+                )
+                session.commit()
