@@ -21,6 +21,15 @@ class Dataset(Base):
     price_column = Column(String)
     target_column = Column(String)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "dataset_name": self.dataset_name,
+            "timeseries_column": self.timeseries_column,
+            "price_column": self.price_column,
+            "target_column": self.target_column,
+        }
+
 
 class DatasetQuery:
     @staticmethod
@@ -119,6 +128,16 @@ class DatasetQuery:
             with Session() as session:
                 return (
                     session.query(Dataset.target_column)
+                    .filter(Dataset.dataset_name == dataset_name)
+                    .scalar()
+                )
+
+    @staticmethod
+    def get_price_col(dataset_name: str):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Dataset.price_column)
                     .filter(Dataset.dataset_name == dataset_name)
                     .scalar()
                 )
