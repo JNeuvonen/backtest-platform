@@ -8,6 +8,7 @@ from query_trainjob import TrainJob, TrainJobQuery
 from query_backtest import BacktestQuery
 from request_types import BodyRunBacktest
 from code_gen_template import BACKTEST_TEMPLATE
+from utils import to_dict
 
 
 class Direction:
@@ -233,11 +234,11 @@ class BacktestV2:
         slippage: float,
         enter_and_exit_criteria_placeholders: Dict,
     ) -> None:
-        self.balance = start_balance
         self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
         self.positions = Positions(
             start_balance, (1 - fees) / 100, 1 - (slippage / 100)
         )
+        self.history: List = []
 
     def enter_kline(self, price: float, prediction: float, kline_open_time: int):
         code = BACKTEST_TEMPLATE
@@ -255,6 +256,16 @@ class BacktestV2:
             price, prediction, kline_open_time, should_enter_trade, should_exit_trade
         )
 
+    def update_data(self, price: float, prediction: float, kline_open_time: int):
+        self.history.append(
+            {
+                "price": price,
+                "prediction": prediction,
+                "kline_open_time": kline_open_time,
+                "positions": to_dict(self.positions),
+            }
+        )
+
     def tick(
         self,
         price: float,
@@ -263,8 +274,16 @@ class BacktestV2:
         should_long: bool,
         should_short: bool,
     ):
+        self.update_data(price, prediction, kline_open_time)
+
         if self.positions.position > 0 and should_long is False:
             self.positions.close_long(price)
 
-        if self.positions.position < 0 and should_short is False:
-            self.positions.sell(price)
+        if self.positions.short_debt > 0 and should_short is False:
+            self.positions.close_short(price)
+
+        if self.positions.cash > 0 and should_long is True:
+            self.positions.go_long(price)
+
+        if self.positions.short_debt == 0 and should_short is True:
+            self.positions.go_short(price)
