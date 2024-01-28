@@ -139,6 +139,7 @@ def load_data(
     scaling_strategy: ScalingStrategy = ScalingStrategy.STANDARD,
 ):
     timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
+    price_col = DatasetQuery.get_price_col(dataset_name)
     df = read_dataset_to_mem(dataset_name)
     df_fill_nulls_on_dataframe(df, null_fill_strategy)
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -162,6 +163,7 @@ def load_data(
 
         val_target_before_scaling = val_df[target_column].copy()
         val_kline_open_times = val_df[timeseries_col].copy()
+        price_col = val_df[price_col].copy()
 
         if scaler is not None:
             train_df.loc[:, train_df.columns] = scaler.fit_transform(
@@ -186,6 +188,7 @@ def load_data(
             y_val,
             val_target_before_scaling,
             val_kline_open_times,
+            price_col,
         )
     else:
         if scaler is not None:
@@ -194,4 +197,4 @@ def load_data(
         target = df.pop(target_column)
         x_train = torch.Tensor(df.values.astype(np.float32))
         y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
-        return x_train, y_train, None, None, None, None
+        return x_train, y_train, None, None, None, None, None
