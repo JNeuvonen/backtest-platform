@@ -48,7 +48,7 @@ def t_add_binance_dataset_to_db(dataset: DatasetMetadata):
     df.columns = BINANCE_DATA_COLS
     add_to_datasets_db(df, dataset.name)
     DatasetQuery.create_dataset_entry(
-        dataset.name, dataset.timeseries_col, dataset.target_col
+        dataset.name, dataset.timeseries_col, dataset.target_col, dataset.price_col
     )
 
 
