@@ -14,6 +14,7 @@ import { CONSTANTS } from "./utils/constants";
 const queryClient = new QueryClient();
 
 appWindow.onCloseRequested(() => {
+  //performs on shutdown cleanup on the server
   fetch(CONSTANTS.base_url + "/shutdown", {
     method: "POST",
   });
@@ -22,13 +23,13 @@ appWindow.onCloseRequested(() => {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <AppProvider>
-      <QueryClientProvider client={queryClient}>
-        <ChakraProvider theme={customChakraTheme}>
+      <ChakraProvider theme={customChakraTheme}>
+        <QueryClientProvider client={queryClient}>
           <LogProvider>
             <App />
           </LogProvider>
-        </ChakraProvider>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </ChakraProvider>
     </AppProvider>
   </React.StrictMode>
 );
