@@ -15,14 +15,17 @@ import {
 import {
   BinanceTickersResponse,
   ColumnResponse,
+  Dataset,
+  DatasetMetadata,
   DatasetModel,
   DatasetModelResponse,
-  DatasetResponse,
-  DatasetsResponse,
 } from "./response-types";
 
-export function useDatasetsQuery(): UseQueryResult<DatasetsResponse, unknown> {
-  return useQuery<DatasetsResponse, unknown>({
+export function useDatasetsQuery(): UseQueryResult<
+  DatasetMetadata[] | null,
+  unknown
+> {
+  return useQuery<DatasetMetadata[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_datasets],
     queryFn: fetchDatasets,
   });
@@ -40,8 +43,8 @@ export function useBinanceTickersQuery(): UseQueryResult<
 
 export function useDatasetQuery(
   datasetName: string
-): UseQueryResult<DatasetResponse, unknown> {
-  return useQuery<DatasetResponse, unknown>({
+): UseQueryResult<Dataset | null, unknown> {
+  return useQuery<Dataset | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_datasets, datasetName],
     queryFn: () => fetchDataset(datasetName),
   });
