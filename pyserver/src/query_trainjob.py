@@ -21,16 +21,16 @@ class TrainJob(Base):
     epochs_ran = Column(Integer, default=0, nullable=False)
     save_model_every_epoch = Column(Boolean)
     backtest_on_validation_set = Column(Boolean)
-    validation_target_before_scale = Column(String)
-    validation_kline_open_times = Column(String)
+    backtest_kline_open_times = Column(String)
+    backtest_prices = Column(String)
 
     model_weights = relationship("ModelWeights", overlaps="train_job")
 
-    def serialize_target_before_scale(self, val_targets_before_scale):
-        self.validation_target_before_scale = json.dumps(val_targets_before_scale)
-
     def serialize_kline_open_times(self, kline_open_times):
-        self.validation_kline_open_times = json.dumps(kline_open_times)
+        self.backtest_kline_open_times = json.dumps(kline_open_times)
+
+    def serialize_prices(self, prices):
+        self.backtest_prices = json.dumps(prices)
 
 
 class TrainJobQuery:
@@ -63,9 +63,9 @@ class TrainJobQuery:
                 return new_train_job.id
 
     @staticmethod
-    def set_klines_and_price_before_scale(
+    def set_backtest_data(
         train_job_id: int,
-        target_before_scaling: List[float],
+        prices: List[float],
         kline_open_times: List[float],
     ):
         with Session() as session:
@@ -73,8 +73,8 @@ class TrainJobQuery:
             train_job: TrainJob = query.filter(
                 getattr(TrainJob, "id") == train_job_id
             ).first()
-            train_job.serialize_target_before_scale(target_before_scaling)
             train_job.serialize_kline_open_times(kline_open_times)
+            train_job.serialize_prices(prices)
             session.commit()
 
     @staticmethod
