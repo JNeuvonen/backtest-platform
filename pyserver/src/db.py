@@ -51,6 +51,9 @@ def get_dataset_tables():
                     {
                         "table_name": table_name,
                         "timeseries_col": DatasetQuery.get_timeseries_col(table_name),
+                        "dataset": DatasetQuery.fetch_dataset_by_name(
+                            table_name
+                        ).to_dict(),
                         "columns": columns,
                         "start_date": first_row[0],
                         "end_date": last_row[0],
@@ -302,16 +305,18 @@ def get_dataset_table(table_name: str):
                 for column in columns
             }
             row_count = get_table_row_count(cursor, table_name)
-
             return {
                 "columns": columns,
                 "head": head,
                 "tail": tail,
                 "null_counts": null_counts,
                 "row_count": row_count,
-                "stats_by_col": [],
+                "stats_by_col": [
+                    get_col_stats(cursor, table_name, col) for col in columns
+                ],
                 "timeseries_col": DatasetQuery.get_timeseries_col(table_name),
                 "target_col": DatasetQuery.get_target_col(table_name),
+                "price_col": DatasetQuery.get_price_col(table_name),
             }
 
 
