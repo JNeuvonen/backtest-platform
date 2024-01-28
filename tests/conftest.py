@@ -86,6 +86,7 @@ def fixt_init_large_csv():
         "btc_big_test_file",
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
     )
 
 
