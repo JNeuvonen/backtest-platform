@@ -109,9 +109,9 @@ export const DatasetModelCreatePage = ({
   const toast = useToast();
 
   useEffect(() => {
-    if (data?.status === 200) {
+    if (data) {
       setColumnsToDrop(
-        data.res.dataset.columns.map((item) => {
+        data.columns.map((item) => {
           return {
             isChecked: false,
             label: item,
@@ -121,7 +121,7 @@ export const DatasetModelCreatePage = ({
     }
   }, [data]);
 
-  if (!data || !data?.res) {
+  if (!data) {
     return (
       <div>
         <Title>Create Model</Title>
@@ -171,7 +171,7 @@ export const DatasetModelCreatePage = ({
 
   const submitIsDisabled = () => {
     return (
-      !data.res.dataset.target_col ||
+      !data.target_col ||
       (validSplitSize[0] === 0 && validSplitSize[1] === 100) ||
       !modelName
     );
@@ -179,10 +179,9 @@ export const DatasetModelCreatePage = ({
 
   return (
     <div>
-      {data.res.dataset.target_col ? (
+      {data.target_col ? (
         <FormLabel>
-          Target:{" "}
-          <Badge colorScheme="green">{data.res.dataset.target_col}</Badge>
+          Target: <Badge colorScheme="green">{data.target_col}</Badge>
         </FormLabel>
       ) : (
         <ChakraPopover
@@ -192,8 +191,8 @@ export const DatasetModelCreatePage = ({
           headerText="Set target column"
           body={
             <SelectColumnPopover
-              options={getDatasetColumnOptions(data.res.dataset)}
-              placeholder={data.res.dataset.target_col}
+              options={getDatasetColumnOptions(data)}
+              placeholder={data.target_col}
               selectCallback={setTargetColumn}
             />
           }
