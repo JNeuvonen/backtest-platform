@@ -99,7 +99,10 @@ class DatasetQuery:
 
     @staticmethod
     def create_dataset_entry(
-        dataset_name: str, timeseries_column: str, target_column: str | None = None
+        dataset_name: str,
+        timeseries_column: str,
+        target_column: str | None = None,
+        price_column: str | None = None,
     ):
         with LogExceptionContext():
             with Session() as session:
@@ -107,6 +110,7 @@ class DatasetQuery:
                     dataset_name=dataset_name,
                     timeseries_column=timeseries_column,
                     target_column=target_column,
+                    price_column=price_column,
                 )
                 session.add(new_dataset)
                 session.commit()
