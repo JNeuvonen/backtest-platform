@@ -183,3 +183,14 @@ export async function createCopyOfDataset(
   });
   return res;
 }
+
+export async function updatePriceColumnReq(
+  datasetName: string,
+  priceColumn: string
+) {
+  const res = await buildRequest({
+    method: "PUT",
+    url: URLS.setPriceColumn(datasetName, priceColumn),
+  });
+  return res;
+}
