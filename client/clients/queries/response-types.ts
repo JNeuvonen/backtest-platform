@@ -70,6 +70,7 @@ export interface Dataset {
   timeseries_col: string;
   dataset_name: string;
   target_col: string;
+  price_col: string;
 }
 
 export interface NullCounts {
