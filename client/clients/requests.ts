@@ -6,6 +6,8 @@ import { buildRequest } from "./fetch";
 import {
   Dataset,
   DatasetModel,
+  DatasetResponse,
+  DatasetsResponse,
   EpochInfo,
   FetchModelByNameRes,
   TrainJob,
@@ -13,12 +15,23 @@ import {
 
 export async function fetchDatasets() {
   const url = URLS.get_tables;
-  return buildRequest({ method: "GET", url });
+  const res: DatasetsResponse = await buildRequest({ method: "GET", url });
+
+  if (res?.res?.tables) {
+    return res.res.tables;
+  }
+  return null;
 }
 
 export async function fetchDataset(datasetName: string) {
   const url = URLS.get_table(datasetName);
-  return buildRequest({ method: "GET", url });
+  const res: DatasetResponse = await buildRequest({ method: "GET", url });
+
+  if (res?.res?.dataset) {
+    return res.res.dataset;
+  }
+
+  return null;
 }
 
 export async function execPythonOnDatasetCol(
