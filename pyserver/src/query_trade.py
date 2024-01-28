@@ -1,3 +1,4 @@
+import json
 from typing import List
 from sqlalchemy import Column, Float, ForeignKey, Integer, String
 from log import LogExceptionContext
@@ -16,6 +17,12 @@ class Trade(Base):
     net_result = Column(Float)
     percent_result = Column(Float)
     backtest_id = Column(Integer, ForeignKey("backtest.id"))
+    predictions = Column(String)
+    prices = Column(String)
+
+    def serialize(self, prices, predictions):
+        self.prices = json.dumps(prices)
+        self.predictions = json.dumps(predictions)
 
 
 class TradeQuery:
@@ -26,19 +33,20 @@ class TradeQuery:
 
         with LogExceptionContext():
             with Session() as session:
-                trades = [
-                    Trade(
+                trades = []
+                for item in trade_data:
+                    trade = Trade(
                         backtest_id=backtest_id,
-                        start_price=trade["open_price"],
-                        end_price=trade["end_price"],
-                        start_time=trade["start_time"],
-                        end_time=trade["end_time"],
-                        direction=trade["direction"],
-                        net_result=trade["net_result"],
-                        percent_result=trade["percent_result"],
+                        start_price=item["open_price"],
+                        end_price=item["end_price"],
+                        start_time=item["start_time"],
+                        end_time=item["end_time"],
+                        direction=item["direction"],
+                        net_result=item["net_result"],
+                        percent_result=item["percent_result"],
                     )
-                    for trade in trade_data
-                ]
+                    trade.serialize(item.get("prices"), item.get("predictions"))
+                    trades.append(trade)
                 session.bulk_save_objects(trades)
                 session.commit()
 
@@ -56,6 +64,7 @@ class TradeQuery:
                     net_result=trade_data["net_result"],
                     percent_result=trade_data["percent_result"],
                 )
+                new_trade.serialize(trade_data["prices"], trade_data["predictions"])
                 session.add(new_trade)
                 session.commit()
                 return new_trade.id
