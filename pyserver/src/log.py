@@ -63,8 +63,8 @@ def LogExceptionContext(
         logger.log(
             f"{str(e)}",
             logging_level,
-            True,
-            True,
+            False,
+            False,
             ui_dom_event,
             notification_duration,
         )
