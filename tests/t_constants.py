@@ -26,6 +26,7 @@ class DatasetMetadata:
         dataset_name: str,
         timeseries_col: str,
         target_col: str,
+        price_col: str,
         pair_name: str | None = None,
     ) -> None:
         self.path = path
@@ -33,6 +34,7 @@ class DatasetMetadata:
         self.timeseries_col = timeseries_col
         self.pair_name = pair_name
         self.target_col = target_col
+        self.price_col = price_col
 
 
 class BinanceCols:
@@ -55,11 +57,13 @@ class BinanceData:
         "btcusdt_1h",
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
     )
     DOGEUSDT_1H_2023_06 = DatasetMetadata(
         FixturePaths.BINANCE.format("DOGEUSDT-1h-2023-06.csv"),
         "dogeusdt_1h",
         BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
     )
     ETHBTC_1H_2023_06 = DatasetMetadata(
@@ -67,11 +71,13 @@ class BinanceData:
         "ethbtc_1h",
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
     )
     ETHUSDT_1H_2023_06 = DatasetMetadata(
         FixturePaths.BINANCE.format("ETHUSDT-1h-2023-06.csv"),
         "ethusdt_1h",
         BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
     )
 
@@ -80,6 +86,7 @@ class BinanceData:
         "btcusdt_1mo",
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
         "BTCUSDT",
     )
     SUSHIUSDT_1MO = DatasetMetadata(
@@ -87,12 +94,14 @@ class BinanceData:
         "sushiusdt_1mo",
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
         "SUSHIUSDT",
     )
     AAVEUSDT_1MO = DatasetMetadata(
         FixturePaths.BINANCE_DOWNLOADED.format("AAVEUSDT-1mo.csv"),
         "aaveusdt_1mo",
         BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
         "AAVEUSDT",
     )
