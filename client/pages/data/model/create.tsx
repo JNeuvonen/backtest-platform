@@ -32,7 +32,7 @@ import { ChakraInput } from "../../../components/chakra/input";
 import { createModel, setTargetColumnReq } from "../../../clients/requests";
 import { nullFillStratToInt } from "../../../utils/navigate";
 import { ChakraPopover } from "../../../components/chakra/popover";
-import { SelectTargetColumnPopover } from "../../../components/SelectTargetColumnPopover";
+import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { useModal } from "../../../hooks/useOpen";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
 
@@ -191,7 +191,7 @@ export const DatasetModelCreatePage = ({
           onClose={targetColumnPopover.onClose}
           headerText="Set target column"
           body={
-            <SelectTargetColumnPopover
+            <SelectColumnPopover
               options={getDatasetColumnOptions(data.res.dataset)}
               placeholder={data.res.dataset.target_col}
               selectCallback={setTargetColumn}
