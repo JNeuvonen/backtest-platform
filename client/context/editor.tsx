@@ -65,7 +65,7 @@ interface EditorContextType {
   dataset: Dataset | null;
   allDatasets: DatasetMetadata[];
   providerMounted: boolean;
-  data: DatasetsResponse | undefined;
+  data: DatasetMetadata[] | null | undefined;
   submitDeleteCols: () => void;
   onDatasetSearch: (searchTerm: string) => void;
 }
@@ -87,9 +87,9 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
   const { data: datasetResp, refetch: refetchDataset } =
     useDatasetQuery(datasetName);
 
-  const dataset = datasetResp?.res.dataset ? datasetResp.res.dataset : null;
+  const dataset = datasetResp;
   const { data, refetch } = useDatasetsQuery();
-  const allDatasets = data?.res.tables || [];
+  const allDatasets = data || [];
 
   const { platform } = useAppContext();
   const allColumnsData = useRef<ColumnsDict>({});
@@ -136,7 +136,7 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
       allColumnsData.current = {};
       filteredColumns.current = {};
       selectedColumns.current = {};
-      data.res.tables.map((item) => {
+      allDatasets.map((item) => {
         if (item.table_name === datasetName) {
           return;
         }
@@ -325,7 +325,7 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
         moveColumnsToBase,
         moveColumnsBackToNew,
         isDeleteDisabled,
-        dataset,
+        dataset: dataset as Dataset | null,
         allDatasets,
         data,
         submitDeleteCols,
