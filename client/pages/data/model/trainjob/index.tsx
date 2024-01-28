@@ -13,7 +13,7 @@ import { ChakraTabs } from "../../../../components/layout/Tabs";
 import { useMessageListener } from "../../../../hooks/useMessageListener";
 import { BacktestModelPage } from "./backtest";
 
-const TAB_LABELS = ["Info", "Simulate"];
+const TAB_LABELS = ["Info", "Backtest"];
 const TABS = [<TrainjobInfoPage key={0} />, <BacktestModelPage key={1} />];
 
 export const TrainJobIndex = () => {
