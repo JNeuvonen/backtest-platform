@@ -47,6 +47,16 @@ async def save_historical_klines(symbol, interval):
         interval = "1mo" if interval == "1M" else interval
 
         table_name = symbol.lower() + "_" + interval
+
+        table_exists_query = (
+            f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
+        )
+        cursor = datasets_conn.cursor()
+        cursor.execute(table_exists_query)
+        if cursor.fetchone():
+            logger.log(f"Table {table_name} already exists.", logging.INFO)
+            DatasetQuery.delete_entry_by_dataset_name(table_name)
+
         klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
         DatasetQuery.create_dataset_entry(table_name, "kline_open_time")
         logger.log(
