@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDatasetQuery } from "../../../clients/queries/queries";
-import { Box, Button, Select, Spinner, useToast } from "@chakra-ui/react";
+import { Box, Button, Spinner, useToast } from "@chakra-ui/react";
 import { GenericTable } from "../../../components/tables/GenericTable";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
@@ -27,14 +27,10 @@ import { ConfirmModal } from "../../../components/form/confirm";
 import {
   execPythonOnDataset,
   setTargetColumnReq,
+  updatePriceColumnReq,
 } from "../../../clients/requests";
 import { getValueById } from "../../../utils/dom";
 import { ChakraPopover } from "../../../components/chakra/popover";
-import {
-  OptionType,
-  SelectWithTextFilter,
-} from "../../../components/SelectFilter";
-import { MultiValue, SingleValue } from "react-select";
 import { CreateCopyPopover } from "../../../components/CreateCopyPopover";
 import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
@@ -88,7 +84,7 @@ export const DatasetInfoPage = () => {
     return <Spinner />;
   }
 
-  const dataset = data?.res.dataset;
+  const dataset = data;
 
   if (!dataset) {
     return <Box>Page is not available</Box>;
@@ -190,7 +186,7 @@ export const DatasetInfoPage = () => {
   };
 
   const setBacktestPriceColumn = async (value: string) => {
-    const res = await setTargetColumnReq(datasetName, value);
+    const res = await updatePriceColumnReq(datasetName, value);
     if (res.status === 200) {
       toast({
         title: "Changed price column",
@@ -296,8 +292,8 @@ export const DatasetInfoPage = () => {
             headerText="Set backtest price column"
             body={
               <SelectColumnPopover
-                options={getDatasetColumnOptions(data.res.dataset)}
-                placeholder=""
+                options={getDatasetColumnOptions(dataset)}
+                placeholder={dataset.price_col}
                 selectCallback={setBacktestPriceColumn}
               />
             }
@@ -314,8 +310,8 @@ export const DatasetInfoPage = () => {
             headerText="Set candle open time column"
             body={
               <SelectColumnPopover
-                options={getDatasetColumnOptions(data.res.dataset)}
-                placeholder={data.res.dataset.timeseries_col}
+                options={getDatasetColumnOptions(dataset)}
+                placeholder={dataset.timeseries_col}
                 selectCallback={setKlineOpenTimeColumn}
               />
             }
@@ -331,8 +327,8 @@ export const DatasetInfoPage = () => {
             headerText="Set target column"
             body={
               <SelectColumnPopover
-                options={getDatasetColumnOptions(data.res.dataset)}
-                placeholder={data.res.dataset.target_col}
+                options={getDatasetColumnOptions(dataset)}
+                placeholder={dataset.target_col}
                 selectCallback={setTargetColumn}
               />
             }
