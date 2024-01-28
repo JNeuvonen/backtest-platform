@@ -36,7 +36,7 @@ import {
 } from "../../../components/SelectFilter";
 import { MultiValue, SingleValue } from "react-select";
 import { CreateCopyPopover } from "../../../components/CreateCopyPopover";
-import { SelectTargetColumnPopover } from "../../../components/SelectTargetColumnPopover";
+import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
 
 type DatasetDetailParams = {
@@ -70,6 +70,7 @@ export const DatasetInfoPage = () => {
   const targetColumnPopover = useModal();
   const klineOpenTimePopover = useModal();
   const createCopyPopover = useModal();
+  const backtestPriceColumnPopover = useModal();
 
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
 
@@ -188,6 +189,20 @@ export const DatasetInfoPage = () => {
     });
   };
 
+  const setBacktestPriceColumn = async (value: string) => {
+    const res = await setTargetColumnReq(datasetName, value);
+    if (res.status === 200) {
+      toast({
+        title: "Changed price column",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      backtestPriceColumnPopover.onClose();
+      refetch();
+    }
+  };
+
   const columns = dataset.columns;
 
   return (
@@ -267,7 +282,6 @@ export const DatasetInfoPage = () => {
                 datasetName={datasetName}
                 successCallback={() => {
                   createCopyPopover.onClose();
-                  console.log(window.location.pathname);
                 }}
               />
             }
@@ -276,26 +290,34 @@ export const DatasetInfoPage = () => {
           </ChakraPopover>
 
           <ChakraPopover
+            isOpen={backtestPriceColumnPopover.isOpen}
+            setOpen={backtestPriceColumnPopover.onOpen}
+            onClose={backtestPriceColumnPopover.onClose}
+            headerText="Set backtest price column"
+            body={
+              <SelectColumnPopover
+                options={getDatasetColumnOptions(data.res.dataset)}
+                placeholder=""
+                selectCallback={setBacktestPriceColumn}
+              />
+            }
+          >
+            <Button variant={BUTTON_VARIANTS.grey}>
+              Set backtest price column
+            </Button>
+          </ChakraPopover>
+
+          <ChakraPopover
             isOpen={klineOpenTimePopover.isOpen}
             setOpen={klineOpenTimePopover.onOpen}
             onClose={klineOpenTimePopover.onClose}
             headerText="Set candle open time column"
             body={
-              <>
-                <SelectWithTextFilter
-                  options={getDatasetColumnOptions(data.res.dataset)}
-                  isMulti={false}
-                  placeholder={data.res.dataset.timeseries_col}
-                  onChange={(
-                    selectedOptions:
-                      | SingleValue<OptionType>
-                      | MultiValue<OptionType>
-                  ) => {
-                    const option = selectedOptions as SingleValue<OptionType>;
-                    if (option) setKlineOpenTimeColumn(option.value as string);
-                  }}
-                />
-              </>
+              <SelectColumnPopover
+                options={getDatasetColumnOptions(data.res.dataset)}
+                placeholder={data.res.dataset.timeseries_col}
+                selectCallback={setKlineOpenTimeColumn}
+              />
             }
           >
             <Button variant={BUTTON_VARIANTS.grey}>
@@ -308,7 +330,7 @@ export const DatasetInfoPage = () => {
             onClose={targetColumnPopover.onClose}
             headerText="Set target column"
             body={
-              <SelectTargetColumnPopover
+              <SelectColumnPopover
                 options={getDatasetColumnOptions(data.res.dataset)}
                 placeholder={data.res.dataset.target_col}
                 selectCallback={setTargetColumn}
