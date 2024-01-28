@@ -37,6 +37,7 @@ import {
 import { MultiValue, SingleValue } from "react-select";
 import { CreateCopyPopover } from "../../../components/CreateCopyPopover";
 import { SelectTargetColumnPopover } from "../../../components/SelectTargetColumnPopover";
+import { getDatasetColumnOptions } from "../../../utils/dataset";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -187,15 +188,6 @@ export const DatasetInfoPage = () => {
     });
   };
 
-  const getColumnOptions = () => {
-    return dataset.columns.map((item) => {
-      return {
-        label: item,
-        value: item,
-      };
-    });
-  };
-
   const columns = dataset.columns;
 
   return (
@@ -291,7 +283,7 @@ export const DatasetInfoPage = () => {
             body={
               <>
                 <SelectWithTextFilter
-                  options={getColumnOptions()}
+                  options={getDatasetColumnOptions(data.res.dataset)}
                   isMulti={false}
                   placeholder={data.res.dataset.timeseries_col}
                   onChange={(
@@ -317,7 +309,7 @@ export const DatasetInfoPage = () => {
             headerText="Set target column"
             body={
               <SelectTargetColumnPopover
-                options={getColumnOptions()}
+                options={getDatasetColumnOptions(data.res.dataset)}
                 placeholder={data.res.dataset.target_col}
                 selectCallback={setTargetColumn}
               />
