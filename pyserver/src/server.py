@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from utils import on_shutdown_cleanup
 import uvicorn
 
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from log import LogExceptionContext, get_logger
 from route_binance import router as binance_router
@@ -53,6 +53,11 @@ def shutdown_server():
     logger = get_logger()
     logger.info("Application is shutting down")
     os._exit(0)
+
+
+@app.get("/frontend-dev-test-error")
+async def test_error_endpoint():
+    raise HTTPException(status_code=400, detail="Custom error message for testing")
 
 
 @app.get("/", response_class=Response)
