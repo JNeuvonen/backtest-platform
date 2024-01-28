@@ -16,7 +16,7 @@ class Dataset(Base):
     __tablename__ = "dataset"
 
     id = Column(Integer, primary_key=True)
-    dataset_name = Column(String)
+    dataset_name = Column(String, unique=True)
     timeseries_column = Column(String)
     price_column = Column(String)
     target_column = Column(String)
@@ -84,6 +84,15 @@ class DatasetQuery:
                     .where(Dataset.dataset_name == old_name)
                     .values(dataset_name=new_name)
                 )
+                session.commit()
+
+    @staticmethod
+    def delete_entry_by_dataset_name(dataset_name: str):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Dataset).filter(
+                    Dataset.dataset_name == dataset_name
+                ).delete()
                 session.commit()
 
     @staticmethod
