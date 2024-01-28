@@ -8,7 +8,7 @@ interface Props {
   selectCallback: (value: string) => void;
 }
 
-export const SelectTargetColumnPopover = ({
+export const SelectColumnPopover = ({
   options,
   placeholder,
   selectCallback,
