@@ -87,6 +87,7 @@ interface FormStateBinanceProps {
 const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
   const toast = useToast();
   const { data, isLoading } = useBinanceTickersQuery();
+  console.log(data);
 
   if (isLoading) {
     return <Spinner />;
@@ -218,6 +219,7 @@ const GetNewDatasetModal = ({ modalClose }: GetNewDatasetModalProps) => {
 
 export const BrowseDatasetsPage = () => {
   const { data, isLoading, refetch } = useDatasetsQuery();
+  console.log(data);
   const { isOpen, jsxContent, setContent, modalClose } = useModal();
 
   const refetchTables = () => {
@@ -242,13 +244,13 @@ export const BrowseDatasetsPage = () => {
       );
     }
 
-    if (!data || !data?.res.tables) {
+    if (!data) {
       return null;
     }
 
     return (
       <div>
-        <DatasetTable tables={data.res.tables} />
+        <DatasetTable tables={data} />
       </div>
     );
   };
