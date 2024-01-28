@@ -19,7 +19,7 @@ from db import (
     rename_column,
     rename_table,
 )
-from query_dataset import DatasetQuery
+from query_dataset import DatasetBody, DatasetQuery
 from query_model import ModelQuery
 from request_types import (
     BodyExecPython,
@@ -42,6 +42,7 @@ router = APIRouter()
 class RoutePaths:
     ALL_TABLES = "/tables"
     GET_DATASET_BY_NAME = "/{dataset_name}"
+    UPDATE_DATASET = "/{dataset_name}"
     GET_DATASET_COL_INFO = "/{dataset_name}/col-info/{column_name}"
     ADD_COLUMNS = "/{dataset_name}/add-columns"
     UPDATE_TIMESERIES_COL = "/{dataset_name}/update-timeseries-col"
@@ -56,6 +57,7 @@ class RoutePaths:
     FETCH_MODELS = "/{dataset_name}/models/"
     SET_TARGET_COLUMN = "/{dataset_name}/target-column"
     COPY = "/{dataset_name}/copy"
+    UPDATE_PRICE_COLUMN = "/{dataset_name}/price-column"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -91,6 +93,15 @@ async def route_all_tables():
 async def route_get_dataset_by_name(dataset_name: str) -> dict:
     with HttpResponseContext():
         return {"dataset": get_dataset_table(dataset_name)}
+
+
+@router.get(RoutePaths.UPDATE_DATASET)
+async def route_update_dataset(dataset_name: str, body: DatasetBody):
+    with HttpResponseContext():
+        DatasetQuery.update_dataset(dataset_name, body)
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
 
 
 @router.get(RoutePaths.GET_DATASET_COL_INFO)
@@ -218,6 +229,15 @@ async def route_fetch_models(dataset_name: str):
 async def route_post_target_col(dataset_name: str, target_column: str):
     with HttpResponseContext():
         DatasetQuery.update_target_column(dataset_name, target_column)
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
+
+
+@router.put(RoutePaths.UPDATE_PRICE_COLUMN)
+async def route_update_price_col(dataset_name: str, price_column: str):
+    with HttpResponseContext():
+        DatasetQuery.update_price_column(dataset_name, price_column)
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
