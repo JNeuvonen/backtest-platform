@@ -19,14 +19,14 @@ from datetime import timedelta
 
 def train():
 
-    x_train, y_train, x_val, y_val, y_val_before_scale, val_kline_open_times = load_data({DATASET_NAME}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT})
+    x_train, y_train, x_val, y_val, y_val_before_scale, val_kline_open_times, val_prices = load_data({DATASET_NAME}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT})
 
-    TrainJobQuery.set_klines_and_price_before_scale({TRAIN_JOB_ID}, y_val_before_scale.values.tolist(), val_kline_open_times.values.tolist())
+    TrainJobQuery.set_backtest_data({TRAIN_JOB_ID}, val_prices.values.tolist(), val_kline_open_times.values.tolist())
 
     train_dataset = TensorDataset(x_train, y_train)
     val_dataset = TensorDataset(x_val, y_val)
     train_loader = DataLoader(train_dataset, batch_size={BATCH_SIZE}, shuffle={SHUFFLE})
-    val_loader = DataLoader(val_dataset)
+    val_loader = DataLoader(val_dataset, batch_size={BATCH_SIZE})
 
     model = Model(x_train.shape[1])
     criterion, optimizer = get_criterion_and_optimizer(model)
