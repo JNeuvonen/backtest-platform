@@ -16,37 +16,6 @@ class Position:
     CASH = "cash"
 
 
-class Trade:
-    def __init__(
-        self,
-        start_price,
-        start_time,
-        direction,
-        end_price,
-        end_time,
-        net_result,
-        percent_result,
-    ):
-        self.open_price = start_price
-        self.open_time = start_time
-        self.direction = direction
-        self.end_price = end_price
-        self.end_time = end_time
-        self.net_result = net_result
-        self.percent_result = percent_result
-
-    def to_dict(self):
-        return {
-            "open_price": self.open_price,
-            "start_time": self.open_time,
-            "direction": self.direction,
-            "end_price": self.end_price,
-            "end_time": self.end_time,
-            "net_result": self.net_result,
-            "percent_result": self.percent_result,
-        }
-
-
 class Backtest:
     def __init__(
         self,
@@ -63,9 +32,11 @@ class Backtest:
         self.position = Position.CASH
         self.price_on_start_of_trade: float
         self.last_price: float | None = None
+        self.trade_predictions: List[float] = []
+        self.trade_prices: List[float] = []
         self.time_on_start_of_trade: int
-        self.trades: List[Trade] = []
-        self.balance_history = []
+        self.trades: List[dict] = []
+        self.balance_history: List[dict] = []
 
     def tick(self, price: float, prediction: float, kline_open_time: int):
         code = BACKTEST_TEMPLATE
@@ -133,6 +104,10 @@ class Backtest:
         if self.position == Position.LONG:
             self.balance = price / self.last_price * self.balance
 
+        if self.position == Position.LONG or self.position == Position.SHORT:
+            self.trade_predictions.append(prediction)
+            self.trade_prices.append(price)
+
         self.last_price = price
         self.balance_history.append(
             {
@@ -146,29 +121,33 @@ class Backtest:
 
     def close_long(self, price: float, trade_close_time: int):
         balance_before = self.balance_on_start_of_trade
-        finished_trade = Trade(
-            self.price_on_start_of_trade,
-            self.time_on_start_of_trade,
-            Position.LONG,
-            price,
-            trade_close_time,
-            self.balance - balance_before,
-            (self.balance / balance_before - 1) * 100,
-        )
+        finished_trade = {
+            "open_price": self.price_on_start_of_trade,
+            "start_time": self.time_on_start_of_trade,
+            "direction": Position.LONG,
+            "end_price": price,
+            "end_time": trade_close_time,
+            "net_result": self.balance - balance_before,
+            "percent_result": (self.balance / balance_before - 1) * 100,
+            "predictions": self.trade_predictions,
+            "prices": self.trade_prices,
+        }
         self.trades.append(finished_trade)
         self.position = Position.CASH
 
     def close_short(self, price: float, trade_close_time: int):
         balance_before = self.balance_on_start_of_trade
-        finished_trade = Trade(
-            self.price_on_start_of_trade,
-            self.time_on_start_of_trade,
-            Position.SHORT,
-            price,
-            trade_close_time,
-            self.balance - balance_before,
-            (self.balance / balance_before - 1) * 100,
-        )
+        finished_trade = {
+            "open_price": self.price_on_start_of_trade,
+            "start_time": self.time_on_start_of_trade,
+            "direction": Position.SHORT,
+            "end_price": price,
+            "end_time": trade_close_time,
+            "net_result": self.balance - balance_before,
+            "percent_result": (self.balance / balance_before - 1) * 100,
+            "predictions": self.trade_predictions,
+            "prices": self.trade_prices,
+        }
         self.trades.append(finished_trade)
         self.position = Position.CASH
 
@@ -179,12 +158,11 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
         train_job: TrainJob = train_job_detailed["train_job"]
         epochs: List[ModelWeights] = train_job_detailed["epochs"]
 
-        target_col = json.loads(train_job.validation_target_before_scale)
-        print(target_col)
-        kline_open_time = json.loads(train_job.validation_kline_open_times)
+        prices = json.loads(train_job.backtest_prices)
+        kline_open_time = json.loads(train_job.backtest_kline_open_times)
         predictions = json.loads(epochs[backtestInfo.epoch_nr]["val_predictions"])
 
-        assert len(target_col) == len(predictions)
+        assert len(prices) == len(predictions)
 
         replacements = {
             "{ENTER_AND_EXIT_CRITERIA_FUNCS}": backtestInfo.enter_and_exit_criteria,
@@ -193,8 +171,8 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
         backtest = Backtest(10000, 0.1, 0.1, replacements)
 
-        for idx in range(len(target_col)):
-            price = target_col[idx]
+        for idx in range(len(prices)):
+            price = prices[idx]
             prediction = predictions[idx]
             backtest.tick(price, prediction[0], kline_open_time[idx])
 
@@ -204,8 +182,6 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
             epochs[backtestInfo.epoch_nr]["id"],
         )
 
-        trades = [item.to_dict() for item in backtest.trades]
+        TradeQuery.create_many_trade_entry(backtest_id, backtest.trades)
 
-        TradeQuery.create_many_trade_entry(backtest_id, trades)
-
-        return {"data": backtest.balance_history, "trades": trades}
+        return {"data": backtest.balance_history, "trades": backtest.trades}
