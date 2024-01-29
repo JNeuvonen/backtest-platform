@@ -27,7 +27,7 @@ export const BacktestsPage = () => {
     });
     data.forEach((item, i) => {
       ret.push([
-        <Link className="link-default" to="/">
+        <Link className="link-default" to="/" key={i}>
           {i}
         </Link>,
         item.start_balance,
