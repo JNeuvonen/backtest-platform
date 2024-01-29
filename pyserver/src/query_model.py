@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from log import LogExceptionContext
 from orm import Base, Session
@@ -18,6 +18,9 @@ class Model(Base):
     model_name = Column(String, unique=True)
     optimizer_and_criterion_code = Column(String)
     validation_split = Column(String)
+    scale_target = Column(Boolean)
+    scaling_strategy = Column(Integer)
+
     dataset = relationship("Dataset")
 
 
@@ -35,6 +38,8 @@ class ModelQuery:
                     model_name=model_data.name,
                     optimizer_and_criterion_code=model_data.hyper_params_and_optimizer_code,
                     validation_split=",".join(map(str, model_data.validation_split)),
+                    scale_target=model_data.scale_target,
+                    scaling_strategy=model_data.scaling_strategy.value,
                 )
                 session.add(new_model)
                 session.commit()
