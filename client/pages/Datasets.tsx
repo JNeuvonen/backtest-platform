@@ -87,7 +87,6 @@ interface FormStateBinanceProps {
 const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
   const toast = useToast();
   const { data, isLoading } = useBinanceTickersQuery();
-  console.log(data);
 
   if (isLoading) {
     return <Spinner />;
@@ -120,8 +119,8 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
     try {
       await Promise.all(promises);
       toast({
-        title: "Initiated background download on all of the pairs",
-        status: "success",
+        title: "Started downloading data. The data should arrive shortly.",
+        status: "info",
         duration: 5000,
         isClosable: true,
       });
