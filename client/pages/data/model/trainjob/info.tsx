@@ -2,14 +2,8 @@ import React, { useEffect } from "react";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { useTrainJobDetailed } from "../../../../clients/queries/queries";
 import { useAppContext } from "../../../../context/app";
-import { useMessageListener } from "../../../../hooks/useMessageListener";
-import { DOM_EVENT_CHANNELS, LAYOUT, PATHS } from "../../../../utils/constants";
+import { LAYOUT } from "../../../../utils/constants";
 import { Spinner } from "@chakra-ui/react";
-import { Breadcrumbs } from "../../../../components/chakra/Breadcrumbs";
-import {
-  getDatasetInfoPagePath,
-  getModelInfoPath,
-} from "../../../../utils/navigate";
 import Title from "../../../../components/typography/Title";
 import { ShareYAxisTwoLineChart } from "../../../../components/charts/ShareYAxisLineChart";
 
