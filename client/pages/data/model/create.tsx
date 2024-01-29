@@ -16,6 +16,8 @@ import {
   DOM_IDS,
   NULL_FILL_STRATEGIES,
   NullFillStrategy,
+  SCALING_STRATEGIES,
+  ScalingStrategy,
 } from "../../../utils/constants";
 import { ToolBarStyle } from "../../../components/ToolbarStyle";
 import { CodeEditor } from "../../../components/CodeEditor";
@@ -30,7 +32,10 @@ import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
 import { createModel, setTargetColumnReq } from "../../../clients/requests";
-import { nullFillStratToInt } from "../../../utils/navigate";
+import {
+  nullFillStratToInt,
+  scalingStrategyToInt,
+} from "../../../utils/navigate";
 import { ChakraPopover } from "../../../components/chakra/popover";
 import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { useModal } from "../../../hooks/useOpen";
@@ -85,6 +90,8 @@ export interface ModelDataPayload {
   model: string;
   hyper_params_and_optimizer_code: string;
   validation_split: number[];
+  scale_target: boolean;
+  scaling_strategy: number;
 }
 
 export const DatasetModelCreatePage = ({
@@ -96,8 +103,11 @@ export const DatasetModelCreatePage = ({
   const [columnsToDrop, setColumnsToDrop] = useState<CheckboxValue[]>([]);
   const [dropColumnsVisible, setDropColumnsVisible] = useState(false);
   const [modelName, setModelName] = useState("");
+  const [scaleTarget, setScaleTarget] = useState(false);
   const [nullFillStrategy, setNullFillStrategy] =
     useState<NullFillStrategy>("CLOSEST");
+  const [scalingStrategy, setScalingStrategy] =
+    useState<ScalingStrategy>("MIN-MAX");
   const [modelCode, setModelCode] = useState(getModelDefaultExample());
   const [hyperParamsCode, setHyperParamsCode] = useState(
     getHyperParamsExample()
@@ -154,6 +164,8 @@ export const DatasetModelCreatePage = ({
       model: modelCode,
       hyper_params_and_optimizer_code: hyperParamsCode,
       validation_split: validSplitSize,
+      scale_target: scaleTarget,
+      scaling_strategy: scalingStrategyToInt(scalingStrategy),
     };
 
     const res = await createModel(datasetName, body);
@@ -204,6 +216,15 @@ export const DatasetModelCreatePage = ({
       <ToolBarStyle style={{ marginTop: "16px" }}>
         <ChakraSelect
           containerStyle={{ width: "200px" }}
+          label={"Scaling strategy"}
+          options={SCALING_STRATEGIES}
+          defaultValueIndex={0}
+          onChange={(value) => {
+            setScalingStrategy(value as ScalingStrategy);
+          }}
+        />
+        <ChakraSelect
+          containerStyle={{ width: "200px" }}
           label={"Null fill strategy"}
           options={NULL_FILL_STRATEGIES}
           id={DOM_IDS.select_null_fill_strat}
@@ -233,6 +254,14 @@ export const DatasetModelCreatePage = ({
         height="100px"
         label="Hyper parameters and optimizer"
       />
+
+      <div style={{ marginTop: "16px" }}>
+        <ChakraCheckbox
+          label="Scale target"
+          isChecked={scaleTarget}
+          onChange={() => setScaleTarget(!scaleTarget)}
+        />
+      </div>
 
       <div style={{ marginTop: "16px" }}>
         <ChakraCheckbox
