@@ -139,3 +139,29 @@ export interface Column {
   stats?: StatsCol;
   kline_open_time: Array<number[]>;
 }
+
+export interface BacktestBalance {
+  cash: number;
+  kline_open_time: number;
+  portfolio_worth: number;
+  position: number;
+  prediction: number;
+  short_debt: number;
+}
+
+export interface BacktestObject {
+  enter_and_exit_trade_criteria: string;
+  id: number;
+  model_weights_id: number;
+  train_job_id: number;
+  data: BacktestBalance[];
+  start_balance: number;
+  end_balance: number;
+}
+
+export interface BacktestsResponse {
+  res: {
+    data: BacktestObject;
+  };
+  status: number;
+}
