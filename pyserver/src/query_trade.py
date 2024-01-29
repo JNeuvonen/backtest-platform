@@ -9,10 +9,10 @@ from orm import Base, Session
 class Trade(Base):
     __tablename__ = "trade"
     id = Column(Integer, primary_key=True)
-    start_price = Column(Float)
-    end_price = Column(Float)
-    start_time = Column(Integer)
-    end_time = Column(Integer)
+    open_price = Column(Float)
+    close_price = Column(Float)
+    open_time = Column(Integer)
+    close_time = Column(Integer)
     direction = Column(String)
     net_result = Column(Float)
     percent_result = Column(Float)
@@ -37,10 +37,10 @@ class TradeQuery:
                 for item in trade_data:
                     trade = Trade(
                         backtest_id=backtest_id,
-                        start_price=item["open_price"],
-                        end_price=item["end_price"],
-                        start_time=item["start_time"],
-                        end_time=item["end_time"],
+                        open_price=item["open_price"],
+                        close_price=item["close_price"],
+                        open_time=item["open_time"],
+                        close_time=item["close_time"],
                         direction=item["direction"],
                         net_result=item["net_result"],
                         percent_result=item["percent_result"],
