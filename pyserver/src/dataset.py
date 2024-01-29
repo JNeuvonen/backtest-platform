@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+from sqlalchemy.sql.expression import Null
 import torch
 import numpy as np
 from typing import List
@@ -29,7 +30,11 @@ def get_select_columns_str(columns: List[str]):
 
 
 def df_fill_nulls_on_dataframe(df: pd.DataFrame, strategy: NullFillStrategy | None):
-    if strategy is NullFillStrategy.NONE or strategy is None:
+    if (
+        strategy is NullFillStrategy.NONE.value
+        or strategy is None
+        or strategy == NullFillStrategy.NONE
+    ):
         return
     with LogExceptionContext():
         for col in df.columns:
@@ -51,14 +56,19 @@ def df_fill_nulls_on_all_cols(dataset_name: str, strategy: NullFillStrategy):
 
 def df_fill_nulls(df: pd.DataFrame, column: str, strategy: NullFillStrategy):
     with LogExceptionContext():
-        if strategy == NullFillStrategy.ZERO:
+        if strategy == NullFillStrategy.ZERO.value or strategy == NullFillStrategy.ZERO:
             df[column].fillna(0, inplace=True)
 
-        elif strategy == NullFillStrategy.MEAN:
+        elif (
+            strategy == NullFillStrategy.MEAN.value or strategy == NullFillStrategy.MEAN
+        ):
             mean_value = df[column].mean()
             df[column].fillna(mean_value, inplace=True)
 
-        elif strategy == NullFillStrategy.CLOSEST:
+        elif (
+            strategy == NullFillStrategy.CLOSEST.value
+            or strategy == NullFillStrategy.CLOSEST
+        ):
             if df[column].isnull().any():
                 ffill = df[column].ffill()
                 bfill = df[column].bfill()
@@ -137,6 +147,7 @@ def load_data(
     null_fill_strategy: NullFillStrategy | None,
     train_val_split: List[int] | None = None,
     scaling_strategy: ScalingStrategy = ScalingStrategy.STANDARD,
+    scale_target: bool = False,
 ):
     timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
     price_col = DatasetQuery.get_price_col(dataset_name)
@@ -147,9 +158,9 @@ def load_data(
 
     scaler = None
 
-    if scaling_strategy == ScalingStrategy.MIN_MAX:
+    if scaling_strategy == ScalingStrategy.MIN_MAX.value:
         scaler = MinMaxScaler()
-    elif scaling_strategy == ScalingStrategy.STANDARD:
+    elif scaling_strategy == ScalingStrategy.STANDARD.value:
         scaler = StandardScaler()
 
     if train_val_split:
@@ -166,10 +177,21 @@ def load_data(
         price_col = val_df[price_col].copy()
 
         if scaler is not None:
-            train_df.loc[:, train_df.columns] = scaler.fit_transform(
-                train_df[train_df.columns]
-            )
-            val_df.loc[:, val_df.columns] = scaler.transform(val_df[val_df.columns])
+            if scale_target:
+                train_df.loc[:, train_df.columns] = scaler.fit_transform(
+                    train_df[train_df.columns]
+                )
+                val_df.loc[:, val_df.columns] = scaler.transform(val_df[val_df.columns])
+            else:
+                train_target_temp = train_df.pop(target_column)
+                val_target_temp = val_df.pop(target_column)
+                train_df.loc[:, train_df.columns] = scaler.fit_transform(
+                    train_df[train_df.columns]
+                )
+                val_df.loc[:, val_df.columns] = scaler.transform(val_df[val_df.columns])
+                train_df[target_column] = train_target_temp.copy()
+                val_df[target_column] = val_target_temp.copy()
+                del train_target_temp, val_target_temp
 
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
