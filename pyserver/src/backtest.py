@@ -8,149 +8,12 @@ from query_trainjob import TrainJob, TrainJobQuery
 from query_backtest import BacktestQuery
 from request_types import BodyRunBacktest
 from code_gen_template import BACKTEST_TEMPLATE
-from utils import to_dict
 
 
 class Direction:
     LONG = "long"
     SHORT = "short"
     CASH = "cash"
-
-
-class Backtest:
-    def __init__(
-        self,
-        start_balance: float,
-        fees: float,
-        slippage: float,
-        enter_and_exit_criteria_placeholders: Dict,
-    ) -> None:
-        self.balance = start_balance
-        self.balance_on_start_of_trade = start_balance
-        self.fees_multiplier = 1 - (fees / 100)
-        self.slippage_multiplier = 1 - (slippage / 100)
-        self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
-        self.position = Direction.CASH
-        self.price_on_start_of_trade: float
-        self.last_price: float | None = None
-        self.trade_predictions: List[float] = []
-        self.trade_prices: List[float] = []
-        self.time_on_start_of_trade: int
-        self.trades: List[dict] = []
-        self.balance_history: List[dict] = []
-
-    def tick(self, price: float, prediction: float, kline_open_time: int):
-        code = BACKTEST_TEMPLATE
-        for key, value in self.enter_and_exit_criteria_placeholders.items():
-            if key == "{PREDICTION}":
-                code = code.replace(key, str(prediction))
-            else:
-                code = code.replace(key, str(value))
-
-        results_dict: Dict[str, bool] = {}
-        exec(code, globals(), results_dict)
-
-        should_enter_trade = results_dict["enter_trade"]
-        should_exit_trade = results_dict["exit_trade"]
-
-        if should_enter_trade is False and self.position == Direction.LONG:
-            self.close_long(price, prediction, kline_open_time)
-
-        if should_exit_trade is False and self.position == Direction.SHORT:
-            self.close_short(price, prediction, kline_open_time)
-
-        if should_enter_trade is True and self.position == Direction.CASH:
-            self.balance_on_start_of_trade = self.balance
-            self.price_on_start_of_trade = price
-            self.time_on_start_of_trade = kline_open_time
-            self.position = Direction.LONG
-
-        if should_exit_trade is True and self.position == Direction.CASH:
-            self.balance_on_start_of_trade = self.balance
-            self.price_on_start_of_trade = price
-            self.time_on_start_of_trade = kline_open_time
-            self.position = Direction.SHORT
-
-        self.update_data(price, kline_open_time, prediction)
-
-    def update_data(self, price: float, kline_open_time: int, prediction: float):
-        if self.last_price is None:
-            self.last_price = price
-            self.balance_history.append(
-                {
-                    "balance": self.balance,
-                    "kline_open_time": kline_open_time,
-                    "price": price,
-                    "prediction": prediction,
-                }
-            )
-            return
-
-        if self.position == Direction.LONG:
-            profit = (price - self.last_price) * (self.balance / self.last_price)
-            self.balance += profit
-
-        if self.position == Direction.SHORT:
-            profit = (self.last_price - price) * (self.balance / self.last_price)
-            self.balance += profit
-
-        if self.position == Direction.LONG or self.position == Direction.SHORT:
-            self.trade_predictions.append(prediction)
-            self.trade_prices.append(price)
-
-        self.last_price = price
-        self.balance_history.append(
-            {
-                "balance": self.balance,
-                "kline_open_time": kline_open_time,
-                "price": price,
-                "prediction": prediction,
-                "position": self.position,
-            }
-        )
-
-    def close_long(self, price: float, prediction: float, trade_close_time: int):
-        if self.position == Direction.LONG:
-            profit = (price - self.last_price) * (self.balance / self.last_price)
-            self.balance += profit
-        balance_before = self.balance_on_start_of_trade
-        finished_trade = {
-            "open_price": self.price_on_start_of_trade,
-            "start_time": self.time_on_start_of_trade,
-            "direction": Direction.LONG,
-            "end_price": price,
-            "end_time": trade_close_time,
-            "net_result": self.balance - balance_before,
-            "percent_result": (self.balance / balance_before - 1) * 100,
-            "predictions": self.trade_predictions,
-            "prices": self.trade_prices,
-        }
-        self.trade_prices.append(price)
-        self.trade_predictions.append(prediction)
-        self.trades.append(finished_trade)
-        self.position = Direction.CASH
-
-    def close_short(self, price: float, prediction: float, trade_close_time: int):
-        if self.position == Direction.SHORT:
-            profit = (self.last_price - price) * (self.balance / self.last_price)
-            self.balance += profit
-
-        balance_before = self.balance_on_start_of_trade
-        finished_trade = {
-            "open_price": self.price_on_start_of_trade,
-            "start_time": self.time_on_start_of_trade,
-            "direction": Direction.SHORT,
-            "end_price": price,
-            "end_time": trade_close_time,
-            "net_result": self.balance - balance_before,
-            "percent_result": (self.balance / balance_before - 1) * 100,
-            "predictions": self.trade_predictions,
-            "prices": self.trade_prices,
-        }
-        self.trade_prices.append(price)
-        self.trade_predictions.append(prediction)
-        self.trades.append(finished_trade)
-        self.position = Direction.CASH
 
 
 def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
@@ -161,7 +24,7 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
         prices = json.loads(train_job.backtest_prices)
         kline_open_time = json.loads(train_job.backtest_kline_open_times)
-        predictions = json.loads(epochs[backtestInfo.epoch_nr]["val_predictions"])
+        predictions = json.loads(epochs[backtestInfo.epoch_nr - 1]["val_predictions"])
 
         assert len(prices) == len(predictions)
 
@@ -170,22 +33,28 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
             "{PREDICTION}": None,
         }
 
-        backtest = Backtest(10000, 0.1, 0.1, replacements)
+        START_BALANCE = 10000
 
+        backtest_v2 = BacktestV2(START_BALANCE, 0.1, 0.1, replacements)
         for idx in range(len(prices)):
             price = prices[idx]
             prediction = predictions[idx]
-            backtest.tick(price, prediction[0], kline_open_time[idx])
+            backtest_v2.enter_kline(price, prediction[0], kline_open_time[idx])
+
+        end_balance = backtest_v2.positions.total_positions_value
 
         backtest_id = BacktestQuery.create_backtest_entry(
             backtestInfo.enter_and_exit_criteria,
-            backtest.balance_history,
+            backtest_v2.positions.balance_history,
             epochs[backtestInfo.epoch_nr]["id"],
+            train_job.id,
+            START_BALANCE,
+            end_balance,
         )
+        TradeQuery.create_many_trade_entry(backtest_id, backtest_v2.positions.trades)
 
-        TradeQuery.create_many_trade_entry(backtest_id, backtest.trades)
-
-        return {"data": backtest.balance_history, "trades": backtest.trades}
+        backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
+        return backtest_from_db
 
 
 class Positions:
@@ -195,48 +64,112 @@ class Positions:
         self.slippage = slippage
         self.position = 0.0
         self.short_debt = 0.0
-        self.balance_history = []
+        self.total_positions_value = 0.0
 
-    def close_long(self, price: float):
+        self.enter_trade_price = 0.0
+        self.enter_trade_time = 0
+        self.enter_trade_prediction = 0.0
+        self.enter_trade_balance = 0.0
+
+        self.trades = []
+        self.balance_history = []
+        self.trade_prices = []
+        self.trade_predictions = []
+
+    def close_long(self, price: float, kline_open_time: int):
         self.cash += price * self.position
         self.position = 0.0
+        self.cash = self.cash * self.slippage * self.fees
+        self.add_trade(price, kline_open_time, Direction.SHORT)
 
-    def close_short(self, price: float):
+    def reset_trade_track_data(self):
+        self.trade_prices = []
+        self.trade_predictions = []
+
+    def add_trade(self, price: float, kline_open_time: int, direction):
+        net_profit = self.total_positions_value - self.enter_trade_balance
+        percent_result = (
+            self.total_positions_value / self.enter_trade_balance - 1
+        ) * 100
+
+        self.trades.append(
+            {
+                "open_price": self.enter_trade_price,
+                "close_price": price,
+                "open_time": self.enter_trade_time,
+                "close_time": kline_open_time,
+                "direction": direction,
+                "net_result": net_profit,
+                "percent_result": percent_result,
+                "predictions": self.trade_predictions,
+                "prices": self.trade_prices,
+            }
+        )
+
+    def close_short(self, price: float, kline_open_time: int):
         price_to_close = price * self.short_debt
         self.cash -= price_to_close
         self.short_debt = 0.0
+        self.cash = self.cash * self.slippage * self.fees
 
-    def go_long(self, price: float):
+        self.add_trade(price, kline_open_time, Direction.SHORT)
+
+    def init_trade_track_data(
+        self, price: float, prediction: float, kline_open_time: int
+    ):
+        self.enter_trade_time = kline_open_time
+        self.enter_trade_price = price
+        self.enter_trade_prediction = prediction
+        self.enter_trade_balance = self.total_positions_value
+        self.trade_prices = [price]
+        self.trade_predictions = [prediction]
+
+    def go_long(self, price: float, prediction: float, kline_open_time: int):
+        self.cash = self.cash * self.slippage * self.fees
         self.position = self.cash / price
         self.cash = 0.0
 
-    def go_short(self, price: float):
-        short_proceedings = self.cash * price
-        self.short_debt = self.cash / price
+        self.init_trade_track_data(price, prediction, kline_open_time)
+
+    def go_short(self, price: float, prediction: float, kline_open_time: int):
+        self.cash = self.cash * self.slippage * self.fees
+        position_size = self.cash / price
+        short_proceedings = position_size * price
+        self.short_debt = position_size
         self.cash += short_proceedings
 
-    def update_balance(self, price: float):
-        portfolio_worth = self.cash
+        self.init_trade_track_data(price, prediction, kline_open_time)
 
+    def update_balance(self, price: float, prediction: float, kline_open_time: int):
+        portfolio_worth = self.cash
         if self.position > 0.0:
             portfolio_worth += price * self.position
-
         if self.short_debt > 0.0:
             portfolio_worth -= price * self.short_debt
-        self.balance_history.append(portfolio_worth)
+        self.total_positions_value = portfolio_worth
+        self.balance_history.append(
+            {
+                "portfoli_worth": portfolio_worth,
+                "prediction": prediction,
+                "kline_open_time": kline_open_time,
+                "position": self.position,
+                "short_debt": self.short_debt,
+                "cash": self.cash,
+            }
+        )
 
 
 class BacktestV2:
     def __init__(
         self,
         start_balance: float,
-        fees: float,
-        slippage: float,
+        fees_perc: float,
+        slippage_perc: float,
         enter_and_exit_criteria_placeholders: Dict,
     ) -> None:
         self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
         self.positions = Positions(
-            start_balance, (1 - fees) / 100, 1 - (slippage / 100)
+            start_balance, 1 - (fees_perc / 100), 1 - (slippage_perc / 100)
         )
         self.history: List = []
 
@@ -257,14 +190,10 @@ class BacktestV2:
         )
 
     def update_data(self, price: float, prediction: float, kline_open_time: int):
-        self.history.append(
-            {
-                "price": price,
-                "prediction": prediction,
-                "kline_open_time": kline_open_time,
-                "positions": to_dict(self.positions),
-            }
-        )
+        if self.positions.position > 0.0 or self.positions.short_debt > 0.0:
+            self.positions.trade_predictions.append(prediction)
+            self.positions.trade_prices.append(prediction)
+        self.positions.update_balance(price, prediction, kline_open_time)
 
     def tick(
         self,
@@ -277,13 +206,13 @@ class BacktestV2:
         self.update_data(price, prediction, kline_open_time)
 
         if self.positions.position > 0 and should_long is False:
-            self.positions.close_long(price)
+            self.positions.close_long(price, kline_open_time)
 
         if self.positions.short_debt > 0 and should_short is False:
-            self.positions.close_short(price)
+            self.positions.close_short(price, kline_open_time)
 
         if self.positions.cash > 0 and should_long is True:
-            self.positions.go_long(price)
+            self.positions.go_long(price, prediction, kline_open_time)
 
         if self.positions.short_debt == 0 and should_short is True:
-            self.positions.go_short(price)
+            self.positions.go_short(price, prediction, kline_open_time)
