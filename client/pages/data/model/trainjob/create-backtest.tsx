@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   useDatasetsQuery,
+  useTrainJobBacktests,
   useTrainJobDetailed,
 } from "../../../../clients/queries/queries";
 import { usePathParams } from "../../../../hooks/usePathParams";
-import { Button, Spinner } from "@chakra-ui/react";
+import { Button, Spinner, Stack, useToast } from "@chakra-ui/react";
 import {
   ChakraSelect,
   SelectOption,
@@ -15,6 +16,9 @@ import { Formik, Form, Field } from "formik";
 import { CodeEditor } from "../../../../components/CodeEditor";
 import { CodeHelper } from "../../../../utils/constants";
 import { runBacktest } from "../../../../clients/requests";
+import { WithLabel } from "../../../../components/form/WithLabel";
+import { BUTTON_VARIANTS } from "../../../../theme";
+import { PredAndPriceChart } from "../../../../components/charts/PredAndPriceChart";
 
 export interface BacktestForm {
   selectedModel: string | null;
@@ -40,10 +44,14 @@ export const BacktestModelPage = () => {
     trainJobId: string;
     datasetName?: string;
   }>();
-  const { data } = useTrainJobDetailed(trainJobId);
-  const { data: allDatasets } = useDatasetsQuery();
+  const { data: trainJob, refetch: refetchTrainjob } =
+    useTrainJobDetailed(trainJobId);
+  const { data: allDatasets, refetch: refetchDatasets } = useDatasetsQuery();
+  const { refetch: refetchBacktests } = useTrainJobBacktests(trainJobId);
+  const toast = useToast();
+  const [epochNr, setEpochNr] = useState("");
 
-  if (!data || !allDatasets) {
+  if (!trainJob || !allDatasets) {
     return (
       <div>
         <Spinner />
@@ -75,9 +83,15 @@ export const BacktestModelPage = () => {
     const res = await runBacktest(trainJobId, payload);
 
     if (res.status === 200) {
-      console.log(res);
-    } else {
-      console.log("fail: ", res);
+      refetchTrainjob();
+      refetchDatasets();
+      refetchBacktests();
+      toast({
+        title: "Finished running the backtest.",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -92,19 +106,37 @@ export const BacktestModelPage = () => {
       >
         {() => (
           <Form>
-            <Field name="selectedModel">
-              {({ field }) => (
-                <ChakraSelect
-                  label="Select Model"
-                  options={generateSelectWeightsOptions(data.epochs)}
-                  onChange={(value) =>
-                    field.onChange({ target: { name: "selectedModel", value } })
+            <Stack direction="row">
+              <Field name="selectedModel">
+                {({ field }) => (
+                  <ChakraSelect
+                    label="Select Model"
+                    options={generateSelectWeightsOptions(trainJob.epochs)}
+                    onChange={(value) => {
+                      field.onChange({
+                        target: { name: "selectedModel", value },
+                      });
+                      setEpochNr(value);
+                    }}
+                    containerStyle={{ width: "350px" }}
+                  />
+                )}
+              </Field>
+            </Stack>
+            {epochNr && (
+              <WithLabel
+                label="Price and prediction chart"
+                containerStyles={{ marginTop: "16px" }}
+              >
+                <PredAndPriceChart
+                  kline_open_times={
+                    trainJob.train_job.backtest_kline_open_times
                   }
-                  containerStyle={{ width: "350px" }}
+                  _prices={trainJob.train_job.backtest_prices}
+                  epoch={trainJob.epochs[epochNr]}
                 />
-              )}
-            </Field>
-
+              </WithLabel>
+            )}
             <div style={{ marginTop: "16px" }}>
               <Field name="enterAndExitCriteria">
                 {({ field, form }) => {
