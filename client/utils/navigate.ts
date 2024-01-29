@@ -1,4 +1,9 @@
-import { NullFillStrategy, PATHS, PATH_KEYS } from "./constants";
+import {
+  NullFillStrategy,
+  PATHS,
+  PATH_KEYS,
+  ScalingStrategy,
+} from "./constants";
 
 export const getDatasetEditorPath = (datasetName: string) => {
   return (
@@ -64,6 +69,22 @@ export const nullFillStratToInt = (nullFillStrat: NullFillStrategy) => {
 
     case "CLOSEST":
       return 4;
+
+    default:
+      return 1;
+  }
+};
+
+export const scalingStrategyToInt = (scalingStrategy: ScalingStrategy) => {
+  switch (scalingStrategy) {
+    case "NONE":
+      return 1;
+
+    case "MIN-MAX":
+      return 2;
+
+    case "STANDARD":
+      return 3;
 
     default:
       return 1;
