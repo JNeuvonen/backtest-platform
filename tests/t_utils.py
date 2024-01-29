@@ -75,6 +75,8 @@ def create_model_body(
     model: str,
     hyper_params_and_optimizer_code: str,
     validation_split: List[int],
+    scale_target: bool = False,
+    scaling_strategy=2,
 ):
     return {
         "name": name,
@@ -83,6 +85,8 @@ def create_model_body(
         "model": model,
         "hyper_params_and_optimizer_code": hyper_params_and_optimizer_code,
         "validation_split": validation_split,
+        "scale_target": scale_target,
+        "scaling_strategy": scaling_strategy,
     }
 
 
