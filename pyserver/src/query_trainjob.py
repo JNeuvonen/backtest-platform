@@ -155,7 +155,6 @@ class TrainJobQuery:
                 train_jobs = (
                     session.query(TrainJob).filter(TrainJob.is_training == True).all()
                 )
-                print(train_jobs)
                 for item in train_jobs:
                     item.is_training = False
                 session.commit()
