@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 
-from constants import NullFillStrategy
+from constants import NullFillStrategy, ScalingStrategy
 
 
 class BodyModelData(BaseModel):
@@ -11,6 +11,8 @@ class BodyModelData(BaseModel):
     model: str
     hyper_params_and_optimizer_code: str
     validation_split: List[int]
+    scale_target: bool
+    scaling_strategy: ScalingStrategy
 
 
 class BodyExecPython(BaseModel):
