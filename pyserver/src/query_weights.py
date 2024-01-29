@@ -22,6 +22,14 @@ class ModelWeights(Base):
     def serialize_val_predictions(self, list_preds):
         self.val_predictions = json.dumps(list_preds)
 
+    def deserialize(self):
+        self.val_predictions = json.loads(self.val_predictions)
+        return self
+
+    @staticmethod
+    def deserialize_val_predictions(val_predictions):
+        return json.loads(val_predictions)
+
 
 class ModelWeightsQuery:
     @staticmethod
@@ -58,7 +66,7 @@ class ModelWeightsQuery:
                     )
                     .scalar()
                 )
-                return weights_data
+                return weights_data.deserialize()
 
     @staticmethod
     def fetch_model_weights_by_train_job_id(train_job_id: int):
