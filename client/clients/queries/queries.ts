@@ -100,8 +100,8 @@ export function useTrainJobDetailed(
 
 export function useTrainJobBacktests(
   trainJobId: string
-): UseQueryResult<BacktestObject | null, unknown> {
-  return useQuery<BacktestObject | null, unknown>({
+): UseQueryResult<BacktestObject[] | null, unknown> {
+  return useQuery<BacktestObject[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_trainjob_backtests, trainJobId],
     queryFn: () => fetchTrainjobBacktests(trainJobId),
   });
