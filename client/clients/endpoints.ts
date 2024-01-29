@@ -39,16 +39,12 @@ export const URLS = {
     BASE_URL + API.dataset.root + `/${datasetName}/add-columns`,
   delete_dataset_cols: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/delete-cols`,
-
   exec_python_on_column: (datasetName: string, columnName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/exec-python/${columnName}`,
-
   exec_python_on_dataset: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/exec-python`,
-
   create_model: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/models/create`,
-
   fetch_dataset_models: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/models`,
   fetch_model_by_name: (modelName: string) =>
@@ -61,22 +57,20 @@ export const URLS = {
     BASE_URL + API.model.root + `/train/stop/${trainJobId}`,
   fetch_train_job_detailed: (trainJobId: string) =>
     BASE_URL + API.model.root + `/train/${trainJobId}/detailed`,
-
   create_backtest: (trainJobId: string) =>
     BASE_URL + API.model.root + `/backtest/${trainJobId}/run`,
-
   setTargetColumn: (datasetName: string, targetColumn: string) =>
     BASE_URL +
     API.dataset.root +
     `/${datasetName}/target-column?target_column=${targetColumn}`,
-
   setPriceColumn: (datasetName: string, priceColumn: string) =>
     BASE_URL +
     API.dataset.root +
     `/${datasetName}/price-column?price_column=${priceColumn}`,
-
   createDatasetCopy: (datasetName: string, copyName: string) =>
     BASE_URL +
     API.dataset.root +
     `/${datasetName}/copy?new_dataset_name=${copyName}`,
+  fetchTrainjobBacktests: (trainJobId: string) =>
+    BASE_URL + API.model.root + `/backtest/${trainJobId}`,
 };
