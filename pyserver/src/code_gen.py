@@ -82,6 +82,8 @@ async def start_train_loop(
             "{TRAIN_JOB_ID}": train_job.id,
             "{SAVE_MODEL_EVERY_EPOCH}": train_job.save_model_every_epoch,
             "{TRAIN_VAL_SPLIT}": convert_val_split_str_to_arr(model.validation_split),
+            "{SCALING_STRATEGY}": model.scaling_strategy,
+            "{SCALE_TARGET}": model.scale_target,
         }
 
         for key, value in replacements.items():
