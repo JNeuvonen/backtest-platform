@@ -96,6 +96,7 @@ export const DOM_EVENT_CHANNELS = {
 };
 
 export type NullFillStrategy = "CLOSEST" | "MEAN" | "ZERO" | "NONE";
+export type ScalingStrategy = "MIN-MAX" | "STANDARD" | "NONE";
 
 export const NULL_FILL_STRATEGIES: {
   value: NullFillStrategy;
@@ -105,6 +106,14 @@ export const NULL_FILL_STRATEGIES: {
   { value: "MEAN", label: "Mean" },
   { value: "ZERO", label: "Zero" },
   { value: "NONE", label: "None" },
+];
+
+export const SCALING_STRATEGIES: {
+  value: ScalingStrategy;
+  label: string;
+}[] = [
+  { value: "MIN-MAX", label: "Min-max scaling" },
+  { value: "STANDARD", label: "Standard scaling" },
 ];
 
 export const DOM_IDS = {
