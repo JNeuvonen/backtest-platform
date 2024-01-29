@@ -4,6 +4,8 @@ import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 import {
+  BacktestObject,
+  BacktestsResponse,
   Dataset,
   DatasetModel,
   DatasetResponse,
@@ -162,6 +164,18 @@ export async function fetchTrainjobDetailed(trainJobId: string) {
 
   if (res.res) {
     return res.res["data"] as TrainDataDetailed;
+  }
+  return null;
+}
+
+export async function fetchTrainjobBacktests(trainJobId: string) {
+  const res: BacktestsResponse = await buildRequest({
+    method: "GET",
+    url: URLS.fetchTrainjobBacktests(trainJobId),
+  });
+
+  if (res.res) {
+    return res.res["data"] as BacktestObject;
   }
   return null;
 }
