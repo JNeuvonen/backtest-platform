@@ -10,9 +10,11 @@ import {
   fetchDatasetModels,
   fetchDatasets,
   fetchModelByName,
+  fetchTrainjobBacktests,
   fetchTrainjobDetailed,
 } from "../requests";
 import {
+  BacktestObject,
   BinanceTickersResponse,
   ColumnResponse,
   Dataset,
@@ -93,5 +95,14 @@ export function useTrainJobDetailed(
   return useQuery<TrainDataDetailed | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_train_job_detailed, trainJobId],
     queryFn: () => fetchTrainjobDetailed(trainJobId),
+  });
+}
+
+export function useTrainJobBacktests(
+  trainJobId: string
+): UseQueryResult<BacktestObject | null, unknown> {
+  return useQuery<BacktestObject | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_trainjob_backtests, trainJobId],
+    queryFn: () => fetchTrainjobBacktests(trainJobId),
   });
 }
