@@ -161,7 +161,7 @@ export interface BacktestObject {
 
 export interface BacktestsResponse {
   res: {
-    data: BacktestObject;
+    data: BacktestObject[];
   };
   status: number;
 }
