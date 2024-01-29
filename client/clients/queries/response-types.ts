@@ -95,6 +95,8 @@ export interface TrainJob {
   model_name: string;
   backtest_on_validation_set: boolean;
   save_model_every_epoch: boolean;
+  backtest_prices: string;
+  backtest_kline_open_times: string;
 }
 
 export interface EpochInfo {
@@ -102,6 +104,7 @@ export interface EpochInfo {
   id: number;
   train_loss: number;
   val_loss: number;
+  val_predictions: string;
 }
 
 export interface StatsByCol {
