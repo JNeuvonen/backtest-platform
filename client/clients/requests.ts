@@ -175,7 +175,7 @@ export async function fetchTrainjobBacktests(trainJobId: string) {
   });
 
   if (res.res) {
-    return res.res["data"] as BacktestObject;
+    return res.res["data"] as BacktestObject[];
   }
   return null;
 }
