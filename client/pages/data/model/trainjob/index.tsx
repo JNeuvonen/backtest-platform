@@ -11,10 +11,15 @@ import {
 import { TrainjobInfoPage } from "./info";
 import { ChakraTabs } from "../../../../components/layout/Tabs";
 import { useMessageListener } from "../../../../hooks/useMessageListener";
-import { BacktestModelPage } from "./backtest";
+import { BacktestModelPage } from "./create-backtest";
+import { BacktestsPage } from "./view-backtests";
 
-const TAB_LABELS = ["Info", "Backtest"];
-const TABS = [<TrainjobInfoPage key={0} />, <BacktestModelPage key={1} />];
+const TAB_LABELS = ["Info", "Create backtest", "Backtests"];
+const TABS = [
+  <TrainjobInfoPage key={0} />,
+  <BacktestModelPage key={1} />,
+  <BacktestsPage key={2} />,
+];
 
 export const TrainJobIndex = () => {
   const { trainJobId } = usePathParams<{
