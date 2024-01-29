@@ -3,6 +3,7 @@ from fastapi import APIRouter, Response, status
 from backtest import run_backtest
 
 from context import HttpResponseContext
+from query_backtest import BacktestQuery
 from query_model import ModelQuery
 from query_trainjob import TrainJobQuery
 from code_gen import start_train_loop
@@ -21,6 +22,7 @@ class RoutePaths:
     STOP_TRAIN = "/train/stop/{train_job_id}"
     TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID = "/train/{train_job_id}/detailed"
     RUN_BACKTEST = "/backtest/{train_job_id}/run"
+    BACKTESTS = "/backtest/{train_job_id}"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
@@ -83,3 +85,10 @@ async def route_run_backtest(train_job_id: int, body: BodyRunBacktest):
     with HttpResponseContext():
         res = run_backtest(train_job_id, body)
         return {"data": res}
+
+
+@router.get(RoutePaths.BACKTESTS)
+async def route_get_backtests(train_job_id: int):
+    with HttpResponseContext():
+        data = BacktestQuery.fetch_backtests_by_train_job_id(train_job_id)
+        return {"data": data}
