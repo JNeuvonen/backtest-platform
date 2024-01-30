@@ -117,7 +117,7 @@ def check_column_data_types(cursor, table_name, column_name):
 def get_col_stats(cursor: sqlite3.Cursor, table_name: str, column_name: str):
     try:
         cursor.execute(
-            f"SELECT {column_name} FROM {table_name} WHERE {column_name} IS NOT NULL"
+            f'SELECT "{column_name}" FROM {table_name} WHERE "{column_name}" IS NOT NULL'
         )
     except Exception as e:
         print(f"Database Error: {e}")
@@ -246,7 +246,7 @@ def get_all_tables_and_columns(db_path: str):
                 columns = [column[1] for column in cursor.fetchall()]
                 table_dict[table[0]] = columns
 
-        return table_dict
+        return {}
 
 
 def delete_dataset_cols(table_name: str, delete_cols):
