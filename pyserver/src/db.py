@@ -246,7 +246,7 @@ def get_all_tables_and_columns(db_path: str):
                 columns = [column[1] for column in cursor.fetchall()]
                 table_dict[table[0]] = columns
 
-        return {}
+        return table_dict
 
 
 def delete_dataset_cols(table_name: str, delete_cols):
@@ -288,8 +288,18 @@ def get_column_data_type(cursor, table_name, column_name):
     columns_info = cursor.fetchall()
     for col in columns_info:
         if col[1] == column_name:
-            return col[2]  # Returns the data type of the column
+            return col[2]
     return None
+
+
+def get_dataset_columns(table_name: str):
+    with LogExceptionContext():
+        with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns_info = cursor.fetchall()
+            columns = [row[1] for row in columns_info]
+            return columns
 
 
 def get_dataset_table(table_name: str):

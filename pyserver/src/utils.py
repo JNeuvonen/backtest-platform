@@ -3,17 +3,13 @@ from io import BytesIO
 import os
 from fastapi import UploadFile
 import pandas as pd
-import numpy as np
 import sqlite3
 
 from constants import (
     DB_DATASETS,
     STREAMING_DEFAULT_CHUNK_SIZE,
-    AppConstants,
-    NullFillStrategy,
 )
 from config import append_app_data_path
-from dataset import read_dataset_to_mem
 from log import LogExceptionContext
 from query_trainjob import TrainJobQuery
 
@@ -125,3 +121,8 @@ def on_shutdown_cleanup():
 
 def to_dict(obj):
     return {attr: getattr(obj, attr) for attr in vars(obj)}
+
+
+def get_col(datasetColStrFormat: str):
+    parts = datasetColStrFormat.split("_")
+    return parts[1]

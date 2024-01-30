@@ -2,12 +2,14 @@ import json
 from typing import List
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
+from constants import AppConstants
 from log import LogExceptionContext
 from orm import Base, Session
 from query_weights import ModelWeightsQuery
 from query_model import Model, ModelQuery
 from request_types import BodyCreateTrain
 from query_dataset import Dataset, DatasetQuery
+from dataset import read_all_cols_matching_kline_open_times, read_columns_to_mem
 
 
 class TrainJob(Base):
@@ -43,7 +45,7 @@ class TrainJobQuery:
         return {
             "train_job": train_job,
             "model": model,
-            "dataset": dataset,
+            "dataset_metadata": dataset,
             "epochs": epochs,
         }
 
@@ -65,16 +67,18 @@ class TrainJobQuery:
     @staticmethod
     def set_backtest_data(
         train_job_id: int,
-        prices: List[float],
-        kline_open_times: List[float],
+        prices: List[float] | None,
+        kline_open_times: List[float] | None,
     ):
         with Session() as session:
             query = session.query(TrainJob)
             train_job: TrainJob = query.filter(
                 getattr(TrainJob, "id") == train_job_id
             ).first()
-            train_job.serialize_kline_open_times(kline_open_times)
-            train_job.serialize_prices(prices)
+            if kline_open_times is not None:
+                train_job.serialize_kline_open_times(kline_open_times)
+            if prices is not None:
+                train_job.serialize_prices(prices)
             session.commit()
 
     @staticmethod
@@ -157,4 +161,28 @@ class TrainJobQuery:
                 )
                 for item in train_jobs:
                     item.is_training = False
+                session.commit()
+
+    @staticmethod
+    def set_backtest_prices(train_job_id: int, dataset_name: str, price_col: str):
+        with LogExceptionContext():
+            with Session() as session:
+                train_job = (
+                    session.query(TrainJob).filter(TrainJob.id == train_job_id).first()
+                )
+                df_price_col = read_columns_to_mem(
+                    AppConstants.DB_DATASETS, dataset_name, [price_col]
+                )
+
+                if df_price_col is None:
+                    return
+
+                timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
+                backtest_klines = json.loads(train_job.backtest_kline_open_times)
+                val_df = read_all_cols_matching_kline_open_times(
+                    dataset_name, timeseries_col, backtest_klines
+                )
+                backtest_prices_list = val_df[price_col].values.tolist()
+
+                train_job.serialize_prices(backtest_prices_list)
                 session.commit()

@@ -112,6 +112,8 @@ def combine_datasets(
         join_df = join_df.add_prefix(prefix)
         join_df_column = prefix + join_df_column
 
+    base_df_cols = base_df.columns.tolist()
+    join_df_cols = join_df.columns.tolist()
     merged_df = pd.merge(
         base_df,
         join_df,
@@ -193,14 +195,18 @@ def load_data(
             else:
                 train_target_temp = train_df.pop(target_column)
                 val_target_temp = val_df.pop(target_column)
+
                 train_df.loc[:, train_df.columns] = scaler.fit_transform(
                     train_df[train_df.columns]
                 )
                 val_df.loc[:, val_df.columns] = scaler.transform(val_df[val_df.columns])
-                train_df[target_column] = train_target_temp.copy()
-                val_df[target_column] = val_target_temp.copy()
+
+                train_df[target_column] = train_target_temp
+                val_df[target_column] = val_target_temp
+
                 del train_target_temp, val_target_temp
 
+        print("hello world")
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
 
@@ -232,3 +238,14 @@ def load_data(
         x_train = torch.Tensor(df.values.astype(np.float32))
         y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
         return x_train, y_train, None, None, None, None, None
+
+
+def read_all_cols_matching_kline_open_times(
+    table_name: str, timeseries_col: str, kline_open_times: List[int]
+):
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+        query = f"SELECT * FROM {table_name} WHERE {timeseries_col} IN ({','.join(['?']*len(kline_open_times))})"
+        df = pd.read_sql_query(
+            query, conn, params=[str(time) for time in kline_open_times]
+        )
+        return df

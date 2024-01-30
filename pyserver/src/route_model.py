@@ -3,12 +3,15 @@ from fastapi import APIRouter, Response, status
 from backtest import run_backtest
 
 from context import HttpResponseContext
+from db import get_dataset_columns
 from query_backtest import BacktestQuery
+from query_dataset import DatasetQuery
 from query_model import ModelQuery
 from query_trainjob import TrainJobQuery
 from code_gen import start_train_loop
 from config import is_testing
 from request_types import BodyCreateTrain, BodyRunBacktest
+from utils import get_col
 
 
 router = APIRouter()
@@ -77,12 +80,22 @@ async def route_stop_train(train_job_id: int):
 @router.get(RoutePaths.TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID)
 async def route_fetch_train_job_detailed(train_job_id: int):
     with HttpResponseContext():
-        return {"data": TrainJobQuery.get_train_job_detailed(train_job_id)}
+        data = TrainJobQuery.get_train_job_detailed(train_job_id)
+        dataset_name = data["dataset_metadata"].dataset_name
+        cols = get_dataset_columns(dataset_name)
+        data["dataset_columns"] = cols
+        return {"data": data}
 
 
 @router.post(RoutePaths.RUN_BACKTEST)
 async def route_run_backtest(train_job_id: int, body: BodyRunBacktest):
     with HttpResponseContext():
+        price_col = DatasetQuery.get_price_col(body.dataset_name)
+        if price_col is None:
+            DatasetQuery.update_price_column(body.dataset_name, body.price_col)
+            TrainJobQuery.set_backtest_prices(
+                train_job_id, body.dataset_name, body.price_col
+            )
         res = run_backtest(train_job_id, body)
         return {"data": res}
 

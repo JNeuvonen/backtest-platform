@@ -140,6 +140,7 @@ export const TrainjobInfoPage = () => {
           max={data.epochs.length}
           onChange={setEpochSlider}
           defaultValue={1}
+          value={epochSlider}
         />
         <ChakraCard
           heading={<Heading size="md">Stats on validation set</Heading>}
@@ -208,6 +209,7 @@ export const TrainjobInfoPage = () => {
         max={data.epochs.length}
         onChange={setEpochSlider}
         defaultValue={1}
+        value={epochSlider}
       />
       <WithLabel
         label="Validation predictions sorted by smallest first"
