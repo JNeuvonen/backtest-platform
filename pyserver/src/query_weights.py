@@ -76,30 +76,31 @@ class ModelWeightsQuery:
 
     @staticmethod
     def fetch_model_weights_by_train_job_id(train_job_id: int):
-        with Session() as session:
-            weights_metadata = (
-                session.query(
-                    ModelWeights.id,
-                    ModelWeights.epoch,
-                    ModelWeights.train_loss,
-                    ModelWeights.val_loss,
-                    ModelWeights.val_predictions,
-                    ModelWeights.train_predictions,
+        with LogExceptionContext():
+            with Session() as session:
+                weights_metadata = (
+                    session.query(
+                        ModelWeights.id,
+                        ModelWeights.epoch,
+                        ModelWeights.train_loss,
+                        ModelWeights.val_loss,
+                        ModelWeights.val_predictions,
+                        ModelWeights.train_predictions,
+                    )
+                    .filter(ModelWeights.train_job_id == train_job_id)
+                    .all()
                 )
-                .filter(ModelWeights.train_job_id == train_job_id)
-                .all()
-            )
 
-            weights_metadata_dict = [
-                {
-                    "id": weight.id,
-                    "epoch": weight.epoch,
-                    "train_loss": weight.train_loss,
-                    "val_loss": weight.val_loss,
-                    "val_predictions": weight.val_predictions,
-                    "train_predictions": weight.train_predictions,
-                }
-                for weight in weights_metadata
-            ]
+                weights_metadata_dict = [
+                    {
+                        "id": weight.id,
+                        "epoch": weight.epoch,
+                        "train_loss": weight.train_loss,
+                        "val_loss": weight.val_loss,
+                        "val_predictions": weight.val_predictions,
+                        "train_predictions": weight.train_predictions,
+                    }
+                    for weight in weights_metadata
+                ]
 
-            return weights_metadata_dict
+                return weights_metadata_dict
