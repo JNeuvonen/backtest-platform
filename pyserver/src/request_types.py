@@ -13,6 +13,7 @@ class BodyModelData(BaseModel):
     validation_split: List[int]
     scale_target: bool
     scaling_strategy: ScalingStrategy
+    drop_cols_on_train: List[str]
 
 
 class BodyExecPython(BaseModel):
