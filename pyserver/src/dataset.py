@@ -178,7 +178,11 @@ def load_data(
 
         val_target_before_scaling = val_df[target_column].copy()
         val_kline_open_times = val_df[timeseries_col].copy()
-        price_col = val_df[price_col].copy()
+
+        if price_col in val_df.columns:
+            price_col = val_df[price_col].copy()
+        else:
+            price_col = None
 
         if scaler is not None:
             if scale_target:
