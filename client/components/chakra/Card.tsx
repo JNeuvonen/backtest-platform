@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardBody, CardHeader, Heading } from "@chakra-ui/react";
+import { Card, CardBody, CardHeader } from "@chakra-ui/react";
 
 interface Props {
   children: React.ReactNode;

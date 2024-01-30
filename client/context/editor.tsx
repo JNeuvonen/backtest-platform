@@ -21,11 +21,7 @@ import { URLS } from "../clients/endpoints";
 import { useToast } from "@chakra-ui/react";
 import { useDatasetQuery, useDatasetsQuery } from "../clients/queries/queries";
 import cloneDeep from "lodash/cloneDeep";
-import {
-  Dataset,
-  DatasetMetadata,
-  DatasetsResponse,
-} from "../clients/queries/response-types";
+import { Dataset, DatasetMetadata } from "../clients/queries/response-types";
 
 interface EditorContextType {
   filteredColumns: React.MutableRefObject<ColumnsDict>;

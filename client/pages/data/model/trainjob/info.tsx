@@ -5,7 +5,6 @@ import { useAppContext } from "../../../../context/app";
 import { LAYOUT } from "../../../../utils/constants";
 import {
   Box,
-  CardHeader,
   Heading,
   Spinner,
   Stack,
@@ -21,7 +20,6 @@ import {
   getArrayMedian,
   getArrayMin,
   getNormalDistributionItems,
-  getNumberArrayMean,
   roundNumberDropRemaining,
 } from "../../../../utils/number";
 import { WithLabel } from "../../../../components/form/WithLabel";

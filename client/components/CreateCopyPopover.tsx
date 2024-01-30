@@ -1,5 +1,5 @@
-import { Button, Input, Spinner, useToast } from "@chakra-ui/react";
-import React, { useRef, useState } from "react";
+import { Button, Input, useToast } from "@chakra-ui/react";
+import React, { useState } from "react";
 import { BUTTON_VARIANTS } from "../theme";
 import { ToolBarStyle } from "./ToolbarStyle";
 import { WithLabel } from "./form/WithLabel";

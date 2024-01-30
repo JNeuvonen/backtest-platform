@@ -75,6 +75,7 @@ export const ModelTrainPage = () => {
         rows={allTrainingMetadata.map((item, i) => {
           return [
             <Link
+              key={-1}
               className="link-default"
               to={getTrainJobPath(
                 datasetName,

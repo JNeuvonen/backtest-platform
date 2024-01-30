@@ -1,5 +1,5 @@
 import React from "react";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
+import { Breadcrumb, BreadcrumbItem } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 interface BreadcrumbItem {

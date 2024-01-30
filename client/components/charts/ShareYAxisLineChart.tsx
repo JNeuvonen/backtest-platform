@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 interface TwoLineChartProps {
-  data: { [key: string]: any }[];
+  data: { [key: string]: object }[];
   xKey: string;
   line1Key: string;
   line2Key: string;

@@ -17,7 +17,6 @@ import { CodeEditor } from "../../../../components/CodeEditor";
 import { CodeHelper } from "../../../../utils/constants";
 import { runBacktest } from "../../../../clients/requests";
 import { WithLabel } from "../../../../components/form/WithLabel";
-import { BUTTON_VARIANTS } from "../../../../theme";
 import { PredAndPriceChart } from "../../../../components/charts/PredAndPriceChart";
 
 export interface BacktestForm {
