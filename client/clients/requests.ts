@@ -7,8 +7,10 @@ import {
   BacktestObject,
   BacktestsResponse,
   Dataset,
+  DatasetMetadata,
   DatasetModel,
   DatasetResponse,
+  DatasetUtils,
   DatasetsResponse,
   EpochInfo,
   FetchModelByNameRes,
@@ -150,7 +152,8 @@ export async function stopTrain(trainJobId: string) {
 }
 
 export type TrainDataDetailed = {
-  dataset: Dataset;
+  dataset_metadata: DatasetUtils;
+  dataset_columns: string[];
   model: DatasetModel;
   train_job: TrainJob;
   epochs: EpochInfo[];
