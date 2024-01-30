@@ -80,12 +80,38 @@ const textClickableVariant = () => ({
 
 const textTheme = {
   Text: {
-    baseStyle: {},
+    baseStyle: {
+      color: COLOR_CONTENT_PRIMARY,
+    },
     variants: {
       clickable: () => textClickableVariant(),
     },
     defaultProps: {
       variant: "",
+    },
+  },
+};
+
+const headingTheme = {
+  Heading: {
+    baseStyle: {
+      color: COLOR_CONTENT_PRIMARY,
+    },
+    sizes: {},
+    variants: {},
+    defaultProps: {},
+  },
+};
+
+const cardTheme = {
+  parts: ["container", "header", "body"],
+  baseStyle: {
+    container: {
+      backgroundColor: COLOR_BG_PRIMARY,
+    },
+    header: {},
+    body: {
+      backgroundColor: COLOR_BG_PRIMARY,
     },
   },
 };
@@ -102,5 +128,8 @@ export const customChakraTheme = extendTheme({
   components: {
     ...buttonTheme,
     ...textTheme,
+    ...headingTheme,
+    ...cardTheme,
+    Card: cardTheme,
   },
 });
