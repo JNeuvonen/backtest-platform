@@ -92,6 +92,7 @@ export interface ModelDataPayload {
   validation_split: number[];
   scale_target: boolean;
   scaling_strategy: number;
+  drop_cols_on_train: string[];
 }
 
 export const DatasetModelCreatePage = ({
@@ -155,6 +156,9 @@ export const DatasetModelCreatePage = ({
   };
 
   const submit = async () => {
+    const droppedCols = columnsToDrop
+      .filter((item) => item.isChecked)
+      .map((item) => item.label);
     const body: ModelDataPayload = {
       name: modelName,
       drop_cols: columnsToDrop
@@ -166,6 +170,7 @@ export const DatasetModelCreatePage = ({
       validation_split: validSplitSize,
       scale_target: scaleTarget,
       scaling_strategy: scalingStrategyToInt(scalingStrategy),
+      drop_cols_on_train: droppedCols,
     };
 
     const res = await createModel(datasetName, body);
@@ -283,7 +288,9 @@ export const DatasetModelCreatePage = ({
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => setDropColumnsVisible(!dropColumnsVisible)}
         >
-          {dropColumnsVisible ? "Hide drop columns" : "Drop columns"}
+          {dropColumnsVisible
+            ? "Hide drop columns"
+            : "Drop columns on training"}
         </Button>
 
         {dropColumnsVisible && (
