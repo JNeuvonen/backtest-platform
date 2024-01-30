@@ -40,19 +40,20 @@ export const TrainJobIndex = () => {
         <Spinner />
       </div>
     );
+
   return (
     <div style={{ paddingTop: "16px" }}>
       <Breadcrumbs
         items={[
           { label: "Data", href: PATHS.data.index },
           {
-            label: "Dataset",
-            href: getDatasetInfoPagePath(data.dataset.dataset_name),
+            label: data.dataset_metadata.dataset_name,
+            href: getDatasetInfoPagePath(data.dataset_metadata.dataset_name),
           },
           {
             label: "Models",
             href: getModelInfoPath(
-              data.dataset.dataset_name,
+              data.dataset_metadata.dataset_name,
               data.model.model_name
             ),
           },
