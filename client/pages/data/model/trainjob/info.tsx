@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { useTrainJobDetailed } from "../../../../clients/queries/queries";
 import { useAppContext } from "../../../../context/app";
@@ -6,6 +6,10 @@ import { LAYOUT } from "../../../../utils/constants";
 import { Spinner } from "@chakra-ui/react";
 import Title from "../../../../components/typography/Title";
 import { ShareYAxisTwoLineChart } from "../../../../components/charts/ShareYAxisLineChart";
+import { ChakraSlider } from "../../../../components/chakra/Slider";
+import { GenericBarChart } from "../../../../components/charts/BarChart";
+import { getNormalDistributionItems } from "../../../../utils/number";
+import { WithLabel } from "../../../../components/form/WithLabel";
 
 type TrainingProgessChartTicks = {
   valLoss: number;
@@ -21,6 +25,7 @@ export const TrainjobInfoPage = () => {
 
   const { data, refetch } = useTrainJobDetailed(trainJobId);
   const { setInnerSideNavWidth } = useAppContext();
+  const [epochSlider, setEpochSlider] = useState(1);
 
   useEffect(() => {
     if (datasetName) {
@@ -60,19 +65,43 @@ export const TrainjobInfoPage = () => {
     );
 
   const trainingProgessTicks = generateTrainingProgressChart();
+  const epochPredictions = JSON.parse(
+    data.epochs[epochSlider - 1].val_predictions
+  ).map((item: number[]) => item[0]);
 
   return (
     <div>
-      <Title>
-        Epochs ran: {data.train_job.epochs_ran}/{data.train_job.num_epochs}
-      </Title>
-      <ShareYAxisTwoLineChart
-        data={trainingProgessTicks}
-        xKey="epoch"
-        line1Key="trainLoss"
-        line2Key="valLoss"
-        height={500}
+      <WithLabel
+        label={`Epochs ran: ${data.train_job.epochs_ran}/${data.train_job.num_epochs}`}
+      >
+        <ShareYAxisTwoLineChart
+          data={trainingProgessTicks}
+          xKey="epoch"
+          line1Key="trainLoss"
+          line2Key="valLoss"
+          height={500}
+        />
+      </WithLabel>
+      <ChakraSlider
+        label={`Epoch number: ${epochSlider}`}
+        containerStyles={{ maxWidth: "300px" }}
+        min={1}
+        max={data.epochs.length}
+        onChange={setEpochSlider}
+        defaultValue={1}
       />
+
+      <WithLabel
+        label="Validation predictions normal distribution"
+        containerStyles={{ marginTop: "16px" }}
+      >
+        <GenericBarChart
+          data={getNormalDistributionItems(epochPredictions)}
+          yAxisKey="count"
+          xAxisKey="label"
+          containerStyles={{ marginTop: "16px" }}
+        />
+      </WithLabel>
     </div>
   );
 };
