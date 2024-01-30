@@ -3,13 +3,30 @@ import { usePathParams } from "../../../../hooks/usePathParams";
 import { useTrainJobDetailed } from "../../../../clients/queries/queries";
 import { useAppContext } from "../../../../context/app";
 import { LAYOUT } from "../../../../utils/constants";
-import { Spinner } from "@chakra-ui/react";
-import Title from "../../../../components/typography/Title";
+import {
+  Box,
+  CardHeader,
+  Heading,
+  Spinner,
+  Stack,
+  StackDivider,
+  Text,
+} from "@chakra-ui/react";
 import { ShareYAxisTwoLineChart } from "../../../../components/charts/ShareYAxisLineChart";
 import { ChakraSlider } from "../../../../components/chakra/Slider";
 import { GenericBarChart } from "../../../../components/charts/BarChart";
-import { getNormalDistributionItems } from "../../../../utils/number";
+import {
+  calculateStdDevAndMean,
+  getArrayMax,
+  getArrayMedian,
+  getArrayMin,
+  getNormalDistributionItems,
+  getNumberArrayMean,
+  roundNumberDropRemaining,
+} from "../../../../utils/number";
 import { WithLabel } from "../../../../components/form/WithLabel";
+import { GenericAreaChart } from "../../../../components/charts/AreaChart";
+import { ChakraCard } from "../../../../components/chakra/Card";
 
 type TrainingProgessChartTicks = {
   valLoss: number;
@@ -23,9 +40,11 @@ export const TrainjobInfoPage = () => {
     datasetName?: string;
   }>();
 
-  const { data, refetch } = useTrainJobDetailed(trainJobId);
+  const { data } = useTrainJobDetailed(trainJobId);
   const { setInnerSideNavWidth } = useAppContext();
   const [epochSlider, setEpochSlider] = useState(1);
+
+  useEffect(() => {}, [epochSlider, data?.epochs]);
 
   useEffect(() => {
     if (datasetName) {
@@ -64,15 +83,36 @@ export const TrainjobInfoPage = () => {
       </div>
     );
 
+  const getDataForSortedPredictions = (epochPreds: number[]) => {
+    const ret = [] as { prediction: number; num: number }[];
+    const copy = [...epochPreds];
+    copy.sort((a, b) => a - b);
+    const increment = Math.max(Math.floor(copy.length / 500), 1);
+    for (let i = 0; i < copy.length; i += increment) {
+      const item = copy[i];
+      ret.push({
+        prediction: item,
+        num: i,
+      });
+    }
+    return ret;
+  };
+
   const trainingProgessTicks = generateTrainingProgressChart();
-  const epochPredictions = JSON.parse(
+  const epochPredictions: number[] = JSON.parse(
     data.epochs[epochSlider - 1].val_predictions
   ).map((item: number[]) => item[0]);
+
+  const { mean, stdDev } = calculateStdDevAndMean(epochPredictions);
 
   return (
     <div>
       <WithLabel
-        label={`Epochs ran: ${data.train_job.epochs_ran}/${data.train_job.num_epochs}`}
+        label={
+          <Heading size="md">
+            Epochs ran: {data.train_job.epochs_ran}/{data.train_job.num_epochs}
+          </Heading>
+        }
       >
         <ShareYAxisTwoLineChart
           data={trainingProgessTicks}
@@ -82,14 +122,71 @@ export const TrainjobInfoPage = () => {
           height={500}
         />
       </WithLabel>
-      <ChakraSlider
-        label={`Epoch number: ${epochSlider}`}
-        containerStyles={{ maxWidth: "300px" }}
-        min={1}
-        max={data.epochs.length}
-        onChange={setEpochSlider}
-        defaultValue={1}
-      />
+
+      <Heading size="md">Stats</Heading>
+
+      <Stack
+        direction={"row"}
+        alignItems={"center"}
+        gap={"48px"}
+        justifyContent={"space-between"}
+        marginTop={"16px"}
+      >
+        <ChakraSlider
+          label={`Epoch number: ${epochSlider}`}
+          containerStyles={{ maxWidth: "300px" }}
+          min={1}
+          max={data.epochs.length}
+          onChange={setEpochSlider}
+          defaultValue={1}
+        />
+        <ChakraCard
+          heading={<Heading size="md">Stats on validation set</Heading>}
+        >
+          <Stack divider={<StackDivider />} spacing="4" direction={"row"}>
+            <Box>
+              <Heading size="xs" textTransform="uppercase">
+                Mean
+              </Heading>
+              <Text pt="2" fontSize="sm">
+                {roundNumberDropRemaining(mean, 5)}
+              </Text>
+            </Box>
+            <Box>
+              <Heading size="xs" textTransform="uppercase">
+                Standard deviation
+              </Heading>
+              <Text pt="2" fontSize="sm">
+                {roundNumberDropRemaining(stdDev, 5)}
+              </Text>
+            </Box>
+            <Box>
+              <Heading size="xs" textTransform="uppercase">
+                Median
+              </Heading>
+              <Text pt="2" fontSize="sm">
+                {roundNumberDropRemaining(getArrayMedian(epochPredictions), 5)}
+              </Text>
+            </Box>
+            <Box>
+              <Heading size="xs" textTransform="uppercase">
+                Max
+              </Heading>
+              <Text pt="2" fontSize="sm">
+                {roundNumberDropRemaining(getArrayMax(epochPredictions), 5)}
+              </Text>
+            </Box>
+            <Box>
+              <Heading size="xs" textTransform="uppercase">
+                Min
+              </Heading>
+              <Text pt="2" fontSize="sm">
+                {roundNumberDropRemaining(getArrayMin(epochPredictions), 5)}
+              </Text>
+            </Box>
+          </Stack>
+        </ChakraCard>
+      </Stack>
 
       <WithLabel
         label="Validation predictions normal distribution"
@@ -99,6 +196,26 @@ export const TrainjobInfoPage = () => {
           data={getNormalDistributionItems(epochPredictions)}
           yAxisKey="count"
           xAxisKey="label"
+          containerStyles={{ marginTop: "16px" }}
+        />
+      </WithLabel>
+
+      <ChakraSlider
+        label={`Epoch number: ${epochSlider}`}
+        containerStyles={{ maxWidth: "300px" }}
+        min={1}
+        max={data.epochs.length}
+        onChange={setEpochSlider}
+        defaultValue={1}
+      />
+      <WithLabel
+        label="Validation predictions sorted by smallest first"
+        containerStyles={{ marginTop: "32px" }}
+      >
+        <GenericAreaChart
+          data={getDataForSortedPredictions(epochPredictions)}
+          yAxisKey="prediction"
+          xAxisKey="num"
           containerStyles={{ marginTop: "16px" }}
         />
       </WithLabel>
