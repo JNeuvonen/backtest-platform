@@ -97,9 +97,12 @@ export const TrainjobInfoPage = () => {
   };
 
   const trainingProgessTicks = generateTrainingProgressChart();
-  const epochPredictions: number[] = JSON.parse(
-    data.epochs[epochSlider - 1].val_predictions
-  ).map((item: number[]) => item[0]);
+  const epochPredictions: number[] =
+    data.epochs.length > 0
+      ? JSON.parse(data.epochs[epochSlider - 1].val_predictions).map(
+          (item: number[]) => item[0]
+        )
+      : [];
 
   const { mean, stdDev } = calculateStdDevAndMean(epochPredictions);
 
