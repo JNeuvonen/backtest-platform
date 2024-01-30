@@ -119,7 +119,9 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
     try {
       await Promise.all(promises);
       toast({
-        title: "Started downloading data. The data should arrive shortly.",
+        title: "Started download",
+        description:
+          "Datasets will show up here once they are fully downloaded",
         status: "info",
         duration: 5000,
         isClosable: true,
