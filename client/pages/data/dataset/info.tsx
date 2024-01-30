@@ -143,6 +143,7 @@ export const DatasetInfoPage = () => {
       });
       runPythonModal.modalClose();
       confirmRunPythonModal.modalClose();
+      refetch();
     }
   };
 
