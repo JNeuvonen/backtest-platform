@@ -13,7 +13,7 @@ export const roundNumberDropRemaining = (
 };
 
 export const getNumberArrayMean = (numbers: number[]) => {
-  if (numbers.length === 0) return 0;
+  if (numbers.length === 0) return NaN;
   let sum = 0;
   for (let i = 0; i < numbers.length; ++i) {
     sum += numbers[i];
@@ -22,12 +22,13 @@ export const getNumberArrayMean = (numbers: number[]) => {
 };
 
 export const getArrayMedian = (numbers: number[]) => {
-  if (numbers.length === 0) return 0;
+  if (numbers.length === 0) return NaN;
   const midPoint = Math.floor(numbers.length / 2);
   return numbers[midPoint];
 };
 
 export const getArrayMin = (numbers: number[]) => {
+  if (numbers.length === 0) return NaN;
   let min = 999999999999;
 
   for (let i = 0; i < numbers.length; ++i) {
@@ -39,6 +40,7 @@ export const getArrayMin = (numbers: number[]) => {
 };
 
 export const getArrayMax = (numbers: number[]) => {
+  if (numbers.length === 0) return NaN;
   let max = -999999999999;
 
   for (let i = 0; i < numbers.length; ++i) {
@@ -50,6 +52,14 @@ export const getArrayMax = (numbers: number[]) => {
 };
 
 export const calculateStdDevAndMean = (numbers: number[]) => {
+  if (numbers.length === 0) {
+    return {
+      stdDev: NaN,
+      mean: NaN,
+      variance: NaN,
+    };
+  }
+
   const mean = getNumberArrayMean(numbers);
   let varianceSum = 0;
   for (let i = 0; i < numbers.length; ++i) {
