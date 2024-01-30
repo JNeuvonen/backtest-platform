@@ -84,6 +84,7 @@ async def start_train_loop(
             "{TRAIN_VAL_SPLIT}": convert_val_split_str_to_arr(model.validation_split),
             "{SCALING_STRATEGY}": model.scaling_strategy,
             "{SCALE_TARGET}": model.scale_target,
+            "{MODEL_ID}": model.id,
         }
 
         for key, value in replacements.items():
