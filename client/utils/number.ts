@@ -21,6 +21,12 @@ export const getNumberArrayMean = (numbers: number[]) => {
   return sum / numbers.length;
 };
 
+export const getArrayMedian = (numbers: number[]) => {
+  if (numbers.length === 0) return 0;
+  const midPoint = Math.floor(numbers.length / 2);
+  return numbers[midPoint];
+};
+
 export const getArrayMin = (numbers: number[]) => {
   let min = 999999999999;
 
@@ -54,6 +60,7 @@ export const calculateStdDevAndMean = (numbers: number[]) => {
   return {
     stdDev: Math.sqrt(variance),
     mean,
+    variance,
   };
 };
 
@@ -66,20 +73,28 @@ export interface NormalDistributionItems {
   count: number;
   label: string;
 }
-export const getNormalDistributionItems = (numbers: number[]) => {
+export const getNormalDistributionItems = (
+  numbers: number[],
+  zStart = -3,
+  bars = 100
+) => {
   const ret = [] as NormalDistributionItems[];
 
   const { mean, stdDev } = calculateStdDevAndMean(numbers);
   const copy = [...numbers];
   copy.sort((a, b) => a - b);
   let jStart = 0;
-  for (let i = -3; i < 3; i += 0.06) {
+
+  const zEnd = Math.abs(zStart);
+  const increment = (zEnd * 2) / bars;
+
+  for (let i = zStart; i < zEnd; i += increment) {
     let itemsInZCategory = 0;
     let categorySum = 0;
 
     for (let j = jStart; j < copy.length; ++j) {
       const zScore = calculateZScore(copy[j], mean, stdDev);
-      if (zScore > i && zScore <= i + 0.06) {
+      if (zScore > i && zScore <= i + increment) {
         jStart = j;
         itemsInZCategory += 1;
         categorySum += copy[j];
