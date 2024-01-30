@@ -1,3 +1,4 @@
+from tests.t_constants import BinanceCols
 from tests.t_utils import create_backtest_body, create_train_job_body
 
 from tests.t_conf import SERVER_SOURCE_DIR
@@ -58,7 +59,7 @@ def create_train_job_basic(num_epochs=NUM_EPOCHS_DEFAULT):
     return body
 
 
-def create_backtest():
+def create_backtest(dataset_name: str):
     code_trade_criteria = PyCode()
     code_trade_criteria.append_line("def get_enter_trade_criteria(prediction):")
     code_trade_criteria.add_indent()
@@ -68,7 +69,8 @@ def create_backtest():
     code_trade_criteria.add_indent()
     code_trade_criteria.append_line("return prediction < 0.99")
     return create_backtest_body(
-        price_column="Open price",
+        price_column=BinanceCols.OPEN_PRICE,
         epoch_nr=3,
         enter_trade_criteria=code_trade_criteria.get(),
+        dataset_name=dataset_name,
     )

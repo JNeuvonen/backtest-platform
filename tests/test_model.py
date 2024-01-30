@@ -61,4 +61,4 @@ def test_route_fetch_all_metadata_by_name(cleanup_db, create_train_job):
 @pytest.mark.acceptance
 def test_route_create_backtest(cleanup_db, create_train_job):
     train_job = create_train_job[2]
-    Post.create_backtest(train_job.id, create_backtest())
+    Post.create_backtest(train_job.id, create_backtest(create_train_job[0].name))

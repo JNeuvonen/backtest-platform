@@ -1,7 +1,6 @@
 import json
 import sqlite3
 import pandas as pd
-from sqlalchemy.sql.expression import Null
 import torch
 import numpy as np
 from typing import List
@@ -112,8 +111,6 @@ def combine_datasets(
         join_df = join_df.add_prefix(prefix)
         join_df_column = prefix + join_df_column
 
-    base_df_cols = base_df.columns.tolist()
-    join_df_cols = join_df.columns.tolist()
     merged_df = pd.merge(
         base_df,
         join_df,
@@ -178,7 +175,6 @@ def load_data(
         train_df_2 = df.iloc[split_end_index + 1 :]
         train_df = pd.concat([train_df_1, train_df_2])
 
-        val_target_before_scaling = val_df[target_column].copy()
         val_kline_open_times = val_df[timeseries_col].copy()
 
         if price_col in val_df.columns:
@@ -206,7 +202,6 @@ def load_data(
 
                 del train_target_temp, val_target_temp
 
-        print("hello world")
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
 
@@ -226,7 +221,6 @@ def load_data(
             y_train,
             x_val,
             y_val,
-            val_target_before_scaling,
             val_kline_open_times,
             price_col,
         )
@@ -237,7 +231,7 @@ def load_data(
         target = df.pop(target_column)
         x_train = torch.Tensor(df.values.astype(np.float32))
         y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
-        return x_train, y_train, None, None, None, None, None
+        return x_train, y_train, None, None, None, None
 
 
 def read_all_cols_matching_kline_open_times(

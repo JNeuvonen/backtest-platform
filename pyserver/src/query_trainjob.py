@@ -67,7 +67,7 @@ class TrainJobQuery:
     @staticmethod
     def set_backtest_data(
         train_job_id: int,
-        prices: List[float] | None,
+        prices,
         kline_open_times: List[float] | None,
     ):
         with Session() as session:
@@ -78,7 +78,7 @@ class TrainJobQuery:
             if kline_open_times is not None:
                 train_job.serialize_kline_open_times(kline_open_times)
             if prices is not None:
-                train_job.serialize_prices(prices)
+                train_job.serialize_prices(prices.values.tolist())
             session.commit()
 
     @staticmethod

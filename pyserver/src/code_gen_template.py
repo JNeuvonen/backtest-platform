@@ -18,8 +18,8 @@ from datetime import timedelta
 {CRITERION_AND_OPTIMIZER}
 
 def train():
-    x_train, y_train, x_val, y_val, y_val_before_scale, val_kline_open_times, val_prices = load_data({DATASET_NAME}, {MODEL_ID}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT}, {SCALING_STRATEGY}, {SCALE_TARGET})
-    TrainJobQuery.set_backtest_data({TRAIN_JOB_ID}, val_prices.values.tolist() if val_prices != None else None, val_kline_open_times.values.tolist())
+    x_train, y_train, x_val, y_val, val_kline_open_times, val_prices = load_data({DATASET_NAME}, {MODEL_ID}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT}, {SCALING_STRATEGY}, {SCALE_TARGET})
+    TrainJobQuery.set_backtest_data({TRAIN_JOB_ID}, val_prices, val_kline_open_times.values.tolist())
     train_dataset = TensorDataset(x_train, y_train)
     val_dataset = TensorDataset(x_val, y_val)
     train_loader = DataLoader(train_dataset, batch_size={BATCH_SIZE}, shuffle={SHUFFLE})
