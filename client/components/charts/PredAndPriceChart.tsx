@@ -43,6 +43,8 @@ export const PredAndPriceChart = ({
   const generateChartData = () => {
     const ret = [] as PredAndPriceChartTick[];
     const increment = Math.max(Math.ceil(klineOpenTimes.length / 200), 1);
+
+    if (!prices) return [];
     for (let i = 0; i < klineOpenTimes.length; i += increment) {
       const item = {
         price: prices[i],
@@ -67,10 +69,14 @@ export const PredAndPriceChart = ({
     return ret;
   };
 
+  const data = generateChartData();
+
+  if (data.length === 0) return null;
+
   return (
     <div style={containerStyles}>
       <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart data={generateChartData()}>
+        <ComposedChart data={data}>
           <CartesianGrid />
           <XAxis dataKey="kline_open_time" />
           <YAxis yAxisId="price" />
