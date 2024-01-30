@@ -18,9 +18,13 @@ class ModelWeights(Base):
     train_loss = Column(Float)
     val_loss = Column(Float)
     val_predictions = Column(String)
+    train_predictions = Column(String)
 
     def serialize_val_predictions(self, list_preds):
         self.val_predictions = json.dumps(list_preds)
+
+    def serialize_train_predictions(self, list_preds):
+        self.train_predictions = json.dumps(list_preds)
 
     def deserialize(self):
         self.val_predictions = json.loads(self.val_predictions)
@@ -40,6 +44,7 @@ class ModelWeightsQuery:
         train_loss: float,
         val_loss: float,
         val_predictions: List[float],
+        train_predictions: List[float],
     ):
         with LogExceptionContext():
             with Session() as session:
@@ -51,6 +56,7 @@ class ModelWeightsQuery:
                     val_loss=val_loss,
                 )
                 new_model_weight.serialize_val_predictions(val_predictions)
+                new_model_weight.serialize_train_predictions(train_predictions)
                 session.add(new_model_weight)
                 session.commit()
 
@@ -78,6 +84,7 @@ class ModelWeightsQuery:
                     ModelWeights.train_loss,
                     ModelWeights.val_loss,
                     ModelWeights.val_predictions,
+                    ModelWeights.train_predictions,
                 )
                 .filter(ModelWeights.train_job_id == train_job_id)
                 .all()
@@ -90,6 +97,7 @@ class ModelWeightsQuery:
                     "train_loss": weight.train_loss,
                     "val_loss": weight.val_loss,
                     "val_predictions": weight.val_predictions,
+                    "train_predictions": weight.train_predictions,
                 }
                 for weight in weights_metadata
             ]
