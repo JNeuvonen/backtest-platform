@@ -5,7 +5,7 @@ import {
   useTrainJobDetailed,
 } from "../../../../clients/queries/queries";
 import { usePathParams } from "../../../../hooks/usePathParams";
-import { Button, Spinner, Stack, useToast } from "@chakra-ui/react";
+import { Button, Heading, Spinner, Stack, useToast } from "@chakra-ui/react";
 import {
   ChakraSelect,
   SelectOption,
@@ -18,10 +18,12 @@ import { CodeHelper } from "../../../../utils/constants";
 import { runBacktest } from "../../../../clients/requests";
 import { WithLabel } from "../../../../components/form/WithLabel";
 import { PredAndPriceChart } from "../../../../components/charts/PredAndPriceChart";
+import { SelectColumnPopover } from "../../../../components/SelectTargetColumnPopover";
 
 export interface BacktestForm {
   selectedModel: string | null;
   enterAndExitCriteria: string;
+  priceColumn: string;
 }
 
 const getTradeCriteriaDefaultCode = () => {
@@ -43,14 +45,14 @@ export const BacktestModelPage = () => {
     trainJobId: string;
     datasetName?: string;
   }>();
-  const { data: trainJob, refetch: refetchTrainjob } =
+  const { data: modelDataDetailed, refetch: refetchTrainjob } =
     useTrainJobDetailed(trainJobId);
   const { data: allDatasets, refetch: refetchDatasets } = useDatasetsQuery();
   const { refetch: refetchBacktests } = useTrainJobBacktests(trainJobId);
   const toast = useToast();
   const [epochNr, setEpochNr] = useState("");
 
-  if (!trainJob || !allDatasets) {
+  if (!modelDataDetailed || !allDatasets) {
     return (
       <div>
         <Spinner />
@@ -77,6 +79,8 @@ export const BacktestModelPage = () => {
     const payload = {
       epoch_nr: Number(values.selectedModel),
       enter_and_exit_criteria: values.enterAndExitCriteria,
+      price_col: values.priceColumn,
+      dataset_name: modelDataDetailed.dataset_metadata.dataset_name,
     };
 
     const res = await runBacktest(trainJobId, payload);
@@ -94,23 +98,36 @@ export const BacktestModelPage = () => {
     }
   };
 
+  function isFormReady(values: BacktestForm) {
+    const isReady =
+      values.priceColumn && values.selectedModel && values.enterAndExitCriteria;
+    return isReady;
+  }
+
   return (
     <div>
       <Formik
         initialValues={{
           selectedModel: null,
           enterAndExitCriteria: getTradeCriteriaDefaultCode(),
+          priceColumn: modelDataDetailed.dataset_metadata.price_column,
         }}
         onSubmit={handleSubmit}
       >
-        {() => (
+        {({ values }) => (
           <Form>
-            <Stack direction="row">
+            <Heading
+              size={"md"}
+              marginTop={"8px"}
+            >{`Dataset: ${modelDataDetailed.dataset_metadata.dataset_name}`}</Heading>
+            <Stack direction="row" marginTop={"16px"}>
               <Field name="selectedModel">
                 {({ field }) => (
                   <ChakraSelect
                     label="Select Model"
-                    options={generateSelectWeightsOptions(trainJob.epochs)}
+                    options={generateSelectWeightsOptions(
+                      modelDataDetailed.epochs
+                    )}
                     onChange={(value) => {
                       field.onChange({
                         target: { name: "selectedModel", value },
@@ -121,20 +138,44 @@ export const BacktestModelPage = () => {
                   />
                 )}
               </Field>
+              <Field>
+                {({ field }) => {
+                  return (
+                    <WithLabel
+                      label="Price column"
+                      containerStyles={{ width: "350px" }}
+                    >
+                      <SelectColumnPopover
+                        options={
+                          modelDataDetailed.dataset_columns
+                            ? modelDataDetailed.dataset_columns.map((item) => {
+                                return {
+                                  label: item,
+                                  value: item,
+                                };
+                              })
+                            : []
+                        }
+                        placeholder={field.value.priceColumn}
+                        selectCallback={(value: string) => {
+                          field.onChange({
+                            target: { name: "priceColumn", value },
+                          });
+                        }}
+                      />
+                    </WithLabel>
+                  );
+                }}
+              </Field>
             </Stack>
             {epochNr && (
-              <WithLabel
-                label="Price and prediction chart"
-                containerStyles={{ marginTop: "16px" }}
-              >
-                <PredAndPriceChart
-                  kline_open_times={
-                    trainJob.train_job.backtest_kline_open_times
-                  }
-                  _prices={trainJob.train_job.backtest_prices}
-                  epoch={trainJob.epochs[epochNr]}
-                />
-              </WithLabel>
+              <PredAndPriceChart
+                kline_open_times={
+                  modelDataDetailed.train_job.backtest_kline_open_times
+                }
+                _prices={modelDataDetailed.train_job.backtest_prices}
+                epoch={modelDataDetailed.epochs[epochNr]}
+              />
             )}
             <div style={{ marginTop: "16px" }}>
               <Field name="enterAndExitCriteria">
@@ -153,7 +194,11 @@ export const BacktestModelPage = () => {
               </Field>
             </div>
 
-            <Button type="submit" marginTop={"16px"}>
+            <Button
+              type="submit"
+              marginTop={"16px"}
+              isDisabled={!isFormReady(values)}
+            >
               Run backtest
             </Button>
           </Form>
