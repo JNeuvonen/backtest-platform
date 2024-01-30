@@ -77,6 +77,7 @@ def create_model_body(
     validation_split: List[int],
     scale_target: bool = False,
     scaling_strategy=2,
+    drop_cols_on_train: List[str] = ["kline_open_time"],
 ):
     return {
         "name": name,
@@ -87,6 +88,7 @@ def create_model_body(
         "validation_split": validation_split,
         "scale_target": scale_target,
         "scaling_strategy": scaling_strategy,
+        "drop_cols_on_train": drop_cols_on_train,
     }
 
 
