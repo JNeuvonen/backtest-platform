@@ -1,3 +1,4 @@
+import json
 import sqlite3
 import pandas as pd
 from sqlalchemy.sql.expression import Null
@@ -13,6 +14,7 @@ from constants import (
 )
 from log import LogExceptionContext
 from query_dataset import DatasetQuery
+from query_model import ModelQuery
 
 
 def get_select_columns_str(columns: List[str]):
@@ -143,12 +145,14 @@ def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str]):
 
 def load_data(
     dataset_name: str,
+    model_id: int,
     target_column: str,
     null_fill_strategy: NullFillStrategy | None,
     train_val_split: List[int] | None = None,
     scaling_strategy: ScalingStrategy = ScalingStrategy.STANDARD,
     scale_target: bool = False,
 ):
+    model = ModelQuery.fetch_model_by_id(model_id)
     timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
     price_col = DatasetQuery.get_price_col(dataset_name)
     df = read_dataset_to_mem(dataset_name)
@@ -195,6 +199,10 @@ def load_data(
 
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
+
+        drop_cols = json.loads(model.drop_cols_on_train)
+        train_df.drop(drop_cols, axis=1, inplace=True)
+        val_df.drop(drop_cols, axis=1, inplace=True)
 
         x_train = torch.Tensor(train_df.values.astype(np.float32))
         y_train = torch.Tensor(
