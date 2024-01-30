@@ -1,3 +1,4 @@
+import json
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from log import LogExceptionContext
@@ -20,6 +21,7 @@ class Model(Base):
     validation_split = Column(String)
     scale_target = Column(Boolean)
     scaling_strategy = Column(Integer)
+    drop_cols_on_train = Column(String)
 
     dataset = relationship("Dataset")
 
@@ -29,6 +31,7 @@ class ModelQuery:
     def create_model_entry(dataset: Dataset, model_data: BodyModelData):
         with LogExceptionContext():
             with Session() as session:
+                serialized_cols = json.dumps(model_data.drop_cols_on_train)
                 new_model = Model(
                     dataset_id=dataset.id,
                     target_col=dataset.target_column,
@@ -40,6 +43,7 @@ class ModelQuery:
                     validation_split=",".join(map(str, model_data.validation_split)),
                     scale_target=model_data.scale_target,
                     scaling_strategy=model_data.scaling_strategy.value,
+                    drop_cols_on_train=serialized_cols,
                 )
                 session.add(new_model)
                 session.commit()
