@@ -73,9 +73,10 @@ def exec_python(code: str):
 def get_col_null_count(
     cursor: sqlite3.Cursor, table_name: str, column_name: str
 ) -> int:
-    query = f"SELECT COUNT(*) FROM {table_name} WHERE {column_name} IS NULL"
-    cursor.execute(query)
-    return cursor.fetchone()[0]
+    with LogExceptionContext():
+        query = f'SELECT COUNT(*) FROM {table_name} WHERE "{column_name}" IS NULL'
+        cursor.execute(query)
+        return cursor.fetchone()[0]
 
 
 def rename_table(db_path, old_name, new_name):
@@ -348,7 +349,7 @@ def get_column_detailed_info(
             cursor = conn.cursor()
 
             try:
-                cursor.execute(f"SELECT {col_name} from {table_name}")
+                cursor.execute(f'SELECT "{col_name}" from {table_name}')
             except Exception as e:
                 print(f"Database Error: {e}")
                 return None
