@@ -30,6 +30,7 @@ export const ChakraSlider: React.FC<ChakraSliderProps> = ({
   onChange,
   defaultValue = 50,
   containerStyles,
+  value,
 }) => {
   return (
     <FormControl style={containerStyles}>
@@ -41,6 +42,7 @@ export const ChakraSlider: React.FC<ChakraSliderProps> = ({
         max={max}
         step={step}
         onChange={(val) => onChange?.(val)}
+        value={value}
       >
         <SliderTrack>
           <SliderFilledTrack />
