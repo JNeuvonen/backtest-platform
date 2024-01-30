@@ -3,9 +3,18 @@ import { NullFillStrategy } from "../../utils/constants";
 export interface DatasetMetadata {
   columns: string[];
   timeseries_col: string | null;
+  price_column: string | null;
   start_date: number;
   end_date: number;
   table_name: string;
+}
+
+export interface DatasetUtils {
+  dataset_name: string;
+  id: number;
+  price_column: string;
+  target_column: string;
+  timeseries_column: string;
 }
 
 export interface DatasetsResponse {
