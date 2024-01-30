@@ -48,6 +48,7 @@ def train():
     for epoch in range(1, {NUM_EPOCHS} + 1):
         model.train()
         total_train_loss = 0
+        train_predictions = []
         epoch_start_time = time.time()
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
@@ -59,6 +60,7 @@ def train():
             loss.backward()
             optimizer.step()
             total_train_loss += loss.item()
+            train_predictions.extend(outputs.cpu().detach().numpy().tolist())
 
 
         model.eval()
@@ -109,7 +111,7 @@ def train():
 
         if save_every_epoch is True:
             model_weights_dump = pickle.dumps(model.state_dict())
-            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean, validation_predictions)
+            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean, validation_predictions, train_predictions)
 
         #check for cancel
         is_train_job_active = TrainJobQuery.is_job_training({TRAIN_JOB_ID})
