@@ -245,7 +245,6 @@ async def route_update_price_col(dataset_name: str, price_column: str):
 
 @router.post(RoutePaths.COPY)
 async def route_copy_dataset(dataset_name: str, new_dataset_name: str):
-    print(dataset_name, new_dataset_name)
     with HttpResponseContext():
         create_copy(dataset_name, new_dataset_name)
         return Response(
