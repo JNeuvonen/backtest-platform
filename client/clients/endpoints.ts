@@ -18,7 +18,7 @@ const API = {
   },
 };
 
-const BASE_URL = CONSTANTS.base_url;
+export const BASE_URL = CONSTANTS.base_url;
 
 export const URLS = {
   get_tables: BASE_URL + API.dataset.tables,
