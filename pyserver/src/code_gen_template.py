@@ -30,6 +30,8 @@ def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
+    TrainJobQuery.add_device({TRAIN_JOB_ID}, 'cuda' if torch.cuda.is_available() else 'cpu')
+
     canceled_by_user_request = False
     save_every_epoch = {SAVE_MODEL_EVERY_EPOCH}
     logger = get_logger()

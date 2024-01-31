@@ -25,6 +25,7 @@ class TrainJob(Base):
     backtest_on_validation_set = Column(Boolean)
     backtest_kline_open_times = Column(String)
     backtest_prices = Column(String)
+    device = Column(String)
 
     model_weights = relationship("ModelWeights", overlaps="train_job")
 
@@ -186,3 +187,16 @@ class TrainJobQuery:
 
                 train_job.serialize_prices(backtest_prices_list)
                 session.commit()
+
+    @staticmethod
+    def add_device(train_job_id: int, device: str):
+        with Session() as session:
+            train_job = (
+                session.query(TrainJob).filter(TrainJob.id == train_job_id).first()
+            )
+            if train_job:
+                train_job.device = device
+                session.commit()
+                return True
+            else:
+                return False
