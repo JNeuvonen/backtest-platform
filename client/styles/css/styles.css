@@ -1,13 +1,14 @@
 .side-nav {
-  top: 0;
+  top: 40px;
   background-color: #282828;
   width: 110px;
-  height: 100vh;
+  min-height: calc(100vh - 40px);
   position: fixed;
   padding: 8px;
   padding-right: 9px;
   border-right: 1px solid #3c3c3c;
   z-index: 100;
+  border-bottom-left-radius: 15px !important;
 }
 .side-nav__nav-items {
   margin-top: 30px;
@@ -25,11 +26,16 @@
   background-color: #3a3a3a;
 }
 
+.layout {
+  border-bottom-right-radius: 15px !important;
+  min-height: calc(100vh - 40px);
+}
 .layout__content {
+  border-bottom-right-radius: 15px !important;
   margin-left: 110px;
   padding: 16px;
   background-color: #212121;
-  min-height: 100vh;
+  min-height: calc(100vh - 40px);
   z-index: 1;
 }
 .layout__page-side-nav {
@@ -141,6 +147,9 @@
   gap: 7px;
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 *,
 *::before,
 *::after {
@@ -155,6 +164,7 @@ body {
   line-height: 1.5;
   margin: 0;
   padding: 0;
+  background: transparent !important;
 }
 
 a {
