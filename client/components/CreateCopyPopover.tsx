@@ -49,7 +49,15 @@ export const CreateCopyPopover = ({ datasetName, successCallback }: Props) => {
   return (
     <div>
       <WithLabel label={"Set name of the copy"}>
-        <Input value={copyName} onChange={(e) => setCopyName(e.target.value)} />
+        <Input
+          value={copyName}
+          onChange={(e) => {
+            const validChars = /^[A-Za-z0-9_ ]*$/;
+            if (validChars.test(e.target.value)) {
+              setCopyName(e.target.value);
+            }
+          }}
+        />
       </WithLabel>
       <ToolBarStyle style={{ marginTop: "8px" }}>
         <Button height={"24px"} variant={BUTTON_VARIANTS.grey}>
