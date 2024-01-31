@@ -26,4 +26,10 @@ export default defineConfig(async () => ({
   rollupOptions: {
     external: [resolve("src-tauri/target")],
   },
+  build: {
+    rollupOptions: {
+      input: resolve("index.html"), // Set your entry point here
+      // Other Rollup options...
+    },
+  },
 }));
