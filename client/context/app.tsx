@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
 } from "react";
+
 import { invoke } from "@tauri-apps/api/tauri";
 import { LAYOUT, TAURI_COMMANDS } from "../utils/constants";
 
@@ -26,6 +27,7 @@ interface AppContextType {
   epochTime: number;
   trainJobId: string;
   setInnerSideNavWidth: React.Dispatch<React.SetStateAction<number>>;
+  titleBarHeight: number;
 }
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -46,6 +48,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [valLosses, setValLosses] = useState<number[]>([]);
   const [epochTime, setEpochTime] = useState<number>(0);
   const [trainJobId, setTrainJobId] = useState("");
+  const [titleBarHeight, setTitleBarHeight] = useState(40);
 
   useEffect(() => {
     const fetchAppData = async () => {
@@ -114,6 +117,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         epochTime,
         trainJobId,
         setInnerSideNavWidth,
+        titleBarHeight,
       }}
     >
       {children}
