@@ -19,6 +19,7 @@ const TrainingToolbar = () => {
     trainLosses,
     valLosses,
     trainJobId,
+    titleBarHeight,
   } = useAppContext();
 
   const cancelTrain = async () => {
@@ -40,6 +41,7 @@ const TrainingToolbar = () => {
         paddingLeft: innerSideNavWidth + contentIndentPx,
         paddingRight: "16px",
         borderBottom: `1px solid ${COLOR_BG_PRIMARY_SHADE_TWO}`,
+        marginTop: titleBarHeight,
       }}
     >
       <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
