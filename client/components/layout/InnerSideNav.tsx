@@ -2,6 +2,7 @@ import React from "react";
 import { SideNavItem } from "./SideNav";
 import { Link } from "react-router-dom";
 import { useActivePath } from "../../hooks/useActivePath";
+import { useAppContext } from "../../context/App";
 
 interface Props {
   sideNavItems: SideNavItem[];
@@ -16,8 +17,12 @@ export const InnerSideNav = ({
   formatPath,
 }: Props) => {
   const { activePath } = useActivePath({ tabPathDepth: pathActiveItemDepth });
+  const { titleBarHeight } = useAppContext();
   return (
-    <div className="layout__page-side-nav">
+    <div
+      className="layout__page-side-nav"
+      style={{ marginTop: titleBarHeight }}
+    >
       {sideNavItems.map((item) => {
         const styleClassName = "layout__container-inner-side-nav__item";
         const activeClassName = "layout__container-inner-side-nav__item-active";
