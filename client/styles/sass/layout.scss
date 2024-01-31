@@ -2,17 +2,19 @@
 
 $side-nav-width: 110px;
 $inner-side-nav: 120px;
+$title-bar-height: 40px;
 
 .side-nav {
-  top: 0;
+  top: $title-bar-height;
   background-color: $bg-primary;
   width: $side-nav-width;
-  height: 100vh;
+  min-height: calc(100vh - $title-bar-height);
   position: fixed;
   padding: 8px;
   padding-right: 9px;
   border-right: 1px solid $bg-primary-shade-two;
   z-index: 100;
+  border-bottom-left-radius: 15px !important;
 
   &__nav-items {
     margin-top: 30px;
@@ -34,11 +36,14 @@ $inner-side-nav: 120px;
 }
 
 .layout {
+  border-bottom-right-radius: 15px !important;
+  min-height: calc(100vh - $title-bar-height);
   &__content {
+    border-bottom-right-radius: 15px !important;
     margin-left: $side-nav-width;
     padding: 16px;
     background-color: #212121;
-    min-height: 100vh;
+    min-height: calc(100vh - $title-bar-height);
     z-index: 1;
   }
 
