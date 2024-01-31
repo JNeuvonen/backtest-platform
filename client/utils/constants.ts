@@ -30,6 +30,7 @@ export const PATHS = {
     path: "/simulate",
   },
   train: `/data/train-job/${PATH_KEYS.train}`,
+  settings: "/settings",
 };
 
 export const LINKS = {
