@@ -10,6 +10,7 @@
     "version": "0.0.0"
   },
   "tauri": {
+    "macOSPrivateApi": true,
     "allowlist": {
       "all": true,
       "http": {
@@ -29,6 +30,9 @@
         "renameFile": true
       },
       "os": {
+        "all": true
+      },
+      "window": {
         "all": true
       }
     },
@@ -54,7 +58,9 @@
         "resizable": true,
         "title": "",
         "minWidth": 1000,
-        "minHeight": 1000
+        "minHeight": 1000,
+        "decorations": false,
+        "transparent": true
       }
     ]
   }
