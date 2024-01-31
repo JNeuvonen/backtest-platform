@@ -1,5 +1,5 @@
 import React from "react";
-import { ChakraSelect } from "./chakra/select";
+import { ChakraSelect } from "./chakra/Select";
 import { DOM_IDS, NULL_FILL_STRATEGIES } from "../utils/constants";
 import { CodeEditor } from "./CodeEditor";
 

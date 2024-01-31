@@ -6,7 +6,7 @@ import { GenericTable } from "../../../components/tables/GenericTable";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { BUTTON_VARIANTS } from "../../../theme";
-import { ConfirmInput } from "../../../components/form/confirm-input";
+import { ConfirmInput } from "../../../components/form/ConfirmInput";
 import { buildRequest } from "../../../clients/fetch";
 import { URLS } from "../../../clients/endpoints";
 import { replaceNthPathItem } from "../../../utils/navigate";
@@ -23,7 +23,7 @@ import { RunPythonOnAllCols } from "../../../components/RunPythonOnAllCols";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { createPythonCode } from "../../../utils/str";
 import { usePathParams } from "../../../hooks/usePathParams";
-import { ConfirmModal } from "../../../components/form/confirm";
+import { ConfirmModal } from "../../../components/form/Confirm";
 import {
   execPythonOnDataset,
   setTargetColumnReq,

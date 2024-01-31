@@ -1,7 +1,7 @@
 import React from "react";
 import { Spinner } from "@chakra-ui/react";
 import { getNonnullEntriesCount } from "../utils/object";
-import { ConfirmModal } from "../components/form/confirm";
+import { ConfirmModal } from "./form/Confirm";
 import { useEditorContext } from "../context/editor";
 import { EditorToolbar } from "./EditorToolbar";
 import { EditorBaseColumns } from "./EditorBaseColumns";

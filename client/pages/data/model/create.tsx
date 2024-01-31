@@ -10,7 +10,7 @@ import {
   useToast,
   Badge,
 } from "@chakra-ui/react";
-import { ChakraSelect } from "../../../components/chakra/select";
+import { ChakraSelect } from "../../../components/chakra/Select";
 import {
   CodeHelper,
   DOM_IDS,

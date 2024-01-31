@@ -1,6 +1,6 @@
 import { Switch } from "@chakra-ui/react";
 import React from "react";
-import { ConfirmModal } from "./confirm";
+import { ConfirmModal } from "./Confirm";
 import { useModal } from "../../hooks/useOpen";
 
 interface Props {

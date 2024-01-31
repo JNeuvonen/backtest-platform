@@ -13,7 +13,7 @@ import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { createPythonCode } from "../../../utils/str";
-import { ConfirmModal } from "../../../components/form/confirm";
+import { ConfirmModal } from "../../../components/form/Confirm";
 import { execPythonOnDatasetCol } from "../../../clients/requests";
 import { CODE } from "../../../utils/constants";
 import { MdOutlineSubdirectoryArrowLeft } from "react-icons/md";
