@@ -8,6 +8,7 @@ import React, {
 
 import { invoke } from "@tauri-apps/api/tauri";
 import { LAYOUT, TAURI_COMMANDS } from "../utils/constants";
+import { BASE_URL } from "../clients/endpoints";
 
 export type Platform = "" | "macos" | "windows" | "linux";
 export type ToolbarMode = "TRAINING" | "";
@@ -28,6 +29,7 @@ interface AppContextType {
   trainJobId: string;
   setInnerSideNavWidth: React.Dispatch<React.SetStateAction<number>>;
   titleBarHeight: number;
+  serverLaunched: boolean;
 }
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -48,7 +50,24 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [valLosses, setValLosses] = useState<number[]>([]);
   const [epochTime, setEpochTime] = useState<number>(0);
   const [trainJobId, setTrainJobId] = useState("");
-  const [titleBarHeight, setTitleBarHeight] = useState(40);
+  const [titleBarHeight] = useState(40);
+  const [serverLaunched, setServerLaunched] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(BASE_URL + "/")
+        .then((response) => {
+          if (response.status === 200) {
+            setServerLaunched(true);
+            clearInterval(interval);
+          }
+          return response.json();
+        })
+        .catch();
+    }, 100); // 100 milliseconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchAppData = async () => {
@@ -118,6 +137,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         trainJobId,
         setInnerSideNavWidth,
         titleBarHeight,
+        serverLaunched,
       }}
     >
       {children}

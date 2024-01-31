@@ -5,10 +5,11 @@ import { COLOR_DARK_BG_PRIMARY } from "../utils/colors";
 import { HoverableIcon } from "./HoverableIcon";
 import { PATHS } from "../utils/constants";
 import { WindowTitlebar } from "../thirdparty/tauri-controls";
+import { Spinner } from "@chakra-ui/react";
 
-const MacOsTitleBar = () => {
+export const TauriTitleBar = () => {
   const { titleBarHeight } = useAppContext();
-  const { platform } = useAppContext();
+  const { platform, serverLaunched } = useAppContext();
 
   const getPlatform = () => {
     switch (platform) {
@@ -47,9 +48,15 @@ const MacOsTitleBar = () => {
           justifyContent: "flex-end",
           width: "100%",
           paddingRight: "16px",
+          gap: "16px",
         }}
         data-tauri-drag-region
       >
+        {!serverLaunched && (
+          <div>
+            <Spinner size={"xs"} />
+          </div>
+        )}
         <HoverableIcon
           icon={(props) => <FaGear {...props} />}
           to={PATHS.settings}
@@ -57,64 +64,4 @@ const MacOsTitleBar = () => {
       </div>
     </WindowTitlebar>
   );
-};
-
-const LinuxTitleBar = () => {
-  const { titleBarHeight } = useAppContext();
-  return (
-    <WindowTitlebar
-      windowControlsProps={{ platform: "gnome" }}
-      controlsOrder="right"
-      style={{ height: titleBarHeight }}
-    >
-      <div
-        style={{
-          height: titleBarHeight,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        Test from linux
-      </div>
-    </WindowTitlebar>
-  );
-};
-
-const WindowsTitleBar = () => {
-  const { titleBarHeight } = useAppContext();
-  return (
-    <WindowTitlebar
-      windowControlsProps={{ platform: "gnome" }}
-      controlsOrder="right"
-      style={{ height: titleBarHeight }}
-    >
-      <div
-        style={{
-          height: titleBarHeight,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        Test from windows
-      </div>
-    </WindowTitlebar>
-  );
-};
-
-export const TauriTitleBar = () => {
-  const { platform } = useAppContext();
-
-  if (platform === "macos") {
-    return <MacOsTitleBar />;
-  }
-
-  if (platform === "windows") {
-    return <WindowsTitleBar />;
-  }
-
-  if (platform === "linux") {
-    return <LinuxTitleBar />;
-  }
-
-  return <div>Title bar TODO for other platforms than mac</div>;
 };
