@@ -51,6 +51,7 @@ export function WindowTitlebar({
       )}
       data-tauri-drag-region
       {...props}
+      style={{ ...props.style, zIndex: 100000 }}
     >
       {left ? (
         <>

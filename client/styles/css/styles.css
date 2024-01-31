@@ -29,6 +29,8 @@
 .layout {
   border-bottom-right-radius: 15px !important;
   min-height: calc(100vh - 40px);
+  position: relative;
+  z-index: 1;
 }
 .layout__content {
   border-bottom-right-radius: 15px !important;

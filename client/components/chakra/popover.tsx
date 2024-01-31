@@ -58,7 +58,7 @@ export const ChakraPopover = ({
         </PopoverHeader>
         <PopoverArrow bg={COLOR_BG_TERTIARY} />
         <PopoverCloseButton />
-        <PopoverBody>{body}</PopoverBody>
+        <PopoverBody>{isOpen && body}</PopoverBody>
         {footer && <PopoverFooter>{footer}</PopoverFooter>}
       </PopoverContent>
     </Popover>

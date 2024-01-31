@@ -38,6 +38,8 @@ $title-bar-height: 40px;
 .layout {
   border-bottom-right-radius: 15px !important;
   min-height: calc(100vh - $title-bar-height);
+  position: relative;
+  z-index: 1;
   &__content {
     border-bottom-right-radius: 15px !important;
     margin-left: $side-nav-width;

@@ -49,6 +49,7 @@ export const TauriTitleBar = () => {
           width: "100%",
           paddingRight: "16px",
           gap: "16px",
+          zIndex: "1000000 !important",
         }}
         data-tauri-drag-region
       >
