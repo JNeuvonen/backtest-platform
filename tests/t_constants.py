@@ -164,6 +164,15 @@ class URL:
         )
 
     @classmethod
+    def get_dataset_pagination(cls, dataset_name: str, page: int, page_size: int):
+        return (
+            cls._datasets_route()
+            + DatasetRoutePaths.GET_DATASET_ROW_PAGINATION.format(
+                dataset_name=dataset_name, page=page, page_size=page_size
+            )
+        )
+
+    @classmethod
     def update_target_col(cls, dataset_name: str, target_col: str):
         return (
             cls._datasets_route()
