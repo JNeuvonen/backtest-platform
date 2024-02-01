@@ -31,7 +31,7 @@ export const EditorToolbar = () => {
       </ChakraTooltip>
 
       {isDelMode && (
-        <ChakraTooltip label={KEYBIND_MSGS.get_save(platform)}>
+        <ChakraTooltip label={"Delete columns from the dataset"}>
           <Button
             style={{ height: "35px", marginBottom: "16px" }}
             isDisabled={isDeleteDisabled()}
