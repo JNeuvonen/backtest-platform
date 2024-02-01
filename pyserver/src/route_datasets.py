@@ -14,6 +14,7 @@ from db import (
     exec_python,
     get_all_tables_and_columns,
     get_column_detailed_info,
+    get_dataset_pagination,
     get_dataset_table,
     get_dataset_tables,
     rename_column,
@@ -58,6 +59,7 @@ class RoutePaths:
     SET_TARGET_COLUMN = "/{dataset_name}/target-column"
     COPY = "/{dataset_name}/copy"
     UPDATE_PRICE_COLUMN = "/{dataset_name}/price-column"
+    GET_DATASET_ROW_PAGINATION = "/{dataset_name}/pagination/{page}/{page_size}"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -250,3 +252,8 @@ async def route_copy_dataset(dataset_name: str, new_dataset_name: str):
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
+
+
+@router.get(RoutePaths.GET_DATASET_ROW_PAGINATION)
+async def route_get_dataset_pagination(dataset_name: str, page: int, page_size: int):
+    return {"data": get_dataset_pagination(dataset_name, page, page_size)}
