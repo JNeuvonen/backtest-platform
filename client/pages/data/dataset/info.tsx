@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDatasetQuery } from "../../../clients/queries/queries";
-import { Box, Button, Spinner, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  IconButton,
+  MenuButton,
+  MenuItem,
+  Spinner,
+  useToast,
+} from "@chakra-ui/react";
 import { GenericTable } from "../../../components/tables/GenericTable";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
@@ -34,6 +42,14 @@ import { ChakraPopover } from "../../../components/chakra/popover";
 import { CreateCopyPopover } from "../../../components/CreateCopyPopover";
 import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
+import { ChakraMenu } from "../../../components/chakra/Menu";
+import {
+  AddIcon,
+  EditIcon,
+  ExternalLinkIcon,
+  HamburgerIcon,
+  RepeatIcon,
+} from "@chakra-ui/icons";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -269,80 +285,100 @@ export const DatasetInfoPage = () => {
           />
         </Box>
         <Box display={"flex"} gap={"16px"}>
-          <ChakraPopover
-            isOpen={createCopyPopover.isOpen}
-            setOpen={createCopyPopover.onOpen}
-            onClose={createCopyPopover.onClose}
-            headerText="Create a copy of the dataset"
-            body={
-              <CreateCopyPopover
-                datasetName={datasetName}
-                successCallback={() => {
-                  createCopyPopover.onClose();
-                }}
-              />
-            }
-          >
-            <Button variant={BUTTON_VARIANTS.grey}>Create copy</Button>
-          </ChakraPopover>
+          <div>
+            <ChakraMenu
+              menuButton={
+                <MenuButton
+                  as={IconButton}
+                  aria-label="Options"
+                  icon={<HamburgerIcon />}
+                  variant={BUTTON_VARIANTS.grey}
+                />
+              }
+            >
+              <MenuItem icon={<AddIcon />} onClick={createCopyPopover.onOpen}>
+                Create copy
+              </MenuItem>
+              <MenuItem
+                icon={<ExternalLinkIcon />}
+                onClick={backtestPriceColumnPopover.onOpen}
+              >
+                Set backtest price column
+              </MenuItem>
+              <MenuItem
+                icon={<RepeatIcon />}
+                onClick={klineOpenTimePopover.onOpen}
+              >
+                Set candle open time column
+              </MenuItem>
+              <MenuItem
+                icon={<EditIcon />}
+                onClick={targetColumnPopover.onOpen}
+              >
+                Set target column
+              </MenuItem>
+              <MenuItem icon={<EditIcon />} onClick={runPythonModal.modalOpen}>
+                Modify the dataset with python
+              </MenuItem>
+            </ChakraMenu>
+            <ChakraPopover
+              useArrow={false}
+              isOpen={createCopyPopover.isOpen}
+              setOpen={createCopyPopover.onOpen}
+              onClose={createCopyPopover.onClose}
+              headerText="Create a copy of the dataset"
+              body={
+                <CreateCopyPopover
+                  datasetName={datasetName}
+                  successCallback={createCopyPopover.onClose}
+                  cancelCallback={createCopyPopover.onClose}
+                />
+              }
+            />
 
-          <ChakraPopover
-            isOpen={backtestPriceColumnPopover.isOpen}
-            setOpen={backtestPriceColumnPopover.onOpen}
-            onClose={backtestPriceColumnPopover.onClose}
-            headerText="Set backtest price column"
-            body={
-              <SelectColumnPopover
-                options={getDatasetColumnOptions(dataset)}
-                placeholder={dataset.price_col}
-                selectCallback={setBacktestPriceColumn}
-              />
-            }
-          >
-            <Button variant={BUTTON_VARIANTS.grey}>
-              Set backtest price column
-            </Button>
-          </ChakraPopover>
-
-          <ChakraPopover
-            isOpen={klineOpenTimePopover.isOpen}
-            setOpen={klineOpenTimePopover.onOpen}
-            onClose={klineOpenTimePopover.onClose}
-            headerText="Set candle open time column"
-            body={
-              <SelectColumnPopover
-                options={getDatasetColumnOptions(dataset)}
-                placeholder={dataset.timeseries_col}
-                selectCallback={setKlineOpenTimeColumn}
-              />
-            }
-          >
-            <Button variant={BUTTON_VARIANTS.grey}>
-              Set candle open time column
-            </Button>
-          </ChakraPopover>
-          <ChakraPopover
-            isOpen={targetColumnPopover.isOpen}
-            setOpen={targetColumnPopover.onOpen}
-            onClose={targetColumnPopover.onClose}
-            headerText="Set target column"
-            body={
-              <SelectColumnPopover
-                options={getDatasetColumnOptions(dataset)}
-                placeholder={dataset.target_col}
-                selectCallback={setTargetColumn}
-              />
-            }
-          >
-            <Button variant={BUTTON_VARIANTS.grey}>Set target column</Button>
-          </ChakraPopover>
-          <Button
-            variant={BUTTON_VARIANTS.grey}
-            leftIcon={<PythonIcon width={24} height={24} />}
-            onClick={runPythonModal.modalOpen}
-          >
-            Run python
-          </Button>
+            <ChakraPopover
+              isOpen={backtestPriceColumnPopover.isOpen}
+              setOpen={backtestPriceColumnPopover.onOpen}
+              onClose={backtestPriceColumnPopover.onClose}
+              headerText="Set backtest price column"
+              useArrow={false}
+              body={
+                <SelectColumnPopover
+                  options={getDatasetColumnOptions(dataset)}
+                  placeholder={dataset.price_col}
+                  selectCallback={setBacktestPriceColumn}
+                />
+              }
+            />
+            <ChakraPopover
+              isOpen={klineOpenTimePopover.isOpen}
+              setOpen={klineOpenTimePopover.onOpen}
+              onClose={klineOpenTimePopover.onClose}
+              headerText="Set candle open time column"
+              useArrow={false}
+              body={
+                <SelectColumnPopover
+                  options={getDatasetColumnOptions(dataset)}
+                  placeholder={dataset.timeseries_col}
+                  selectCallback={setKlineOpenTimeColumn}
+                />
+              }
+            />
+            <ChakraPopover
+              isOpen={targetColumnPopover.isOpen}
+              setOpen={targetColumnPopover.onOpen}
+              onClose={targetColumnPopover.onClose}
+              headerText="Set target column"
+              useArrow={false}
+              body={
+                <SelectColumnPopover
+                  options={getDatasetColumnOptions(dataset)}
+                  placeholder={dataset.target_col}
+                  selectCallback={setTargetColumn}
+                />
+              }
+            />
+          </div>
         </Box>
       </Box>
       <Box marginTop={"16px"}>
