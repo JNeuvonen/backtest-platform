@@ -7,12 +7,8 @@ import { DatasetModelCreatePage } from "../model/create";
 import { useAppContext } from "../../../context/App";
 import { LAYOUT } from "../../../utils/constants";
 
-const TAB_LABELS = ["Info", "Editor", "Models"];
-const TABS = [
-  <DatasetInfoPage key={"1"} />,
-  <DatasetEditorPage key={"2"} />,
-  <DatasetModelCreatePage key={"3"} />,
-];
+const TAB_LABELS = ["Info", "Editor"];
+const TABS = [<DatasetInfoPage key={"1"} />, <DatasetEditorPage key={"2"} />];
 
 interface TabQueryParams {
   defaultTab: string | undefined;
