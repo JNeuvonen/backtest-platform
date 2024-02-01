@@ -74,6 +74,7 @@ export const SelectDatasetColumn = ({
               >
                 <Checkbox
                   isChecked={colValue}
+                  className="tooltip-text"
                   onChange={() =>
                     selectColumn(
                       dataset.table_name,

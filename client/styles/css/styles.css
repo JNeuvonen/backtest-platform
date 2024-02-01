@@ -122,19 +122,28 @@
   gap: 16px;
 }
 
+.tooltip-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
 .combine-datasets {
   display: flex;
   gap: 32px;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 .combine-datasets__base {
-  width: 30%;
+  width: 50%;
   height: max-content;
   background-color: #3c3c3c;
   padding: 16px;
   border-radius: 3px;
 }
 .combine-datasets__all-columns {
-  width: 70%;
+  width: 50%;
   height: max-content;
   background-color: #3c3c3c;
   padding: 16px;

@@ -38,11 +38,21 @@
   }
 }
 
+.tooltip-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
 .combine-datasets {
   display: flex;
   gap: 32px;
+
+  white-space: normal;
+  overflow-wrap: break-word;
   &__base {
-    width: 30%;
+    width: 50%;
     height: max-content;
     background-color: $bg-primary-shade-two;
     padding: 16px;
@@ -50,7 +60,7 @@
   }
 
   &__all-columns {
-    width: 70%;
+    width: 50%;
     height: max-content;
     background-color: $bg-primary-shade-two;
     padding: 16px;

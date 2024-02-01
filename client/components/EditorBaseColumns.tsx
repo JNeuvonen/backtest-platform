@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { getParenthesisSize } from "../utils/content";
 import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../theme";
 import { useEditorContext } from "../context/editor";
@@ -24,6 +24,7 @@ import { ChakraPopover } from "./chakra/popover";
 import { ChakraModal } from "./chakra/modal";
 import { ColumnInfo } from "./ColumnInfo";
 import { getDatasetEditorPath } from "../utils/navigate";
+import { ChakraTextTooltip } from "./chakra/TextTooltip";
 
 const CONTAINERS = {
   combine_datasets: "combine-datasets",
@@ -34,6 +35,8 @@ const CONTAINERS = {
 interface RouteParams {
   datasetName: string;
 }
+
+const CONTAINER_ID = "base-editor-container";
 
 export const EditorBaseColumns = () => {
   const navigate = useNavigate();
@@ -99,6 +102,7 @@ export const EditorBaseColumns = () => {
         CONTAINERS.combine_datasets,
         CONTAINERS.base_dataset,
       ])}
+      id="base-editor-container"
     >
       <ChakraModal
         isOpen={columnModalIsOpen}
@@ -191,12 +195,14 @@ export const EditorBaseColumns = () => {
                 />
               )}
 
-              <Text
-                variant={TEXT_VARIANTS.clickable}
-                onClick={() => openColumnModal(item)}
-              >
-                {item}
-              </Text>
+              <ChakraTextTooltip text={item} containerId={CONTAINER_ID}>
+                <Text
+                  variant={TEXT_VARIANTS.clickable}
+                  onClick={() => openColumnModal(item)}
+                >
+                  {item}
+                </Text>
+              </ChakraTextTooltip>
             </div>
           );
         })}
