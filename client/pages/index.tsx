@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowseDatasetsPage } from "./Datasets";
+import { BrowseDatasetsPage } from "./datasets";
 import { InnerSideNav } from "../components/layout/InnerSideNav";
 import { BsDatabase } from "react-icons/bs";
 import { LAYOUT, PATHS, PATH_KEYS } from "../utils/constants";
