@@ -313,3 +313,13 @@ def test_route_fetch_models(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     Post.create_model(fixt_btc_small_1h.name, body)
     models = Fetch.get_dataset_models(fixt_btc_small_1h.name)
     assert len(models) == 1
+
+
+@pytest.mark.acceptance
+def test_dataset_pagination(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
+    PAGE_SIZE = 20
+    res_valid = Fetch.get_dataset_pagination(fixt_btc_small_1h.name, 1, PAGE_SIZE)
+    res_invalid = Fetch.get_dataset_pagination(fixt_btc_small_1h.name, 1000, 202000)
+
+    assert len(res_valid) == PAGE_SIZE
+    assert len(res_invalid) == 0
