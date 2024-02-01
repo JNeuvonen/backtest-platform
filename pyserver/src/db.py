@@ -93,6 +93,15 @@ def get_table_row_count(cursor: sqlite3.Cursor, table_name: str) -> int:
     return cursor.fetchone()[0]
 
 
+def get_dataset_pagination(dataset_name: str, page: int, page_size: int):
+    offset = (page - 1) * page_size
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+        cursor = conn.cursor()
+        query = f"SELECT * FROM {dataset_name} LIMIT {page_size} OFFSET {offset};"
+        cursor.execute(query)
+        return cursor.fetchall()
+
+
 def check_column_data_types(cursor, table_name, column_name):
     try:
         query = f"""
@@ -316,6 +325,7 @@ def get_dataset_table(table_name: str):
                 for column in columns
             }
             row_count = get_table_row_count(cursor, table_name)
+            rows = get_dataset_pagination(table_name, 1, 100)
             return {
                 "columns": columns,
                 "head": head,
@@ -328,6 +338,7 @@ def get_dataset_table(table_name: str):
                 "timeseries_col": DatasetQuery.get_timeseries_col(table_name),
                 "target_col": DatasetQuery.get_target_col(table_name),
                 "price_col": DatasetQuery.get_price_col(table_name),
+                "rows": rows,
             }
 
 
