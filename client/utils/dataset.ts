@@ -24,3 +24,18 @@ export const getColumnOptionsAllDatasets = (datasets: DatasetMetadata[]) => {
   });
   return ret;
 };
+
+export const convertColumnsToAgGridFormat = (
+  rows: number[][],
+  columns: string[]
+) => {
+  const ret: { [field: string]: number }[] = [];
+  rows.forEach((row) => {
+    const item = {};
+    row.forEach((cellValue, i) => {
+      item[columns[i]] = cellValue;
+    });
+    ret.push(item);
+  });
+  return ret;
+};
