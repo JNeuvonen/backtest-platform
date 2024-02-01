@@ -1,4 +1,4 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -13,7 +13,7 @@ import {
 import { COLOR_BG_TERTIARY } from "../../utils/colors";
 
 interface Props {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   body: React.ReactNode;
   footer?: React.ReactNode;
   headerText: string;
@@ -22,6 +22,8 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   setOpen: () => void;
+  useArrow?: boolean;
+  containerStyles?: CSSProperties;
 }
 
 export const ChakraPopover = ({
@@ -34,6 +36,7 @@ export const ChakraPopover = ({
   isOpen,
   onClose,
   setOpen,
+  useArrow = true,
 }: Props) => {
   return (
     <Popover
@@ -56,7 +59,7 @@ export const ChakraPopover = ({
         <PopoverHeader pt={4} fontWeight="bold" border="0">
           {headerText}
         </PopoverHeader>
-        <PopoverArrow bg={COLOR_BG_TERTIARY} />
+        {useArrow && <PopoverArrow bg={COLOR_BG_TERTIARY} />}
         <PopoverCloseButton />
         <PopoverBody>{isOpen && body}</PopoverBody>
         {footer && <PopoverFooter>{footer}</PopoverFooter>}
