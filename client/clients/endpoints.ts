@@ -73,4 +73,16 @@ export const URLS = {
     `/${datasetName}/copy?new_dataset_name=${copyName}`,
   fetchTrainjobBacktests: (trainJobId: string) =>
     BASE_URL + API.model.root + `/backtest/${trainJobId}`,
+
+  fetchDatasetPagination: (
+    datasetName: string,
+    page: number,
+    pageSize: number
+  ) => {
+    return (
+      BASE_URL +
+      API.dataset.root +
+      `/${datasetName}/pagination/${page}/${pageSize}`
+    );
+  },
 };
