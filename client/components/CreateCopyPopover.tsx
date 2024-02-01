@@ -1,18 +1,22 @@
-import { Button, Input, useToast } from "@chakra-ui/react";
+import { Button, Input, Spinner, useToast } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { BUTTON_VARIANTS } from "../theme";
 import { ToolBarStyle } from "./ToolbarStyle";
 import { WithLabel } from "./form/WithLabel";
 import { useKeyListener } from "../hooks/useKeyListener";
 import { createCopyOfDataset } from "../clients/requests";
-import { CenteredSpinner } from "./CenteredSpinner";
 
 interface Props {
   datasetName: string;
   successCallback: () => void;
+  cancelCallback: () => void;
 }
 
-export const CreateCopyPopover = ({ datasetName, successCallback }: Props) => {
+export const CreateCopyPopover = ({
+  cancelCallback,
+  datasetName,
+  successCallback,
+}: Props) => {
   const [copyName, setCopyName] = useState(datasetName);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
@@ -44,7 +48,7 @@ export const CreateCopyPopover = ({ datasetName, successCallback }: Props) => {
   });
 
   if (isLoading) {
-    return <CenteredSpinner />;
+    return <Spinner />;
   }
   return (
     <div>
@@ -60,7 +64,11 @@ export const CreateCopyPopover = ({ datasetName, successCallback }: Props) => {
         />
       </WithLabel>
       <ToolBarStyle style={{ marginTop: "8px" }}>
-        <Button height={"24px"} variant={BUTTON_VARIANTS.grey}>
+        <Button
+          height={"24px"}
+          variant={BUTTON_VARIANTS.grey}
+          onClick={cancelCallback}
+        >
           Cancel
         </Button>
         <Button
