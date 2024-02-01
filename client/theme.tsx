@@ -1,7 +1,10 @@
 import { extendTheme } from "@chakra-ui/react";
+import { menuAnatomy } from "@chakra-ui/anatomy";
 import {
   COLOR_BG_PRIMARY,
   COLOR_BG_PRIMARY_SHADE_THREE,
+  COLOR_BG_PRIMARY_SHADE_TWO,
+  COLOR_BG_SECONDARY,
   COLOR_BG_TERTIARY,
   COLOR_BRAND_SECONDARY_HIGHLIGHT,
   COLOR_BRAND_SECONDARY_SHADE_ONE,
@@ -115,6 +118,43 @@ const cardTheme = {
     },
   },
 };
+const menuItemTheme = {
+  parts: menuAnatomy.keys,
+  baseStyle: {
+    item: {
+      backgroundColor: COLOR_BG_PRIMARY_SHADE_TWO,
+      color: COLOR_CONTENT_PRIMARY,
+      _hover: {
+        bg: COLOR_BG_SECONDARY,
+      },
+      _focus: {
+        bg: COLOR_BG_SECONDARY,
+      },
+    },
+    list: {
+      border: "none",
+
+      backgroundColor: COLOR_BG_PRIMARY_SHADE_TWO,
+    },
+    button: {
+      // this will style the MenuButton component
+      fontWeight: "medium",
+      bg: "teal.500",
+      color: "gray.200",
+      _hover: {
+        bg: "teal.600",
+        color: "white",
+      },
+    },
+    command: {},
+    divider: {
+      // this will style the MenuDivider component
+      my: "4",
+      borderColor: "white",
+      borderBottom: "2px dotted",
+    },
+  },
+};
 
 export const customChakraTheme = extendTheme({
   styles: {
@@ -131,5 +171,6 @@ export const customChakraTheme = extendTheme({
     ...headingTheme,
     ...cardTheme,
     Card: cardTheme,
+    Menu: menuItemTheme,
   },
 });
