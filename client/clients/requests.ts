@@ -6,8 +6,6 @@ import { buildRequest } from "./fetch";
 import {
   BacktestObject,
   BacktestsResponse,
-  Dataset,
-  DatasetMetadata,
   DatasetModel,
   DatasetResponse,
   DatasetUtils,
@@ -222,5 +220,21 @@ export async function updatePriceColumnReq(
     method: "PUT",
     url: URLS.setPriceColumn(datasetName, priceColumn),
   });
+  return res;
+}
+
+export async function fetchDatasetPagination(
+  datasetName: string,
+  page: number,
+  pageSize: number
+) {
+  const res = await buildRequest({
+    method: "GET",
+    url: URLS.fetchDatasetPagination(datasetName, page, pageSize),
+  });
+
+  if (res.status === 200) {
+    return res.res;
+  }
   return res;
 }
