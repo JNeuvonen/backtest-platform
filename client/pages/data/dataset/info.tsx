@@ -1,16 +1,14 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDatasetQuery } from "../../../clients/queries/queries";
 import {
   Box,
-  Button,
   IconButton,
   MenuButton,
   MenuItem,
   Spinner,
   useToast,
 } from "@chakra-ui/react";
-import { GenericTable } from "../../../components/tables/GenericTable";
 import { ChakraModal } from "../../../components/chakra/modal";
 import { useModal } from "../../../hooks/useOpen";
 import { BUTTON_VARIANTS } from "../../../theme";
@@ -26,7 +24,6 @@ import {
   NullFillStrategy,
 } from "../../../utils/constants";
 import { ColumnModal } from "../../../components/RenameColumnModal";
-import { PythonIcon } from "../../../components/icons/python";
 import { RunPythonOnAllCols } from "../../../components/RunPythonOnAllCols";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { createPythonCode } from "../../../utils/str";
@@ -50,6 +47,9 @@ import {
   HamburgerIcon,
   RepeatIcon,
 } from "@chakra-ui/icons";
+import { DatasetTable } from "../../../components/data-grid/DatasetTable";
+import { CellClickedEvent } from "ag-grid-community";
+import { AgGridReact } from "ag-grid-react";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -85,6 +85,7 @@ export const DatasetInfoPage = () => {
   const backtestPriceColumnPopover = useModal();
 
   const { data, isLoading, refetch } = useDatasetQuery(datasetName);
+  const [editedRows, setEditedRows] = useState<object[]>([]);
 
   const columnOnClickFunction = (selectedColumn: string) => {
     setSelectedColumn(selectedColumn);
@@ -105,7 +106,6 @@ export const DatasetInfoPage = () => {
   if (!dataset) {
     return <Box>Page is not available</Box>;
   }
-
   const renameDataset = (newDatasetName: string) => {
     const res = buildRequest({
       url: URLS.set_dataset_name(datasetName),
@@ -381,12 +381,31 @@ export const DatasetInfoPage = () => {
           </div>
         </Box>
       </Box>
-      <Box marginTop={"16px"}>
-        <Box>Tail</Box>
-        <GenericTable
-          columns={columns}
-          rows={dataset.tail}
-          columnOnClickFunc={columnOnClickFunction}
+      <Box
+        marginTop={"16px"}
+        style={{
+          marginLeft: "-32px",
+          width: "calc(100% + 32px)",
+        }}
+      >
+        <DatasetTable
+          columnDefs={columns.map((item) => {
+            return {
+              headerName: item,
+              field: item,
+              sortable: false,
+              editable: item !== dataset.timeseries_col ? true : false,
+            };
+          })}
+          onCellClicked={(e: CellClickedEvent) => {
+            columnOnClickFunction(e.column.getColId());
+          }}
+          handleCellValueChanged={(rowData: any) => {
+            setEditedRows([...editedRows, rowData.data]);
+          }}
+          maxRows={dataset.row_count}
+          columnLabels={columns}
+          datasetName={datasetName}
         />
       </Box>
     </div>
