@@ -159,6 +159,13 @@ class Fetch:
             res_json = res.json()
             return res_json["data"]
 
+    @staticmethod
+    def get_dataset_pagination(dataset_name: str, page: int, page_size: int):
+        with Req(
+            "get", URL.get_dataset_pagination(dataset_name, page, page_size)
+        ) as res:
+            return res.json()["data"]
+
 
 class Post:
     @staticmethod
