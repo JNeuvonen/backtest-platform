@@ -29,6 +29,12 @@ def add_to_datasets_db(df: pd.DataFrame, table_name: str):
         df.to_sql(table_name, conn, if_exists="replace", index=False)
 
 
+def remove_all_csv_files(directory):
+    for file in os.listdir(directory):
+        if file.endswith(".csv"):
+            os.remove(os.path.join(directory, file))
+
+
 async def read_file_to_dataframe(
     file: UploadFile, chunk_size: int = STREAMING_DEFAULT_CHUNK_SIZE
 ) -> pd.DataFrame:
