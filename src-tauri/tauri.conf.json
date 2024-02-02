@@ -16,6 +16,10 @@
       "http": {
         "all": true
       },
+      "dialog": {
+        "open": true,
+        "save": true
+      },
       "shell": {
         "all": false,
         "open": true
