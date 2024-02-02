@@ -8,3 +8,5 @@ The setup goes as follows:
 - Embedding that Python binary into a [tauri](https://github.com/tauri-apps/tauri) desktop application
 - Starting the Python binary (FastAPI web server) from within Tauri's rust backend ([main.rs](https://github.com/JNeuvonen/backtest-engine/blob/master/src-tauri/src/main.rs#L64-L69)).
 - Now the [frontend](https://github.com/JNeuvonen/backtest-engine/tree/master/client) (Chromium powered) can call the Python server running locally without being dependent on or interfering with the system's Python.
+
+So basically, Tauri is only used to bootstrap the local Python environment.
