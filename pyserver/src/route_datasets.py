@@ -2,11 +2,14 @@ import os
 import asyncio
 
 from typing import List
+
+from fastapi.responses import FileResponse
+from config import append_app_data_path
 from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrategy
 from context import HttpResponseContext
 from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, status
 from pydantic import BaseModel
-from dataset import df_fill_nulls_on_all_cols
+from dataset import df_fill_nulls_on_all_cols, read_dataset_to_mem
 from db import (
     add_columns_to_table,
     create_copy,
@@ -33,6 +36,8 @@ from utils import (
     PythonCode,
     add_to_datasets_db,
     read_file_to_dataframe,
+    remove_all_csv_files,
+    rm_file,
 )
 
 
@@ -60,6 +65,7 @@ class RoutePaths:
     COPY = "/{dataset_name}/copy"
     UPDATE_PRICE_COLUMN = "/{dataset_name}/price-column"
     GET_DATASET_ROW_PAGINATION = "/{dataset_name}/pagination/{page}/{page_size}"
+    DOWNLOAD = "/{dataset_name}/download"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -257,3 +263,13 @@ async def route_copy_dataset(dataset_name: str, new_dataset_name: str):
 @router.get(RoutePaths.GET_DATASET_ROW_PAGINATION)
 async def route_get_dataset_pagination(dataset_name: str, page: int, page_size: int):
     return {"data": get_dataset_pagination(dataset_name, page, page_size)}
+
+
+@router.get(RoutePaths.DOWNLOAD)
+async def route_download_dataset(dataset_name: str):
+    with HttpResponseContext():
+        remove_all_csv_files(append_app_data_path(""))
+        df = read_dataset_to_mem(dataset_name)
+        csv_path = append_app_data_path(f"{dataset_name}.csv")
+        df.to_csv(csv_path, index=False)
+        return FileResponse(path=csv_path, filename=csv_path, media_type="text/csv")
