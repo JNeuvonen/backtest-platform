@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { getParenthesisSize } from "../utils/content";
 import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../theme";
 import { useEditorContext } from "../context/editor";

@@ -1,4 +1,4 @@
-import type { HTMLProps } from "react"
+import type { HTMLProps } from "react";
 
 /**
  * Interface for window controls.
@@ -12,27 +12,27 @@ export interface WindowControlsProps extends HTMLProps<HTMLDivElement> {
    * If the `platform` property is not specified, the library will automatically detect
    * the operating system the app is running on and display the appropriate elements.
    */
-  platform?: "windows" | "macos" | "gnome"
+  platform?: "windows" | "macos" | "gnome";
 
   /**
    * Indicates whether the window controls should be shown or hidden.
    * @default false
    */
-  hide?: boolean
+  hide?: boolean;
 
   /**
    * - "display": "display: none;" making them completely invisible and not taking up any space.
    * - "visibility": "visibility: hidden;" making them invisible but still occupying the same space.
    * @default "display"
    */
-  hideMethod?: "display" | "visibility"
+  hideMethod?: "display" | "visibility";
 
   /**
    * Justify/Snap WindowControls
    *
    * @default false, (if not defined in WindowTitlebar automatically assigned)
    */
-  justify?: boolean
+  justify?: boolean;
 
   /**
    * Specifies the Linux desktop environment for which the window controls are intended.
@@ -49,7 +49,7 @@ export interface WindowControlsProps extends HTMLProps<HTMLDivElement> {
   // preventRightClickMenu?: "always" | "production"
 
   /** `data-tauri-drag-region` */
-  "data-tauri-drag-region"?: boolean
+  "data-tauri-drag-region"?: boolean;
 }
 
 /**
@@ -71,10 +71,10 @@ export interface WindowTitlebarProps extends HTMLProps<HTMLDivElement> {
    * - "platform": for OS-based positioning specified in `windowControlsProps`
    * @default "system"
    */
-  controlsOrder?: "right" | "left" | "platform" | "system"
+  controlsOrder?: "right" | "left" | "platform" | "system";
 
   /**
    * `WindowControls` props
    */
-  windowControlsProps?: WindowControlsProps
+  windowControlsProps?: WindowControlsProps;
 }

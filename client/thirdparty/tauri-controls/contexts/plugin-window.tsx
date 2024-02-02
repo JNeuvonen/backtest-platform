@@ -26,7 +26,7 @@ interface TauriAppWindowProviderProps {
 
 export const TauriAppWindowProvider: React.FC<TauriAppWindowProviderProps> = ({
   children,
-}: any) => {
+}: TauriAppWindowProviderProps) => {
   const [appWindow, setAppWindow] = useState<Window | null>(null);
   const [isWindowMaximized, setIsWindowMaximized] = useState(false);
   const { platform } = useAppContext();

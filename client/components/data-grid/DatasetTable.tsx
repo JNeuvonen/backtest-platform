@@ -1,10 +1,16 @@
-import { CellClickedEvent, ColDef } from "ag-grid-community";
+import {
+  CellClickedEvent,
+  CellValueChangedEvent,
+  ColDef,
+  GridApi,
+  IGetRowsParams,
+} from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fetchDatasetPagination } from "../../clients/requests";
 import { convertColumnsToAgGridFormat } from "../../utils/dataset";
 
@@ -12,12 +18,12 @@ interface Props {
   columnDefs: ColDef[];
   columnLabels: string[];
   onCellClicked: (event: CellClickedEvent) => void;
-  handleCellValueChanged: any;
+  handleCellValueChanged: (rowData: CellValueChangedEvent) => void;
   maxRows: number;
   datasetName: string;
 }
 
-export const DatasetTable = ({
+export const DatasetDataGrid = ({
   columnDefs,
   onCellClicked,
   handleCellValueChanged,
@@ -25,19 +31,17 @@ export const DatasetTable = ({
   columnLabels,
   datasetName,
 }: Props) => {
-  const [gridApi, setGridApi] = useState<any>(null);
+  const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [stateColumnDefs] = useState(columnDefs);
 
   useEffect(() => {
     if (gridApi) {
       const dataSource = {
-        getRows: (params: any) => {
+        getRows: (params: IGetRowsParams) => {
           const pageSize = params.endRow - params.startRow;
           const page = params.endRow / pageSize;
           fetchDatasetPagination(datasetName, page, pageSize)
             .then((res) => {
-              console.log(datasetName, page, pageSize);
-              console.log(res.data);
               params.successCallback(
                 convertColumnsToAgGridFormat(res.data, columnLabels),
                 maxRows
@@ -46,7 +50,7 @@ export const DatasetTable = ({
             .catch(() => {});
         },
       };
-      gridApi.setDatasource(dataSource);
+      gridApi.setGridOption("datasource", dataSource);
     }
   }, [gridApi]);
 

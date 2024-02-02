@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDatasetQuery } from "../../../clients/queries/queries";
 import {
@@ -47,9 +47,8 @@ import {
   HamburgerIcon,
   RepeatIcon,
 } from "@chakra-ui/icons";
-import { DatasetTable } from "../../../components/data-grid/DatasetTable";
-import { CellClickedEvent } from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
+import { DatasetDataGrid } from "../../../components/data-grid/DatasetTable";
+import { CellClickedEvent, CellValueChangedEvent } from "ag-grid-community";
 
 type DatasetDetailParams = {
   datasetName: string;
@@ -388,7 +387,7 @@ export const DatasetInfoPage = () => {
           width: "calc(100% + 32px)",
         }}
       >
-        <DatasetTable
+        <DatasetDataGrid
           columnDefs={columns.map((item) => {
             return {
               headerName: item,
@@ -400,7 +399,7 @@ export const DatasetInfoPage = () => {
           onCellClicked={(e: CellClickedEvent) => {
             columnOnClickFunction(e.column.getColId());
           }}
-          handleCellValueChanged={(rowData: any) => {
+          handleCellValueChanged={(rowData: CellValueChangedEvent) => {
             setEditedRows([...editedRows, rowData.data]);
           }}
           maxRows={dataset.row_count}

@@ -31,11 +31,8 @@ export function WindowTitlebar({
   const customProps = (ml: string) => {
     if (windowControlsProps?.justify !== undefined) return windowControlsProps;
 
-    const {
-      justify: windowControlsJustify,
-      className: windowControlsClassName,
-      ...restProps
-    } = windowControlsProps || {};
+    const { className: windowControlsClassName, ...restProps } =
+      windowControlsProps || {};
     return {
       justify: false,
       className: cn(windowControlsClassName, ml),
