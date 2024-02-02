@@ -1,8 +1,10 @@
+import { writeBinaryFile, writeTextFile } from "@tauri-apps/api/fs";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
 import { URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
+import { saveAs } from "file-saver";
 import {
   BacktestObject,
   BacktestsResponse,
@@ -14,6 +16,7 @@ import {
   FetchModelByNameRes,
   TrainJob,
 } from "./queries/response-types";
+import { save } from "@tauri-apps/api/dialog";
 
 export async function fetchDatasets() {
   const url = URLS.get_tables;
@@ -237,4 +240,22 @@ export async function fetchDatasetPagination(
     return res.res;
   }
   return res;
+}
+
+export async function saveDatasetFile(datasetName: string) {
+  const response = await fetch(URLS.downloadDataset(datasetName));
+  if (!response.ok) throw new Error("Network response was not ok.");
+
+  const blob = await response.blob();
+
+  if (window.__TAURI__) {
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const filePath = await save({ defaultPath: `${datasetName}.csv` });
+    if (filePath) {
+      await writeBinaryFile({ path: filePath, contents: uint8Array });
+    }
+  } else {
+    saveAs(blob, `${datasetName}.csv`);
+  }
 }
