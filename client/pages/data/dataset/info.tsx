@@ -31,6 +31,7 @@ import { usePathParams } from "../../../hooks/usePathParams";
 import { ConfirmModal } from "../../../components/form/Confirm";
 import {
   execPythonOnDataset,
+  saveDatasetFile,
   setTargetColumnReq,
   updatePriceColumnReq,
 } from "../../../clients/requests";
@@ -42,12 +43,13 @@ import { getDatasetColumnOptions } from "../../../utils/dataset";
 import { ChakraMenu } from "../../../components/chakra/Menu";
 import {
   AddIcon,
+  DownloadIcon,
   EditIcon,
   ExternalLinkIcon,
   HamburgerIcon,
   RepeatIcon,
 } from "@chakra-ui/icons";
-import { DatasetDataGrid } from "../../../components/data-grid/DatasetTable";
+import { DatasetDataGrid } from "../../../components/data-grid/Dataset";
 import { CellClickedEvent, CellValueChangedEvent } from "ag-grid-community";
 
 type DatasetDetailParams = {
@@ -318,6 +320,15 @@ export const DatasetInfoPage = () => {
               </MenuItem>
               <MenuItem icon={<EditIcon />} onClick={runPythonModal.modalOpen}>
                 Modify the dataset with python
+              </MenuItem>
+
+              <MenuItem
+                icon={<DownloadIcon />}
+                onClick={() => {
+                  saveDatasetFile(datasetName);
+                }}
+              >
+                Download the dataset
               </MenuItem>
             </ChakraMenu>
             <ChakraPopover
