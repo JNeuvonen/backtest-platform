@@ -85,4 +85,6 @@ export const URLS = {
       `/${datasetName}/pagination/${page}/${pageSize}`
     );
   },
+  downloadDataset: (datasetName: string) =>
+    BASE_URL + API.dataset.root + `/${datasetName}/download`,
 };
