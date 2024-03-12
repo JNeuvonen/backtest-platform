@@ -10,7 +10,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MultiValue } from "react-select";
 import { URLS } from "../clients/endpoints";
 import { ApiResponse, buildRequest } from "../clients/fetch";
@@ -26,6 +26,8 @@ import { useModal } from "../hooks/useOpen";
 import { DOM_EVENT_CHANNELS, GET_KLINE_OPTIONS } from "../utils/constants";
 import { useMessageListener } from "../hooks/useMessageListener";
 import { BinanceBasicTicker } from "../clients/queries/response-types";
+import { useForceUpdate } from "../hooks/useForceUpdate";
+import { BUTTON_VARIANTS } from "../theme";
 
 const DATA_PROVIDERS = [
   {
@@ -218,13 +220,45 @@ const GetNewDatasetModal = ({ modalClose }: GetNewDatasetModalProps) => {
   );
 };
 
+interface CheckedTables {
+  tableName: string;
+  isChecked: boolean;
+}
+
 export const BrowseDatasetsPage = () => {
   const { data, isLoading, refetch } = useDatasetsQuery();
   const { isOpen, jsxContent, setContent, modalClose } = useModal();
 
+  const [checkedTables, setCheckedTables] = useState<CheckedTables[]>([]);
+
+  const forceUpdate = useForceUpdate();
+
+  const checkBoxOnClick = (tableName: string) => {
+    checkedTables.forEach((item) => {
+      if (item.tableName === tableName) {
+        item.isChecked = !item.isChecked;
+      }
+    });
+    forceUpdate();
+  };
+
   const refetchTables = () => {
     refetch();
   };
+
+  useEffect(() => {
+    if (data) {
+      const newState = data.map((item) => {
+        return {
+          tableName: item.table_name,
+
+          isChecked: false,
+        };
+      });
+      setCheckedTables(newState);
+      forceUpdate();
+    }
+  }, [data]);
 
   useMessageListener({
     messageName: DOM_EVENT_CHANNELS.refetch_all_datasets,
@@ -250,10 +284,11 @@ export const BrowseDatasetsPage = () => {
 
     return (
       <div>
-        <DatasetTable tables={data} />
+        <DatasetTable tables={data} checkBoxOnClick={checkBoxOnClick} />
       </div>
     );
   };
+
   return (
     <div>
       <ChakraModal
@@ -264,15 +299,27 @@ export const BrowseDatasetsPage = () => {
       >
         {jsxContent}
       </ChakraModal>
-      <h1>Available datasets</h1>
-      <Button
-        onClick={() =>
-          setContent(<GetNewDatasetModal modalClose={modalClose} />)
-        }
+
+      <Box
+        display={"flex"}
+        alignItems={"center"}
+        justifyContent={"space-between"}
       >
-        Add from API
-      </Button>
-      {renderDatasetsContainer()}
+        <Button
+          onClick={() =>
+            setContent(<GetNewDatasetModal modalClose={modalClose} />)
+          }
+        >
+          Add from API
+        </Button>
+
+        {checkedTables.filter((item) => item.isChecked).length > 0 && (
+          <Button variant={BUTTON_VARIANTS.grey}>
+            Delete ({checkedTables.filter((item) => item.isChecked).length})
+          </Button>
+        )}
+      </Box>
+      <Box marginTop={"16px"}>{renderDatasetsContainer()}</Box>
     </div>
   );
 };
