@@ -5,6 +5,7 @@ import {
 
 const textClickableVariant = () => ({
   cursor: "pointer",
+  color: "#097bed",
   _hover: {
     color: COLOR_BRAND_SECONDARY_HIGHLIGHT,
     textDecoration: "underline",
