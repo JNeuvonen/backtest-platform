@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
-import { ENTER_TRADE_DEFAULT } from "../utils/code";
-import { Spinner, Switch, useDisclosure } from "@chakra-ui/react";
+import { CREATE_COLUMNS_DEFAULT, ENTER_TRADE_DEFAULT } from "../utils/code";
+import { Spinner, Switch, useDisclosure, useToast } from "@chakra-ui/react";
 import { WithLabel } from "./form/WithLabel";
 import { ChakraModal } from "./chakra/modal";
 import { Text } from "@chakra-ui/react";
@@ -9,6 +9,8 @@ import { TEXT_VARIANTS } from "../theme";
 import { useDatasetQuery } from "../clients/queries/queries";
 import { usePathParams } from "../hooks/usePathParams";
 import { OverflopTooltip } from "./OverflowTooltip";
+import { FormSubmitBar } from "./form/FormSubmitBar";
+import { execPythonOnDataset } from "../clients/requests";
 
 type PathParams = {
   datasetName: string;
@@ -18,9 +20,37 @@ export const CreateBacktestDrawer = () => {
   const { datasetName } = usePathParams<PathParams>();
   const [enterTradeCode, setEnterTradeCode] = useState(ENTER_TRADE_DEFAULT());
   const [exitTradeCode, setExitTradeCode] = useState(ENTER_TRADE_DEFAULT());
+  const [createColumnsCode, setCreateColumnsCode] = useState(
+    CREATE_COLUMNS_DEFAULT()
+  );
+  const { refetch } = useDatasetQuery(datasetName);
+
   const [doNotShort, setDoNotShort] = useState(true);
   const columnsModal = useDisclosure();
+  const runPythonModal = useDisclosure();
+
   const { data } = useDatasetQuery(datasetName);
+  const toast = useToast();
+
+  const runPythonSubmit = async () => {
+    const res = await execPythonOnDataset(
+      datasetName,
+      createColumnsCode,
+      "NONE"
+    );
+
+    if (res.status === 200) {
+      toast({
+        title: "Executed python code",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      runPythonModal.onClose();
+      refetch();
+      setCreateColumnsCode(CREATE_COLUMNS_DEFAULT());
+    }
+  };
 
   if (!data) return <Spinner />;
 
@@ -40,12 +70,35 @@ export const CreateBacktestDrawer = () => {
         </div>
       </ChakraModal>
 
+      <ChakraModal
+        {...runPythonModal}
+        title="Create columns"
+        footerContent={
+          <FormSubmitBar
+            cancelCallback={runPythonModal.onClose}
+            submitCallback={runPythonSubmit}
+          />
+        }
+        modalContentStyle={{ maxWidth: "60%" }}
+      >
+        <CodeEditor
+          code={createColumnsCode}
+          setCode={setCreateColumnsCode}
+          style={{ marginTop: "16px" }}
+          fontSize={13}
+          label="Create columns"
+          disableCodePresets={true}
+          codeContainerStyles={{ width: "100%" }}
+          height={"250px"}
+        />
+      </ChakraModal>
+
       <div style={{ display: "flex", gap: "16px" }}>
         <Text variant={TEXT_VARIANTS.clickable} onClick={columnsModal.onOpen}>
           Show columns
         </Text>
 
-        <Text variant={TEXT_VARIANTS.clickable} onClick={columnsModal.onOpen}>
+        <Text variant={TEXT_VARIANTS.clickable} onClick={runPythonModal.onOpen}>
           Create columns
         </Text>
       </div>
