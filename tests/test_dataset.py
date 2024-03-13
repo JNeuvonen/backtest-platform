@@ -8,6 +8,7 @@ from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
 from tests.t_populate import t_upload_dataset
 from tests.t_utils import (
+    Delete,
     Fetch,
     Post,
     Put,
@@ -323,3 +324,13 @@ def test_dataset_pagination(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
 
     assert len(res_valid) == PAGE_SIZE
     assert len(res_invalid) == 0
+
+
+@pytest.mark.acceptance
+def test_delete_datasets(cleanup_db, fixt_add_all_downloaded_datasets):
+    datasets = [item.name for item in fixt_add_all_downloaded_datasets]
+    Delete.datasets({"dataset_names": datasets})
+
+    for item in datasets:
+        with pytest.raises(Exception):
+            Fetch.get_dataset_by_name(item)

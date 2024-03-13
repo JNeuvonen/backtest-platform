@@ -225,3 +225,10 @@ class Put:
     def update_target_col(dataset_name: str, target_col: str):
         with Req("put", URL.update_target_col(dataset_name, target_col)) as res:
             return res
+
+
+class Delete:
+    @staticmethod
+    def datasets(list_of_dataset_names):
+        with Req("delete", URL.t_get_tables(), json=list_of_dataset_names) as res:
+            return res

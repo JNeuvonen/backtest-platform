@@ -143,7 +143,7 @@ class URL:
 
     @classmethod
     def t_get_tables(cls):
-        return cls._datasets_route() + DatasetRoutePaths.ALL_TABLES
+        return cls._datasets_route() + DatasetRoutePaths.TABLES
 
     @classmethod
     def t_get_rename_column(cls, dataset_name: str):
