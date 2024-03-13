@@ -29,6 +29,7 @@ export const menuItemTheme = {
       fontSize: 16,
       cursor: "pointer",
       padding: "6px",
+      marginLeft: "-6px",
       borderRadius: "3px",
       _hover: {
         color: "white",
