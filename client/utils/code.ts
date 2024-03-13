@@ -17,3 +17,10 @@ export const EXIT_TRADE_DEFAULT = () => {
   code.appendLine("return true");
   return code.get();
 };
+
+export const CREATE_COLUMNS_DEFAULT = () => {
+  const code = new CodeHelper();
+  code.appendLine("dataset = get_dataset()");
+
+  return code.get();
+};
