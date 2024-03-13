@@ -246,7 +246,7 @@ export const DatasetInfoPage = () => {
       </ChakraModal>
       <ChakraModal
         isOpen={runPythonModal.isOpen}
-        title={"Run python on all the columns"}
+        title={"Run python"}
         onClose={runPythonModal.modalClose}
         modalContentStyle={{
           minWidth: "max-content",
