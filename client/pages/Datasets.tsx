@@ -28,6 +28,8 @@ import { useMessageListener } from "../hooks/useMessageListener";
 import { BinanceBasicTicker } from "../clients/queries/response-types";
 import { useForceUpdate } from "../hooks/useForceUpdate";
 import { BUTTON_VARIANTS } from "../theme";
+import { removeDatasets } from "../clients/requests";
+import { ConfirmModal } from "../components/form/Confirm";
 
 const DATA_PROVIDERS = [
   {
@@ -232,6 +234,8 @@ export const BrowseDatasetsPage = () => {
   const [checkedTables, setCheckedTables] = useState<CheckedTables[]>([]);
 
   const forceUpdate = useForceUpdate();
+  const toast = useToast();
+  const deleteConfirm = useModal();
 
   const checkBoxOnClick = (tableName: string) => {
     checkedTables.forEach((item) => {
@@ -289,8 +293,33 @@ export const BrowseDatasetsPage = () => {
     );
   };
 
+  const deleteDataframes = async () => {
+    if (!deleteConfirm.isOpen) {
+      deleteConfirm.onOpen();
+      return;
+    }
+
+    const datasets = checkedTables
+      .filter((item) => item.isChecked)
+      .map((item) => item.tableName);
+
+    const res = await removeDatasets(datasets);
+
+    if (res.status === 200) {
+      toast({
+        title: `Deleted ${datasets.length} datasets`,
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      refetch();
+    }
+    deleteConfirm.onClose();
+  };
+
   return (
     <div>
+      <ConfirmModal {...deleteConfirm} onConfirm={deleteDataframes} />
       <ChakraModal
         isOpen={isOpen}
         title="New dataset"
@@ -314,7 +343,7 @@ export const BrowseDatasetsPage = () => {
         </Button>
 
         {checkedTables.filter((item) => item.isChecked).length > 0 && (
-          <Button variant={BUTTON_VARIANTS.grey}>
+          <Button variant={BUTTON_VARIANTS.grey} onClick={deleteDataframes}>
             Delete ({checkedTables.filter((item) => item.isChecked).length})
           </Button>
         )}

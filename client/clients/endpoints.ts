@@ -21,7 +21,7 @@ const API = {
 export const BASE_URL = CONSTANTS.base_url;
 
 export const URLS = {
-  get_tables: BASE_URL + API.dataset.tables,
+  tables: BASE_URL + API.dataset.tables,
   get_table: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}`,
   get_column: (datasetName: string, columnName: string) =>

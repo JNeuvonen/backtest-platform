@@ -19,7 +19,7 @@ import {
 import { save } from "@tauri-apps/api/dialog";
 
 export async function fetchDatasets() {
-  const url = URLS.get_tables;
+  const url = URLS.tables;
   const res: DatasetsResponse = await buildRequest({ method: "GET", url });
 
   if (res?.res?.tables) {
@@ -258,4 +258,16 @@ export async function saveDatasetFile(datasetName: string) {
   } else {
     saveAs(blob, `${datasetName}.csv`);
   }
+}
+
+export async function removeDatasets(datasets: string[]) {
+  const res = await buildRequest({
+    method: "DELETE",
+    url: URLS.tables,
+    payload: {
+      dataset_names: datasets,
+    },
+  });
+
+  return res;
 }
