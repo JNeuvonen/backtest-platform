@@ -342,6 +342,13 @@ def get_dataset_table(table_name: str):
             }
 
 
+def remove_table(table_name):
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        conn.commit()
+
+
 def safe_float_convert(value):
     try:
         num = float(value)

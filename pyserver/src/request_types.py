@@ -45,3 +45,7 @@ class BodyRunBacktest(BaseModel):
     epoch_nr: int
     enter_and_exit_criteria: str
     price_col: str
+
+
+class BodyDeleteDatasets(BaseModel):
+    dataset_names: List[str]

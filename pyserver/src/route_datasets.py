@@ -20,12 +20,14 @@ from db import (
     get_dataset_pagination,
     get_dataset_table,
     get_dataset_tables,
+    remove_table,
     rename_column,
     rename_table,
 )
 from query_dataset import DatasetBody, DatasetQuery
 from query_model import ModelQuery
 from request_types import (
+    BodyDeleteDatasets,
     BodyExecPython,
     BodyModelData,
     BodyRenameColumn,
@@ -37,7 +39,6 @@ from utils import (
     add_to_datasets_db,
     read_file_to_dataframe,
     remove_all_csv_files,
-    rm_file,
 )
 
 
@@ -46,9 +47,9 @@ router = APIRouter()
 
 
 class RoutePaths:
-    ALL_TABLES = "/tables"
+    TABLES = "/tables"
     GET_DATASET_BY_NAME = "/{dataset_name}"
-    UPDATE_DATASET = "/{dataset_name}"
+    DATASET = "/{dataset_name}"
     GET_DATASET_COL_INFO = "/{dataset_name}/col-info/{column_name}"
     ADD_COLUMNS = "/{dataset_name}/add-columns"
     UPDATE_TIMESERIES_COL = "/{dataset_name}/update-timeseries-col"
@@ -91,7 +92,7 @@ async def route_exec_python_on_dataset(
         return {"message": "OK"}
 
 
-@router.get(RoutePaths.ALL_TABLES)
+@router.get(RoutePaths.TABLES)
 async def route_all_tables():
     with HttpResponseContext():
         return {"tables": get_dataset_tables()}
@@ -103,7 +104,7 @@ async def route_get_dataset_by_name(dataset_name: str) -> dict:
         return {"dataset": get_dataset_table(dataset_name)}
 
 
-@router.get(RoutePaths.UPDATE_DATASET)
+@router.get(RoutePaths.DATASET)
 async def route_update_dataset(dataset_name: str, body: DatasetBody):
     with HttpResponseContext():
         DatasetQuery.update_dataset(dataset_name, body)
@@ -273,3 +274,17 @@ async def route_download_dataset(dataset_name: str):
         csv_path = append_app_data_path(f"{dataset_name}.csv")
         df.to_csv(csv_path, index=False)
         return FileResponse(path=csv_path, filename=csv_path, media_type="text/csv")
+
+
+@router.delete(RoutePaths.TABLES)
+async def route_del_tables(body: BodyDeleteDatasets):
+    with HttpResponseContext():
+        datasets = body.dataset_names
+
+        for item in datasets:
+            DatasetQuery.delete_entry_by_dataset_name(item)
+            remove_table(item)
+
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
