@@ -9,6 +9,7 @@ import { ModelInfoPage } from "./pages/data/model/info";
 import { TrainJobIndex } from "./pages/data/model/trainjob";
 import { SimulateIndex } from "./pages/simulate";
 import { SimulateDatasetIndex } from "./pages/simulate/dataset";
+import { BacktestProvider } from "./context/backtest";
 
 export const AppRoutes = () => {
   return (
@@ -28,7 +29,14 @@ export const AppRoutes = () => {
       />
       <Route path={PATHS.train} element={<TrainJobIndex />} />
       <Route path={PATHS.simulate.path} element={<SimulateIndex />} />
-      <Route path={PATHS.simulate.dataset} element={<SimulateDatasetIndex />} />
+      <Route
+        path={PATHS.simulate.dataset}
+        element={
+          <BacktestProvider>
+            <SimulateDatasetIndex />
+          </BacktestProvider>
+        }
+      />
     </Routes>
   );
 };
