@@ -28,6 +28,7 @@ export const PATHS = {
   },
   simulate: {
     path: "/simulate",
+    dataset: `/simulate/${PATH_KEYS.dataset}`,
   },
   train: `/data/train-job/${PATH_KEYS.train}`,
   settings: "/settings",
