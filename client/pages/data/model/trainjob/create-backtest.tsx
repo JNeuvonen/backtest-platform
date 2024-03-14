@@ -14,31 +14,21 @@ import { EpochInfo } from "../../../../clients/queries/response-types";
 import { roundNumberDropRemaining } from "../../../../utils/number";
 import { Formik, Form, Field } from "formik";
 import { CodeEditor } from "../../../../components/CodeEditor";
-import { CodeHelper } from "../../../../utils/constants";
 import { runBacktest } from "../../../../clients/requests";
 import { WithLabel } from "../../../../components/form/WithLabel";
 import { PredAndPriceChart } from "../../../../components/charts/PredAndPriceChart";
 import { SelectColumnPopover } from "../../../../components/SelectTargetColumnPopover";
+import {
+  ML_ENTER_TRADE_COND,
+  ML_EXIT_TRADE_COND,
+} from "../../../../utils/code";
 
 export interface BacktestForm {
   selectedModel: string | null;
-  enterAndExitCriteria: string;
   priceColumn: string;
+  exitTradeCond: string;
+  enterTradeCond: string;
 }
-
-const getTradeCriteriaDefaultCode = () => {
-  const code = new CodeHelper();
-  code.appendLine("def get_enter_trade_criteria(prediction):");
-  code.addIndent();
-  code.appendLine("return prediction > 1.01");
-  code.appendLine("");
-  code.reduceIndent();
-
-  code.appendLine("def get_exit_trade_criteria(prediction):");
-  code.addIndent();
-  code.appendLine("return prediction < 0.99");
-  return code.get();
-};
 
 export const BacktestModelPage = () => {
   const { trainJobId } = usePathParams<{
@@ -78,7 +68,8 @@ export const BacktestModelPage = () => {
   const handleSubmit = async (values: BacktestForm) => {
     const payload = {
       epoch_nr: Number(values.selectedModel),
-      enter_and_exit_criteria: values.enterAndExitCriteria,
+      enter_trade_cond: values.enterTradeCond,
+      exit_trade_cond: values.exitTradeCond,
       price_col: values.priceColumn,
       dataset_name: modelDataDetailed.dataset_metadata.dataset_name,
     };
@@ -100,7 +91,10 @@ export const BacktestModelPage = () => {
 
   function isFormReady(values: BacktestForm) {
     const isReady =
-      values.priceColumn && values.selectedModel && values.enterAndExitCriteria;
+      values.priceColumn &&
+      values.selectedModel &&
+      values.exitTradeCond &&
+      values.enterTradeCond;
     return isReady;
   }
 
@@ -109,8 +103,9 @@ export const BacktestModelPage = () => {
       <Formik
         initialValues={{
           selectedModel: null,
-          enterAndExitCriteria: getTradeCriteriaDefaultCode(),
+          exitTradeCond: ML_EXIT_TRADE_COND(),
           priceColumn: modelDataDetailed.dataset_metadata.price_column,
+          enterTradeCond: ML_ENTER_TRADE_COND(),
         }}
         onSubmit={handleSubmit}
       >
@@ -178,7 +173,7 @@ export const BacktestModelPage = () => {
               />
             )}
             <div style={{ marginTop: "16px" }}>
-              <Field name="enterAndExitCriteria">
+              <Field name="enterTradeCond">
                 {({ field, form }) => {
                   return (
                     <CodeEditor
@@ -186,7 +181,26 @@ export const BacktestModelPage = () => {
                       setCode={(newCode) =>
                         form.setFieldValue("enterAndExitCriteria", newCode)
                       }
-                      label="Criteria for exit and enter"
+                      height="200px"
+                      label="Enter trade criteria"
+                      fontSize={14}
+                    />
+                  );
+                }}
+              </Field>
+            </div>
+
+            <div style={{ marginTop: "16px" }}>
+              <Field name="exitTradeCond">
+                {({ field, form }) => {
+                  return (
+                    <CodeEditor
+                      code={field.value}
+                      setCode={(newCode) =>
+                        form.setFieldValue("enterAndExitCriteria", newCode)
+                      }
+                      height="200px"
+                      label="Exit trade criteria"
                       fontSize={14}
                     />
                   );

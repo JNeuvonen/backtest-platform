@@ -24,3 +24,21 @@ export const CREATE_COLUMNS_DEFAULT = () => {
 
   return code.get();
 };
+
+export const ML_ENTER_TRADE_COND = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_enter_trade_criteria(prediction):");
+  code.addIndent();
+  code.appendLine("return prediction > 1.01");
+  return code.get();
+};
+
+export const ML_EXIT_TRADE_COND = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_exit_trade_criteria(prediction):");
+  code.addIndent();
+  code.appendLine("return prediction < 0.99");
+  return code.get();
+};

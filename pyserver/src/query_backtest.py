@@ -13,6 +13,7 @@ class Backtest(Base):
     data = Column(String)
     model_weights_id = Column(Integer, ForeignKey("model_weights.id"))
     train_job_id = Column(Integer, ForeignKey("train_job.id"))
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
     start_balance = Column(Float)
     end_balance = Column(Float)
 

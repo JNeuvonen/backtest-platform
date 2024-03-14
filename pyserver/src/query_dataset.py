@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, update
 from log import LogExceptionContext
