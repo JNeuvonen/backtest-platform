@@ -60,17 +60,21 @@ def create_train_job_basic(num_epochs=NUM_EPOCHS_DEFAULT):
 
 
 def create_backtest(dataset_name: str):
-    code_trade_criteria = PyCode()
-    code_trade_criteria.append_line("def get_enter_trade_criteria(prediction):")
-    code_trade_criteria.add_indent()
-    code_trade_criteria.append_line("return prediction > 1.01")
-    code_trade_criteria.reduce_indent()
-    code_trade_criteria.append_line("def get_exit_trade_criteria(prediction):")
-    code_trade_criteria.add_indent()
-    code_trade_criteria.append_line("return prediction < 0.99")
+    enter_trade_cond = PyCode()
+    exit_trade_cond = PyCode()
+
+    enter_trade_cond.append_line("def get_enter_trade_criteria(prediction):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return prediction > 1.01")
+
+    exit_trade_cond.append_line("def get_exit_trade_criteria(prediction):")
+    exit_trade_cond.add_indent()
+    exit_trade_cond.append_line("return prediction < 0.99")
+
     return create_backtest_body(
         price_column=BinanceCols.OPEN_PRICE,
         epoch_nr=3,
-        enter_trade_criteria=code_trade_criteria.get(),
+        exit_trade_cond=exit_trade_cond.get(),
+        enter_trade_cond=enter_trade_cond.get(),
         dataset_name=dataset_name,
     )

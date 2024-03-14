@@ -109,12 +109,17 @@ def create_train_job_body(
 
 
 def create_backtest_body(
-    price_column: str, epoch_nr: int, enter_trade_criteria: str, dataset_name: str
+    price_column: str,
+    epoch_nr: int,
+    enter_trade_cond: str,
+    exit_trade_cond: str,
+    dataset_name: str,
 ):
     return {
         "price_col": price_column,
         "epoch_nr": epoch_nr,
-        "enter_and_exit_criteria": enter_trade_criteria,
+        "enter_trade_cond": enter_trade_cond,
+        "exit_trade_cond": exit_trade_cond,
         "dataset_name": dataset_name,
     }
 

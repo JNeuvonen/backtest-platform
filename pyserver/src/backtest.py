@@ -29,7 +29,9 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
         assert len(prices) == len(predictions)
 
         replacements = {
-            "{ENTER_AND_EXIT_CRITERIA_FUNCS}": backtestInfo.enter_and_exit_criteria,
+            "{ENTER_AND_EXIT_CRITERIA_FUNCS}": backtestInfo.enter_trade_cond
+            + "\n"
+            + backtestInfo.exit_trade_cond,
             "{PREDICTION}": None,
         }
 
@@ -44,7 +46,8 @@ def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
         end_balance = backtest_v2.positions.total_positions_value
 
         backtest_id = BacktestQuery.create_backtest_entry(
-            backtestInfo.enter_and_exit_criteria,
+            backtestInfo.enter_trade_cond,
+            backtestInfo.exit_trade_cond,
             backtest_v2.positions.balance_history,
             epochs[backtestInfo.epoch_nr]["id"],
             train_job.id,

@@ -11,7 +11,6 @@ from query_trainjob import TrainJobQuery
 from code_gen import start_train_loop
 from config import is_testing
 from request_types import BodyCreateTrain, BodyRunBacktest
-from utils import get_col
 
 
 router = APIRouter()
