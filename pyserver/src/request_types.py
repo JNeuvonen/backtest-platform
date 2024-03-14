@@ -50,3 +50,10 @@ class BodyRunBacktest(BaseModel):
 
 class BodyDeleteDatasets(BaseModel):
     dataset_names: List[str]
+
+
+class BodyCreateManualBacktest(BaseModel):
+    enter_trade_cond: str
+    exit_trade_cond: str
+    use_short_selling: bool
+    dataset_id: int

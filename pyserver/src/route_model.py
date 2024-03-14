@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import APIRouter, Response, status
-from backtest import run_backtest
+from model_backtest import run_model_backtest
 
 from context import HttpResponseContext
 from db import get_dataset_columns
@@ -95,7 +95,7 @@ async def route_run_backtest(train_job_id: int, body: BodyRunBacktest):
             TrainJobQuery.set_backtest_prices(
                 train_job_id, body.dataset_name, body.price_col
             )
-        res = run_backtest(train_job_id, body)
+        res = run_model_backtest(train_job_id, body)
         return {"data": res}
 
 

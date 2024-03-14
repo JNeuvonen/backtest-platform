@@ -9,6 +9,7 @@ from log import LogExceptionContext, get_logger
 from route_binance import router as binance_router
 from route_datasets import router as datasets_router
 from route_model import router as model_router
+from route_backtest import router as backtest_router
 from streams import router as streams_router
 from orm import create_tables
 
@@ -29,6 +30,7 @@ class Routers:
     STREAMS = "/streams"
     DATASET = "/dataset"
     MODEL = "/model"
+    BACKTEST = "/backtest"
 
 
 app = FastAPI(lifespan=lifespan)
@@ -36,6 +38,8 @@ app.include_router(binance_router, prefix=Routers.BINANCE)
 app.include_router(streams_router, prefix=Routers.STREAMS)
 app.include_router(datasets_router, prefix=Routers.DATASET)
 app.include_router(model_router, prefix=Routers.MODEL)
+app.include_router(backtest_router, prefix=Routers.BACKTEST)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
