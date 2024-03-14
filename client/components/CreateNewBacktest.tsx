@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
-import { CREATE_COLUMNS_DEFAULT, ENTER_TRADE_DEFAULT } from "../utils/code";
+import { CREATE_COLUMNS_DEFAULT } from "../utils/code";
 import { Spinner, Switch, useDisclosure, useToast } from "@chakra-ui/react";
 import { WithLabel } from "./form/WithLabel";
 import { ChakraModal } from "./chakra/modal";
@@ -16,16 +16,31 @@ type PathParams = {
   datasetName: string;
 };
 
-export const CreateBacktestDrawer = () => {
+interface Props {
+  enterTradeCode: string;
+  exitTradeCode: string;
+  setEnterTradeCode: React.Dispatch<React.SetStateAction<string>>;
+  setExitTradeCode: React.Dispatch<React.SetStateAction<string>>;
+  doNotShort: boolean;
+  setDoNotShort: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const CreateBacktestDrawer = (props: Props) => {
+  const {
+    enterTradeCode,
+    exitTradeCode,
+    setEnterTradeCode,
+    setExitTradeCode,
+    doNotShort,
+    setDoNotShort,
+  } = props;
+
   const { datasetName } = usePathParams<PathParams>();
-  const [enterTradeCode, setEnterTradeCode] = useState(ENTER_TRADE_DEFAULT());
-  const [exitTradeCode, setExitTradeCode] = useState(ENTER_TRADE_DEFAULT());
   const [createColumnsCode, setCreateColumnsCode] = useState(
     CREATE_COLUMNS_DEFAULT()
   );
   const { refetch } = useDatasetQuery(datasetName);
 
-  const [doNotShort, setDoNotShort] = useState(true);
   const columnsModal = useDisclosure();
   const runPythonModal = useDisclosure();
 

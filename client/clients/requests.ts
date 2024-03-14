@@ -271,3 +271,20 @@ export async function removeDatasets(datasets: string[]) {
 
   return res;
 }
+
+interface CreateManualBacktest {
+  enter_trade_cond: string;
+  exit_trade_cond: string;
+  use_short_selling: boolean;
+  dataset_id: number;
+}
+
+export async function createManualBacktest(body: CreateManualBacktest) {
+  const res = await buildRequest({
+    method: "POST",
+    url: URLS.backtest,
+    payload: body,
+  });
+
+  return res;
+}

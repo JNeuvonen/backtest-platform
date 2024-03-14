@@ -80,6 +80,7 @@ export interface Dataset {
   dataset_name: string;
   target_col: string;
   price_col: string;
+  id: number;
 }
 
 export interface NullCounts {
