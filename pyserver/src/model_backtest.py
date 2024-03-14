@@ -16,7 +16,7 @@ class Direction:
     CASH = "cash"
 
 
-def run_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
+def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
     with LogExceptionContext():
         train_job_detailed = TrainJobQuery.get_train_job_detailed(train_job_id)
         train_job: TrainJob = train_job_detailed["train_job"]
