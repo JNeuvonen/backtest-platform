@@ -338,6 +338,7 @@ def get_dataset_table(table_name: str):
                 "timeseries_col": DatasetQuery.get_timeseries_col(table_name),
                 "target_col": DatasetQuery.get_target_col(table_name),
                 "price_col": DatasetQuery.get_price_col(table_name),
+                "id": DatasetQuery.fetch_dataset_id_by_name(table_name),
                 "rows": rows,
             }
 
