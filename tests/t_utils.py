@@ -210,8 +210,13 @@ class Post:
             return res.json()["id"]
 
     @staticmethod
-    def create_backtest(train_job_id, body):
-        with Req("post", URL.create_backtest(train_job_id), json=body) as res:
+    def create_model_backtest(train_job_id, body):
+        with Req("post", URL.create_model_backtest(train_job_id), json=body) as res:
+            return res
+
+    @staticmethod
+    def create_manual_backtest(body):
+        with Req("post", URL.create_manual_backtest(), json=body) as res:
             return res
 
 

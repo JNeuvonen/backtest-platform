@@ -6,6 +6,7 @@ sys.path.append(SERVER_SOURCE_DIR)
 from server import Routers
 from route_datasets import RoutePaths as DatasetRoutePaths
 from route_model import RoutePaths as ModelRoutePaths
+from route_backtest import RoutePaths as BacktestRoutePaths
 
 
 class FixturePaths:
@@ -130,6 +131,10 @@ class URL:
         return cls.BASE_URL + Routers.MODEL
 
     @classmethod
+    def _backtest_route(cls):
+        return cls.BASE_URL + Routers.BACKTEST
+
+    @classmethod
     def get_model_by_name(cls, model_name):
         return cls._models_route() + ModelRoutePaths.FETCH_MODEL.format(
             model_name=model_name
@@ -215,10 +220,14 @@ class URL:
         )
 
     @classmethod
-    def create_backtest(cls, train_job_id: int):
+    def create_model_backtest(cls, train_job_id: int):
         return cls._models_route() + ModelRoutePaths.RUN_BACKTEST.format(
             train_job_id=train_job_id
         )
+
+    @classmethod
+    def create_manual_backtest(cls):
+        return cls._models_route() + BacktestRoutePaths.BACKTEST
 
     @classmethod
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):

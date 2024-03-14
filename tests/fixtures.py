@@ -78,3 +78,37 @@ def create_backtest(dataset_name: str):
         enter_trade_cond=enter_trade_cond.get(),
         dataset_name=dataset_name,
     )
+
+
+def create_manual_backtest(
+    dataset_id: int,
+    enter_trade_cond: str,
+    exit_trade_cond: str,
+    use_short_selling: bool,
+):
+    return {
+        "dataset_id": dataset_id,
+        "enter_trade_cond": enter_trade_cond,
+        "exit_trade_cond": exit_trade_cond,
+        "use_short_selling": use_short_selling,
+    }
+
+
+def enter_trade_cond_basic():
+    enter_trade_cond = PyCode()
+
+    enter_trade_cond.append_line("def enter_trade(tick):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return tick['open_price'] > 45000")
+
+    return enter_trade_cond.get()
+
+
+def exit_trade_cond_basic():
+    exit_trade_cond = PyCode()
+
+    exit_trade_cond.append_line("def enter_trade(tick):")
+    exit_trade_cond.add_indent()
+    exit_trade_cond.append_line("return tick['open_price'] < 40000")
+
+    return exit_trade_cond.get()
