@@ -7,7 +7,7 @@ from query_weights import ModelWeights
 from query_trainjob import TrainJob, TrainJobQuery
 from query_backtest import BacktestQuery
 from request_types import BodyRunBacktest
-from code_gen_template import BACKTEST_TEMPLATE
+from code_gen_template import BACKTEST_MODEL_TEMPLATE
 
 
 class Direction:
@@ -177,7 +177,7 @@ class BacktestV2:
         self.history: List = []
 
     def enter_kline(self, price: float, prediction: float, kline_open_time: int):
-        code = BACKTEST_TEMPLATE
+        code = BACKTEST_MODEL_TEMPLATE
         for key, value in self.enter_and_exit_criteria_placeholders.items():
             if key == "{PREDICTION}":
                 code = code.replace(key, str(prediction))

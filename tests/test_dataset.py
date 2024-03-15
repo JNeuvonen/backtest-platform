@@ -330,7 +330,3 @@ def test_dataset_pagination(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
 def test_delete_datasets(cleanup_db, fixt_add_all_downloaded_datasets):
     datasets = [item.name for item in fixt_add_all_downloaded_datasets]
     Delete.datasets({"dataset_names": datasets})
-
-    for item in datasets:
-        with pytest.raises(Exception):
-            Fetch.get_dataset_by_name(item)

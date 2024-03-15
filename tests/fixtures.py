@@ -99,7 +99,7 @@ def enter_trade_cond_basic():
 
     enter_trade_cond.append_line("def enter_trade(tick):")
     enter_trade_cond.add_indent()
-    enter_trade_cond.append_line("return tick['open_price'] > 45000")
+    enter_trade_cond.append_line("return tick['open_price'] > 25000")
 
     return enter_trade_cond.get()
 
@@ -107,8 +107,8 @@ def enter_trade_cond_basic():
 def exit_trade_cond_basic():
     exit_trade_cond = PyCode()
 
-    exit_trade_cond.append_line("def enter_trade(tick):")
+    exit_trade_cond.append_line("def exit_trade(tick):")
     exit_trade_cond.add_indent()
-    exit_trade_cond.append_line("return tick['open_price'] < 40000")
+    exit_trade_cond.append_line("return tick['open_price'] < 20000")
 
     return exit_trade_cond.get()

@@ -227,7 +227,7 @@ class URL:
 
     @classmethod
     def create_manual_backtest(cls):
-        return cls._models_route() + BacktestRoutePaths.BACKTEST
+        return cls._backtest_route() + BacktestRoutePaths.BACKTEST
 
     @classmethod
     def add_columns_to_dataset(cls, dataset_name: str, null_fill_strategy: str):

@@ -148,9 +148,17 @@ train()
 """
 
 
-BACKTEST_TEMPLATE = """
+BACKTEST_MODEL_TEMPLATE = """
 {ENTER_AND_EXIT_CRITERIA_FUNCS}
 
 enter_trade = get_enter_trade_criteria({PREDICTION}) 
 exit_trade = get_exit_trade_criteria({PREDICTION}) 
+"""
+
+BACKTEST_MANUAL_TEMPLATE = """
+{ENTER_TRADE_FUNC}
+{EXIT_TRADE_FUNC}
+
+is_enter_trade = enter_trade(df_row) 
+is_exit_trade = exit_trade(df_row) 
 """
