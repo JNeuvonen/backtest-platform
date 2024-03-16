@@ -7,7 +7,10 @@ import {
   MenuItem,
   Spinner,
 } from "@chakra-ui/react";
-import { useDatasetQuery } from "../../../clients/queries/queries";
+import {
+  useDatasetQuery,
+  useDatasetsBacktests,
+} from "../../../clients/queries/queries";
 import { ChakraMenu } from "../../../components/chakra/Menu";
 import { FaFileImport } from "react-icons/fa6";
 import { useBacktestContext } from "../../../context/backtest";
@@ -21,10 +24,13 @@ export const SimulateDatasetIndex = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data } = useDatasetQuery(datasetName);
   const { createNewDrawer } = useBacktestContext();
+  const { data: backtestsData } = useDatasetsBacktests(data?.id || undefined);
 
   if (!data) {
     return <Spinner />;
   }
+
+  console.log(backtestsData);
 
   return (
     <div>
@@ -40,9 +46,7 @@ export const SimulateDatasetIndex = () => {
         <MenuItem icon={<FaFileImport />}>Update target column</MenuItem>
       </ChakraMenu>
 
-      <div>
-        <BacktestDatagrid />
-      </div>
+      <div>{backtestsData ? <BacktestDatagrid /> : <Spinner />}</div>
     </div>
   );
 };

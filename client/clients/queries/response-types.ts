@@ -160,19 +160,31 @@ export interface BacktestBalance {
   position: number;
   prediction: number;
   short_debt: number;
+  price: number;
 }
 
 export interface BacktestObject {
-  enter_and_exit_trade_criteria: string;
+  open_long_trade_cond: string;
+  open_short_trade_cond: string;
+  close_long_trade_cond?: string;
+  close_short_trade_cond?: string;
   id: number;
-  model_weights_id: number;
-  train_job_id: number;
+  model_weights_id?: number;
+  train_job_id?: number;
+  dadtaset_id?: number;
   data: BacktestBalance[];
   start_balance: number;
   end_balance: number;
 }
 
 export interface BacktestsResponse {
+  res: {
+    data: BacktestObject[];
+  };
+  status: number;
+}
+
+export interface BacktestsByDataset {
   res: {
     data: BacktestObject[];
   };

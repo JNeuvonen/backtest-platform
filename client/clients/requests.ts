@@ -290,3 +290,15 @@ export async function createManualBacktest(body: CreateManualBacktest) {
 
   return res;
 }
+
+export async function fetchBacktestsByDataset(datasetId?: number) {
+  const res = await buildRequest({
+    method: "GET",
+    url: URLS.fetch_backtests_by_dataset(datasetId),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+}
