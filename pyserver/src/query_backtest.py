@@ -9,8 +9,10 @@ from orm import Base, Session
 class Backtest(Base):
     __tablename__ = "backtest"
     id = Column(Integer, primary_key=True)
-    enter_trade_cond = Column(String)
-    exit_trade_cond = Column(String)
+    open_long_trade_cond = Column(String)
+    open_short_trade_cond = Column(String)
+    close_long_trade_cond = Column(String)
+    close_short_trade_cond = Column(String)
     data = Column(String)
     model_weights_id = Column(Integer, ForeignKey("model_weights.id"))
     train_job_id = Column(Integer, ForeignKey("train_job.id"))

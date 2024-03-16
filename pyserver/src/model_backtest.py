@@ -47,8 +47,8 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
         backtest_id = BacktestQuery.create_entry(
             {
-                "enter_trade_cond": backtestInfo.enter_trade_cond,
-                "exit_trade_cond": backtestInfo.exit_trade_cond,
+                "open_long_trade_cond": backtestInfo.enter_trade_cond,
+                "open_short_trade_cond": backtestInfo.exit_trade_cond,
                 "data": json.dumps(backtest_v2.positions.balance_history),
                 "model_weights_id": epochs[backtestInfo.epoch_nr]["id"],
                 "train_job_id": train_job.id,
@@ -161,6 +161,7 @@ class Positions:
                 "position": self.position,
                 "short_debt": self.short_debt,
                 "cash": self.cash,
+                "price": price,
             }
         )
 

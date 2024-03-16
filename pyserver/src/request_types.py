@@ -56,6 +56,6 @@ class BodyCreateManualBacktest(BaseModel):
     open_long_trade_cond: str
     close_long_trade_cond: str
     open_short_trade_cond: str
-    close_long_trade_Cond: str
+    close_short_trade_cond: str
     use_short_selling: bool
     dataset_id: int

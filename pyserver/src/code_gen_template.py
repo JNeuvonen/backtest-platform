@@ -156,9 +156,13 @@ exit_trade = get_exit_trade_criteria({PREDICTION})
 """
 
 BACKTEST_MANUAL_TEMPLATE = """
-{ENTER_TRADE_FUNC}
-{EXIT_TRADE_FUNC}
+{OPEN_LONG_TRADE_FUNC}
+{OPEN_SHORT_TRADE_FUNC}
+{CLOSE_LONG_TRADE_FUNC}
+{CLOSE_SHORT_TRADE_FUNC}
 
-is_enter_trade = enter_trade(df_row) 
-is_exit_trade = exit_trade(df_row) 
+should_open_long = open_long_trade(df_row) 
+should_open_short = open_short_trade(df_row) 
+should_close_long = close_long_trade(df_row)
+should_close_short = close_short_trade(df_row)
 """

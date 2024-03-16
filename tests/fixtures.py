@@ -82,33 +82,57 @@ def create_backtest(dataset_name: str):
 
 def create_manual_backtest(
     dataset_id: int,
-    enter_trade_cond: str,
-    exit_trade_cond: str,
     use_short_selling: bool,
+    open_long_trade_cond: str,
+    open_short_trade_cond: str,
+    close_long_trade_cond: str,
+    close_short_trade_cond: str,
 ):
     return {
         "dataset_id": dataset_id,
-        "enter_trade_cond": enter_trade_cond,
-        "exit_trade_cond": exit_trade_cond,
         "use_short_selling": use_short_selling,
+        "open_long_trade_cond": open_long_trade_cond,
+        "close_long_trade_cond": close_long_trade_cond,
+        "open_short_trade_cond": open_short_trade_cond,
+        "close_short_trade_cond": close_short_trade_cond,
     }
 
 
-def enter_trade_cond_basic():
+def open_long_trade_cond_basic():
     enter_trade_cond = PyCode()
 
-    enter_trade_cond.append_line("def enter_trade(tick):")
+    enter_trade_cond.append_line("def open_long_trade(tick):")
     enter_trade_cond.add_indent()
     enter_trade_cond.append_line("return tick['open_price'] > 25000")
 
     return enter_trade_cond.get()
 
 
-def exit_trade_cond_basic():
+def close_long_trade_cond_basic():
+    enter_trade_cond = PyCode()
+
+    enter_trade_cond.append_line("def close_long_trade(tick):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return tick['open_price'] > 30000")
+
+    return enter_trade_cond.get()
+
+
+def open_short_trade_cond_basic():
     exit_trade_cond = PyCode()
 
-    exit_trade_cond.append_line("def exit_trade(tick):")
+    exit_trade_cond.append_line("def open_short_trade(tick):")
     exit_trade_cond.add_indent()
     exit_trade_cond.append_line("return tick['open_price'] < 20000")
 
     return exit_trade_cond.get()
+
+
+def close_short_trade_cond_basic():
+    enter_trade_cond = PyCode()
+
+    enter_trade_cond.append_line("def close_short_trade(tick):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return tick['open_price'] < 18000")
+
+    return enter_trade_cond.get()
