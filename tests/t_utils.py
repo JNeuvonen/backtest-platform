@@ -171,6 +171,11 @@ class Fetch:
         ) as res:
             return res.json()["data"]
 
+    @staticmethod
+    def get_datasets_manual_backtests(dataset_id: int):
+        with Req("get", URL.get_datasets_manual_backtests(dataset_id)) as res:
+            return res.json()["data"]
+
 
 class Post:
     @staticmethod

@@ -68,3 +68,14 @@ class BacktestQuery:
                     .all()
                 )
                 return [BacktestQuery.deserialize_data(bt) for bt in backtests]
+
+    @staticmethod
+    def fetch_backtests_by_dataset_id(dataset_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                backtests = (
+                    session.query(Backtest)
+                    .filter(Backtest.dataset_id == dataset_id)
+                    .all()
+                )
+                return [BacktestQuery.deserialize_data(bt) for bt in backtests]

@@ -178,6 +178,12 @@ class URL:
         )
 
     @classmethod
+    def get_datasets_manual_backtests(cls, dataset_id: int):
+        return cls._backtest_route() + BacktestRoutePaths.FETCH_BY_DATASET_ID.format(
+            dataset_id=dataset_id
+        )
+
+    @classmethod
     def update_target_col(cls, dataset_name: str, target_col: str):
         return (
             cls._datasets_route()

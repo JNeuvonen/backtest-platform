@@ -23,3 +23,10 @@ def test_setup_sanity(cleanup_db, fixt_btc_small_1h):
     )
 
     Post.create_manual_backtest(backtest_body)
+
+
+@pytest.mark.acceptance
+def test_fetch_backtests(fixt_manual_backtest):
+    dataset = Fetch.get_dataset_by_name(fixt_manual_backtest.name)
+    backtests = Fetch.get_datasets_manual_backtests(dataset["id"])
+    assert len(backtests) == 1, "Backtest wasnt created or fetches succesfully"

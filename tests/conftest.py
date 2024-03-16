@@ -5,7 +5,16 @@ from pandas.compat import platform
 import pytest
 import time
 import sys
-from tests.fixtures import create_train_job_basic, criterion_basic, linear_model_basic
+from tests.fixtures import (
+    close_long_trade_cond_basic,
+    close_short_trade_cond_basic,
+    create_manual_backtest,
+    create_train_job_basic,
+    criterion_basic,
+    linear_model_basic,
+    open_long_trade_cond_basic,
+    open_short_trade_cond_basic,
+)
 from tests.t_conf import SERVER_SOURCE_DIR
 
 from tests.t_constants import (
@@ -18,6 +27,7 @@ from tests.t_constants import (
 from tests.t_download_data import download_historical_binance_data
 from tests.t_env import is_fast_test_mode
 from tests.t_utils import (
+    Fetch,
     Post,
     create_model_body,
     t_add_binance_dataset_to_db,
@@ -109,6 +119,21 @@ def fixt_btc_small_1h():
     dataset = BinanceData.BTCUSDT_1H_2023_06
     t_add_binance_dataset_to_db(dataset)
     return dataset
+
+
+@pytest.fixture
+def fixt_manual_backtest(fixt_btc_small_1h):
+    dataset = Fetch.get_dataset_by_name(fixt_btc_small_1h.name)
+    backtest_body = create_manual_backtest(
+        dataset["id"],
+        True,
+        open_long_trade_cond_basic(),
+        open_short_trade_cond_basic(),
+        close_long_trade_cond_basic(),
+        close_short_trade_cond_basic(),
+    )
+    Post.create_manual_backtest(backtest_body)
+    return fixt_btc_small_1h
 
 
 @pytest.fixture
