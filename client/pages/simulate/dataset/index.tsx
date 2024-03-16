@@ -11,6 +11,7 @@ import { useDatasetQuery } from "../../../clients/queries/queries";
 import { ChakraMenu } from "../../../components/chakra/Menu";
 import { FaFileImport } from "react-icons/fa6";
 import { useBacktestContext } from "../../../context/backtest";
+import { BacktestDatagrid } from "../../../components/data-grid/Backtest";
 
 type PathParams = {
   datasetName: string;
@@ -30,7 +31,7 @@ export const SimulateDatasetIndex = () => {
       <Heading size={"lg"}>Backtest</Heading>
 
       <div style={{ marginTop: "16px" }}>
-        Target column: <Badge colorScheme="green">{data.target_col}</Badge>
+        Price column: <Badge colorScheme="green">{data.price_col}</Badge>
       </div>
       <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
         <MenuItem icon={<FaFileImport />} onClick={createNewDrawer.onOpen}>
@@ -38,6 +39,10 @@ export const SimulateDatasetIndex = () => {
         </MenuItem>
         <MenuItem icon={<FaFileImport />}>Update target column</MenuItem>
       </ChakraMenu>
+
+      <div>
+        <BacktestDatagrid />
+      </div>
     </div>
   );
 };
