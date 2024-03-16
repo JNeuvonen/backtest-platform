@@ -45,15 +45,18 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
         end_balance = backtest_v2.positions.total_positions_value
 
-        backtest_id = BacktestQuery.create_backtest_entry(
-            backtestInfo.enter_trade_cond,
-            backtestInfo.exit_trade_cond,
-            backtest_v2.positions.balance_history,
-            epochs[backtestInfo.epoch_nr]["id"],
-            train_job.id,
-            START_BALANCE,
-            end_balance,
+        backtest_id = BacktestQuery.create_entry(
+            {
+                "enter_trade_cond": backtestInfo.enter_trade_cond,
+                "exit_trade_cond": backtestInfo.exit_trade_cond,
+                "data": json.dumps(backtest_v2.positions.balance_history),
+                "model_weights_id": epochs[backtestInfo.epoch_nr]["id"],
+                "train_job_id": train_job.id,
+                "start_balance": START_BALANCE,
+                "end_balance": end_balance,
+            }
         )
+
         TradeQuery.create_many_trade_entry(backtest_id, backtest_v2.positions.trades)
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)

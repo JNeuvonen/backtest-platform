@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 from sqlalchemy import Column, Float, ForeignKey, Integer, String
 
 from log import LogExceptionContext
@@ -29,29 +30,13 @@ class BacktestQuery:
         return backtest
 
     @staticmethod
-    def create_backtest_entry(
-        enter_trade_cond: str,
-        exit_trade_cond: str,
-        data,
-        model_weights_id: int,
-        train_job_id: int,
-        start_balance: float,
-        end_balance: float,
-    ):
+    def create_entry(fields: Dict):
         with LogExceptionContext():
             with Session() as session:
-                new_backtest = Backtest(
-                    enter_trade_cond=enter_trade_cond,
-                    exit_trade_cond=exit_trade_cond,
-                    data=json.dumps(data),
-                    model_weights_id=model_weights_id,
-                    train_job_id=train_job_id,
-                    start_balance=start_balance,
-                    end_balance=end_balance,
-                )
-                session.add(new_backtest)
+                entry = Backtest(**fields)
+                session.add(entry)
                 session.commit()
-                return new_backtest.id
+                return entry.id
 
     @staticmethod
     def fetch_backtest_by_id(backtest_id: int):

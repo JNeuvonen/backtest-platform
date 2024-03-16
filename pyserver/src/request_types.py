@@ -53,7 +53,9 @@ class BodyDeleteDatasets(BaseModel):
 
 
 class BodyCreateManualBacktest(BaseModel):
-    enter_trade_cond: str
-    exit_trade_cond: str
+    open_long_trade_cond: str
+    close_long_trade_cond: str
+    open_short_trade_cond: str
+    close_long_trade_Cond: str
     use_short_selling: bool
     dataset_id: int

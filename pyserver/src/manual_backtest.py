@@ -1,7 +1,9 @@
+import json
 from typing import Dict, List
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
 from dataset import read_dataset_to_mem
 from model_backtest import Positions
+from query_backtest import BacktestQuery
 from query_dataset import DatasetQuery
 from request_types import BodyCreateManualBacktest
 
@@ -34,7 +36,21 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
     for _, row in dataset_df.iterrows():
         backtest.process_df_row(row, dataset.price_column, dataset.timeseries_column)
 
-    print(backtest)
+    end_balance = backtest.positions.total_positions_value
+
+    backtest_id = BacktestQuery.create_entry(
+        {
+            "enter_trade_cond": backtestInfo.enter_trade_cond,
+            "exit_trade_cond": backtestInfo.exit_trade_cond,
+            "data": json.dumps(backtest.positions.balance_history),
+            "dataset_id": dataset.id,
+            "start_balance": START_BALANCE,
+            "end_balance": end_balance,
+        }
+    )
+
+    backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
+    return backtest_from_db
 
 
 class ManualBacktest:
