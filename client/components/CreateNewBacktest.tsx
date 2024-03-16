@@ -17,22 +17,32 @@ type PathParams = {
 };
 
 interface Props {
-  enterTradeCode: string;
-  exitTradeCode: string;
-  setEnterTradeCode: React.Dispatch<React.SetStateAction<string>>;
-  setExitTradeCode: React.Dispatch<React.SetStateAction<string>>;
-  doNotShort: boolean;
-  setDoNotShort: React.Dispatch<React.SetStateAction<boolean>>;
+  openLongTradeCode: string;
+  openShortTradeCode: string;
+  closeLongTradeCode: string;
+  closeShortTradeCode: string;
+
+  setOpenLongTradeCode: React.Dispatch<React.SetStateAction<string>>;
+  setOpenShortTradeCode: React.Dispatch<React.SetStateAction<string>>;
+  setCloseLongTradeCode: React.Dispatch<React.SetStateAction<string>>;
+  setCloseShortTradeCode: React.Dispatch<React.SetStateAction<string>>;
+
+  useShorts: boolean;
+  setUseShorts: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const CreateBacktestDrawer = (props: Props) => {
   const {
-    enterTradeCode,
-    exitTradeCode,
-    setEnterTradeCode,
-    setExitTradeCode,
-    doNotShort,
-    setDoNotShort,
+    openLongTradeCode,
+    openShortTradeCode,
+    closeLongTradeCode,
+    closeShortTradeCode,
+    setOpenLongTradeCode,
+    setOpenShortTradeCode,
+    setCloseLongTradeCode,
+    setCloseShortTradeCode,
+    useShorts,
+    setUseShorts,
   } = props;
 
   const { datasetName } = usePathParams<PathParams>();
@@ -119,37 +129,68 @@ export const CreateBacktestDrawer = (props: Props) => {
       </div>
       <div>
         <CodeEditor
-          code={enterTradeCode}
-          setCode={setEnterTradeCode}
+          code={openLongTradeCode}
+          setCode={setOpenLongTradeCode}
           style={{ marginTop: "16px" }}
           fontSize={13}
-          label="Enter trade criteria"
+          label="Long condition"
           disableCodePresets={true}
           codeContainerStyles={{ width: "100%" }}
           height={"250px"}
         />
       </div>
 
-      <div style={{ marginTop: "32px" }}>
+      <div>
         <CodeEditor
-          code={exitTradeCode}
-          setCode={setExitTradeCode}
+          code={closeLongTradeCode}
+          setCode={setCloseLongTradeCode}
           style={{ marginTop: "16px" }}
           fontSize={13}
-          label="Exit trade criteria"
+          label="Close long condition"
           disableCodePresets={true}
           codeContainerStyles={{ width: "100%" }}
           height={"250px"}
         />
       </div>
+
       <div style={{ marginTop: "16px" }}>
-        <WithLabel label={"Do not use short selling"}>
+        <WithLabel label={"Use short selling"}>
           <Switch
-            isChecked={doNotShort}
-            onChange={() => setDoNotShort(!doNotShort)}
+            isChecked={useShorts}
+            onChange={() => setUseShorts(!useShorts)}
           />
         </WithLabel>
       </div>
+
+      {useShorts && (
+        <div style={{ marginTop: "16px" }}>
+          <CodeEditor
+            code={openShortTradeCode}
+            setCode={setOpenShortTradeCode}
+            style={{ marginTop: "16px" }}
+            fontSize={13}
+            label="Short condition"
+            disableCodePresets={true}
+            codeContainerStyles={{ width: "100%" }}
+            height={"250px"}
+          />
+        </div>
+      )}
+
+      {useShorts && (
+        <div style={{ marginTop: "16px" }}>
+          <CodeEditor
+            code={closeShortTradeCode}
+            setCode={setCloseShortTradeCode}
+            style={{ marginTop: "16px" }}
+            fontSize={13}
+            label="Close short condition"
+            disableCodePresets={true}
+            codeContainerStyles={{ width: "100%" }}
+            height={"250px"}
+          />
+        </div>
+      )}
     </div>
   );
 };

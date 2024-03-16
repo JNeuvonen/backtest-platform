@@ -3,7 +3,12 @@ import { useBacktestContext } from ".";
 import { ChakraDrawer } from "../../components/chakra/Drawer";
 import { CreateBacktestDrawer } from "../../components/CreateNewBacktest";
 import { FormSubmitBar } from "../../components/form/FormSubmitBar";
-import { ENTER_TRADE_DEFAULT, EXIT_TRADE_DEFAULT } from "../../utils/code";
+import {
+  ENTER_TRADE_DEFAULT,
+  EXIT_LONG_TRADE_DEFAULT,
+  EXIT_SHORT_TRADE_DEFAULT,
+  EXIT_TRADE_DEFAULT,
+} from "../../utils/code";
 import { createManualBacktest } from "../../clients/requests";
 import { usePathParams } from "../../hooks/usePathParams";
 import { useDatasetQuery } from "../../clients/queries/queries";
@@ -18,9 +23,20 @@ export const BacktestUXManager = () => {
   const { data: dataset } = useDatasetQuery(datasetName);
 
   const { createNewDrawer } = useBacktestContext();
-  const [enterTradeCode, setEnterTradeCode] = useState(ENTER_TRADE_DEFAULT());
-  const [exitTradeCode, setExitTradeCode] = useState(EXIT_TRADE_DEFAULT());
-  const [doNotShort, setDoNotShort] = useState(true);
+  const [openLongTradeCode, setOpenLongTradeCode] = useState(
+    ENTER_TRADE_DEFAULT()
+  );
+  const [openShortTradeCode, setOpenShortTradeCode] =
+    useState(EXIT_TRADE_DEFAULT());
+
+  const [closeLongTradeCode, setCloseLongTradeCode] = useState(
+    EXIT_LONG_TRADE_DEFAULT()
+  );
+  const [closeShortTradeCode, setCloseShortTradeCode] = useState(
+    EXIT_SHORT_TRADE_DEFAULT()
+  );
+
+  const [useShorts, setUseShorts] = useState(false);
 
   const toast = useToast();
 
@@ -28,15 +44,20 @@ export const BacktestUXManager = () => {
     if (!dataset) return;
 
     const res = await createManualBacktest({
-      enter_trade_cond: enterTradeCode,
-      exit_trade_cond: exitTradeCode,
-      use_short_selling: !doNotShort,
+      open_long_trade_cond: openLongTradeCode,
+      close_long_trade_cond: closeLongTradeCode,
+      open_short_trade_cond: openShortTradeCode,
+      close_short_trade_cond: closeShortTradeCode,
+      use_short_selling: useShorts,
       dataset_id: dataset.id,
     });
 
     if (res.status === 200) {
       toast({
-        title: "Created backtest",
+        title: "Finished backtest",
+        description: `Result: ${
+          res.res.data.end_balance - res.res.data.start_balance
+        }`,
         status: "info",
         duration: 5000,
         isClosable: true,
@@ -59,12 +80,16 @@ export const BacktestUXManager = () => {
         }
       >
         <CreateBacktestDrawer
-          enterTradeCode={enterTradeCode}
-          setEnterTradeCode={setEnterTradeCode}
-          exitTradeCode={exitTradeCode}
-          setExitTradeCode={setExitTradeCode}
-          doNotShort={doNotShort}
-          setDoNotShort={setDoNotShort}
+          openLongTradeCode={openLongTradeCode}
+          setOpenLongTradeCode={setOpenLongTradeCode}
+          openShortTradeCode={openShortTradeCode}
+          closeLongTradeCode={closeLongTradeCode}
+          setCloseLongTradeCode={setCloseLongTradeCode}
+          closeShortTradeCode={closeShortTradeCode}
+          setCloseShortTradeCode={setCloseShortTradeCode}
+          setOpenShortTradeCode={setOpenShortTradeCode}
+          useShorts={useShorts}
+          setUseShorts={setUseShorts}
         />
       </ChakraDrawer>
     </div>

@@ -3,18 +3,36 @@ import { CodeHelper } from "./constants";
 export const ENTER_TRADE_DEFAULT = () => {
   const code = new CodeHelper();
 
-  code.appendLine("def enter_trade(tick):");
+  code.appendLine("def open_long_trade(tick):");
   code.addIndent();
-  code.appendLine("return true");
+  code.appendLine("return True");
+  return code.get();
+};
+
+export const EXIT_LONG_TRADE_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def close_long_trade(tick):");
+  code.addIndent();
+  code.appendLine("return True");
   return code.get();
 };
 
 export const EXIT_TRADE_DEFAULT = () => {
   const code = new CodeHelper();
 
-  code.appendLine("def exit_trade(tick):");
+  code.appendLine("def open_short_trade(tick):");
   code.addIndent();
-  code.appendLine("return true");
+  code.appendLine("return True");
+  return code.get();
+};
+
+export const EXIT_SHORT_TRADE_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def close_short_trade(tick):");
+  code.addIndent();
+  code.appendLine("return True");
   return code.get();
 };
 

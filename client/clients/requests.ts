@@ -273,8 +273,10 @@ export async function removeDatasets(datasets: string[]) {
 }
 
 interface CreateManualBacktest {
-  enter_trade_cond: string;
-  exit_trade_cond: string;
+  open_long_trade_cond: string;
+  close_long_trade_cond: string;
+  open_short_trade_cond: string;
+  close_short_trade_cond: string;
   use_short_selling: boolean;
   dataset_id: number;
 }
