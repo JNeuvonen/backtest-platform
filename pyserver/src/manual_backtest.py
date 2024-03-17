@@ -1,11 +1,13 @@
 import json
 from typing import Dict, List
+from backtest_utils import get_backtest_profit_factor_comp
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
 from dataset import read_dataset_to_mem
 from log import LogExceptionContext
 from model_backtest import Positions
 from query_backtest import BacktestQuery
 from query_dataset import DatasetQuery
+from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest
 
 
@@ -46,6 +48,10 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
 
         end_balance = backtest.positions.total_positions_value
 
+        profit_factor, gross_profit, gross_loss = get_backtest_profit_factor_comp(
+            backtest.positions.trades
+        )
+
         backtest_id = BacktestQuery.create_entry(
             {
                 "open_long_trade_cond": backtestInfo.open_long_trade_cond,
@@ -56,10 +62,17 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "dataset_id": dataset.id,
                 "start_balance": START_BALANCE,
                 "end_balance": end_balance,
+                "profit_factor": profit_factor,
+                "gross_profit": gross_profit,
+                "gross_loss": gross_loss,
+                "trade_count": len(backtest.positions.trades),
+                "name": backtestInfo.name,
             }
         )
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
+        TradeQuery.create_many_trade_entry(backtest_id, backtest.positions.trades)
+
         return backtest_from_db
 
 

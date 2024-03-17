@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from context import HttpResponseContext
 from manual_backtest import run_manual_backtest
 from query_backtest import BacktestQuery
+from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest
 
 
@@ -23,7 +24,9 @@ async def route_get_backtest_by_id(backtest_id):
             raise HTTPException(
                 detail=f"No backtest found for {backtest_id}", status_code=400
             )
-        return {"data": backtest}
+
+        trades = TradeQuery.fetch_trades_by_backtest_id(backtest.id)
+        return {"data": backtest, "trades": trades}
 
 
 @router.post(RoutePaths.BACKTEST)

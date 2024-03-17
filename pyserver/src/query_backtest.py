@@ -1,6 +1,6 @@
 import json
 from typing import Dict
-from sqlalchemy import Column, Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 
 from log import LogExceptionContext
 from orm import Base, Session
@@ -13,7 +13,13 @@ class Backtest(Base):
     open_short_trade_cond = Column(String)
     close_long_trade_cond = Column(String)
     close_short_trade_cond = Column(String)
+    use_time_based_close = Column(Boolean)
+    name = Column(String)
     data = Column(String)
+    trade_count = Column(String)
+    profit_factor = Column(Float)
+    gross_profit = Column(Float)
+    gross_loss = Column(Float)
     model_weights_id = Column(Integer, ForeignKey("model_weights.id"))
     train_job_id = Column(Integer, ForeignKey("train_job.id"))
     dataset_id = Column(Integer, ForeignKey("dataset.id"))

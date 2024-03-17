@@ -20,6 +20,7 @@ def test_setup_sanity(cleanup_db, fixt_btc_small_1h):
         open_short_trade_cond_basic(),
         close_long_trade_cond_basic(),
         close_short_trade_cond_basic(),
+        False,
     )
 
     Post.create_manual_backtest(backtest_body)

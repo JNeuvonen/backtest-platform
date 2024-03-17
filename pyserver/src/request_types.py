@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 from constants import NullFillStrategy, ScalingStrategy
@@ -58,4 +58,6 @@ class BodyCreateManualBacktest(BaseModel):
     open_short_trade_cond: str
     close_short_trade_cond: str
     use_short_selling: bool
+    use_time_based_close: bool
     dataset_id: int
+    name: Optional[str] = None
