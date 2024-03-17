@@ -10,6 +10,7 @@ import { ColDef } from "ag-grid-community";
 import { usePathParams } from "../../hooks/usePathParams";
 import { getDatasetBacktestPath } from "../../utils/navigate";
 import { Link } from "react-router-dom";
+import { roundNumberDropRemaining } from "../../utils/number";
 
 interface Props {
   backtests: BacktestObject[];
@@ -46,6 +47,18 @@ const COLUMN_DEFS: ColDef[] = [
     editable: false,
   },
   { headerName: "Result", field: "result", sortable: true, editable: false },
+  {
+    headerName: "Profit factor",
+    field: "profit_factor",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "Trade count",
+    field: "trade_count",
+    sortable: true,
+    editable: false,
+  },
 ];
 
 const createDatarowItems = (backtestObjects: BacktestObject[]) => {
@@ -53,7 +66,12 @@ const createDatarowItems = (backtestObjects: BacktestObject[]) => {
     return {
       id: item.id,
       name: item.name,
-      result: item.end_balance - item.start_balance,
+      result: roundNumberDropRemaining(
+        item.end_balance - item.start_balance,
+        0
+      ),
+      profit_factor: roundNumberDropRemaining(item.profit_factor, 2),
+      trade_count: item.trade_count,
     };
   });
   return ret;
@@ -61,8 +79,6 @@ const createDatarowItems = (backtestObjects: BacktestObject[]) => {
 
 export const BacktestDatagrid = (props: Props) => {
   const { backtests } = props;
-
-  console.log(backtests);
 
   const [rowData, setRowData] = useState(createDatarowItems(backtests));
 

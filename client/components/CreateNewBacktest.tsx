@@ -63,6 +63,8 @@ export const CreateBacktestDrawer = (props: Props) => {
     setBacktestName,
     useTimeBasedClose,
     setUseTimeBasedClose,
+    klinesUntilClose,
+    setKlinesUntilClose,
   } = props;
 
   const { datasetName } = usePathParams<PathParams>();
@@ -230,7 +232,14 @@ export const CreateBacktestDrawer = (props: Props) => {
           label={"Klines until close"}
           containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
         >
-          <NumberInput step={5} min={10}>
+          <NumberInput
+            step={5}
+            min={0}
+            value={klinesUntilClose || undefined}
+            onChange={(valueString) =>
+              setKlinesUntilClose(parseInt(valueString))
+            }
+          >
             <NumberInputField />
           </NumberInput>
         </WithLabel>
