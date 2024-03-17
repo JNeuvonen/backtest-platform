@@ -5,14 +5,40 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "ag-grid-community/styles/ag-theme-balham.css";
+import { ICellRendererParams } from "ag-grid-community";
 import { ColDef } from "ag-grid-community";
+import { usePathParams } from "../../hooks/usePathParams";
+import { getDatasetBacktestPath } from "../../utils/navigate";
+import { Link } from "react-router-dom";
 
 interface Props {
   backtests: BacktestObject[];
 }
 
+type PathParams = {
+  datasetName: string;
+};
+
+const idCellRenderer = (params: ICellRendererParams) => {
+  const { datasetName } = usePathParams<PathParams>();
+  return (
+    <Link
+      to={getDatasetBacktestPath(datasetName, params.value)}
+      className="link-default"
+    >
+      {params.value}
+    </Link>
+  );
+};
+
 const COLUMN_DEFS: ColDef[] = [
-  { headerName: "ID", field: "id", sortable: true, editable: false },
+  {
+    headerName: "ID",
+    field: "id",
+    sortable: true,
+    editable: false,
+    cellRenderer: idCellRenderer,
+  },
   { headerName: "Result", field: "result", sortable: true, editable: false },
 ];
 

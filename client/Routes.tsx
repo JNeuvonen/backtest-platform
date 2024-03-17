@@ -37,6 +37,14 @@ export const AppRoutes = () => {
           </BacktestProvider>
         }
       />
+      <Route
+        path={PATHS.simulate.backtest}
+        element={
+          <BacktestProvider>
+            <div>Hello world</div>
+          </BacktestProvider>
+        }
+      />
     </Routes>
   );
 };

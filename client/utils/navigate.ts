@@ -42,6 +42,12 @@ export const getTrainJobPath = (
     .replace(PATH_KEYS.train, trainJobId);
 };
 
+export const getDatasetBacktestPath = (dataset: string, backtestId: number) => {
+  return PATHS.simulate.backtest
+    .replace(PATH_KEYS.dataset, dataset)
+    .replace(PATH_KEYS.backtest, String(backtestId));
+};
+
 export const getTrainJobFromToolbar = (trainJobId: string) => {
   return PATHS.train.replace(PATH_KEYS.train, trainJobId);
 };

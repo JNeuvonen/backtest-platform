@@ -3,6 +3,7 @@ export const PATH_KEYS = {
   column: ":columnName",
   model: ":modelName",
   train: ":trainJobId",
+  backtest: ":backtestId",
 };
 
 export const CODE = {
@@ -29,6 +30,7 @@ export const PATHS = {
   simulate: {
     path: "/simulate",
     dataset: `/simulate/${PATH_KEYS.dataset}`,
+    backtest: `/simulate/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
   },
   train: `/data/train-job/${PATH_KEYS.train}`,
   settings: "/settings",
