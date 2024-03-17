@@ -279,6 +279,9 @@ interface CreateManualBacktest {
   close_short_trade_cond: string;
   use_short_selling: boolean;
   dataset_id: number;
+  use_time_based_close: boolean;
+  klines_until_close: null | number;
+  name?: string;
 }
 
 export async function createManualBacktest(body: CreateManualBacktest) {

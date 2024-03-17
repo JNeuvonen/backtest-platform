@@ -169,6 +169,8 @@ export interface BacktestObject {
   close_long_trade_cond?: string;
   close_short_trade_cond?: string;
   id: number;
+  name?: string;
+  trade_count: number;
   model_weights_id?: number;
   train_job_id?: number;
   dadtaset_id?: number;

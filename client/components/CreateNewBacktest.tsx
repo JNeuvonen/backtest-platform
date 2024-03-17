@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { CREATE_COLUMNS_DEFAULT } from "../utils/code";
-import { Spinner, Switch, useDisclosure, useToast } from "@chakra-ui/react";
+import {
+  NumberInput,
+  NumberInputField,
+  Spinner,
+  Switch,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
 import { WithLabel } from "./form/WithLabel";
 import { ChakraModal } from "./chakra/modal";
 import { Text } from "@chakra-ui/react";
@@ -11,6 +18,7 @@ import { usePathParams } from "../hooks/usePathParams";
 import { OverflopTooltip } from "./OverflowTooltip";
 import { FormSubmitBar } from "./form/FormSubmitBar";
 import { execPythonOnDataset } from "../clients/requests";
+import { ChakraInput } from "./chakra/input";
 
 type PathParams = {
   datasetName: string;
@@ -29,6 +37,15 @@ interface Props {
 
   useShorts: boolean;
   setUseShorts: React.Dispatch<React.SetStateAction<boolean>>;
+
+  backtestName: string;
+  setBacktestName: React.Dispatch<React.SetStateAction<string>>;
+
+  klinesUntilClose: null | number;
+  setKlinesUntilClose: React.Dispatch<React.SetStateAction<number | null>>;
+
+  useTimeBasedClose: boolean;
+  setUseTimeBasedClose: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const CreateBacktestDrawer = (props: Props) => {
@@ -43,6 +60,9 @@ export const CreateBacktestDrawer = (props: Props) => {
     setCloseShortTradeCode,
     useShorts,
     setUseShorts,
+    setBacktestName,
+    useTimeBasedClose,
+    setUseTimeBasedClose,
   } = props;
 
   const { datasetName } = usePathParams<PathParams>();
@@ -127,6 +147,10 @@ export const CreateBacktestDrawer = (props: Props) => {
           Create columns
         </Text>
       </div>
+
+      <WithLabel>
+        <ChakraInput label="Name (optional)" onChange={setBacktestName} />
+      </WithLabel>
       <div>
         <CodeEditor
           code={openLongTradeCode}
@@ -190,6 +214,26 @@ export const CreateBacktestDrawer = (props: Props) => {
             height={"250px"}
           />
         </div>
+      )}
+
+      <div style={{ marginTop: "16px" }}>
+        <WithLabel label={"Use time based closing strategy"}>
+          <Switch
+            isChecked={useTimeBasedClose}
+            onChange={() => setUseTimeBasedClose(!useTimeBasedClose)}
+          />
+        </WithLabel>
+      </div>
+
+      {useTimeBasedClose && (
+        <WithLabel
+          label={"Klines until close"}
+          containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
+        >
+          <NumberInput step={5} min={10}>
+            <NumberInputField />
+          </NumberInput>
+        </WithLabel>
       )}
     </div>
   );

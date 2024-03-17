@@ -1,5 +1,5 @@
 import { AgGridReact } from "ag-grid-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BacktestObject } from "../../clients/queries/response-types";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -39,18 +39,36 @@ const COLUMN_DEFS: ColDef[] = [
     editable: false,
     cellRenderer: idCellRenderer,
   },
+  {
+    headerName: "Name",
+    field: "name",
+    sortable: true,
+    editable: false,
+  },
   { headerName: "Result", field: "result", sortable: true, editable: false },
 ];
+
+const createDatarowItems = (backtestObjects: BacktestObject[]) => {
+  const ret = backtestObjects.map((item) => {
+    return {
+      id: item.id,
+      name: item.name,
+      result: item.end_balance - item.start_balance,
+    };
+  });
+  return ret;
+};
 
 export const BacktestDatagrid = (props: Props) => {
   const { backtests } = props;
 
-  const [rowData] = useState(
-    backtests.map((item) => ({
-      id: item.id,
-      result: item.end_balance - item.start_balance,
-    }))
-  );
+  console.log(backtests);
+
+  const [rowData, setRowData] = useState(createDatarowItems(backtests));
+
+  useEffect(() => {
+    setRowData(createDatarowItems(backtests));
+  }, [backtests]);
 
   return (
     <div

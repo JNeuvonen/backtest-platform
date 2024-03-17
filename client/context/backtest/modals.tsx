@@ -22,7 +22,9 @@ export const BacktestUXManager = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data: dataset } = useDatasetQuery(datasetName);
 
-  const { createNewDrawer } = useBacktestContext();
+  const { createNewDrawer, datasetBacktestsQuery, forceUpdate } =
+    useBacktestContext();
+
   const [openLongTradeCode, setOpenLongTradeCode] = useState(
     ENTER_TRADE_DEFAULT()
   );
@@ -35,8 +37,11 @@ export const BacktestUXManager = () => {
   const [closeShortTradeCode, setCloseShortTradeCode] = useState(
     EXIT_SHORT_TRADE_DEFAULT()
   );
-
+  const [backtestName, setBacktestName] = useState("");
   const [useShorts, setUseShorts] = useState(false);
+
+  const [useTimeBasedClose, setUseTimeBasedClose] = useState(false);
+  const [klinesUntilClose, setKlinesUntilClose] = useState<null | number>(null);
 
   const toast = useToast();
 
@@ -50,6 +55,9 @@ export const BacktestUXManager = () => {
       close_short_trade_cond: closeShortTradeCode,
       use_short_selling: useShorts,
       dataset_id: dataset.id,
+      name: backtestName,
+      use_time_based_close: useTimeBasedClose,
+      klines_until_close: klinesUntilClose,
     });
 
     if (res.status === 200) {
@@ -63,6 +71,8 @@ export const BacktestUXManager = () => {
         isClosable: true,
       });
       createNewDrawer.onClose();
+      datasetBacktestsQuery.refetch();
+      forceUpdate();
     }
   };
 
@@ -80,6 +90,8 @@ export const BacktestUXManager = () => {
         }
       >
         <CreateBacktestDrawer
+          klinesUntilClose={klinesUntilClose}
+          setKlinesUntilClose={setKlinesUntilClose}
           openLongTradeCode={openLongTradeCode}
           setOpenLongTradeCode={setOpenLongTradeCode}
           openShortTradeCode={openShortTradeCode}
@@ -90,6 +102,10 @@ export const BacktestUXManager = () => {
           setOpenShortTradeCode={setOpenShortTradeCode}
           useShorts={useShorts}
           setUseShorts={setUseShorts}
+          backtestName={backtestName}
+          setBacktestName={setBacktestName}
+          useTimeBasedClose={useTimeBasedClose}
+          setUseTimeBasedClose={setUseTimeBasedClose}
         />
       </ChakraDrawer>
     </div>
