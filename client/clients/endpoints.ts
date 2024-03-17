@@ -62,6 +62,8 @@ export const URLS = {
     BASE_URL + API.model.root + `/train/${trainJobId}/detailed`,
   fetch_backtests_by_dataset: (datasetId?: number) =>
     BASE_URL + API.backtest.root + `/dataset/${datasetId}`,
+  fetch_backtest_by_id: (backtestId: number) =>
+    BASE_URL + API.backtest.root + `/${backtestId}`,
   create_backtest: (trainJobId: string) =>
     BASE_URL + API.model.root + `/backtest/${trainJobId}/run`,
   setTargetColumn: (datasetName: string, targetColumn: string) =>

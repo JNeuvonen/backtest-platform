@@ -302,3 +302,14 @@ export async function fetchBacktestsByDataset(datasetId?: number) {
   }
   return res;
 }
+
+export async function fetchBacktestById(backtestId: number) {
+  const res = await buildRequest({
+    method: "GET",
+    url: URLS.fetch_backtest_by_id(backtestId),
+  });
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+}

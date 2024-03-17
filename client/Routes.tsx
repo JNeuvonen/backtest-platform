@@ -10,6 +10,7 @@ import { TrainJobIndex } from "./pages/data/model/trainjob";
 import { SimulateIndex } from "./pages/simulate";
 import { SimulateDatasetIndex } from "./pages/simulate/dataset";
 import { BacktestProvider } from "./context/backtest";
+import { DatasetBacktestPage } from "./pages/simulate/dataset/backtest";
 
 export const AppRoutes = () => {
   return (
@@ -41,7 +42,7 @@ export const AppRoutes = () => {
         path={PATHS.simulate.backtest}
         element={
           <BacktestProvider>
-            <div>Hello world</div>
+            <DatasetBacktestPage />
           </BacktestProvider>
         }
       />

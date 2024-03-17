@@ -5,6 +5,7 @@ import {
   TrainDataDetailed,
   fetchAllTickers,
   fetchAllTrainingMetadataForModel,
+  fetchBacktestById,
   fetchBacktestsByDataset,
   fetchColumn,
   fetchDataset,
@@ -115,5 +116,14 @@ export function useDatasetsBacktests(
     queryKey: [QUERY_KEYS.fetch_dataset_backtests],
     queryFn: () => fetchBacktestsByDataset(datasetId),
     enabled: datasetId !== undefined,
+  });
+}
+
+export function useBacktestById(
+  backtestId: number
+): UseQueryResult<BacktestObject | null, unknown> {
+  return useQuery<BacktestObject | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_backtest_by_id],
+    queryFn: () => fetchBacktestById(backtestId),
   });
 }

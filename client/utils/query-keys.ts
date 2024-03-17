@@ -9,4 +9,5 @@ export const QUERY_KEYS = {
   fetch_train_job_detailed: "fetch_train_job_detailed",
   fetch_trainjob_backtests: "fetch_train_job_backtests",
   fetch_dataset_backtests: "fetch_dataset_backtests",
+  fetch_backtest_by_id: "fetch_backtest_by_id",
 };
