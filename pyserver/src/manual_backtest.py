@@ -34,6 +34,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             SLIPPAGE_PERC,
             replacements,
             backtestInfo.use_short_selling,
+            backtestInfo.use_time_based_close,
+            backtestInfo.klines_until_close if backtestInfo.klines_until_close else -1,
         )
 
         assert (
@@ -41,9 +43,10 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         ), "Timeseries column has not been set"
         assert dataset.price_column is not None, "Price column has not been set"
 
-        for _, row in dataset_df.iterrows():
+        for i, row in dataset_df.iterrows():
+            is_last_row = i == len(dataset_df) - 1
             backtest.process_df_row(
-                row, dataset.price_column, dataset.timeseries_column
+                row, dataset.price_column, dataset.timeseries_column, is_last_row
             )
 
         end_balance = backtest.positions.total_positions_value
@@ -67,6 +70,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "gross_loss": gross_loss,
                 "trade_count": len(backtest.positions.trades),
                 "name": backtestInfo.name,
+                "klines_until_close": backtestInfo.klines_until_close,
             }
         )
 
@@ -84,6 +88,8 @@ class ManualBacktest:
         slippage_perc: float,
         enter_and_exit_criteria_placeholders: Dict,
         use_short_selling: bool,
+        use_time_based_close: bool,
+        max_klines_until_close: int,
     ) -> None:
         self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
         self.positions = Positions(
@@ -91,8 +97,10 @@ class ManualBacktest:
         )
         self.history: List = []
         self.use_short_selling = use_short_selling
+        self.use_time_based_close = use_time_based_close
+        self.max_klines_until_close = max_klines_until_close
 
-    def process_df_row(self, df_row, price_col, timeseries_col):
+    def process_df_row(self, df_row, price_col, timeseries_col, is_last_row):
         code = BACKTEST_MANUAL_TEMPLATE
         for key, value in self.enter_and_exit_criteria_placeholders.items():
             code = code.replace(key, str(value))
@@ -100,10 +108,19 @@ class ManualBacktest:
         results_dict = {"df_row": df_row}
         exec(code, globals(), results_dict)
 
-        should_open_long = results_dict["should_open_long"]
-        should_open_short = results_dict["should_open_short"]
-        should_close_long = results_dict["should_close_long"]
-        should_close_short = results_dict["should_close_short"]
+        ## Force close trades on last row to make accounting easier
+        should_open_long = (
+            results_dict["should_open_long"] if is_last_row is False else False
+        )
+        should_open_short = (
+            results_dict["should_open_short"] if is_last_row is False else False
+        )
+        should_close_long = (
+            results_dict["should_close_long"] if is_last_row is False else True
+        )
+        should_close_short = (
+            results_dict["should_close_short"] if is_last_row is False else True
+        )
 
         kline_open_time = df_row[timeseries_col]
         price = df_row[price_col]

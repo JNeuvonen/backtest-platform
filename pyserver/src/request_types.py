@@ -61,3 +61,4 @@ class BodyCreateManualBacktest(BaseModel):
     use_time_based_close: bool
     dataset_id: int
     name: Optional[str] = None
+    klines_until_close: Optional[int] = None

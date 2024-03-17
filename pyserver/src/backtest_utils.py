@@ -6,6 +6,10 @@ def get_backtest_profit_factor_comp(trades):
         if item["net_result"] >= 0.0:
             gross_profit += item["net_result"]
         else:
-            gross_loss += item["net_result"]
+            gross_loss += abs(item["net_result"])
 
-    return gross_profit - gross_loss, gross_profit, gross_loss
+    return (
+        gross_profit / gross_loss if gross_loss != 0 else None,
+        gross_profit,
+        gross_loss,
+    )
