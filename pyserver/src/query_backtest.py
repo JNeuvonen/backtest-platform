@@ -27,6 +27,18 @@ class Backtest(Base):
     start_balance = Column(Float)
     end_balance = Column(Float)
 
+    result_perc = Column(Float)
+
+    best_trade_result_perc = Column(Float)
+    worst_trade_result_perc = Column(Float)
+    buy_and_hold_result_net = Column(Float)
+    buy_and_hold_result_perc = Column(Float)
+
+    share_of_winning_trades_perc = Column(Float)
+    share_of_losing_trades_perc = Column(Float)
+
+    max_drawdown_perc = Column(Float)
+
     def serialize_data(self, backtest_data):
         self.data = json.dumps(backtest_data)
 

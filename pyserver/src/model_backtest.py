@@ -155,7 +155,7 @@ class Positions:
         self.total_positions_value = portfolio_worth
         self.balance_history.append(
             {
-                "portfoli_worth": portfolio_worth,
+                "portfolio_worth": portfolio_worth,
                 "prediction": prediction,
                 "kline_open_time": kline_open_time,
                 "position": self.position,

@@ -1,6 +1,10 @@
 import json
 from typing import Dict, List
-from backtest_utils import get_backtest_profit_factor_comp
+from backtest_utils import (
+    find_max_drawdown,
+    get_backtest_profit_factor_comp,
+    get_backtest_trade_details,
+)
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
 from dataset import read_dataset_to_mem
 from log import LogExceptionContext
@@ -43,17 +47,33 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         ), "Timeseries column has not been set"
         assert dataset.price_column is not None, "Price column has not been set"
 
+        asset_starting_price = None
+        asset_closing_price = None
+
         for i, row in dataset_df.iterrows():
             is_last_row = i == len(dataset_df) - 1
             backtest.process_df_row(
                 row, dataset.price_column, dataset.timeseries_column, is_last_row
             )
 
+            if i == 0:
+                asset_starting_price = row[dataset.price_column]
+            if is_last_row:
+                asset_closing_price = row[dataset.price_column]
+
         end_balance = backtest.positions.total_positions_value
 
         profit_factor, gross_profit, gross_loss = get_backtest_profit_factor_comp(
             backtest.positions.trades
         )
+        (
+            share_of_winning_trades_perc,
+            share_of_losing_trades_perc,
+            best_trade_result_perc,
+            worst_trade_result_perc,
+        ) = get_backtest_trade_details(backtest.positions.trades)
+
+        max_drawdown_perc = find_max_drawdown(backtest.positions.balance_history)
 
         backtest_id = BacktestQuery.create_entry(
             {
@@ -71,6 +91,23 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "trade_count": len(backtest.positions.trades),
                 "name": backtestInfo.name,
                 "klines_until_close": backtestInfo.klines_until_close,
+                "result_perc": (end_balance / START_BALANCE - 1) * 100,
+                "share_of_winning_trades_perc": share_of_winning_trades_perc,
+                "share_of_losing_trades_perc": share_of_losing_trades_perc,
+                "best_trade_result_perc": best_trade_result_perc,
+                "worst_trade_result_perc": worst_trade_result_perc,
+                "buy_and_hold_result_net": (
+                    (asset_closing_price / asset_starting_price * START_BALANCE)
+                    - START_BALANCE
+                )
+                if asset_starting_price is not None and asset_closing_price is not None
+                else None,
+                "buy_and_hold_result_perc": (
+                    (asset_closing_price / asset_starting_price - 1) * 100
+                )
+                if asset_starting_price is not None and asset_closing_price is not None
+                else None,
+                "max_drawdown_perc": max_drawdown_perc,
             }
         )
 
@@ -99,6 +136,7 @@ class ManualBacktest:
         self.use_short_selling = use_short_selling
         self.use_time_based_close = use_time_based_close
         self.max_klines_until_close = max_klines_until_close
+        self.pos_open_klines = 0
 
     def process_df_row(self, df_row, price_col, timeseries_col, is_last_row):
         code = BACKTEST_MANUAL_TEMPLATE
@@ -125,6 +163,14 @@ class ManualBacktest:
         kline_open_time = df_row[timeseries_col]
         price = df_row[price_col]
 
+        if (
+            self.pos_open_klines == self.max_klines_until_close
+            and self.use_time_based_close
+        ):
+            # auto close positions if time threshold is met
+            should_close_short = True
+            should_close_long = True
+
         self.tick(
             price,
             kline_open_time,
@@ -134,8 +180,12 @@ class ManualBacktest:
             should_close_short,
         )
 
+    def close_trade_cleanup(self):
+        self.pos_open_klines = 0
+
     def update_data(self, price: float, kline_open_time: int):
         self.positions.update_balance(price, 0, kline_open_time)
+        self.pos_open_klines += 1
 
     def tick(
         self,
@@ -157,9 +207,11 @@ class ManualBacktest:
             and self.use_short_selling is True
         ):
             self.positions.close_short(price, kline_open_time)
+            self.close_trade_cleanup()
 
         if self.positions.cash > 0 and should_long:
             self.positions.go_long(price, 0, kline_open_time)
+            self.close_trade_cleanup()
 
         if (
             self.positions.short_debt == 0

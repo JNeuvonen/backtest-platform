@@ -168,6 +168,7 @@ export interface BacktestObject {
   open_short_trade_cond: string;
   close_long_trade_cond?: string;
   close_short_trade_cond?: string;
+  profit_factor: number;
   id: number;
   name?: string;
   trade_count: number;
