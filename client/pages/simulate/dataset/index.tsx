@@ -30,8 +30,6 @@ export const SimulateDatasetIndex = () => {
     return <Spinner />;
   }
 
-  console.log(backtestsData);
-
   return (
     <div>
       <Heading size={"lg"}>Backtest</Heading>
@@ -46,7 +44,13 @@ export const SimulateDatasetIndex = () => {
         <MenuItem icon={<FaFileImport />}>Update target column</MenuItem>
       </ChakraMenu>
 
-      <div>{backtestsData ? <BacktestDatagrid /> : <Spinner />}</div>
+      <div>
+        {backtestsData ? (
+          <BacktestDatagrid backtests={backtestsData} />
+        ) : (
+          <Spinner />
+        )}
+      </div>
     </div>
   );
 };
