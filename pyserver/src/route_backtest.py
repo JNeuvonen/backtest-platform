@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from context import HttpResponseContext
 from manual_backtest import run_manual_backtest
@@ -11,7 +11,19 @@ router = APIRouter()
 
 class RoutePaths:
     BACKTEST = "/"
+    BACKTEST_BY_ID = "/{backtest_id}"
     FETCH_BY_DATASET_ID = "/dataset/{dataset_id}"
+
+
+@router.get(RoutePaths.BACKTEST_BY_ID)
+async def route_get_backtest_by_id(backtest_id):
+    with HttpResponseContext():
+        backtest = BacktestQuery.fetch_backtest_by_id(backtest_id)
+        if backtest is None:
+            raise HTTPException(
+                detail=f"No backtest found for {backtest_id}", status_code=400
+            )
+        return {"data": backtest}
 
 
 @router.post(RoutePaths.BACKTEST)
