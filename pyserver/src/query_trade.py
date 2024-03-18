@@ -24,6 +24,11 @@ class Trade(Base):
         self.prices = json.dumps(prices)
         self.predictions = json.dumps(predictions)
 
+    def deserialize(self):
+        self.prices = json.loads(self.prices)
+        self.predictions = json.loads(self.predictions)
+        return self
+
 
 class TradeQuery:
     @staticmethod
@@ -76,6 +81,8 @@ class TradeQuery:
                 trades = (
                     session.query(Trade).filter(Trade.backtest_id == backtest_id).all()
                 )
+
+                trades = [Trade.deserialize(item) for item in trades]
                 return trades
 
     @staticmethod
