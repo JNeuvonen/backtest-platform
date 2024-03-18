@@ -65,12 +65,14 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
 class Positions:
     def __init__(self, start_balance, fees, slippage):
+        self.start_balance = start_balance
         self.cash = start_balance
         self.fees = fees
         self.slippage = slippage
         self.position = 0.0
         self.short_debt = 0.0
         self.total_positions_value = 0.0
+        self.buy_and_hold_position = None
 
         self.enter_trade_price = 0.0
         self.enter_trade_time = 0
@@ -153,9 +155,15 @@ class Positions:
         if self.short_debt > 0.0:
             portfolio_worth -= price * self.short_debt
         self.total_positions_value = portfolio_worth
+        self.trade_prices.append(price)
+
+        if self.buy_and_hold_position is None:
+            self.buy_and_hold_position = self.start_balance / price
+
         self.balance_history.append(
             {
                 "portfolio_worth": portfolio_worth,
+                "buy_and_hold_worth": self.buy_and_hold_position * price,
                 "prediction": prediction,
                 "kline_open_time": kline_open_time,
                 "position": self.position,
