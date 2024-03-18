@@ -182,7 +182,26 @@ export interface BacktestObject {
   dadtaset_id?: number;
   data: BacktestBalance[];
   start_balance: number;
+  max_drawdown_perc: number;
   end_balance: number;
+}
+
+export interface Trade {
+  close_price: number;
+  open_price: number;
+  close_time: number;
+  direction: string;
+  id: number;
+  net_result: number;
+  open_time: number;
+  percent_result: number;
+  predictions: number[];
+  prices: number[];
+}
+
+export interface FetchBacktestByIdRes {
+  data: BacktestObject;
+  trades: Trade[];
 }
 
 export interface BacktestsResponse {

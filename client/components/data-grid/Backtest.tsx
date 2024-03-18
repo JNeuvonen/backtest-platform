@@ -70,7 +70,12 @@ const COLUMN_DEFS: ColDef[] = [
     sortable: true,
     editable: false,
   },
-
+  {
+    headerName: "Max drawdown",
+    field: "max_drawdown_perc",
+    sortable: true,
+    editable: false,
+  },
   {
     headerName: "Profit factor",
     field: "profit_factor",
@@ -125,6 +130,7 @@ const createDatarowItems = (backtestObjects: BacktestObject[]) => {
         2
       ),
       trade_count: item.trade_count,
+      max_drawdown_perc: roundNumberDropRemaining(item.max_drawdown_perc, 2),
     };
   });
   return ret;

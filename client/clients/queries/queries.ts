@@ -23,6 +23,7 @@ import {
   DatasetMetadata,
   DatasetModel,
   DatasetModelResponse,
+  FetchBacktestByIdRes,
 } from "./response-types";
 
 export function useDatasetsQuery(): UseQueryResult<
@@ -121,8 +122,8 @@ export function useDatasetsBacktests(
 
 export function useBacktestById(
   backtestId: number
-): UseQueryResult<BacktestObject | null, unknown> {
-  return useQuery<BacktestObject | null, unknown>({
+): UseQueryResult<FetchBacktestByIdRes | null, unknown> {
+  return useQuery<FetchBacktestByIdRes | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_backtest_by_id],
     queryFn: () => fetchBacktestById(backtestId),
   });

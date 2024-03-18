@@ -312,7 +312,7 @@ export async function fetchBacktestById(backtestId: number) {
     url: URLS.fetch_backtest_by_id(backtestId),
   });
   if (res.status === 200) {
-    return res.res["data"];
+    return res.res;
   }
   return res;
 }
