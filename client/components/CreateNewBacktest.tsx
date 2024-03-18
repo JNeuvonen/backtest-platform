@@ -119,7 +119,7 @@ export const CreateBacktestDrawer = (props: Props) => {
 
       <ChakraModal
         {...runPythonModal}
-        title="Create columns"
+        title="Run python"
         footerContent={
           <FormSubmitBar
             cancelCallback={runPythonModal.onClose}
@@ -146,7 +146,7 @@ export const CreateBacktestDrawer = (props: Props) => {
         </Text>
 
         <Text variant={TEXT_VARIANTS.clickable} onClick={runPythonModal.onOpen}>
-          Create columns
+          Run python
         </Text>
       </div>
 
