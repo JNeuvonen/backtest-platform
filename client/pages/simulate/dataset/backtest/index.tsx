@@ -12,7 +12,8 @@ interface PathParams {
 }
 
 interface PortfolioGrowthData {
-  balance: number;
+  strategy: number;
+  buy_and_hold: number;
   kline_open_time: number;
 }
 
@@ -40,8 +41,6 @@ export const DatasetBacktestPage = () => {
   const backtestQuery = useBacktestById(Number(backtestId));
 
   if (!backtestQuery.data) return <Spinner />;
-
-  console.log(backtestQuery.data);
 
   return (
     <div>
