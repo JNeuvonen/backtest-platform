@@ -282,6 +282,8 @@ interface CreateManualBacktest {
   use_time_based_close: boolean;
   klines_until_close: null | number;
   name?: string;
+  trading_fees_perc: number;
+  slippage_perc: number;
 }
 
 export async function createManualBacktest(body: CreateManualBacktest) {

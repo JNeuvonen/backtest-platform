@@ -42,6 +42,8 @@ export const BacktestUXManager = () => {
 
   const [useTimeBasedClose, setUseTimeBasedClose] = useState(false);
   const [klinesUntilClose, setKlinesUntilClose] = useState<null | number>(null);
+  const [tradingFees, setTradingFees] = useState(0.1);
+  const [slippage, setSlippage] = useState(0.001);
 
   const toast = useToast();
 
@@ -58,6 +60,8 @@ export const BacktestUXManager = () => {
       name: backtestName,
       use_time_based_close: useTimeBasedClose,
       klines_until_close: klinesUntilClose,
+      trading_fees_perc: tradingFees,
+      slippage_perc: slippage,
     });
 
     if (res.status === 200) {
@@ -106,6 +110,10 @@ export const BacktestUXManager = () => {
           setBacktestName={setBacktestName}
           useTimeBasedClose={useTimeBasedClose}
           setUseTimeBasedClose={setUseTimeBasedClose}
+          tradingFees={tradingFees}
+          setTradingFees={setTradingFees}
+          slippage={slippage}
+          setSlippage={setSlippage}
         />
       </ChakraDrawer>
     </div>

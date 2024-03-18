@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { CREATE_COLUMNS_DEFAULT } from "../utils/code";
 import {
+  NumberDecrementStepper,
+  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
+  NumberInputStepper,
   Spinner,
   Switch,
   useDisclosure,
@@ -46,6 +49,12 @@ interface Props {
 
   useTimeBasedClose: boolean;
   setUseTimeBasedClose: React.Dispatch<React.SetStateAction<boolean>>;
+
+  tradingFees: number;
+  setTradingFees: React.Dispatch<React.SetStateAction<number>>;
+
+  slippage: number;
+  setSlippage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const CreateBacktestDrawer = (props: Props) => {
@@ -65,6 +74,10 @@ export const CreateBacktestDrawer = (props: Props) => {
     setUseTimeBasedClose,
     klinesUntilClose,
     setKlinesUntilClose,
+    tradingFees,
+    setTradingFees,
+    slippage,
+    setSlippage,
   } = props;
 
   const { datasetName } = usePathParams<PathParams>();
@@ -244,6 +257,45 @@ export const CreateBacktestDrawer = (props: Props) => {
           </NumberInput>
         </WithLabel>
       )}
+
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <WithLabel
+          label={"Trading fees (%)"}
+          containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
+        >
+          <NumberInput
+            step={0.005}
+            min={0}
+            value={tradingFees}
+            precision={3}
+            onChange={(valueString) => setTradingFees(parseFloat(valueString))}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </WithLabel>
+        <WithLabel
+          label={"Slippage (%)"}
+          containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
+        >
+          <NumberInput
+            step={0.001}
+            min={0}
+            value={slippage}
+            precision={4}
+            onChange={(valueString) => setSlippage(parseFloat(valueString))}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper color={"white"} />
+              <NumberDecrementStepper color={"white"} />
+            </NumberInputStepper>
+          </NumberInput>
+        </WithLabel>
+      </div>
     </div>
   );
 };
