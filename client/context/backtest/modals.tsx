@@ -12,7 +12,10 @@ import {
 import { createManualBacktest } from "../../clients/requests";
 import { usePathParams } from "../../hooks/usePathParams";
 import { useDatasetQuery } from "../../clients/queries/queries";
-import { useToast } from "@chakra-ui/react";
+import { Spinner, useDisclosure, useToast } from "@chakra-ui/react";
+import { ChakraPopover } from "../../components/chakra/popover";
+import { getDatasetColumnOptions } from "../../utils/dataset";
+import { SelectColumnPopover } from "../../components/SelectTargetColumnPopover";
 
 type PathParams = {
   datasetName: string;
@@ -80,6 +83,8 @@ export const BacktestUXManager = () => {
     }
   };
 
+  if (!dataset) return <Spinner />;
+
   return (
     <div>
       <ChakraDrawer
@@ -114,6 +119,7 @@ export const BacktestUXManager = () => {
           setTradingFees={setTradingFees}
           slippage={slippage}
           setSlippage={setSlippage}
+          dataset={dataset}
         />
       </ChakraDrawer>
     </div>

@@ -20,8 +20,12 @@ import { useDatasetQuery } from "../clients/queries/queries";
 import { usePathParams } from "../hooks/usePathParams";
 import { OverflopTooltip } from "./OverflowTooltip";
 import { FormSubmitBar } from "./form/FormSubmitBar";
-import { execPythonOnDataset } from "../clients/requests";
+import { execPythonOnDataset, updatePriceColumnReq } from "../clients/requests";
 import { ChakraInput } from "./chakra/input";
+import { ChakraPopover } from "./chakra/popover";
+import { SelectColumnPopover } from "./SelectTargetColumnPopover";
+import { getDatasetColumnOptions } from "../utils/dataset";
+import { Dataset } from "../clients/queries/response-types";
 
 type PathParams = {
   datasetName: string;
@@ -55,6 +59,7 @@ interface Props {
 
   slippage: number;
   setSlippage: React.Dispatch<React.SetStateAction<number>>;
+  dataset: Dataset;
 }
 
 export const CreateBacktestDrawer = (props: Props) => {
@@ -78,19 +83,21 @@ export const CreateBacktestDrawer = (props: Props) => {
     setTradingFees,
     slippage,
     setSlippage,
+    dataset,
   } = props;
 
   const { datasetName } = usePathParams<PathParams>();
   const [createColumnsCode, setCreateColumnsCode] = useState(
     CREATE_COLUMNS_DEFAULT()
   );
-  const { refetch } = useDatasetQuery(datasetName);
+  const { refetch: refetchDataset } = useDatasetQuery(datasetName);
 
   const columnsModal = useDisclosure();
   const runPythonModal = useDisclosure();
 
   const { data } = useDatasetQuery(datasetName);
   const toast = useToast();
+  const backtestPriceColumnPopover = useDisclosure();
 
   const runPythonSubmit = async () => {
     const res = await execPythonOnDataset(
@@ -112,6 +119,20 @@ export const CreateBacktestDrawer = (props: Props) => {
     }
   };
 
+  const setBacktestPriceColumn = async (value: string) => {
+    const res = await updatePriceColumnReq(datasetName, value);
+    if (res.status === 200) {
+      toast({
+        title: "Changed price column",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      backtestPriceColumnPopover.onClose();
+      refetchDataset();
+    }
+  };
+
   if (!data) return <Spinner />;
 
   return (
@@ -129,6 +150,21 @@ export const CreateBacktestDrawer = (props: Props) => {
           })}
         </div>
       </ChakraModal>
+
+      <ChakraPopover
+        isOpen={backtestPriceColumnPopover.isOpen}
+        setOpen={backtestPriceColumnPopover.onOpen}
+        onClose={backtestPriceColumnPopover.onClose}
+        headerText="Set backtest price column"
+        useArrow={false}
+        body={
+          <SelectColumnPopover
+            options={getDatasetColumnOptions(dataset)}
+            placeholder={dataset.price_col}
+            selectCallback={setBacktestPriceColumn}
+          />
+        }
+      />
 
       <ChakraModal
         {...runPythonModal}
@@ -157,9 +193,14 @@ export const CreateBacktestDrawer = (props: Props) => {
         <Text variant={TEXT_VARIANTS.clickable} onClick={columnsModal.onOpen}>
           Show columns
         </Text>
-
         <Text variant={TEXT_VARIANTS.clickable} onClick={runPythonModal.onOpen}>
           Run python
+        </Text>
+        <Text
+          variant={TEXT_VARIANTS.clickable}
+          onClick={backtestPriceColumnPopover.onOpen}
+        >
+          Set price column
         </Text>
       </div>
 
