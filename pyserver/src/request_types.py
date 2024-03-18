@@ -62,3 +62,5 @@ class BodyCreateManualBacktest(BaseModel):
     dataset_id: int
     name: Optional[str] = None
     klines_until_close: Optional[int] = None
+    trading_fees_perc: float
+    slippage_perc: float

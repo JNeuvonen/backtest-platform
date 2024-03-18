@@ -16,8 +16,6 @@ from request_types import BodyCreateManualBacktest
 
 
 START_BALANCE = 10000
-FEES_PERC = 0.1
-SLIPPAGE_PERC = 0.001
 
 
 def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
@@ -34,8 +32,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
 
         backtest = ManualBacktest(
             START_BALANCE,
-            FEES_PERC,
-            SLIPPAGE_PERC,
+            backtestInfo.trading_fees_perc,
+            backtestInfo.slippage_perc,
             replacements,
             backtestInfo.use_short_selling,
             backtestInfo.use_time_based_close,
