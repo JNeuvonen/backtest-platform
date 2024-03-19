@@ -52,6 +52,11 @@ class BodyDeleteDatasets(BaseModel):
     dataset_names: List[str]
 
 
+class BodyCreateCodePreset(BaseModel):
+    code: str
+    category: str
+
+
 class BodyCreateManualBacktest(BaseModel):
     open_long_trade_cond: str
     close_long_trade_cond: str
