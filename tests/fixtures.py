@@ -88,6 +88,8 @@ def create_manual_backtest(
     close_long_trade_cond: str,
     close_short_trade_cond: str,
     use_time_based_close: bool,
+    trading_fees_perc: float,
+    slippage_perc: float,
 ):
     return {
         "dataset_id": dataset_id,
@@ -97,6 +99,8 @@ def create_manual_backtest(
         "open_short_trade_cond": open_short_trade_cond,
         "close_short_trade_cond": close_short_trade_cond,
         "use_time_based_close": use_time_based_close,
+        "trading_fees_perc": trading_fees_perc,
+        "slippage_perc": slippage_perc,
     }
 
 
