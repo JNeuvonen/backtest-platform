@@ -90,12 +90,11 @@ export const CreateBacktestDrawer = (props: Props) => {
   const [createColumnsCode, setCreateColumnsCode] = useState(
     CREATE_COLUMNS_DEFAULT()
   );
-  const { refetch: refetchDataset } = useDatasetQuery(datasetName);
 
   const columnsModal = useDisclosure();
   const runPythonModal = useDisclosure();
 
-  const { data } = useDatasetQuery(datasetName);
+  const { data, refetch: refetchDataset } = useDatasetQuery(datasetName);
   const toast = useToast();
   const backtestPriceColumnPopover = useDisclosure();
 
@@ -114,7 +113,7 @@ export const CreateBacktestDrawer = (props: Props) => {
         isClosable: true,
       });
       runPythonModal.onClose();
-      refetch();
+      refetchDataset();
       setCreateColumnsCode(CREATE_COLUMNS_DEFAULT());
     }
   };
