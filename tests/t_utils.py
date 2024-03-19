@@ -176,6 +176,16 @@ class Fetch:
         with Req("get", URL.get_datasets_manual_backtests(dataset_id)) as res:
             return res.json()["data"]
 
+    @staticmethod
+    def get_preset_by_id(id: int):
+        with Req("get", URL.get_preset_by_id(id)) as res:
+            return res.json()["data"]
+
+    @staticmethod
+    def get_all_presets_by_category(category: str):
+        with Req("get", URL.get_presets_by_category(category)) as res:
+            return res.json()["data"]
+
 
 class Post:
     @staticmethod
@@ -223,6 +233,11 @@ class Post:
     def create_manual_backtest(body):
         with Req("post", URL.create_manual_backtest(), json=body) as res:
             return res
+
+    @staticmethod
+    def create_code_preset(body):
+        with Req("post", URL.create_code_preset(), json=body) as res:
+            return res.json()["id"]
 
 
 class Put:

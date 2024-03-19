@@ -104,6 +104,10 @@ def create_manual_backtest(
     }
 
 
+def create_code_preset_body(code: str, category: str):
+    return {"code": code, "category": category}
+
+
 def open_long_trade_cond_basic():
     enter_trade_cond = PyCode()
 

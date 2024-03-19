@@ -8,6 +8,7 @@ import sys
 from tests.fixtures import (
     close_long_trade_cond_basic,
     close_short_trade_cond_basic,
+    create_code_preset_body,
     create_manual_backtest,
     create_train_job_basic,
     criterion_basic,
@@ -20,6 +21,7 @@ from tests.t_conf import SERVER_SOURCE_DIR
 from tests.t_constants import (
     BinanceCols,
     BinanceData,
+    CodePresetId,
     Constants,
     DatasetMetadata,
     Size,
@@ -137,6 +139,15 @@ def fixt_manual_backtest(fixt_btc_small_1h):
     )
     Post.create_manual_backtest(backtest_body)
     return fixt_btc_small_1h
+
+
+@pytest.fixture
+def fixt_create_code_preset():
+    code_preset = create_code_preset_body(
+        code="Hello world", category=CodePresetId.CREATE_COLUMNS
+    )
+    id = Post.create_code_preset(code_preset)
+    return id
 
 
 @pytest.fixture

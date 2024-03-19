@@ -7,6 +7,7 @@ from server import Routers
 from route_datasets import RoutePaths as DatasetRoutePaths
 from route_model import RoutePaths as ModelRoutePaths
 from route_backtest import RoutePaths as BacktestRoutePaths
+from route_code_preset import RoutePaths as CodePresetRoutePaths
 
 
 class FixturePaths:
@@ -18,6 +19,10 @@ class Constants:
     TESTS_FOLDER = "/tests"
     BIG_TEST_FILE = "big_testfile.csv"
     EXAMPLE_MODEL_NAME = "Example model"
+
+
+class CodePresetId:
+    CREATE_COLUMNS = "create_columns"
 
 
 class DatasetMetadata:
@@ -135,6 +140,10 @@ class URL:
         return cls.BASE_URL + Routers.BACKTEST
 
     @classmethod
+    def _code_preset_route(cls):
+        return cls.BASE_URL + Routers.CODE_PRESET
+
+    @classmethod
     def get_model_by_name(cls, model_name):
         return cls._models_route() + ModelRoutePaths.FETCH_MODEL.format(
             model_name=model_name
@@ -145,6 +154,10 @@ class URL:
         return cls._models_route() + ModelRoutePaths.ALL_METADATA_BY_MODEL_NAME.format(
             model_name=model_name
         )
+
+    @classmethod
+    def create_code_preset(cls):
+        return cls._code_preset_route() + CodePresetRoutePaths.CODE_PRESET
 
     @classmethod
     def t_get_tables(cls):
@@ -181,6 +194,17 @@ class URL:
     def get_datasets_manual_backtests(cls, dataset_id: int):
         return cls._backtest_route() + BacktestRoutePaths.FETCH_BY_DATASET_ID.format(
             dataset_id=dataset_id
+        )
+
+    @classmethod
+    def get_preset_by_id(cls, id):
+        return cls._code_preset_route() + CodePresetRoutePaths.BY_ID.format(id=id)
+
+    @classmethod
+    def get_presets_by_category(cls, category):
+        return (
+            cls._code_preset_route()
+            + CodePresetRoutePaths.FETCH_ALL_BY_CATEGORY.format(category=category)
         )
 
     @classmethod
