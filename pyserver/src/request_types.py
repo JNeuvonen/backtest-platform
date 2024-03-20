@@ -55,6 +55,7 @@ class BodyDeleteDatasets(BaseModel):
 class BodyCreateCodePreset(BaseModel):
     code: str
     category: str
+    name: str
 
 
 class BodyCreateManualBacktest(BaseModel):

@@ -144,7 +144,9 @@ def fixt_manual_backtest(fixt_btc_small_1h):
 @pytest.fixture
 def fixt_create_code_preset():
     code_preset = create_code_preset_body(
-        code="Hello world", category=CodePresetId.CREATE_COLUMNS
+        code="Hello world",
+        category=CodePresetId.CREATE_COLUMNS,
+        name="code_preset_name",
     )
     id = Post.create_code_preset(code_preset)
     return id

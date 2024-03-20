@@ -8,7 +8,8 @@ class CodePreset(Base):
     __tablename__ = "code_preset"
     id = Column(Integer, primary_key=True)
     code = Column(String)
-    category = Column(String, unique=True)
+    category = Column(String)
+    name = Column(String)
 
 
 class CodePresetQuery:

@@ -104,8 +104,8 @@ def create_manual_backtest(
     }
 
 
-def create_code_preset_body(code: str, category: str):
-    return {"code": code, "category": category}
+def create_code_preset_body(code: str, category: str, name: str):
+    return {"code": code, "category": category, "name": name}
 
 
 def open_long_trade_cond_basic():
