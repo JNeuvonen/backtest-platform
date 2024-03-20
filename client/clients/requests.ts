@@ -17,6 +17,7 @@ import {
   TrainJob,
 } from "./queries/response-types";
 import { save } from "@tauri-apps/api/dialog";
+import { CodePreset } from "../components/SaveCodePresetPopover";
 
 export async function fetchDatasets() {
   const url = URLS.tables;
@@ -316,5 +317,14 @@ export async function fetchBacktestById(backtestId: number) {
   if (res.status === 200) {
     return res.res;
   }
+  return res;
+}
+
+export async function createCodePreset(body: CodePreset) {
+  const res = await buildRequest({
+    method: "POST",
+    url: URLS.createCodePreset(),
+    payload: body,
+  });
   return res;
 }
