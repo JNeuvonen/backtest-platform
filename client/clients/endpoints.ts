@@ -19,6 +19,9 @@ const API = {
   backtest: {
     root: "/backtest",
   },
+  code_preset: {
+    root: "/code-preset",
+  },
 };
 
 export const BASE_URL = CONSTANTS.base_url;
@@ -95,4 +98,5 @@ export const URLS = {
   downloadDataset: (datasetName: string) =>
     BASE_URL + API.dataset.root + `/${datasetName}/download`,
   backtest: BASE_URL + API.backtest.root,
+  createCodePreset: () => BASE_URL + API.code_preset.root,
 };
