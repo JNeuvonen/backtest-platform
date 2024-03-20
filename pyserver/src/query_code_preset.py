@@ -1,5 +1,5 @@
 from typing import Dict
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, UniqueConstraint
 from log import LogExceptionContext
 from orm import Base, Session
 
@@ -10,6 +10,7 @@ class CodePreset(Base):
     code = Column(String)
     category = Column(String)
     name = Column(String)
+    __table_args__ = (UniqueConstraint("category", "name", name="_category_name_uc"),)
 
 
 class CodePresetQuery:

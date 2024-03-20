@@ -2,6 +2,8 @@ import { Editor, EditorProps, OnMount } from "@monaco-editor/react";
 import React, { CSSProperties } from "react";
 import { CodePresets } from "./CodePresets";
 import { FormControl, FormLabel } from "@chakra-ui/react";
+import { SaveCodePreset } from "./SaveCodePresetPopover";
+import { SelectCodePreset } from "./CodePresetPopover";
 
 interface Props {
   code: string;
@@ -12,10 +14,12 @@ interface Props {
   height?: string;
   fontSize?: number;
   editorDidMount?: OnMount;
-  label?: string;
+  label?: JSX.Element | string;
   readOnly?: boolean;
   disableCodePresets?: boolean;
   autoFocus?: boolean;
+  usePresets?: boolean;
+  presetCategory?: string;
 }
 
 export const CodeEditor = ({
@@ -30,6 +34,8 @@ export const CodeEditor = ({
   readOnly = false,
   disableCodePresets = false,
   autoFocus = true,
+  usePresets = true,
+  presetCategory,
 }: Props) => {
   const handleCodeChange = (newValue: string | undefined) => {
     if (setCode) {
@@ -66,7 +72,32 @@ export const CodeEditor = ({
         }}
       >
         <FormControl style={codeContainerStyles}>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div>{label}</div>
+              {usePresets && (
+                <>
+                  <SelectCodePreset
+                    presetCategory={presetCategory || ""}
+                    onPresetSelect={(selectedPreset: string) => {
+                      if (setCode) {
+                        setCode(selectedPreset);
+                      }
+                    }}
+                  />
+                  <SaveCodePreset
+                    presetCategory={presetCategory || ""}
+                    code={code}
+                    onSaveCodePreset={(selectedPreset: string) => {
+                      if (setCode) {
+                        setCode(selectedPreset);
+                      }
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </FormLabel>
           <Editor
             height={height}
             defaultLanguage="python"

@@ -124,6 +124,10 @@ export const DOM_IDS = {
   select_null_fill_strat: "select-null-fill-strat",
 };
 
+export const CODE_PRESET_CATEGORY = {
+  backtest_long_cond: "backtest_long_cond",
+};
+
 export class CodeHelper {
   indentLevel: number;
   code: string;

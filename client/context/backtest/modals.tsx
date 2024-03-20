@@ -12,10 +12,7 @@ import {
 import { createManualBacktest } from "../../clients/requests";
 import { usePathParams } from "../../hooks/usePathParams";
 import { useDatasetQuery } from "../../clients/queries/queries";
-import { Spinner, useDisclosure, useToast } from "@chakra-ui/react";
-import { ChakraPopover } from "../../components/chakra/popover";
-import { getDatasetColumnOptions } from "../../utils/dataset";
-import { SelectColumnPopover } from "../../components/SelectTargetColumnPopover";
+import { Spinner, useToast } from "@chakra-ui/react";
 
 type PathParams = {
   datasetName: string;

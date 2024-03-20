@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { CREATE_COLUMNS_DEFAULT } from "../utils/code";
 import {
+  Button,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -9,13 +10,14 @@ import {
   NumberInputStepper,
   Spinner,
   Switch,
+  Tooltip,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { WithLabel } from "./form/WithLabel";
 import { ChakraModal } from "./chakra/modal";
 import { Text } from "@chakra-ui/react";
-import { TEXT_VARIANTS } from "../theme";
+import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../theme";
 import { useDatasetQuery } from "../clients/queries/queries";
 import { usePathParams } from "../hooks/usePathParams";
 import { OverflopTooltip } from "./OverflowTooltip";
@@ -26,6 +28,10 @@ import { ChakraPopover } from "./chakra/popover";
 import { SelectColumnPopover } from "./SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../utils/dataset";
 import { Dataset } from "../clients/queries/response-types";
+import { CodePresetPopover } from "./CodePresetPopover";
+import { VscListSelection } from "react-icons/vsc";
+import { IoIosSave } from "react-icons/io";
+import { CODE_PRESET_CATEGORY } from "../utils/constants";
 
 type PathParams = {
   datasetName: string;
@@ -212,10 +218,11 @@ export const CreateBacktestDrawer = (props: Props) => {
           setCode={setOpenLongTradeCode}
           style={{ marginTop: "16px" }}
           fontSize={13}
-          label="Long condition"
+          label={"Long condition"}
           disableCodePresets={true}
           codeContainerStyles={{ width: "100%" }}
           height={"250px"}
+          presetCategory={CODE_PRESET_CATEGORY.backtest_long_cond}
         />
       </div>
 
