@@ -142,6 +142,8 @@ export interface ColumnResponse {
   res: {
     column: Column;
     timeseries_col: string | null;
+    price_col: string | null;
+    linear_regr_img_b64: string;
   };
   status: number;
 }
