@@ -127,6 +127,7 @@ export const DOM_IDS = {
 export const CODE_PRESET_CATEGORY = {
   backtest_long_cond: "backtest_long_condition",
   backtest_close_long_ccond: "backtest_close_long_condition",
+  backtest_create_columns: "backtest_create_columns",
 };
 
 export class CodeHelper {
