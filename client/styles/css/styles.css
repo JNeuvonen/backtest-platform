@@ -86,6 +86,7 @@
 
 .link-default {
   color: #097bed;
+  cursor: pointer;
 }
 
 .form-submit-bar {

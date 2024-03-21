@@ -145,8 +145,6 @@ export const BacktestDatagrid = (props: Props) => {
     setRowData(createDatarowItems(backtests));
   }, [backtests]);
 
-  console.log(backtests);
-
   return (
     <div
       className="ag-theme-alpine-dark"

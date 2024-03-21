@@ -32,6 +32,7 @@ import { CodePresetPopover } from "./CodePresetPopover";
 import { VscListSelection } from "react-icons/vsc";
 import { IoIosSave } from "react-icons/io";
 import { CODE_PRESET_CATEGORY } from "../utils/constants";
+import { ColumnInfoModal } from "./ColumnInfoModal";
 
 type PathParams = {
   datasetName: string;
@@ -99,6 +100,8 @@ export const CreateBacktestDrawer = (props: Props) => {
 
   const columnsModal = useDisclosure();
   const runPythonModal = useDisclosure();
+  const columnDetailsModal = useDisclosure();
+  const [selectedColumnName, setSelectedColumnName] = useState("");
 
   const { data, refetch: refetchDataset } = useDatasetQuery(datasetName);
   const toast = useToast();
@@ -146,7 +149,14 @@ export const CreateBacktestDrawer = (props: Props) => {
         <div id={"COLUMN_MODAL"}>
           {data.columns.map((item, idx) => {
             return (
-              <div key={idx}>
+              <div
+                key={idx}
+                className="link-default"
+                onClick={() => {
+                  setSelectedColumnName(item);
+                  columnDetailsModal.onOpen();
+                }}
+              >
                 <OverflopTooltip text={item} containerId="COLUMN_MODAL">
                   <div>{item}</div>
                 </OverflopTooltip>
@@ -154,6 +164,18 @@ export const CreateBacktestDrawer = (props: Props) => {
             );
           })}
         </div>
+        {selectedColumnName && (
+          <ChakraModal
+            {...columnDetailsModal}
+            title={`Column ${selectedColumnName}`}
+            modalContentStyle={{ maxWidth: "80%", marginTop: "5%" }}
+          >
+            <ColumnInfoModal
+              datasetName={datasetName}
+              columnName={selectedColumnName}
+            />
+          </ChakraModal>
+        )}
       </ChakraModal>
 
       <ChakraPopover

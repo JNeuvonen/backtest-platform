@@ -147,6 +147,8 @@ export interface ColumnResponse {
 }
 
 export interface Column {
+  corr_to_price: number | null;
+  corrs_to_shifted_prices: { label: string; corr: number }[];
   rows: Array<number[]>;
   null_count: number;
   stats?: StatsCol;
