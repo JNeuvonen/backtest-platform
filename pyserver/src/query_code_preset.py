@@ -42,3 +42,9 @@ class CodePresetQuery:
                     session.query(CodePreset).filter(CodePreset.id == id).one_or_none()
                 )
                 return code_preset
+
+    @staticmethod
+    def fetch_all():
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(CodePreset).all()

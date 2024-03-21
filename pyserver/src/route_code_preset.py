@@ -11,6 +11,7 @@ router = APIRouter()
 class RoutePaths:
     CODE_PRESET = "/"
     FETCH_ALL_BY_CATEGORY = "/all/{category}"
+    FETCH_ALL = "/all"
     BY_ID = "/{id}"
 
 
@@ -26,6 +27,13 @@ async def route_create_code_preset(body: BodyCreateCodePreset):
     with HttpResponseContext():
         id = CodePresetQuery.create_entry(body.model_dump())
         return {"id": id}
+
+
+@router.get(RoutePaths.FETCH_ALL)
+async def route_fetch_all_code_presets():
+    with HttpResponseContext():
+        code_presets = CodePresetQuery.fetch_all()
+        return {"data": code_presets}
 
 
 @router.get(RoutePaths.BY_ID)
