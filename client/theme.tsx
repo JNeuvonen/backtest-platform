@@ -15,6 +15,10 @@ export const BUTTON_VARIANTS = {
   grey2: "grey2",
 };
 
+export const CARD_VARIANTS = {
+  on_modal: "on_modal",
+};
+
 export const TEXT_VARIANTS = {
   clickable: "clickable",
 };
