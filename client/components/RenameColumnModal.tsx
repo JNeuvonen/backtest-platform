@@ -11,6 +11,7 @@ import { URLS } from "../clients/endpoints";
 import { ColumnChart } from "./charts/column";
 import { ChakraModal } from "./chakra/modal";
 import { ConfirmSwitch } from "./form/ConfirmSwitch";
+import { createColumnChartData } from "../utils/dataset";
 
 interface ColumnModalContentProps {
   datasetName: string;
@@ -123,27 +124,6 @@ export const ColumnModal = ({
     setIsOpen: renameSetIsOpen,
   } = useModal();
 
-  const massageDataForChart = (
-    rows: number[][],
-    kline_open_time: number[][]
-  ) => {
-    const itemCount = rows.length;
-    const skipItems = Math.max(1, Math.floor(itemCount / 1000));
-    const ret: object[] = [];
-
-    for (let i = 0; i < itemCount; i++) {
-      if (i % skipItems === 0) {
-        const item = rows[i];
-        const rowObject = {};
-        rowObject[columnName] = item[0];
-        rowObject["kline_open_time"] = kline_open_time[i][0];
-        ret.push(rowObject);
-      }
-    }
-
-    return ret;
-  };
-
   const changeTimeseriesColumn = async (newValue: boolean) => {
     setIsTimeseriesCol(newValue);
 
@@ -212,7 +192,7 @@ export const ColumnModal = ({
     }
     return (
       <ColumnChart
-        data={massageDataForChart(rows, kline_open_time)}
+        data={createColumnChartData(rows, columnName, kline_open_time)}
         xAxisDataKey={"kline_open_time"}
         lines={[{ dataKey: columnName, stroke: "red" }]}
       />

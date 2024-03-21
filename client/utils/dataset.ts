@@ -39,3 +39,27 @@ export const convertColumnsToAgGridFormat = (
   });
   return ret;
 };
+
+export const createColumnChartData = (
+  rows: number[],
+  columnName: string,
+  kline_open_time: number[],
+  price_data: number[]
+) => {
+  const itemCount = rows.length;
+  const skipItems = Math.max(1, Math.floor(itemCount / 1000));
+  const ret: object[] = [];
+
+  for (let i = 0; i < itemCount; i++) {
+    if (i % skipItems === 0) {
+      const item = rows[i];
+      const rowObject = {};
+      rowObject[columnName] = item;
+      rowObject["kline_open_time"] = kline_open_time[i];
+      rowObject["price"] = price_data[i];
+      ret.push(rowObject);
+    }
+  }
+
+  return ret;
+};

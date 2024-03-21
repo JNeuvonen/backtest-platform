@@ -150,11 +150,13 @@ export interface ColumnResponse {
 
 export interface Column {
   corr_to_price: number | null;
+  price_data: number[];
+  target_data: number[];
   corrs_to_shifted_prices: { label: string; corr: number }[];
-  rows: Array<number[]>;
+  rows: number[];
   null_count: number;
   stats?: StatsCol;
-  kline_open_time: Array<number[]>;
+  kline_open_time: number[];
 }
 
 export interface BacktestBalance {

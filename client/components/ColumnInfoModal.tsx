@@ -6,14 +6,19 @@ import {
   Heading,
   Spinner,
   Stat,
-  StatArrow,
-  StatHelpText,
   StatLabel,
   StatNumber,
 } from "@chakra-ui/react";
 import { CARD_VARIANTS } from "../theme";
-import { COLOR_CONTENT_PRIMARY } from "../utils/colors";
-import { roundNumberDropRemaining } from "../utils/number";
+import { COLOR_BRAND_SECONDARY, COLOR_CONTENT_PRIMARY } from "../utils/colors";
+import {
+  getNormalDistributionItems,
+  roundNumberDropRemaining,
+} from "../utils/number";
+import { ColumnChart } from "./charts/column";
+import { createColumnChartData } from "../utils/dataset";
+import { WithLabel } from "./form/WithLabel";
+import { GenericBarChart } from "./charts/BarChart";
 
 interface Props {
   datasetName: string;
@@ -36,8 +41,6 @@ export const ColumnInfoModal = (props: Props) => {
 
   if (!columnData) return <Spinner />;
 
-  console.log(linearRegrPltSrc);
-
   return (
     <div>
       <ChakraCard
@@ -47,7 +50,7 @@ export const ColumnInfoModal = (props: Props) => {
         <Box display={"flex"} alignItems={"center"} gap={"16px"}>
           <Box>
             <Stat color={COLOR_CONTENT_PRIMARY}>
-              <StatLabel>Corr to price</StatLabel>
+              <StatLabel>Corr to target</StatLabel>
               <StatNumber>
                 {columnData.corr_to_price
                   ? String(
@@ -132,6 +135,38 @@ export const ColumnInfoModal = (props: Props) => {
           <img src={linearRegrPltSrc} alt="Linear Regression Plot" />
         )}
       </Box>
+
+      <Box marginTop={"32px"}>
+        <ColumnChart
+          data={createColumnChartData(
+            columnData.rows,
+            columnName,
+            columnData.kline_open_time,
+            columnData.price_data
+          )}
+          xAxisDataKey={"kline_open_time"}
+          lines={[
+            { dataKey: columnName, stroke: "red", yAxisId: "left" },
+            {
+              dataKey: "price",
+              stroke: COLOR_BRAND_SECONDARY,
+              yAxisId: "right",
+            },
+          ]}
+        />
+      </Box>
+
+      <WithLabel
+        label="Normal distribution"
+        containerStyles={{ marginTop: "16px" }}
+      >
+        <GenericBarChart
+          data={getNormalDistributionItems(columnData.rows)}
+          yAxisKey="count"
+          xAxisKey="label"
+          containerStyles={{ marginTop: "16px" }}
+        />
+      </WithLabel>
     </div>
   );
 };
