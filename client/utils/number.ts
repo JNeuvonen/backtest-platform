@@ -1,15 +1,29 @@
 export const roundNumberDropRemaining = (
   num: number,
-  decimalPlaces: number
-): number => {
+  decimalPlaces: number,
+  format: boolean = false
+): string => {
   const factor = Math.pow(10, decimalPlaces);
   const rounded = Math.floor(num * factor) / factor;
 
   if (rounded === 0 && decimalPlaces < 8) {
-    return roundNumberDropRemaining(num, decimalPlaces + 1);
+    return roundNumberDropRemaining(num, decimalPlaces + 1, format);
   }
 
-  return rounded;
+  if (format) {
+    const absRounded = Math.abs(rounded);
+    const suffix = rounded >= 0 ? "" : "-";
+
+    if (absRounded >= 1e9) {
+      return `${suffix}${(absRounded / 1e9).toFixed(2)}B`;
+    } else if (absRounded >= 1e6) {
+      return `${suffix}${(absRounded / 1e6).toFixed(2)}M`;
+    } else if (absRounded >= 1e3) {
+      return `${suffix}${(absRounded / 1e3).toFixed(2)}K`;
+    }
+  }
+
+  return rounded.toString();
 };
 
 export const getNumberArrayMean = (numbers: number[]) => {
