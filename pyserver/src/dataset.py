@@ -16,11 +16,14 @@ from query_dataset import DatasetQuery
 from query_model import ModelQuery
 
 
-def get_select_columns_str(columns: List[str]):
+def get_select_columns_str(columns: List[str | None]):
     columns_str = ""
     idx = 0
     columns_len = len(columns) - 1
     for item in columns:
+        if item is None:
+            continue
+
         if idx != columns_len:
             columns_str += item + ", "
         else:
@@ -129,7 +132,7 @@ def read_dataset_to_mem(dataset_name: str):
         return df
 
 
-def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str]):
+def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str | None]):
     columns_str = get_select_columns_str(columns)
     try:
         with sqlite3.connect(db_path) as conn:

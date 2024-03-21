@@ -117,8 +117,15 @@ async def route_update_dataset(dataset_name: str, body: DatasetBody):
 async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dict:
     with HttpResponseContext():
         timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
-        col_info = get_column_detailed_info(dataset_name, column_name, timeseries_col)
-        return {"column": col_info, "timeseries_col": timeseries_col}
+        price_col = DatasetQuery.get_price_col(dataset_name)
+        col_info = get_column_detailed_info(
+            dataset_name, column_name, timeseries_col, price_col
+        )
+        return {
+            "column": col_info,
+            "timeseries_col": timeseries_col,
+            "price_col": price_col,
+        }
 
 
 class ColumnsToDataset(BaseModel):

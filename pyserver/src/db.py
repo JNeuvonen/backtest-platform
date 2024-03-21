@@ -3,8 +3,10 @@ import sqlite3
 import math
 from typing import List
 
+from starlette.status import HTTP_417_EXPECTATION_FAILED
 
-from constants import AppConstants, DomEventChannels, NullFillStrategy
+
+from constants import AppConstants, CandleSize, DomEventChannels, NullFillStrategy
 from dataset import (
     combine_datasets,
     df_fill_nulls,
@@ -370,41 +372,169 @@ def exec_sql(db_path: str, sql_statement: str):
         db.close()
 
 
+def fetch_column_and_safe_float_convert(col_name: str | None, table_name: str):
+    if col_name is None:
+        return None
+
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(f"SELECT {col_name} from {table_name}")
+        except Exception as e:
+            print(f"Database Error: {e}")
+            return None
+        return [safe_float_convert(row[0]) for row in cursor.fetchall()]
+
+
+def timedelta_to_candlesize(seconds):
+    if seconds == 60:
+        return CandleSize.ONE_MINUTE
+    elif seconds == 180:
+        return CandleSize.THREE_MINUTES
+    elif seconds == 300:
+        return CandleSize.FIVE_MINUTES
+    elif seconds == 900:
+        return CandleSize.FIFTEEN_MINUTES
+    elif seconds == 1800:
+        return CandleSize.THIRTY_MINUTES
+    elif seconds == 3600:
+        return CandleSize.ONE_HOUR
+    elif seconds == 7200:
+        return CandleSize.TWO_HOURS
+    elif seconds == 14400:
+        return CandleSize.FOUR_HOURS
+    elif seconds == 21600:
+        return CandleSize.SIX_HOURS
+    elif seconds == 28800:
+        return CandleSize.EIGHT_HOURS
+    elif seconds == 43200:
+        return CandleSize.TWELVE_HOURS
+    elif seconds == 86400:
+        return CandleSize.ONE_DAY
+    elif seconds == 259200:
+        return CandleSize.THREE_DAYS
+    elif seconds == 604800:
+        return CandleSize.ONE_WEEK
+    elif seconds == 2592000:
+        return CandleSize.ONE_MONTH
+    else:
+        return None
+
+
+def get_df_corr(df, col_1, col_2):
+    if col_1 == col_2:
+        return 1
+
+    try:
+        corr = df[col_1].corr(df[col_2]) if col_1 != col_2 else None
+    except Exception:
+        corr = None
+
+    return corr
+
+
+def get_df_candle_size(df, timeseries_col_name):
+    non_null_timestamps = df.loc[df[timeseries_col_name].notnull(), timeseries_col_name]
+    candles_time_delta = non_null_timestamps.iloc[1] - non_null_timestamps.iloc[0]
+    return timedelta_to_candlesize(candles_time_delta / 1000)
+
+
+def df_generate_future_prices_cols(df, candles_time_delta, price_col_name):
+    with LogExceptionContext():
+        if price_col_name is None:
+            return
+
+        def helper_func(list_of_shifts: List[int]):
+            for shift in list_of_shifts:
+                df[f"PRICE_SHIFT_{shift}"] = df[price_col_name].shift(shift * -1)
+
+        if candles_time_delta == CandleSize.ONE_HOUR:
+            helper_func([7, 24, 168])
+
+        if candles_time_delta == CandleSize.ONE_DAY:
+            helper_func([1, 7, 30, 90])
+
+        if candles_time_delta == CandleSize.FIVE_MINUTES:
+            helper_func([5, 12, 24, 12 * 24, 12 * 168])
+
+
+def get_df_cols_including_str(df, include_str):
+    return [col for col in df.columns if include_str in col]
+
+
+def get_correlations_to_shifted_prices(df, col_name):
+    ret = []
+    price_shift_cols = get_df_cols_including_str(df, "PRICE_SHIFT")
+
+    for item in price_shift_cols:
+        corr = get_df_corr(df, col_name, item)
+        ret.append({"label": item, "corr": corr})
+
+    return ret
+
+
+def get_correlation_data(df, col_name, timeseries_col_name, price_col_name):
+    if price_col_name is None:
+        return None, []
+
+    with LogExceptionContext():
+        try:
+            corr_to_price = get_df_corr(df, col_name, price_col_name)
+
+            candles_time_delta = get_df_candle_size(df, timeseries_col_name)
+
+            if price_col_name != col_name and timeseries_col_name != col_name:
+                df_generate_future_prices_cols(df, candles_time_delta, price_col_name)
+
+            corrs_to_shifted_prices = (
+                get_correlations_to_shifted_prices(df, col_name)
+                if price_col_name != col_name and col_name != timeseries_col_name
+                else []
+            )
+            return corr_to_price, corrs_to_shifted_prices
+        except Exception:
+            return None, []
+
+
 def get_column_detailed_info(
-    table_name: str, col_name: str, timeseries_col_name: str | None
+    table_name: str,
+    col_name: str,
+    timeseries_col_name: str | None,
+    price_col_name: str | None,
 ):
     with LogExceptionContext():
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
             cursor = conn.cursor()
 
-            try:
-                cursor.execute(f'SELECT "{col_name}" from {table_name}')
-            except Exception as e:
-                print(f"Database Error: {e}")
-                return None
-
-            rows = [(safe_float_convert(row[0]),) for row in cursor.fetchall()]
+            rows = fetch_column_and_safe_float_convert(col_name, table_name)
             null_count = get_col_null_count(cursor, table_name, col_name)
             stats = get_col_stats(cursor, table_name, col_name)
 
-            if timeseries_col_name is not None:
-                try:
-                    cursor.execute(f"SELECT {timeseries_col_name} from {table_name}")
-                except Exception as e:
-                    print(f"Database Error: {e}")
-                    return None
+            kline_open_time = fetch_column_and_safe_float_convert(
+                timeseries_col_name, table_name
+            )
+            price_data = fetch_column_and_safe_float_convert(price_col_name, table_name)
 
-                kline_open_time = [
-                    safe_float_convert(row[0]) for row in cursor.fetchall()
-                ]
-            else:
-                kline_open_time = None
+            df = read_columns_to_mem(
+                AppConstants.DB_DATASETS,
+                table_name,
+                [col_name, timeseries_col_name, price_col_name],
+            )
+
+            assert df is not None, "Could not read DF to the memory"
+
+            corr_to_price, corrs_to_shifted_prices = get_correlation_data(
+                df, col_name, timeseries_col_name, price_col_name
+            )
 
             return {
                 "rows": rows,
                 "null_count": null_count,
                 "stats": stats,
                 "kline_open_time": kline_open_time,
+                "price_data": price_data,
+                "corr_to_price": corr_to_price,
+                "corrs_to_shifted_prices": corrs_to_shifted_prices,
             }
 
 
