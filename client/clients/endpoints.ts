@@ -99,4 +99,5 @@ export const URLS = {
     BASE_URL + API.dataset.root + `/${datasetName}/download`,
   backtest: BASE_URL + API.backtest.root,
   createCodePreset: () => BASE_URL + API.code_preset.root,
+  fetchCodePresets: () => BASE_URL + API.code_preset.root + "/all",
 };
