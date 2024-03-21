@@ -236,6 +236,7 @@ export const CreateBacktestDrawer = (props: Props) => {
           disableCodePresets={true}
           codeContainerStyles={{ width: "100%" }}
           height={"250px"}
+          presetCategory={CODE_PRESET_CATEGORY.backtest_close_long_ccond}
         />
       </div>
 

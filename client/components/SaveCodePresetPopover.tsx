@@ -6,6 +6,7 @@ import { IoIosSave } from "react-icons/io";
 import { ChakraInput } from "./chakra/input";
 import { FormSubmitBar } from "./form/FormSubmitBar";
 import { createCodePreset } from "../clients/requests";
+import { useCodePresets } from "../clients/queries/queries";
 
 interface Props {
   presetCategory: string;
@@ -13,7 +14,7 @@ interface Props {
   code: string;
 }
 
-export interface CodePreset {
+export interface CodePresetBody {
   category: string;
   name: string;
   code: string;
@@ -24,6 +25,7 @@ export const SaveCodePreset = (props: Props) => {
   const saveCodePresetPopover = useDisclosure();
   const [codePresetName, setCodePresetName] = useState("");
   const toast = useToast();
+  const codePresetsQuery = useCodePresets();
 
   const saveCodePreset = async () => {
     const body = {
@@ -42,6 +44,7 @@ export const SaveCodePreset = (props: Props) => {
         isClosable: true,
       });
       saveCodePresetPopover.onClose();
+      codePresetsQuery.refetch();
     }
   };
 

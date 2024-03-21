@@ -3,7 +3,7 @@ import React, { CSSProperties } from "react";
 import { CodePresets } from "./CodePresets";
 import { FormControl, FormLabel } from "@chakra-ui/react";
 import { SaveCodePreset } from "./SaveCodePresetPopover";
-import { SelectCodePreset } from "./CodePresetPopover";
+import { SelectCodePreset } from "./SelectCodePresetPopover";
 
 interface Props {
   code: string;
