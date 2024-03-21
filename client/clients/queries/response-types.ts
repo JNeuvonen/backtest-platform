@@ -217,3 +217,10 @@ export interface BacktestsByDataset {
   };
   status: number;
 }
+
+export interface CodePreset {
+  id: number;
+  code: string;
+  category: string;
+  name: string;
+}

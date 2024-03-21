@@ -7,6 +7,7 @@ import {
   fetchAllTrainingMetadataForModel,
   fetchBacktestById,
   fetchBacktestsByDataset,
+  fetchCodePresets,
   fetchColumn,
   fetchDataset,
   fetchDatasetModels,
@@ -18,6 +19,7 @@ import {
 import {
   BacktestObject,
   BinanceTickersResponse,
+  CodePreset,
   ColumnResponse,
   Dataset,
   DatasetMetadata,
@@ -126,5 +128,12 @@ export function useBacktestById(
   return useQuery<FetchBacktestByIdRes | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_backtest_by_id],
     queryFn: () => fetchBacktestById(backtestId),
+  });
+}
+
+export function useCodePresets(): UseQueryResult<CodePreset[] | null, unknown> {
+  return useQuery<CodePreset[] | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_code_presets],
+    queryFn: () => fetchCodePresets(),
   });
 }
