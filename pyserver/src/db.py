@@ -1,7 +1,11 @@
 import logging
 import sqlite3
 import math
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+import pandas as pd
 from typing import List
+from io import BytesIO
 
 from starlette.status import HTTP_417_EXPECTATION_FAILED
 
@@ -496,6 +500,47 @@ def get_correlation_data(df, col_name, timeseries_col_name, price_col_name):
             return None, []
 
 
+def get_linear_regression_analysis(
+    table_name: str, col_name: str, target_col: str | None
+) -> BytesIO | None:
+    try:
+        if target_col is None:
+            return None
+
+        df = read_columns_to_mem(
+            AppConstants.DB_DATASETS,
+            table_name,
+            [col_name, target_col],
+        )
+
+        assert df is not None, "Could not read DF to the memory"
+
+        df.dropna(inplace=True)
+
+        X = df[[col_name]]
+        Y = df[target_col]
+        X_with_constant = sm.add_constant(X)
+
+        model = sm.OLS(Y, X_with_constant).fit()
+
+        buffer = BytesIO()
+        plt.scatter(X, Y, alpha=0.5)
+        plt.plot(X, model.predict(X_with_constant), color="red")
+        plt.title(f"{col_name} vs {target_col}")
+        plt.xlabel(col_name)
+        plt.ylabel(target_col)
+        plt.savefig(buffer, format="png")
+        plt.close()
+
+        buffer.seek(0)
+        print(model.summary())
+        print(model.params)
+        return buffer
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
+
 def get_column_detailed_info(
     table_name: str,
     col_name: str,
@@ -526,6 +571,8 @@ def get_column_detailed_info(
             corr_to_price, corrs_to_shifted_prices = get_correlation_data(
                 df, col_name, timeseries_col_name, price_col_name
             )
+
+            get_linear_regression_analysis(table_name, col_name, price_col_name)
 
             return {
                 "rows": rows,

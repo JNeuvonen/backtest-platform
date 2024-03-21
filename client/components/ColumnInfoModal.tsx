@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useColumnQuery } from "../clients/queries/queries";
 import { ChakraCard } from "./chakra/Card";
 import {
@@ -23,10 +23,20 @@ interface Props {
 export const ColumnInfoModal = (props: Props) => {
   const { datasetName, columnName } = props;
   const columnDetailedQuery = useColumnQuery(datasetName, columnName);
+  const [linearRegrPltSrc, setLinearRegrPltSrc] = useState("");
 
   const columnData = columnDetailedQuery.data?.res.column;
 
+  useEffect(() => {
+    if (columnDetailedQuery.data?.res) {
+      const data = columnDetailedQuery.data?.res;
+      setLinearRegrPltSrc(`data:image/png;base64,${data.linear_regr_img_b64}`);
+    }
+  }, [columnDetailedQuery.data]);
+
   if (!columnData) return <Spinner />;
+
+  console.log(linearRegrPltSrc);
 
   return (
     <div>
@@ -115,57 +125,13 @@ export const ColumnInfoModal = (props: Props) => {
             </Stat>
           </Box>
         </Box>
-
-        <Box marginTop={"16px"}>
-          <Heading size="s">Correlation to future prices</Heading>
-          <Box
-            display={"flex"}
-            alignItems={"center"}
-            gap={"16px"}
-            marginTop={"8px"}
-          >
-            {columnData.corrs_to_shifted_prices.map((item) => {
-              if (
-                columnData.corr_to_price === null ||
-                columnData.corr_to_price === undefined
-              )
-                return null;
-
-              const comparedToDefaultCorr = Math.abs(
-                item.corr / columnData.corr_to_price - 1
-              );
-              const isLarger = item.corr > columnData.corr_to_price;
-
-              return (
-                <Box key={item.label}>
-                  <Stat color={COLOR_CONTENT_PRIMARY}>
-                    <StatLabel>{item.label}</StatLabel>
-                    <StatNumber>
-                      {columnData.stats
-                        ? String(
-                            roundNumberDropRemaining(item.corr * 100, 2, true)
-                          ) + "%"
-                        : "N/A"}
-                    </StatNumber>
-                    <StatHelpText>
-                      <StatArrow type={isLarger ? "increase" : "decrease"} />
-                      {columnData.stats
-                        ? String(
-                            roundNumberDropRemaining(
-                              comparedToDefaultCorr * 100,
-                              2,
-                              true
-                            ) + "%"
-                          )
-                        : "N/A"}
-                    </StatHelpText>
-                  </Stat>
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
       </ChakraCard>
+
+      <Box marginTop={"16px"}>
+        {linearRegrPltSrc && (
+          <img src={linearRegrPltSrc} alt="Linear Regression Plot" />
+        )}
+      </Box>
     </div>
   );
 };

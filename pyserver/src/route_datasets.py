@@ -1,5 +1,6 @@
 import os
 import asyncio
+import base64
 
 from typing import List
 
@@ -20,11 +21,12 @@ from db import (
     get_dataset_pagination,
     get_dataset_table,
     get_dataset_tables,
+    get_linear_regression_analysis,
     remove_table,
     rename_column,
     rename_table,
 )
-from query_dataset import DatasetBody, DatasetQuery
+from query_dataset import Dataset, DatasetBody, DatasetQuery
 from query_model import ModelQuery
 from request_types import (
     BodyDeleteDatasets,
@@ -118,13 +120,24 @@ async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dic
     with HttpResponseContext():
         timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
         price_col = DatasetQuery.get_price_col(dataset_name)
+        target_col = DatasetQuery.get_target_col(dataset_name)
+
         col_info = get_column_detailed_info(
-            dataset_name, column_name, timeseries_col, price_col
+            dataset_name, column_name, timeseries_col, target_col
+        )
+        linear_regr_img_buff = get_linear_regression_analysis(
+            dataset_name, column_name, target_col
+        )
+        linear_regr_img_b64 = (
+            base64.b64encode(linear_regr_img_buff.getvalue()).decode("utf-8")
+            if linear_regr_img_buff is not None
+            else None
         )
         return {
             "column": col_info,
             "timeseries_col": timeseries_col,
             "price_col": price_col,
+            "linear_regr_img_b64": linear_regr_img_b64,
         }
 
 
