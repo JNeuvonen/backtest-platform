@@ -123,7 +123,7 @@ async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dic
         target_col = DatasetQuery.get_target_col(dataset_name)
 
         col_info = get_column_detailed_info(
-            dataset_name, column_name, timeseries_col, target_col
+            dataset_name, column_name, timeseries_col, target_col, price_col
         )
         linear_regr_img_buff = get_linear_regression_analysis(
             dataset_name, column_name, target_col

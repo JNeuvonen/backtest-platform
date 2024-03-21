@@ -545,7 +545,8 @@ def get_column_detailed_info(
     table_name: str,
     col_name: str,
     timeseries_col_name: str | None,
-    price_col_name: str | None,
+    target_col: str | None,
+    price_col: str | None,
 ):
     with LogExceptionContext():
         with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
@@ -558,21 +559,22 @@ def get_column_detailed_info(
             kline_open_time = fetch_column_and_safe_float_convert(
                 timeseries_col_name, table_name
             )
-            price_data = fetch_column_and_safe_float_convert(price_col_name, table_name)
+            target_data = fetch_column_and_safe_float_convert(target_col, table_name)
+            price_data = fetch_column_and_safe_float_convert(price_col, table_name)
 
             df = read_columns_to_mem(
                 AppConstants.DB_DATASETS,
                 table_name,
-                [col_name, timeseries_col_name, price_col_name],
+                [col_name, timeseries_col_name, target_col],
             )
 
             assert df is not None, "Could not read DF to the memory"
 
             corr_to_price, corrs_to_shifted_prices = get_correlation_data(
-                df, col_name, timeseries_col_name, price_col_name
+                df, col_name, timeseries_col_name, target_col
             )
 
-            get_linear_regression_analysis(table_name, col_name, price_col_name)
+            get_linear_regression_analysis(table_name, col_name, target_col)
 
             return {
                 "rows": rows,
@@ -580,6 +582,7 @@ def get_column_detailed_info(
                 "stats": stats,
                 "kline_open_time": kline_open_time,
                 "price_data": price_data,
+                "target_data": target_data,
                 "corr_to_price": corr_to_price,
                 "corrs_to_shifted_prices": corrs_to_shifted_prices,
             }
