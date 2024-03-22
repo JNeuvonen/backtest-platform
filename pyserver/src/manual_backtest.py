@@ -29,6 +29,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             dataset_df, dataset.timeseries_column, formatted=False
         )
 
+        print(backtestInfo.open_short_trade_cond)
+
         replacements = {
             "{OPEN_LONG_TRADE_FUNC}": backtestInfo.open_long_trade_cond,
             "{OPEN_SHORT_TRADE_FUNC}": backtestInfo.open_short_trade_cond,
@@ -83,6 +85,11 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             end_balance, START_BALANCE, ms_to_years(backtest.cumulative_time)
         )
         market_exposure_time = backtest.positions_held_time / backtest.cumulative_time
+        buy_and_hold_cagr = get_cagr(
+            asset_closing_price,
+            asset_starting_price,
+            ms_to_years(backtest.cumulative_time),
+        )
 
         backtest_id = BacktestQuery.create_entry(
             {
@@ -120,6 +127,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "cagr": cagr,
                 "market_exposure_time": market_exposure_time,
                 "risk_adjusted_return": cagr / market_exposure_time,
+                "buy_and_hold_cagr": buy_and_hold_cagr,
             }
         )
 
