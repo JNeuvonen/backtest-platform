@@ -144,6 +144,8 @@ export interface ColumnResponse {
     timeseries_col: string | null;
     price_col: string | null;
     linear_regr_img_b64: string;
+    linear_regr_params: string;
+    linear_regr_summary: string;
   };
   status: number;
 }

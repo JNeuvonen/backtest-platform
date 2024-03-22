@@ -19,6 +19,7 @@ import { ColumnChart } from "./charts/column";
 import { createColumnChartData } from "../utils/dataset";
 import { WithLabel } from "./form/WithLabel";
 import { GenericBarChart } from "./charts/BarChart";
+import { parseJson } from "../utils/str";
 
 interface Props {
   datasetName: string;
@@ -40,6 +41,13 @@ export const ColumnInfoModal = (props: Props) => {
   }, [columnDetailedQuery.data]);
 
   if (!columnData) return <Spinner />;
+
+  const linearRegrSummary = columnDetailedQuery.data?.res.linear_regr_summary;
+  const linearRegrParams = parseJson(
+    columnDetailedQuery.data?.res.linear_regr_params || ""
+  );
+
+  console.log(linearRegrParams, linearRegrSummary);
 
   return (
     <div>
@@ -127,6 +135,28 @@ export const ColumnInfoModal = (props: Props) => {
               </StatNumber>
             </Stat>
           </Box>
+          <Box>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Linear regr const</StatLabel>
+              <StatNumber>
+                {columnData.corr_to_price
+                  ? String(roundNumberDropRemaining(linearRegrParams.const, 6))
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </Box>
+          <Box>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Linear regr coeff</StatLabel>
+              <StatNumber>
+                {columnData.corr_to_price
+                  ? String(
+                      roundNumberDropRemaining(linearRegrParams[columnName], 6)
+                    )
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </Box>
         </Box>
       </ChakraCard>
 
@@ -167,6 +197,17 @@ export const ColumnInfoModal = (props: Props) => {
           containerStyles={{ marginTop: "16px" }}
         />
       </WithLabel>
+
+      <ChakraCard
+        heading={<Heading size="md">Linear regression analysis</Heading>}
+        variant={CARD_VARIANTS.on_modal}
+      >
+        <Box>
+          <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
+            {linearRegrSummary}
+          </pre>
+        </Box>
+      </ChakraCard>
     </div>
   );
 };
