@@ -3,7 +3,7 @@ import sqlite3
 import pandas as pd
 import torch
 import numpy as np
-from typing import List
+from typing import List, Optional
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from constants import (
@@ -16,20 +16,9 @@ from query_dataset import DatasetQuery
 from query_model import ModelQuery
 
 
-def get_select_columns_str(columns: List[str | None]):
-    columns_str = ""
-    idx = 0
-    columns_len = len(columns) - 1
-    for item in columns:
-        if item is None:
-            continue
-
-        if idx != columns_len:
-            columns_str += item + ", "
-        else:
-            columns_str += item
-        idx += 1
-
+def get_select_columns_str(columns: List[Optional[str]]):
+    valid_columns = [item for item in columns if item is not None]
+    columns_str = ", ".join(valid_columns)
     return columns_str
 
 
@@ -133,14 +122,14 @@ def read_dataset_to_mem(dataset_name: str):
 
 
 def read_columns_to_mem(db_path: str, dataset_name: str, columns: List[str | None]):
-    columns_str = get_select_columns_str(columns)
     try:
+        columns_str = get_select_columns_str(columns)
         with sqlite3.connect(db_path) as conn:
             query = f"SELECT {columns_str} FROM {dataset_name}"
             df = pd.read_sql_query(query, conn)
             return df
 
-    except sqlite3.Error as e:
+    except Exception as e:
         print(f"An error occurred: {e}")
         return None
 
