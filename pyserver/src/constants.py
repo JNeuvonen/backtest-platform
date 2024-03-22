@@ -68,3 +68,6 @@ class CandleSize:
     THREE_DAYS = "3d"
     ONE_WEEK = "1w"
     ONE_MONTH = "1M"
+
+
+ONE_YEAR_IN_MS = 31556952000

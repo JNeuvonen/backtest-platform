@@ -4,9 +4,11 @@ from backtest_utils import (
     find_max_drawdown,
     get_backtest_profit_factor_comp,
     get_backtest_trade_details,
+    get_cagr,
 )
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
 from dataset import read_dataset_to_mem
+from db import get_df_candle_size, ms_to_years
 from log import LogExceptionContext
 from model_backtest import Positions
 from query_backtest import BacktestQuery
@@ -23,6 +25,10 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         dataset = DatasetQuery.fetch_dataset_by_id(backtestInfo.dataset_id)
         dataset_df = read_dataset_to_mem(dataset.dataset_name)
 
+        candles_time_delta = get_df_candle_size(
+            dataset_df, dataset.timeseries_column, formatted=False
+        )
+
         replacements = {
             "{OPEN_LONG_TRADE_FUNC}": backtestInfo.open_long_trade_cond,
             "{OPEN_SHORT_TRADE_FUNC}": backtestInfo.open_short_trade_cond,
@@ -38,6 +44,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             backtestInfo.use_short_selling,
             backtestInfo.use_time_based_close,
             backtestInfo.klines_until_close if backtestInfo.klines_until_close else -1,
+            candles_time_delta,
         )
 
         assert (
@@ -72,6 +79,10 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         ) = get_backtest_trade_details(backtest.positions.trades)
 
         max_drawdown_perc = find_max_drawdown(backtest.positions.balance_history)
+        cagr = get_cagr(
+            end_balance, START_BALANCE, ms_to_years(backtest.cumulative_time)
+        )
+        market_exposure_time = backtest.positions_held_time / backtest.cumulative_time
 
         backtest_id = BacktestQuery.create_entry(
             {
@@ -106,6 +117,9 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 if asset_starting_price is not None and asset_closing_price is not None
                 else None,
                 "max_drawdown_perc": max_drawdown_perc,
+                "cagr": cagr,
+                "market_exposure_time": market_exposure_time,
+                "risk_adjusted_return": cagr / market_exposure_time,
             }
         )
 
@@ -125,6 +139,7 @@ class ManualBacktest:
         use_short_selling: bool,
         use_time_based_close: bool,
         max_klines_until_close: int,
+        candles_time_delta,
     ) -> None:
         self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
         self.positions = Positions(
@@ -135,6 +150,10 @@ class ManualBacktest:
         self.use_time_based_close = use_time_based_close
         self.max_klines_until_close = max_klines_until_close
         self.pos_open_klines = 0
+
+        self.candles_time_delta = candles_time_delta
+        self.cumulative_time = 0.0
+        self.positions_held_time = 0.0
 
     def process_df_row(self, df_row, price_col, timeseries_col, is_last_row):
         code = BACKTEST_MANUAL_TEMPLATE
@@ -182,8 +201,12 @@ class ManualBacktest:
         self.pos_open_klines = 0
 
     def update_data(self, price: float, kline_open_time: int):
+        if self.positions.position > 0.0 or self.positions.short_debt > 0.0:
+            self.positions_held_time += self.candles_time_delta
+
         self.positions.update_balance(price, 0, kline_open_time)
         self.pos_open_klines += 1
+        self.cumulative_time += self.candles_time_delta
 
     def tick(
         self,

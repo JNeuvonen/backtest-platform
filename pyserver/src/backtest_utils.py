@@ -71,3 +71,7 @@ def find_max_drawdown(balances):
             max_drawdown = curr_drawdown
 
     return (max_drawdown - 1) * 100 if max_drawdown != START_MAX_DRAWDOWN else None
+
+
+def get_cagr(end_balance, start_balance, years):
+    return (end_balance / start_balance) ** (1 / years) - 1

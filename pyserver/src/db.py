@@ -11,7 +11,13 @@ from typing import List
 from io import BytesIO
 
 
-from constants import AppConstants, CandleSize, DomEventChannels, NullFillStrategy
+from constants import (
+    ONE_YEAR_IN_MS,
+    AppConstants,
+    CandleSize,
+    DomEventChannels,
+    NullFillStrategy,
+)
 from dataset import (
     combine_datasets,
     df_fill_nulls,
@@ -438,10 +444,18 @@ def get_df_corr(df, col_1, col_2):
     return corr
 
 
-def get_df_candle_size(df, timeseries_col_name):
+def ms_to_years(ms):
+    return ms / ONE_YEAR_IN_MS
+
+
+def get_df_candle_size(df, timeseries_col_name, formatted=True):
     non_null_timestamps = df.loc[df[timeseries_col_name].notnull(), timeseries_col_name]
     candles_time_delta = non_null_timestamps.iloc[1] - non_null_timestamps.iloc[0]
-    return timedelta_to_candlesize(candles_time_delta / 1000)
+    return (
+        timedelta_to_candlesize(candles_time_delta / 1000)
+        if formatted
+        else candles_time_delta
+    )
 
 
 def df_generate_future_prices_cols(df, candles_time_delta, price_col_name):
@@ -513,7 +527,7 @@ def get_linear_regression_analysis(
 ):
     try:
         if target_col is None:
-            return None
+            return None, None, None
 
         df = read_columns_to_mem(
             AppConstants.DB_DATASETS,
@@ -577,6 +591,7 @@ def get_column_detailed_info(
                 timeseries_col_name, table_name
             )
             target_data = fetch_column_and_safe_float_convert(target_col, table_name)
+
             price_data = fetch_column_and_safe_float_convert(price_col, table_name)
 
             df = read_columns_to_mem(
