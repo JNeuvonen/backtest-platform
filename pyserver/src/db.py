@@ -1,3 +1,6 @@
+import base64
+import contextlib
+import io
 import logging
 import sqlite3
 import math
@@ -6,8 +9,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from typing import List
 from io import BytesIO
-
-from starlette.status import HTTP_417_EXPECTATION_FAILED
 
 
 from constants import AppConstants, CandleSize, DomEventChannels, NullFillStrategy
@@ -500,9 +501,16 @@ def get_correlation_data(df, col_name, timeseries_col_name, price_col_name):
             return None, []
 
 
+def capture_std_out(print_fn):
+    summary_buffer = io.StringIO()
+    with contextlib.redirect_stdout(summary_buffer):
+        print_fn()
+    return summary_buffer.getvalue()
+
+
 def get_linear_regression_analysis(
     table_name: str, col_name: str, target_col: str | None
-) -> BytesIO | None:
+):
     try:
         if target_col is None:
             return None
@@ -533,12 +541,21 @@ def get_linear_regression_analysis(
         plt.close()
 
         buffer.seek(0)
-        print(model.summary())
-        print(model.params)
-        return buffer
+
+        linear_regr_img_b64 = (
+            base64.b64encode(buffer.getvalue()).decode("utf-8")
+            if buffer is not None
+            else None
+        )
+
+        return (
+            linear_regr_img_b64,
+            model.params.to_json(),
+            capture_std_out(lambda: print(model.summary())),
+        )
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None
+        return None, None, None
 
 
 def get_column_detailed_info(
