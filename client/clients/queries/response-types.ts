@@ -192,6 +192,10 @@ export interface BacktestObject {
   start_balance: number;
   max_drawdown_perc: number;
   end_balance: number;
+  cagr: number;
+  buy_and_hold_cagr: number;
+  market_exposure_time: number;
+  risk_adjusted_return: number;
 }
 
 export interface Trade {

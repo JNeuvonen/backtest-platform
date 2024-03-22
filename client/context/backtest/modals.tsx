@@ -86,7 +86,7 @@ export const BacktestUXManager = () => {
     <div>
       <ChakraDrawer
         title="Create a new backtest"
-        drawerContentStyles={{ maxWidth: "900px" }}
+        drawerContentStyles={{ maxWidth: "80%" }}
         {...createNewDrawer}
         footerContent={
           <FormSubmitBar

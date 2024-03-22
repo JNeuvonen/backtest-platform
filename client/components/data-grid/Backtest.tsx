@@ -11,6 +11,7 @@ import { usePathParams } from "../../hooks/usePathParams";
 import { getDatasetBacktestPath } from "../../utils/navigate";
 import { Link } from "react-router-dom";
 import { roundNumberDropRemaining } from "../../utils/number";
+import { round } from "lodash";
 
 interface Props {
   backtests: BacktestObject[];
@@ -67,6 +68,30 @@ const COLUMN_DEFS: ColDef[] = [
   {
     headerName: "Buy and hold result (%)",
     field: "buy_and_hold_result_perc",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "CAGR (%)",
+    field: "cagr",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "Buy and hold CAGR (%)",
+    field: "buy_and_hold_cagr",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "Market exposure (%)",
+    field: "market_exposure_time",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "Risk adj. ret. (%)",
+    field: "risk_adjusted_return",
     sortable: true,
     editable: false,
   },
@@ -131,6 +156,19 @@ const createDatarowItems = (backtestObjects: BacktestObject[]) => {
       ),
       trade_count: item.trade_count,
       max_drawdown_perc: roundNumberDropRemaining(item.max_drawdown_perc, 2),
+      cagr: roundNumberDropRemaining(item.cagr * 100, 2),
+      buy_and_hold_cagr: roundNumberDropRemaining(
+        item.buy_and_hold_cagr * 100,
+        2
+      ),
+      market_exposure_time: roundNumberDropRemaining(
+        item.market_exposure_time * 100,
+        1
+      ),
+      risk_adjusted_return: roundNumberDropRemaining(
+        item.risk_adjusted_return * 100,
+        1
+      ),
     };
   });
   return ret;
