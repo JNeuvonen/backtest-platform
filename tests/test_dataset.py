@@ -223,7 +223,7 @@ def test_route_exec_python(cleanup_db, fixt_btc_small_1h: DatasetMetadata):
     res_quote_asset_vol = Fetch.get_dataset_col_info(
         fixt_btc_small_1h.name, BinanceCols.QUOTE_ASSET_VOLUME
     )
-    assert res_open_price == res_quote_asset_vol
+    assert res_open_price[0]["rows"] == res_quote_asset_vol[0]["rows"]
 
 
 @pytest.mark.acceptance
@@ -245,8 +245,8 @@ def test_route_exec_python_multiply_col(cleanup_db, fixt_btc_small_1h: DatasetMe
     )
 
     for i in range(len(res_open_price_before[0]["rows"])):
-        before = res_open_price_before[0]["rows"][i][0]
-        after = res_open_price_after[0]["rows"][i][0]
+        before = res_open_price_before[0]["rows"][i]
+        after = res_open_price_after[0]["rows"][i]
         assert before * 3 == after
 
 
