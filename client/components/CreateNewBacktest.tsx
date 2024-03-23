@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { CREATE_COLUMNS_DEFAULT } from "../utils/code";
 import {
-  Button,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -10,14 +9,13 @@ import {
   NumberInputStepper,
   Spinner,
   Switch,
-  Tooltip,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { WithLabel } from "./form/WithLabel";
 import { ChakraModal } from "./chakra/modal";
 import { Text } from "@chakra-ui/react";
-import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../theme";
+import { TEXT_VARIANTS } from "../theme";
 import { useDatasetQuery } from "../clients/queries/queries";
 import { usePathParams } from "../hooks/usePathParams";
 import { OverflopTooltip } from "./OverflowTooltip";
@@ -28,9 +26,6 @@ import { ChakraPopover } from "./chakra/popover";
 import { SelectColumnPopover } from "./SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../utils/dataset";
 import { Dataset } from "../clients/queries/response-types";
-import { CodePresetPopover } from "./CodePresetPopover";
-import { VscListSelection } from "react-icons/vsc";
-import { IoIosSave } from "react-icons/io";
 import { CODE_PRESET_CATEGORY } from "../utils/constants";
 import { ColumnInfoModal } from "./ColumnInfoModal";
 
@@ -43,27 +38,24 @@ interface Props {
   openShortTradeCode: string;
   closeLongTradeCode: string;
   closeShortTradeCode: string;
-
   setOpenLongTradeCode: React.Dispatch<React.SetStateAction<string>>;
   setOpenShortTradeCode: React.Dispatch<React.SetStateAction<string>>;
   setCloseLongTradeCode: React.Dispatch<React.SetStateAction<string>>;
   setCloseShortTradeCode: React.Dispatch<React.SetStateAction<string>>;
-
   useShorts: boolean;
+  useProfitBasedClose: boolean;
+  setUseProfitBasedClose: React.Dispatch<React.SetStateAction<boolean>>;
   setUseShorts: React.Dispatch<React.SetStateAction<boolean>>;
-
   backtestName: string;
   setBacktestName: React.Dispatch<React.SetStateAction<string>>;
-
   klinesUntilClose: null | number;
+  takeProfitThresholdPerc: number;
+  setTakeProfitThresholdPerc: React.Dispatch<React.SetStateAction<number>>;
   setKlinesUntilClose: React.Dispatch<React.SetStateAction<number | null>>;
-
   useTimeBasedClose: boolean;
   setUseTimeBasedClose: React.Dispatch<React.SetStateAction<boolean>>;
-
   tradingFees: number;
   setTradingFees: React.Dispatch<React.SetStateAction<number>>;
-
   slippage: number;
   setSlippage: React.Dispatch<React.SetStateAction<number>>;
   dataset: Dataset;
