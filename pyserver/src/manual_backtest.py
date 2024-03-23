@@ -29,8 +29,6 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             dataset_df, dataset.timeseries_column, formatted=False
         )
 
-        print(backtestInfo.open_short_trade_cond)
-
         replacements = {
             "{OPEN_LONG_TRADE_FUNC}": backtestInfo.open_long_trade_cond,
             "{OPEN_SHORT_TRADE_FUNC}": backtestInfo.open_short_trade_cond,
@@ -45,6 +43,10 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             replacements,
             backtestInfo.use_short_selling,
             backtestInfo.use_time_based_close,
+            backtestInfo.use_profit_based_close,
+            backtestInfo.use_stop_loss_based_close,
+            backtestInfo.take_profit_threshold_perc,
+            backtestInfo.stop_loss_threshold_perc,
             backtestInfo.klines_until_close if backtestInfo.klines_until_close else -1,
             candles_time_delta,
         )
@@ -146,6 +148,10 @@ class ManualBacktest:
         enter_and_exit_criteria_placeholders: Dict,
         use_short_selling: bool,
         use_time_based_close: bool,
+        use_profit_based_close: bool,
+        use_stop_loss_based_close: bool,
+        take_profit_threshold_perc,
+        stop_loss_threshold_perc,
         max_klines_until_close: int,
         candles_time_delta,
     ) -> None:
@@ -162,6 +168,11 @@ class ManualBacktest:
         self.candles_time_delta = candles_time_delta
         self.cumulative_time = 0.0
         self.positions_held_time = 0.0
+
+        self.use_profit_based_close = use_profit_based_close
+        self.use_stop_loss_based_close = use_stop_loss_based_close
+        self.take_profit_threshold_perc = take_profit_threshold_perc
+        self.stop_loss_threshold_perc = stop_loss_threshold_perc
 
     def process_df_row(self, df_row, price_col, timeseries_col, is_last_row):
         code = BACKTEST_MANUAL_TEMPLATE

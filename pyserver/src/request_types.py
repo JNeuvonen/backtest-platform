@@ -65,8 +65,13 @@ class BodyCreateManualBacktest(BaseModel):
     close_short_trade_cond: str
     use_short_selling: bool
     use_time_based_close: bool
+    use_profit_based_close: bool
+    use_stop_loss_based_close: bool
     dataset_id: int
-    name: Optional[str] = None
-    klines_until_close: Optional[int] = None
     trading_fees_perc: float
     slippage_perc: float
+    short_fee_hourly: float
+    name: Optional[str] = None
+    klines_until_close: Optional[int] = None
+    take_profit_threshold_perc: Optional[int] = None
+    stop_loss_threshold_perc: Optional[int] = None
