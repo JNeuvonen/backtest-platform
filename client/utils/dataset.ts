@@ -56,7 +56,11 @@ export const createColumnChartData = (
       const rowObject = {};
       rowObject[columnName] = item;
       rowObject["kline_open_time"] = kline_open_time[i];
-      rowObject["price"] = price_data[i];
+      if (price_data) {
+        rowObject["price"] = price_data[i];
+      } else {
+        rowObject["price"] = null;
+      }
       ret.push(rowObject);
     }
   }
