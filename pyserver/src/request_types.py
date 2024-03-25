@@ -71,7 +71,7 @@ class BodyCreateManualBacktest(BaseModel):
     trading_fees_perc: float
     slippage_perc: float
     short_fee_hourly: float
+    take_profit_threshold_perc: float
+    stop_loss_threshold_perc: float
     name: Optional[str] = None
     klines_until_close: Optional[int] = None
-    take_profit_threshold_perc: Optional[int] = None
-    stop_loss_threshold_perc: Optional[int] = None

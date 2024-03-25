@@ -274,17 +274,22 @@ export async function removeDatasets(datasets: string[]) {
 }
 
 interface CreateManualBacktest {
+  name?: string;
+  use_profit_based_close: boolean;
+  use_stop_loss_based_close: boolean;
+  use_short_selling: boolean;
+  use_time_based_close: boolean;
   open_long_trade_cond: string;
   close_long_trade_cond: string;
   open_short_trade_cond: string;
   close_short_trade_cond: string;
-  use_short_selling: boolean;
   dataset_id: number;
-  use_time_based_close: boolean;
-  klines_until_close: null | number;
-  name?: string;
   trading_fees_perc: number;
   slippage_perc: number;
+  take_profit_threshold_perc: number;
+  stop_loss_threshold_perc: number;
+  short_fee_hourly: number;
+  klines_until_close: null | number;
 }
 
 export async function createManualBacktest(body: CreateManualBacktest) {

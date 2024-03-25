@@ -17,6 +17,7 @@ import {
 import { usePathParams } from "../../hooks/usePathParams";
 import { useDatasetQuery } from "../../clients/queries/queries";
 import {
+  Button,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -36,13 +37,32 @@ import { SelectColumnPopover } from "../../components/SelectTargetColumnPopover"
 import { getDatasetColumnOptions } from "../../utils/dataset";
 import { CodeEditor } from "../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../utils/constants";
-import { TEXT_VARIANTS } from "../../theme";
+import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../../theme";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
+import { Field, Formik, Form } from "formik";
 
 type PathParams = {
   datasetName: string;
 };
+
+interface FormValues {
+  backtestName: string;
+  openLongTradeCode: string;
+  closeLongTradeCode: string;
+  openShortTradeCode: string;
+  closeShortTradeCode: string;
+  useShorts: boolean;
+  useTimeBasedClose: boolean;
+  useProfitBasedClose: boolean;
+  useStopLossBasedClose: boolean;
+  klinesUntilClose: number;
+  tradingFees: number;
+  slippage: number;
+  shortFeeHourly: number;
+  stopLossThresholdPerc: number;
+  takeProfitThresholdPerc: number;
+}
 
 export const BacktestUXManager = () => {
   const { datasetName } = usePathParams<PathParams>();
@@ -51,33 +71,7 @@ export const BacktestUXManager = () => {
   const { createNewDrawer, datasetBacktestsQuery, forceUpdate } =
     useBacktestContext();
 
-  const [openLongTradeCode, setOpenLongTradeCode] = useState(
-    ENTER_TRADE_DEFAULT()
-  );
-  const [openShortTradeCode, setOpenShortTradeCode] =
-    useState(EXIT_TRADE_DEFAULT());
-
-  const [closeLongTradeCode, setCloseLongTradeCode] = useState(
-    EXIT_LONG_TRADE_DEFAULT()
-  );
-  const [closeShortTradeCode, setCloseShortTradeCode] = useState(
-    EXIT_SHORT_TRADE_DEFAULT()
-  );
-  const [backtestName, setBacktestName] = useState("");
-  const [useShorts, setUseShorts] = useState(false);
-
-  const [useTimeBasedClose, setUseTimeBasedClose] = useState(false);
-  const [useProfitBasedClose, setUseProfitBasedClose] = useState(false);
-  const [useStopLossBasedClose, setUseStopLossBasedClose] = useState(false);
-  const [klinesUntilClose, setKlinesUntilClose] = useState<null | number>(null);
-  const [tradingFees, setTradingFees] = useState(0.1);
-  const [slippage, setSlippage] = useState(0.001);
-  const [shortFeeHourly, setShortFeeHourly] = useState(0.001);
-  const [takeProfitThresholdPerc, setTakeProfitThresholdPerc] = useState(0);
-  const [stopLossThresholdPerc, setStopLossThresholdPerc] = useState(0);
-
   const toast = useToast();
-
   const [createColumnsCode, setCreateColumnsCode] = useState(
     CREATE_COLUMNS_DEFAULT()
   );
@@ -90,21 +84,26 @@ export const BacktestUXManager = () => {
   const { data, refetch: refetchDataset } = useDatasetQuery(datasetName);
   const backtestPriceColumnPopover = useDisclosure();
 
-  const submitNewBacktest = async () => {
+  const submitNewBacktest = async (values: FormValues) => {
     if (!dataset) return;
 
     const res = await createManualBacktest({
-      open_long_trade_cond: openLongTradeCode,
-      close_long_trade_cond: closeLongTradeCode,
-      open_short_trade_cond: openShortTradeCode,
-      close_short_trade_cond: closeShortTradeCode,
-      use_short_selling: useShorts,
+      open_long_trade_cond: values.openLongTradeCode,
+      close_long_trade_cond: values.closeLongTradeCode,
+      open_short_trade_cond: values.openShortTradeCode,
+      close_short_trade_cond: values.closeShortTradeCode,
+      use_short_selling: values.useShorts,
       dataset_id: dataset.id,
-      name: backtestName,
-      use_time_based_close: useTimeBasedClose,
-      klines_until_close: klinesUntilClose,
-      trading_fees_perc: tradingFees,
-      slippage_perc: slippage,
+      name: values.backtestName,
+      use_time_based_close: values.useTimeBasedClose,
+      klines_until_close: values.klinesUntilClose,
+      trading_fees_perc: values.tradingFees,
+      slippage_perc: values.slippage,
+      short_fee_hourly: values.shortFeeHourly,
+      use_stop_loss_based_close: values.useStopLossBasedClose,
+      use_profit_based_close: values.useProfitBasedClose,
+      stop_loss_threshold_perc: values.stopLossThresholdPerc,
+      take_profit_threshold_perc: values.takeProfitThresholdPerc,
     });
 
     if (res.status === 200) {
@@ -165,12 +164,6 @@ export const BacktestUXManager = () => {
         title="Create a new backtest"
         drawerContentStyles={{ maxWidth: "80%" }}
         {...createNewDrawer}
-        footerContent={
-          <FormSubmitBar
-            submitCallback={submitNewBacktest}
-            cancelCallback={createNewDrawer.onClose}
-          />
-        }
       >
         <div>
           <ChakraModal {...columnsModal} title="Columns">
@@ -265,143 +258,435 @@ export const BacktestUXManager = () => {
               Set price column
             </Text>
           </div>
-          <WithLabel>
-            <ChakraInput label="Name (optional)" onChange={setBacktestName} />
-          </WithLabel>
-          <div>
-            <CodeEditor
-              code={openLongTradeCode}
-              setCode={setOpenLongTradeCode}
-              style={{ marginTop: "16px" }}
-              fontSize={13}
-              label={"Long condition"}
-              disableCodePresets={true}
-              codeContainerStyles={{ width: "100%" }}
-              height={"250px"}
-              presetCategory={CODE_PRESET_CATEGORY.backtest_long_cond}
-            />
-          </div>
 
-          <div>
-            <CodeEditor
-              code={closeLongTradeCode}
-              setCode={setCloseLongTradeCode}
-              style={{ marginTop: "16px" }}
-              fontSize={13}
-              label="Close long condition"
-              disableCodePresets={true}
-              codeContainerStyles={{ width: "100%" }}
-              height={"250px"}
-              presetCategory={CODE_PRESET_CATEGORY.backtest_close_long_ccond}
-            />
-          </div>
+          <Formik
+            onSubmit={(values) => {
+              submitNewBacktest(values);
+            }}
+            initialValues={{
+              backtestName: "",
+              openLongTradeCode: ENTER_TRADE_DEFAULT(),
+              closeLongTradeCode: EXIT_LONG_TRADE_DEFAULT(),
+              openShortTradeCode: EXIT_TRADE_DEFAULT(),
+              closeShortTradeCode: EXIT_SHORT_TRADE_DEFAULT(),
+              useShorts: false,
+              useTimeBasedClose: false,
+              useProfitBasedClose: false,
+              useStopLossBasedClose: false,
+              klinesUntilClose: 0,
+              tradingFees: 0.1,
+              slippage: 0.001,
+              shortFeeHourly: 0.001,
+              takeProfitThresholdPerc: 0,
+              stopLossThresholdPerc: 0,
+            }}
+          >
+            {({ values }) => (
+              <Form>
+                <Field name="backtestName">
+                  {({ form }) => {
+                    return (
+                      <WithLabel>
+                        <ChakraInput
+                          label="Name (optional)"
+                          onChange={(value: string) =>
+                            form.setFieldValue("backtestName", value)
+                          }
+                        />
+                      </WithLabel>
+                    );
+                  }}
+                </Field>
+                <div>
+                  <Field name="openLongTradeCode">
+                    {({ field, form }) => {
+                      return (
+                        <CodeEditor
+                          code={field.value}
+                          setCode={(newState) =>
+                            form.setFieldValue("openLongTradeCode", newState)
+                          }
+                          style={{ marginTop: "16px" }}
+                          fontSize={13}
+                          label={"Long condition"}
+                          disableCodePresets={true}
+                          codeContainerStyles={{ width: "100%" }}
+                          height={"250px"}
+                          presetCategory={
+                            CODE_PRESET_CATEGORY.backtest_long_cond
+                          }
+                        />
+                      );
+                    }}
+                  </Field>
+                </div>
 
-          <div style={{ marginTop: "16px" }}>
-            <WithLabel label={"Use short selling"}>
-              <Switch
-                isChecked={useShorts}
-                onChange={() => setUseShorts(!useShorts)}
-              />
-            </WithLabel>
-          </div>
+                <div>
+                  <Field name="closeLongTradeCode">
+                    {({ field, form }) => {
+                      return (
+                        <CodeEditor
+                          code={field.value}
+                          setCode={(newState) =>
+                            form.setFieldValue("closeLongTradeCode", newState)
+                          }
+                          style={{ marginTop: "16px" }}
+                          fontSize={13}
+                          label="Close long condition"
+                          disableCodePresets={true}
+                          codeContainerStyles={{ width: "100%" }}
+                          height={"250px"}
+                          presetCategory={
+                            CODE_PRESET_CATEGORY.backtest_close_long_ccond
+                          }
+                        />
+                      );
+                    }}
+                  </Field>
+                </div>
 
-          {useShorts && (
-            <div style={{ marginTop: "16px" }}>
-              <CodeEditor
-                code={openShortTradeCode}
-                setCode={setOpenShortTradeCode}
-                style={{ marginTop: "16px" }}
-                fontSize={13}
-                label="Short condition"
-                disableCodePresets={true}
-                codeContainerStyles={{ width: "100%" }}
-                height={"250px"}
-              />
-            </div>
-          )}
+                <div style={{ marginTop: "16px" }}>
+                  <Field name="useShorts">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel label={"Use short selling"}>
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue("useShorts", !field.value)
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
 
-          {useShorts && (
-            <div style={{ marginTop: "16px" }}>
-              <CodeEditor
-                code={closeShortTradeCode}
-                setCode={setCloseShortTradeCode}
-                style={{ marginTop: "16px" }}
-                fontSize={13}
-                label="Close short condition"
-                disableCodePresets={true}
-                codeContainerStyles={{ width: "100%" }}
-                height={"250px"}
-              />
-            </div>
-          )}
+                {values.useShorts && (
+                  <div style={{ marginTop: "16px" }}>
+                    <Field name="openShortTradeCode">
+                      {({ field, form }) => {
+                        return (
+                          <CodeEditor
+                            code={field.value}
+                            setCode={(newState) =>
+                              form.setFieldValue("openShortTradeCode", newState)
+                            }
+                            style={{ marginTop: "16px" }}
+                            fontSize={13}
+                            label="Short condition"
+                            disableCodePresets={true}
+                            codeContainerStyles={{ width: "100%" }}
+                            height={"250px"}
+                          />
+                        );
+                      }}
+                    </Field>
+                  </div>
+                )}
 
-          <div style={{ marginTop: "16px" }}>
-            <WithLabel label={"Use time based closing strategy"}>
-              <Switch
-                isChecked={useTimeBasedClose}
-                onChange={() => setUseTimeBasedClose(!useTimeBasedClose)}
-              />
-            </WithLabel>
-          </div>
+                {values.useShorts && (
+                  <div style={{ marginTop: "16px" }}>
+                    <Field name="closeShortTradeCode">
+                      {({ field, form }) => {
+                        return (
+                          <CodeEditor
+                            code={field.value}
+                            setCode={(newState) =>
+                              form.setFieldValue(
+                                "closeShortTradeCode",
+                                newState
+                              )
+                            }
+                            style={{ marginTop: "16px" }}
+                            fontSize={13}
+                            label="Close short condition"
+                            disableCodePresets={true}
+                            codeContainerStyles={{ width: "100%" }}
+                            height={"250px"}
+                          />
+                        );
+                      }}
+                    </Field>
+                  </div>
+                )}
 
-          {useTimeBasedClose && (
-            <WithLabel
-              label={"Klines until close"}
-              containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
-            >
-              <NumberInput
-                step={5}
-                min={0}
-                value={klinesUntilClose || undefined}
-                onChange={(valueString) =>
-                  setKlinesUntilClose(parseInt(valueString))
-                }
-              >
-                <NumberInputField />
-              </NumberInput>
-            </WithLabel>
-          )}
+                <div style={{ marginTop: "16px" }}>
+                  <Field name="useTimeBasedClose">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel label={"Use time based closing strategy"}>
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                "useTimeBasedClose",
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <WithLabel
-              label={"Trading fees (%)"}
-              containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
-            >
-              <NumberInput
-                step={0.005}
-                min={0}
-                value={tradingFees}
-                precision={3}
-                onChange={(valueString) =>
-                  setTradingFees(parseFloat(valueString))
-                }
-              >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            </WithLabel>
-            <WithLabel
-              label={"Slippage (%)"}
-              containerStyles={{ maxWidth: "200px", marginTop: "16px" }}
-            >
-              <NumberInput
-                step={0.001}
-                min={0}
-                value={slippage}
-                precision={4}
-                onChange={(valueString) => setSlippage(parseFloat(valueString))}
-              >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper color={"white"} />
-                  <NumberDecrementStepper color={"white"} />
-                </NumberInputStepper>
-              </NumberInput>
-            </WithLabel>
-          </div>
+                {values.useTimeBasedClose && (
+                  <Field name="klinesUntilClose">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={"Klines until close"}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={5}
+                            min={0}
+                            value={field.value}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                "klinesUntilClose",
+                                parseInt(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                )}
+
+                <div style={{ marginTop: "16px" }}>
+                  <Field name="useProfitBasedClose">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel label={"Use profit based close"}>
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                "useProfitBasedClose",
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+
+                {values.useProfitBasedClose && (
+                  <Field name="takeProfitThresholdPerc">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={"Take profit threshold (%)"}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={5}
+                            min={0}
+                            value={field.value}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                "takeProfitThresholdPerc",
+                                parseInt(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                )}
+
+                <div style={{ marginTop: "16px" }}>
+                  <Field name="useStopLossBasedClose">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel label={"Use stop loss based close"}>
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                "useStopLossBasedClose",
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+
+                {values.useStopLossBasedClose && (
+                  <Field name="stopLossThresholdPerc">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={"Stop loss threshold (%)"}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={5}
+                            min={0}
+                            value={field.value}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                "stopLossThresholdPerc",
+                                parseInt(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                )}
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "16px" }}
+                >
+                  <Field name="tradingFees">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={"Trading fees (%)"}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={0.005}
+                            min={0}
+                            value={field.value}
+                            precision={3}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                "tradingFees",
+                                parseFloat(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+
+                  <Field name="slippage">
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={"Slippage (%)"}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={0.001}
+                            min={0}
+                            value={field.value}
+                            precision={4}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                "slippage",
+                                parseFloat(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper color={"white"} />
+                              <NumberDecrementStepper color={"white"} />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+
+                  {values.useShorts && (
+                    <Field name="shortFeeHourly">
+                      {({ field, form }) => {
+                        return (
+                          <WithLabel
+                            label={"Shorting fees (%) hourly"}
+                            containerStyles={{
+                              maxWidth: "200px",
+                              marginTop: "16px",
+                            }}
+                          >
+                            <NumberInput
+                              step={0.005}
+                              min={0}
+                              value={field.value}
+                              precision={3}
+                              onChange={(valueString) =>
+                                form.setFieldValue(
+                                  "shortFeeHourly",
+                                  parseFloat(valueString)
+                                )
+                              }
+                            >
+                              <NumberInputField />
+                              <NumberInputStepper>
+                                <NumberIncrementStepper />
+                                <NumberDecrementStepper />
+                              </NumberInputStepper>
+                            </NumberInput>
+                          </WithLabel>
+                        );
+                      }}
+                    </Field>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginTop: "16px",
+                  }}
+                >
+                  <Button
+                    variant={BUTTON_VARIANTS.nofill}
+                    onClick={createNewDrawer.onClose}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" marginTop={"16px"}>
+                    Run backtest
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
         </div>
       </ChakraDrawer>
     </div>
