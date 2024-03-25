@@ -31,7 +31,11 @@ import {
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
-import { createModel, setTargetColumnReq } from "../../../clients/requests";
+import {
+  createModel,
+  setTargetColumn,
+  setTargetColumnReq,
+} from "../../../clients/requests";
 import {
   nullFillStratToInt,
   scalingStrategyToInt,
@@ -141,20 +145,6 @@ export const DatasetModelCreatePage = ({
     );
   }
 
-  const setTargetColumn = async (targetCol: string) => {
-    const res = await setTargetColumnReq(datasetName, targetCol);
-    if (res.status === 200) {
-      toast({
-        title: "Changed target column",
-        status: "info",
-        duration: 5000,
-        isClosable: true,
-      });
-      targetColumnPopover.onClose();
-      refetch();
-    }
-  };
-
   const submit = async () => {
     const droppedCols = columnsToDrop
       .filter((item) => item.isChecked)
@@ -210,7 +200,18 @@ export const DatasetModelCreatePage = ({
             <SelectColumnPopover
               options={getDatasetColumnOptions(data)}
               placeholder={data.target_col}
-              selectCallback={setTargetColumn}
+              selectCallback={(newCol) => {
+                setTargetColumn(newCol, datasetName, () => {
+                  toast({
+                    title: "Changed target column",
+                    status: "info",
+                    duration: 5000,
+                    isClosable: true,
+                  });
+                  targetColumnPopover.onClose();
+                  refetch();
+                });
+              }}
             />
           }
         >

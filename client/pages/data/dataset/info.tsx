@@ -32,6 +32,7 @@ import { ConfirmModal } from "../../../components/form/Confirm";
 import {
   execPythonOnDataset,
   saveDatasetFile,
+  setKlineOpenTimeColumn,
   setTargetColumnReq,
   updatePriceColumnReq,
 } from "../../../clients/requests";
@@ -176,31 +177,6 @@ export const DatasetInfoPage = () => {
       targetColumnPopover.onClose();
       refetch();
     }
-  };
-
-  const setKlineOpenTimeColumn = async (klineOpenTimeColumn: string) => {
-    const url = URLS.set_time_column(datasetName);
-    const request = fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        new_timeseries_col: klineOpenTimeColumn,
-      }),
-      method: "PUT",
-    });
-    request.then((res) => {
-      if (res.status === 200) {
-        toast({
-          title: "Changed candle open time column",
-          status: "info",
-          duration: 5000,
-          isClosable: true,
-        });
-        refetch();
-        klineOpenTimePopover.onClose();
-      }
-    });
   };
 
   const setBacktestPriceColumn = async (value: string) => {
@@ -370,7 +346,18 @@ export const DatasetInfoPage = () => {
                 <SelectColumnPopover
                   options={getDatasetColumnOptions(dataset)}
                   placeholder={dataset.timeseries_col}
-                  selectCallback={setKlineOpenTimeColumn}
+                  selectCallback={(newCol) => {
+                    setKlineOpenTimeColumn(newCol, datasetName, () => {
+                      toast({
+                        title: "Changed candle open time column",
+                        status: "info",
+                        duration: 5000,
+                        isClosable: true,
+                      });
+                      refetch();
+                      klineOpenTimePopover.onClose();
+                    });
+                  }}
                 />
               }
             />

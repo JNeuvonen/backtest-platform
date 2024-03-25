@@ -47,8 +47,6 @@ export const ColumnInfoModal = (props: Props) => {
     columnDetailedQuery.data?.res.linear_regr_params || ""
   );
 
-  console.log(linearRegrParams, linearRegrSummary);
-
   return (
     <div>
       <ChakraCard

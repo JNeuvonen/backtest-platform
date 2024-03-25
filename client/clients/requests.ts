@@ -346,3 +346,53 @@ export async function fetchCodePresets() {
   }
   return res;
 }
+
+export const setTargetColumn = async (
+  targetCol: string,
+  datasetName: string,
+  successCallback?: () => void
+) => {
+  const res = await setTargetColumnReq(datasetName, targetCol);
+  if (res.status === 200) {
+    if (successCallback) {
+      successCallback();
+    }
+  }
+};
+
+export const setBacktestPriceColumn = async (
+  value: string,
+  datasetName: string,
+  successCallback?: () => void
+) => {
+  const res = await updatePriceColumnReq(datasetName, value);
+  if (res.status === 200) {
+    if (successCallback) {
+      successCallback();
+    }
+  }
+};
+
+export const setKlineOpenTimeColumn = async (
+  klineOpenTimeColumn: string,
+  datasetName: string,
+  successCallback?: () => void
+) => {
+  const url = URLS.set_time_column(datasetName);
+  const request = fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      new_timeseries_col: klineOpenTimeColumn,
+    }),
+    method: "PUT",
+  });
+  request.then((res) => {
+    if (res.status === 200) {
+      if (successCallback) {
+        successCallback();
+      }
+    }
+  });
+};
