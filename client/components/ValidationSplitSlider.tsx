@@ -10,9 +10,12 @@ import {
 
 interface Props {
   sliderValue: number[];
-  setSliderValue?: React.Dispatch<React.SetStateAction<number[]>>;
+  setSliderValue?:
+    | React.Dispatch<React.SetStateAction<number[]>>
+    | ((newState: number[]) => void);
   containerStyle?: CSSProperties;
   isReadOnly?: boolean;
+  formLabelText?: string;
 }
 
 export function ValidationSplitSlider({
@@ -20,11 +23,12 @@ export function ValidationSplitSlider({
   setSliderValue,
   containerStyle,
   isReadOnly = false,
+  formLabelText = "Validation split",
 }: Props) {
   return (
     <FormControl style={containerStyle}>
       <FormLabel>
-        Validation split: [{sliderValue[0]}-{sliderValue[1]}]
+        {formLabelText}: [{sliderValue[0]}-{sliderValue[1]}]
       </FormLabel>
       <RangeSlider
         min={0}

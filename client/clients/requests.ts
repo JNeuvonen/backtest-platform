@@ -290,6 +290,7 @@ interface CreateManualBacktest {
   stop_loss_threshold_perc: number;
   short_fee_hourly: number;
   klines_until_close: null | number;
+  backtest_data_range: number[];
 }
 
 export async function createManualBacktest(body: CreateManualBacktest) {

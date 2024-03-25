@@ -41,6 +41,7 @@ import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../../theme";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
 import { Field, Formik, Form } from "formik";
+import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 
 type PathParams = {
   datasetName: string;
@@ -62,6 +63,7 @@ interface FormValues {
   shortFeeHourly: number;
   stopLossThresholdPerc: number;
   takeProfitThresholdPerc: number;
+  backtestDataRange: number[];
 }
 
 export const BacktestUXManager = () => {
@@ -104,6 +106,7 @@ export const BacktestUXManager = () => {
       use_profit_based_close: values.useProfitBasedClose,
       stop_loss_threshold_perc: values.stopLossThresholdPerc,
       take_profit_threshold_perc: values.takeProfitThresholdPerc,
+      backtest_data_range: values.backtestDataRange,
     });
 
     if (res.status === 200) {
@@ -279,6 +282,7 @@ export const BacktestUXManager = () => {
               shortFeeHourly: 0.00165888 / 100,
               takeProfitThresholdPerc: 0,
               stopLossThresholdPerc: 0,
+              backtestDataRange: [0, 100],
             }}
           >
             {({ values }) => (
@@ -664,6 +668,23 @@ export const BacktestUXManager = () => {
                       }}
                     </Field>
                   )}
+                </div>
+                <div style={{ marginTop: "16px" }}>
+                  <div style={{ width: "400px" }}>
+                    <Field name="backtestDataRange">
+                      {({ field, form }) => {
+                        return (
+                          <ValidationSplitSlider
+                            sliderValue={field.value}
+                            formLabelText="Backtest data range (%)"
+                            setSliderValue={(newVal: number[]) =>
+                              form.setFieldValue("backtestDataRange", newVal)
+                            }
+                          />
+                        );
+                      }}
+                    </Field>
+                  </div>
                 </div>
 
                 <div
