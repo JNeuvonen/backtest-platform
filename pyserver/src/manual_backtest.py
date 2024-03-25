@@ -154,6 +154,11 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "market_exposure_time": market_exposure_time,
                 "risk_adjusted_return": cagr / market_exposure_time,
                 "buy_and_hold_cagr": buy_and_hold_cagr,
+                "use_time_based_close": backtestInfo.use_time_based_close,
+                "use_profit_based_close": backtestInfo.use_profit_based_close,
+                "use_stop_loss_based_close": backtestInfo.use_stop_loss_based_close,
+                "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
+                "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
             }
         )
 
