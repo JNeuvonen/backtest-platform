@@ -12,6 +12,7 @@ import {
 import {
   createManualBacktest,
   execPythonOnDataset,
+  setBacktestPriceColumn,
   updatePriceColumnReq,
 } from "../../clients/requests";
 import { usePathParams } from "../../hooks/usePathParams";
@@ -97,7 +98,7 @@ const getFormInitialValues = () => {
   };
 };
 
-export const BacktestUXManager = () => {
+export const BacktestForm = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data: dataset } = useDatasetQuery(datasetName);
 
@@ -178,20 +179,6 @@ export const BacktestUXManager = () => {
     }
   };
 
-  const setBacktestPriceColumn = async (value: string) => {
-    const res = await updatePriceColumnReq(datasetName, value);
-    if (res.status === 200) {
-      toast({
-        title: "Changed price column",
-        status: "info",
-        duration: 5000,
-        isClosable: true,
-      });
-      backtestPriceColumnPopover.onClose();
-      refetchDataset();
-    }
-  };
-
   if (!dataset || !data) return <Spinner />;
 
   return (
@@ -245,7 +232,18 @@ export const BacktestUXManager = () => {
               <SelectColumnPopover
                 options={getDatasetColumnOptions(dataset)}
                 placeholder={dataset.price_col}
-                selectCallback={setBacktestPriceColumn}
+                selectCallback={(newCol: string) => {
+                  setBacktestPriceColumn(newCol, datasetName, () => {
+                    toast({
+                      title: "Changed price column",
+                      status: "info",
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                    backtestPriceColumnPopover.onClose();
+                    refetchDataset();
+                  });
+                }}
               />
             }
           />
