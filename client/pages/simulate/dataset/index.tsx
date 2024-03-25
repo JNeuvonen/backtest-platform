@@ -50,9 +50,19 @@ export const SimulateDatasetIndex = () => {
     <div>
       <Heading size={"lg"}>Backtest</Heading>
 
-      <div style={{ marginTop: "16px" }}>
-        Price column:{" "}
-        <Badge colorScheme="green">{datasetQuery.data.price_col}</Badge>
+      <div style={{ marginTop: "16px", display: "flex", gap: "16px" }}>
+        <div>
+          Target column:{" "}
+          <Badge colorScheme="green">{datasetQuery.data.target_col}</Badge>
+        </div>
+        <div>
+          Price column:{" "}
+          <Badge colorScheme="green">{datasetQuery.data.price_col}</Badge>
+        </div>
+        <div>
+          Timeseries column:{" "}
+          <Badge colorScheme="green">{datasetQuery.data.timeseries_col}</Badge>
+        </div>
       </div>
       <div style={{ display: "flex", gap: "16px" }}>
         <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
