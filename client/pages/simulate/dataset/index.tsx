@@ -48,7 +48,7 @@ export const SimulateDatasetIndex = () => {
 
   return (
     <div>
-      <Heading size={"lg"}>Backtest</Heading>
+      <Heading size={"lg"}>Backtest {datasetName}</Heading>
 
       <div style={{ marginTop: "16px", display: "flex", gap: "16px" }}>
         <div>
