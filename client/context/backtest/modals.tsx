@@ -276,7 +276,7 @@ export const BacktestUXManager = () => {
               klinesUntilClose: 0,
               tradingFees: 0.1,
               slippage: 0.001,
-              shortFeeHourly: 0.001,
+              shortFeeHourly: 0.00165888 / 100,
               takeProfitThresholdPerc: 0,
               stopLossThresholdPerc: 0,
             }}
@@ -642,10 +642,10 @@ export const BacktestUXManager = () => {
                             }}
                           >
                             <NumberInput
-                              step={0.005}
+                              step={0.0000005}
                               min={0}
                               value={field.value}
-                              precision={3}
+                              precision={6}
                               onChange={(valueString) =>
                                 form.setFieldValue(
                                   "shortFeeHourly",
