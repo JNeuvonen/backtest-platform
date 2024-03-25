@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, List
 from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 
 from log import LogExceptionContext
@@ -104,3 +104,12 @@ class BacktestQuery:
                     .all()
                 )
                 return [BacktestQuery.deserialize_data(bt) for bt in backtests]
+
+    @staticmethod
+    def delete_backtests_by_ids(ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Backtest).filter(Backtest.id.in_(ids)).delete(
+                    synchronize_session=False
+                )
+                session.commit()
