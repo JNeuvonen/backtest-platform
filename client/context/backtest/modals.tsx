@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useBacktestContext } from ".";
 import { ChakraDrawer } from "../../components/chakra/Drawer";
 import { FormSubmitBar } from "../../components/form/FormSubmitBar";
@@ -40,14 +40,15 @@ import { CODE_PRESET_CATEGORY } from "../../utils/constants";
 import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../../theme";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
-import { Field, Formik, Form } from "formik";
+import { Field, Formik, Form, FormikProps } from "formik";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
+import { DISK_KEYS, DiskManager } from "../../utils/disk";
 
 type PathParams = {
   datasetName: string;
 };
 
-interface FormValues {
+export interface BacktestFormValues {
   backtestName: string;
   openLongTradeCode: string;
   closeLongTradeCode: string;
@@ -66,6 +67,36 @@ interface FormValues {
   backtestDataRange: number[];
 }
 
+const backtestDiskManager = new DiskManager(DISK_KEYS.backtest_form);
+
+const getFormInitialValues = () => {
+  const prevForm = backtestDiskManager.read();
+  if (prevForm === null) {
+    return {
+      backtestName: "",
+      openLongTradeCode: ENTER_TRADE_DEFAULT(),
+      closeLongTradeCode: EXIT_LONG_TRADE_DEFAULT(),
+      openShortTradeCode: EXIT_TRADE_DEFAULT(),
+      closeShortTradeCode: EXIT_SHORT_TRADE_DEFAULT(),
+      useShorts: false,
+      useTimeBasedClose: false,
+      useProfitBasedClose: false,
+      useStopLossBasedClose: false,
+      klinesUntilClose: 0,
+      tradingFees: 0.1,
+      slippage: 0.001,
+      shortFeeHourly: 0.00165888 / 100,
+      takeProfitThresholdPerc: 0,
+      stopLossThresholdPerc: 0,
+      backtestDataRange: [0, 100],
+    };
+  }
+  return {
+    ...prevForm,
+    backtestName: "",
+  };
+};
+
 export const BacktestUXManager = () => {
   const { datasetName } = usePathParams<PathParams>();
   const { data: dataset } = useDatasetQuery(datasetName);
@@ -82,11 +113,12 @@ export const BacktestUXManager = () => {
   const runPythonModal = useDisclosure();
   const columnDetailsModal = useDisclosure();
   const [selectedColumnName, setSelectedColumnName] = useState("");
+  const formikRef = useRef<FormikProps<BacktestFormValues>>(null);
 
   const { data, refetch: refetchDataset } = useDatasetQuery(datasetName);
   const backtestPriceColumnPopover = useDisclosure();
 
-  const submitNewBacktest = async (values: FormValues) => {
+  const submitNewBacktest = async (values: BacktestFormValues) => {
     if (!dataset) return;
 
     const res = await createManualBacktest({
@@ -122,6 +154,7 @@ export const BacktestUXManager = () => {
       createNewDrawer.onClose();
       datasetBacktestsQuery.refetch();
       forceUpdate();
+      backtestDiskManager.save(values);
     }
   };
 
@@ -260,30 +293,24 @@ export const BacktestUXManager = () => {
             >
               Set price column
             </Text>
+            <Text
+              variant={TEXT_VARIANTS.clickable}
+              onClick={() => {
+                backtestDiskManager.reset();
+                formikRef.current?.resetForm();
+              }}
+            >
+              Reset form
+            </Text>
           </div>
 
           <Formik
             onSubmit={(values) => {
               submitNewBacktest(values);
             }}
-            initialValues={{
-              backtestName: "",
-              openLongTradeCode: ENTER_TRADE_DEFAULT(),
-              closeLongTradeCode: EXIT_LONG_TRADE_DEFAULT(),
-              openShortTradeCode: EXIT_TRADE_DEFAULT(),
-              closeShortTradeCode: EXIT_SHORT_TRADE_DEFAULT(),
-              useShorts: false,
-              useTimeBasedClose: false,
-              useProfitBasedClose: false,
-              useStopLossBasedClose: false,
-              klinesUntilClose: 0,
-              tradingFees: 0.1,
-              slippage: 0.001,
-              shortFeeHourly: 0.00165888 / 100,
-              takeProfitThresholdPerc: 0,
-              stopLossThresholdPerc: 0,
-              backtestDataRange: [0, 100],
-            }}
+            initialValues={getFormInitialValues()}
+            innerRef={formikRef}
+            enableReinitialize
           >
             {({ values }) => (
               <Form>
