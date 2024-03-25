@@ -1,4 +1,5 @@
 import json
+import math
 from typing import Dict, List
 from backtest_utils import (
     find_max_drawdown,
@@ -53,6 +54,14 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             candles_time_delta,
         )
 
+        backtest_data_range_start, backtest_data_range_end = (
+            backtestInfo.backtest_data_range + [None, None]
+        )[:2]
+
+        assert (
+            backtest_data_range_start is not None
+        ), "Backtest data range start is missing"
+        assert backtest_data_range_end is not None, "Backtest data range end is missing"
         assert (
             dataset.timeseries_column is not None
         ), "Timeseries column has not been set"
@@ -61,16 +70,29 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         asset_starting_price = None
         asset_closing_price = None
 
+        backtest_data_range_start = math.floor(
+            len(dataset_df) * (backtest_data_range_start / 100)
+        )
+        backtest_data_range_end = math.floor(
+            len(dataset_df) * (backtest_data_range_end / 100)
+        )
+        idx = 0
+
         for i, row in dataset_df.iterrows():
-            is_last_row = i == len(dataset_df) - 1
-            backtest.process_df_row(
-                row, dataset.price_column, dataset.timeseries_column, is_last_row
-            )
+            is_last_row = i == len(dataset_df) - 1 or idx == backtest_data_range_end
 
             if i == 0:
                 asset_starting_price = row[dataset.price_column]
             if is_last_row:
                 asset_closing_price = row[dataset.price_column]
+
+            idx += 1
+            if idx <= backtest_data_range_start or idx > backtest_data_range_end:
+                continue
+
+            backtest.process_df_row(
+                row, dataset.price_column, dataset.timeseries_column, is_last_row
+            )
 
         end_balance = backtest.positions.total_positions_value
 

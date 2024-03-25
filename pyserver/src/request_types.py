@@ -59,6 +59,7 @@ class BodyCreateCodePreset(BaseModel):
 
 
 class BodyCreateManualBacktest(BaseModel):
+    backtest_data_range: List[int]
     open_long_trade_cond: str
     close_long_trade_cond: str
     open_short_trade_cond: str
