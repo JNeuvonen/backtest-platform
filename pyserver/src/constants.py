@@ -71,3 +71,4 @@ class CandleSize:
 
 
 ONE_YEAR_IN_MS = 31556952000
+ONE_HOUR_IN_MS = 3_600_000

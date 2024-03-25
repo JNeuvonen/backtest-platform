@@ -1,3 +1,6 @@
+from constants import ONE_HOUR_IN_MS
+
+
 def get_backtest_profit_factor_comp(trades):
     gross_profit = 0.0
     gross_loss = 0.0
@@ -75,3 +78,16 @@ def find_max_drawdown(balances):
 
 def get_cagr(end_balance, start_balance, years):
     return (end_balance / start_balance) ** (1 / years) - 1
+
+
+def turn_short_fee_perc_to_coeff(short_fee_hourly_perc: float, candles_time_delta):
+    hours_in_candle = 0
+
+    if candles_time_delta == ONE_HOUR_IN_MS:
+        return short_fee_hourly_perc / 100
+    elif candles_time_delta > ONE_HOUR_IN_MS:
+        hours_in_candle = candles_time_delta / ONE_HOUR_IN_MS
+        return ((short_fee_hourly_perc / 100) + 1) ** hours_in_candle
+    elif candles_time_delta < ONE_HOUR_IN_MS:
+        exponent = ONE_HOUR_IN_MS / candles_time_delta
+        return (1 + (short_fee_hourly_perc / 100)) ** (1 / exponent)

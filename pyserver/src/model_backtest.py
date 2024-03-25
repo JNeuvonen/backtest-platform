@@ -1,6 +1,8 @@
 import json
 from typing import Dict, List
 
+from pandas.core.array_algos import take
+
 from log import LogExceptionContext
 from query_trade import TradeQuery
 from query_weights import ModelWeights
@@ -64,13 +66,14 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
 
 class Positions:
-    def __init__(self, start_balance, fees, slippage):
+    def __init__(self, start_balance, fees, slippage, short_fee_coeff=1):
         self.start_balance = start_balance
         self.cash = start_balance
         self.fees = fees
         self.slippage = slippage
         self.position = 0.0
         self.short_debt = 0.0
+        self.short_fee_coeff = short_fee_coeff
         self.total_positions_value = 0.0
         self.buy_and_hold_position = None
 
@@ -132,6 +135,34 @@ class Positions:
         self.trade_prices = [price]
         self.trade_predictions = [prediction]
 
+    def take_profit_threshold_hit(
+        self, price: float, take_profit_threshold_perc: float
+    ):
+        if self.position > 0:
+            return price / self.enter_trade_price > (
+                1 + (take_profit_threshold_perc / 100)
+            )
+
+        if self.short_debt > 0:
+            return price / self.enter_trade_price < (
+                1 - (take_profit_threshold_perc / 100)
+            )
+
+        return False
+
+    def stop_loss_threshold_hit(self, price: float, stop_loss_threshold_perc: float):
+        if self.position > 0:
+            return price / self.enter_trade_price < (
+                1 - (stop_loss_threshold_perc / 100)
+            )
+
+        if self.short_debt > 0:
+            return price / self.enter_trade_price > (
+                1 + (stop_loss_threshold_perc / 100)
+            )
+
+        return False
+
     def go_long(self, price: float, prediction: float, kline_open_time: int):
         self.cash = self.cash * self.slippage * self.fees
         self.position = self.cash / price
@@ -154,6 +185,7 @@ class Positions:
             portfolio_worth += price * self.position
         if self.short_debt > 0.0:
             portfolio_worth -= price * self.short_debt
+            self.short_debt *= self.short_fee_coeff
         self.total_positions_value = portfolio_worth
         self.trade_prices.append(price)
 

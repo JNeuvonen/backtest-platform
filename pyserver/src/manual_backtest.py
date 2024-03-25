@@ -5,6 +5,7 @@ from backtest_utils import (
     get_backtest_profit_factor_comp,
     get_backtest_trade_details,
     get_cagr,
+    turn_short_fee_perc_to_coeff,
 )
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
 from dataset import read_dataset_to_mem
@@ -40,6 +41,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             START_BALANCE,
             backtestInfo.trading_fees_perc,
             backtestInfo.slippage_perc,
+            backtestInfo.short_fee_hourly,
             replacements,
             backtestInfo.use_short_selling,
             backtestInfo.use_time_based_close,
@@ -145,6 +147,7 @@ class ManualBacktest:
         start_balance: float,
         fees_perc: float,
         slippage_perc: float,
+        short_fee_hourly_perc: float,
         enter_and_exit_criteria_placeholders: Dict,
         use_short_selling: bool,
         use_time_based_close: bool,
@@ -155,9 +158,17 @@ class ManualBacktest:
         max_klines_until_close: int,
         candles_time_delta,
     ) -> None:
+        short_fee_hourly_coeff = turn_short_fee_perc_to_coeff(
+            short_fee_hourly_perc, candles_time_delta
+        )
+        print(short_fee_hourly_coeff)
+
         self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
         self.positions = Positions(
-            start_balance, 1 - (fees_perc / 100), 1 - (slippage_perc / 100)
+            start_balance,
+            1 - (fees_perc / 100),
+            1 - (slippage_perc / 100),
+            short_fee_hourly_coeff,
         )
         self.history: List = []
         self.use_short_selling = use_short_selling
@@ -206,6 +217,18 @@ class ManualBacktest:
             # auto close positions if time threshold is met
             should_close_short = True
             should_close_long = True
+
+        if self.use_profit_based_close and self.positions.take_profit_threshold_hit(
+            price, self.take_profit_threshold_perc
+        ):
+            should_close_long = True
+            should_close_short = True
+
+        if self.use_stop_loss_based_close and self.positions.stop_loss_threshold_hit(
+            price, self.stop_loss_threshold_perc
+        ):
+            should_close_long = True
+            should_close_short = True
 
         self.tick(
             price,
