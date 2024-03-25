@@ -1,5 +1,5 @@
 import { UseDisclosureReturn, useDisclosure } from "@chakra-ui/react";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { ReactNode, createContext } from "react";
 import { usePathParams } from "../../hooks/usePathParams";
 import {
@@ -13,6 +13,7 @@ import { BacktestForm } from "./backtest-form";
 import { ShowColumnsModal } from "./columns-modal";
 import { RunPythonModal } from "./run-python";
 import { FilterBacktestDrawer } from "./filter-backtests";
+import { ConfirmDeleteSelectedModal } from "./confirm-delete";
 
 interface BacktestContextType {
   createNewDrawer: UseDisclosureReturn;
@@ -21,11 +22,16 @@ interface BacktestContextType {
   priceColumnPopover: UseDisclosureReturn;
   targetColumnPopover: UseDisclosureReturn;
   klineOpenTimePopover: UseDisclosureReturn;
+  confirmDeleteSelectedModal: UseDisclosureReturn;
   runPythonModal: UseDisclosureReturn;
+  onDeleteMode: UseDisclosureReturn;
   datasetBacktestsQuery: UseQueryResult<BacktestObject[] | null, unknown>;
   datasetQuery: UseQueryResult<Dataset | null, unknown>;
   forceUpdate: () => void;
   datasetName: string;
+  selectedBacktests: number[];
+  selectBacktest: (backtestId: number) => void;
+  resetSelection: () => void;
 }
 
 interface BacktestProvidersProps {
@@ -55,8 +61,25 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
   const klineOpenTimePopover = useDisclosure();
   const runPythonModal = useDisclosure();
   const filterDrawer = useDisclosure();
+  const onDeleteMode = useDisclosure();
+  const confirmDeleteSelectedModal = useDisclosure();
 
   const forceUpdate = useForceUpdate();
+  const [selectedBacktests, setSelectedBacktests] = useState<number[]>([]);
+
+  const selectBacktest = (backtestId: number) => {
+    setSelectedBacktests((prevSelectedBacktests) => {
+      if (prevSelectedBacktests.includes(backtestId)) {
+        return prevSelectedBacktests.filter((item) => item !== backtestId);
+      } else {
+        return [...prevSelectedBacktests, backtestId];
+      }
+    });
+  };
+
+  const resetSelection = () => {
+    setSelectedBacktests([]);
+  };
 
   return (
     <BacktestContext.Provider
@@ -72,12 +95,18 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
         klineOpenTimePopover,
         runPythonModal,
         filterDrawer,
+        onDeleteMode,
+        selectedBacktests,
+        selectBacktest,
+        resetSelection,
+        confirmDeleteSelectedModal,
       }}
     >
       <BacktestForm />
       <ShowColumnsModal />
       <RunPythonModal />
       <FilterBacktestDrawer />
+      <ConfirmDeleteSelectedModal />
       {children}
     </BacktestContext.Provider>
   );

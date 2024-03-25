@@ -21,11 +21,14 @@ import { MdDeleteForever } from "react-icons/md";
 import { ChakraPopover } from "../../../components/chakra/popover";
 import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
+import { FaUndoAlt } from "react-icons/fa";
+import { GiSelect } from "react-icons/gi";
 import {
   setBacktestPriceColumn,
   setKlineOpenTimeColumn,
   setTargetColumn,
 } from "../../../clients/requests";
+import { getParenthesisSize } from "../../../utils/content";
 
 export const SimulateDatasetIndex = () => {
   const {
@@ -39,6 +42,10 @@ export const SimulateDatasetIndex = () => {
     klineOpenTimePopover,
     runPythonModal,
     filterDrawer,
+    onDeleteMode,
+    selectedBacktests,
+    resetSelection,
+    confirmDeleteSelectedModal,
   } = useBacktestContext();
 
   const toast = useToast();
@@ -76,7 +83,28 @@ export const SimulateDatasetIndex = () => {
           <MenuItem icon={<FaFilter />} onClick={filterDrawer.onOpen}>
             Filter
           </MenuItem>
-          <MenuItem icon={<MdDeleteForever />}>Delete</MenuItem>
+          <MenuItem icon={<GiSelect />} onClick={onDeleteMode.onOpen}>
+            Select
+          </MenuItem>
+          <MenuItem
+            icon={<FaUndoAlt />}
+            isDisabled={selectedBacktests.length === 0}
+            onClick={() => {
+              onDeleteMode.onClose();
+              resetSelection();
+            }}
+          >
+            Undo select {getParenthesisSize(selectedBacktests.length)}
+          </MenuItem>
+          <MenuItem
+            icon={<MdDeleteForever />}
+            onClick={() => {
+              confirmDeleteSelectedModal.onOpen();
+            }}
+            isDisabled={selectedBacktests.length === 0}
+          >
+            Delete selected {getParenthesisSize(selectedBacktests.length)}
+          </MenuItem>
         </ChakraMenu>
 
         <ChakraMenu menuButton={<MenuButton>Edit</MenuButton>}>

@@ -396,3 +396,11 @@ export const setKlineOpenTimeColumn = async (
     }
   });
 };
+
+export const deleteManyBacktests = async (listOfBacktestIds: number[]) => {
+  const res = await buildRequest({
+    method: "DELETE",
+    url: URLS.deleteManyBacktest(listOfBacktestIds),
+  });
+  return res;
+};

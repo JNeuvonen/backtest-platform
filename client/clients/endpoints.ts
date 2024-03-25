@@ -100,4 +100,9 @@ export const URLS = {
   backtest: BASE_URL + API.backtest.root,
   createCodePreset: () => BASE_URL + API.code_preset.root,
   fetchCodePresets: () => BASE_URL + API.code_preset.root + "/all",
+  deleteManyBacktest: (listOfIds: number[]) =>
+    BASE_URL +
+    API.backtest.root +
+    "/delete-many" +
+    `?list_of_ids=${JSON.stringify(listOfIds)}`,
 };

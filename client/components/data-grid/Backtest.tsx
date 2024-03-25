@@ -11,7 +11,8 @@ import { usePathParams } from "../../hooks/usePathParams";
 import { getDatasetBacktestPath } from "../../utils/navigate";
 import { Link } from "react-router-dom";
 import { roundNumberDropRemaining } from "../../utils/number";
-import { round } from "lodash";
+import { Checkbox } from "@chakra-ui/react";
+import { useBacktestContext } from "../../context/backtest";
 
 interface Props {
   backtests: BacktestObject[];
@@ -19,6 +20,26 @@ interface Props {
 
 type PathParams = {
   datasetName: string;
+};
+
+const checkboxCellRenderer = (params: ICellRendererParams) => {
+  const { selectBacktest } = useBacktestContext();
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        height: "100%",
+      }}
+    >
+      <Checkbox
+        isChecked={params.value}
+        onChange={() => {
+          selectBacktest(params.data.id);
+        }}
+      />
+    </div>
+  );
 };
 
 const idCellRenderer = (params: ICellRendererParams) => {
@@ -34,6 +55,13 @@ const idCellRenderer = (params: ICellRendererParams) => {
 };
 
 const COLUMN_DEFS: ColDef[] = [
+  {
+    headerName: "Select",
+    field: "select",
+    sortable: true,
+    editable: false,
+    cellRenderer: checkboxCellRenderer,
+  },
   {
     headerName: "ID",
     field: "id",
@@ -176,6 +204,7 @@ const createDatarowItems = (backtestObjects: BacktestObject[]) => {
 
 export const BacktestDatagrid = (props: Props) => {
   const { backtests } = props;
+  const { onDeleteMode } = useBacktestContext();
 
   const [rowData, setRowData] = useState(createDatarowItems(backtests));
 
@@ -190,7 +219,12 @@ export const BacktestDatagrid = (props: Props) => {
     >
       <AgGridReact
         pagination={true}
-        columnDefs={COLUMN_DEFS}
+        columnDefs={COLUMN_DEFS.filter((item) => {
+          if (!onDeleteMode.isOpen) {
+            return item.headerName !== "Select";
+          }
+          return true;
+        })}
         paginationAutoPageSize={true}
         rowData={rowData}
       />
