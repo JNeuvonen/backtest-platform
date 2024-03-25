@@ -12,9 +12,11 @@ import { useForceUpdate } from "../../hooks/useForceUpdate";
 import { BacktestForm } from "./backtest-form";
 import { ShowColumnsModal } from "./columns-modal";
 import { RunPythonModal } from "./run-python";
+import { FilterBacktestDrawer } from "./filter-backtests";
 
 interface BacktestContextType {
   createNewDrawer: UseDisclosureReturn;
+  filterDrawer: UseDisclosureReturn;
   showColumnsModal: UseDisclosureReturn;
   priceColumnPopover: UseDisclosureReturn;
   targetColumnPopover: UseDisclosureReturn;
@@ -52,6 +54,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
   const priceColumnPopover = useDisclosure();
   const klineOpenTimePopover = useDisclosure();
   const runPythonModal = useDisclosure();
+  const filterDrawer = useDisclosure();
 
   const forceUpdate = useForceUpdate();
 
@@ -68,11 +71,13 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
         datasetName,
         klineOpenTimePopover,
         runPythonModal,
+        filterDrawer,
       }}
     >
       <BacktestForm />
       <ShowColumnsModal />
       <RunPythonModal />
+      <FilterBacktestDrawer />
       {children}
     </BacktestContext.Provider>
   );

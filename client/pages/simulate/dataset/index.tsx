@@ -38,6 +38,7 @@ export const SimulateDatasetIndex = () => {
     datasetName,
     klineOpenTimePopover,
     runPythonModal,
+    filterDrawer,
   } = useBacktestContext();
 
   const toast = useToast();
@@ -72,7 +73,9 @@ export const SimulateDatasetIndex = () => {
           <MenuItem icon={<CiViewColumn />} onClick={showColumnsModal.onOpen}>
             Show columns
           </MenuItem>
-          <MenuItem icon={<FaFilter />}>Filter</MenuItem>
+          <MenuItem icon={<FaFilter />} onClick={filterDrawer.onOpen}>
+            Filter
+          </MenuItem>
           <MenuItem icon={<MdDeleteForever />}>Delete</MenuItem>
         </ChakraMenu>
 
