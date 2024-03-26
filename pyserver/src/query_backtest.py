@@ -16,6 +16,7 @@ class Backtest(Base):
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)
     use_stop_loss_based_close = Column(Boolean)
+    use_short_selling = Column(Boolean)
     klines_until_close = Column(Integer)
     name = Column(String)
     data = Column(String)

@@ -159,6 +159,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "use_stop_loss_based_close": backtestInfo.use_stop_loss_based_close,
                 "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
                 "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
+                "use_short_selling": backtestInfo.use_short_selling,
             }
         )
 
