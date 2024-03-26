@@ -281,18 +281,6 @@ export const BacktestForm = () => {
             </Text>
             <Text
               variant={TEXT_VARIANTS.clickable}
-              onClick={runPythonModal.onOpen}
-            >
-              Run python
-            </Text>
-            <Text
-              variant={TEXT_VARIANTS.clickable}
-              onClick={backtestPriceColumnPopover.onOpen}
-            >
-              Set price column
-            </Text>
-            <Text
-              variant={TEXT_VARIANTS.clickable}
               onClick={() => {
                 backtestDiskManager.reset();
                 formikRef.current?.resetForm();

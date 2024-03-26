@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useBacktestContext } from ".";
 import { FormSubmitBar } from "../../components/form/FormSubmitBar";
-import { RunPythonOnAllCols } from "../../components/RunPythonOnAllCols";
 import { CREATE_COLUMNS_DEFAULT } from "../../utils/code";
 import { useToast } from "@chakra-ui/react";
 import { execPythonOnDataset } from "../../clients/requests";
+import { CodeEditor } from "../../components/CodeEditor";
+import { CODE_PRESET_CATEGORY } from "../../utils/constants";
 
 export const RunPythonModal = () => {
   const toast = useToast();
@@ -36,25 +37,26 @@ export const RunPythonModal = () => {
   };
   return (
     <ChakraModal
-      isOpen={runPythonModal.isOpen}
-      title={"Run python"}
-      onClose={runPythonModal.onClose}
-      modalContentStyle={{
-        minWidth: "max-content",
-        minHeight: "50%",
-        maxWidth: "90%",
-        marginTop: "10vh",
-      }}
+      {...runPythonModal}
+      title="Run python"
       footerContent={
         <FormSubmitBar
           cancelCallback={runPythonModal.onClose}
           submitCallback={runPythonSubmit}
         />
       }
+      modalContentStyle={{ maxWidth: "60%" }}
     >
-      <RunPythonOnAllCols
+      <CodeEditor
         code={createColumnsCode}
         setCode={setCreateColumnsCode}
+        style={{ marginTop: "16px" }}
+        fontSize={13}
+        label="Create columns"
+        disableCodePresets={true}
+        codeContainerStyles={{ width: "100%" }}
+        height={"250px"}
+        presetCategory={CODE_PRESET_CATEGORY.backtest_create_columns}
       />
     </ChakraModal>
   );
