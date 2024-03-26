@@ -76,6 +76,12 @@ const COLUMN_DEFS: ColDef[] = [
     editable: false,
   },
   {
+    headerName: "Risk adj. ret. (%)",
+    field: "risk_adjusted_return",
+    sortable: true,
+    editable: false,
+  },
+  {
     headerName: "Result net",
     field: "result",
     sortable: true,
@@ -114,12 +120,6 @@ const COLUMN_DEFS: ColDef[] = [
   {
     headerName: "Market exposure (%)",
     field: "market_exposure_time",
-    sortable: true,
-    editable: false,
-  },
-  {
-    headerName: "Risk adj. ret. (%)",
-    field: "risk_adjusted_return",
     sortable: true,
     editable: false,
   },
