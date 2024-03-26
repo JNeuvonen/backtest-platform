@@ -172,30 +172,43 @@ export interface BacktestBalance {
 }
 
 export interface BacktestObject {
+  id: number;
   open_long_trade_cond: string;
   open_short_trade_cond: string;
-  close_long_trade_cond?: string;
-  close_short_trade_cond?: string;
+  close_long_trade_cond: string;
+  close_short_trade_cond: string;
+  use_time_based_close: boolean;
+  use_profit_based_close: boolean;
+  use_stop_loss_based_close: boolean;
+  use_short_selling: boolean;
+  klines_until_close: number;
+  name: string;
+  data: BacktestBalance[];
+  trade_count: number;
   profit_factor: number;
+  gross_profit: number;
+  gross_loss: number;
+  model_weights_id: number;
+  train_job_id: number;
+  dataset_id: number;
+  start_balance: number;
+  end_balance: number;
   result_perc: number;
+  take_profit_threshold_perc: number;
+  stop_loss_threshold_perc: number;
+  backtest_range_start: number;
+  backtest_range_end: number;
+  best_trade_result_perc: number;
+  worst_trade_result_perc: number;
   buy_and_hold_result_net: number;
   buy_and_hold_result_perc: number;
   share_of_winning_trades_perc: number;
   share_of_losing_trades_perc: number;
-  id: number;
-  name?: string;
-  trade_count: number;
-  model_weights_id?: number;
-  train_job_id?: number;
-  dadtaset_id?: number;
-  data: BacktestBalance[];
-  start_balance: number;
   max_drawdown_perc: number;
-  end_balance: number;
   cagr: number;
-  buy_and_hold_cagr: number;
   market_exposure_time: number;
   risk_adjusted_return: number;
+  buy_and_hold_cagr: number;
 }
 
 export interface Trade {
