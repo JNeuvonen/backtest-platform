@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { useBacktestById } from "../../../../clients/queries/queries";
-import { Heading, Spinner } from "@chakra-ui/react";
+import {
+  Heading,
+  Spinner,
+  Stat,
+  StatLabel,
+  StatNumber,
+} from "@chakra-ui/react";
 import { GenericAreaChart } from "../../../../components/charts/AreaChart";
 import {
   FetchBacktestByIdRes,
@@ -12,6 +18,7 @@ import { GenericBarChart } from "../../../../components/charts/BarChart";
 import { ChakraSlider } from "../../../../components/chakra/Slider";
 import { ChakraCard } from "../../../../components/chakra/Card";
 import { COLOR_CONTENT_PRIMARY } from "../../../../utils/colors";
+import { roundNumberDropRemaining } from "../../../../utils/number";
 
 interface PathParams {
   datasetName: string;
@@ -58,12 +65,16 @@ const getPortfolioGrowthData = (backtestData: FetchBacktestByIdRes) => {
 };
 
 const isTradeExitTick = (trades: Trade[], kline_open_time: number) => {
-  const found = trades.filter((trade) => trade.close_time === kline_open_time);
+  const found = trades.filter((trade) =>
+    trade && trade.close_time ? trade.close_time === kline_open_time : false
+  );
   return found.length > 0;
 };
 
 const isTradeEnterTick = (trades: Trade[], kline_open_time: number) => {
-  const found = trades.filter((trade) => trade.open_time === kline_open_time);
+  const found = trades.filter((trade) =>
+    trade && trade.open_time ? trade.open_time === kline_open_time : false
+  );
   return found.length > 0;
 };
 
@@ -92,16 +103,106 @@ const getTradesData = (
 };
 
 export const DatasetBacktestPage = () => {
-  const { datasetName, backtestId } = usePathParams<PathParams>();
+  const { backtestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(backtestId));
 
   const [tradeFilterPerc, setTradeFilterPerc] = useState(0);
 
   if (!backtestQuery.data) return <Spinner />;
 
+  const backtest = backtestQuery.data.data;
+
   return (
     <div>
       <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
+
+      <div style={{ marginTop: "16px" }}>
+        <ChakraCard heading={<Heading size="md">Summary</Heading>}>
+          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Risk adjusted CAGR</StatLabel>
+                <StatNumber>
+                  {backtest.risk_adjusted_return
+                    ? String(
+                        roundNumberDropRemaining(
+                          backtest.risk_adjusted_return * 100,
+                          2
+                        )
+                      ) + "%"
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Actual CAGR</StatLabel>
+                <StatNumber>
+                  {backtest.cagr
+                    ? String(roundNumberDropRemaining(backtest.cagr * 100, 2)) +
+                      "%"
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Buy and hold CAGR</StatLabel>
+                <StatNumber>
+                  {backtest.buy_and_hold_cagr
+                    ? String(
+                        roundNumberDropRemaining(
+                          backtest.buy_and_hold_cagr * 100,
+                          2
+                        )
+                      ) + "%"
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Time exposure</StatLabel>
+                <StatNumber>
+                  {backtest.market_exposure_time
+                    ? String(
+                        roundNumberDropRemaining(
+                          backtest.market_exposure_time * 100,
+                          2
+                        )
+                      ) + "%"
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Max drawdown</StatLabel>
+                <StatNumber>
+                  {backtest.max_drawdown_perc
+                    ? String(
+                        roundNumberDropRemaining(backtest.max_drawdown_perc, 2)
+                      ) + "%"
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Profit factor</StatLabel>
+                <StatNumber>
+                  {backtest.profit_factor
+                    ? String(
+                        roundNumberDropRemaining(backtest.profit_factor, 2)
+                      )
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+          </div>
+        </ChakraCard>
+      </div>
 
       <Heading size={"md"} marginTop={"16px"}>
         Backtest balance growth
