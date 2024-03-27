@@ -84,7 +84,7 @@ def turn_short_fee_perc_to_coeff(short_fee_hourly_perc: float, candles_time_delt
     hours_in_candle = 0
 
     if candles_time_delta == ONE_HOUR_IN_MS:
-        return short_fee_hourly_perc / 100
+        return 1 + (short_fee_hourly_perc / 100)
     elif candles_time_delta > ONE_HOUR_IN_MS:
         hours_in_candle = candles_time_delta / ONE_HOUR_IN_MS
         return ((short_fee_hourly_perc / 100) + 1) ** hours_in_candle
