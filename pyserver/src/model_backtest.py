@@ -1,7 +1,9 @@
 import json
+import math
 from typing import Dict, List
 
-from pandas.core.array_algos import take
+from sqlalchemy import text
+
 
 from log import LogExceptionContext
 from query_trade import TradeQuery
@@ -10,12 +12,16 @@ from query_trainjob import TrainJob, TrainJobQuery
 from query_backtest import BacktestQuery
 from request_types import BodyRunBacktest
 from code_gen_template import BACKTEST_MODEL_TEMPLATE
+from utils import get_is_invalid_number
 
 
 class Direction:
     LONG = "long"
     SHORT = "short"
     CASH = "cash"
+
+
+START_BALANCE = 10000
 
 
 def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
@@ -36,8 +42,6 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
             + backtestInfo.exit_trade_cond,
             "{PREDICTION}": None,
         }
-
-        START_BALANCE = 10000
 
         backtest_v2 = BacktestV2(START_BALANCE, 0.1, 0.1, replacements)
         for idx in range(len(prices)):
@@ -76,6 +80,7 @@ class Positions:
         self.short_fee_coeff = short_fee_coeff
         self.total_positions_value = 0.0
         self.buy_and_hold_position = None
+        self.is_trading_forced_stop = False
 
         self.enter_trade_price = 0.0
         self.enter_trade_time = 0
@@ -100,8 +105,10 @@ class Positions:
     def add_trade(self, price: float, kline_open_time: int, direction):
         net_profit = self.total_positions_value - self.enter_trade_balance
         percent_result = (
-            self.total_positions_value / self.enter_trade_balance - 1
-        ) * 100
+            (self.total_positions_value / self.enter_trade_balance - 1) * 100
+            if self.enter_trade_balance != 0
+            else 0
+        )
 
         self.trades.append(
             {
@@ -123,7 +130,7 @@ class Positions:
         self.short_debt = 0.0
         self.cash = self.cash * self.slippage * self.fees
 
-        self.add_trade(price, kline_open_time, Direction.SHORT)
+        self.add_trade(price, kline_open_time, Direction.LONG)
 
     def init_trade_track_data(
         self, price: float, prediction: float, kline_open_time: int
@@ -164,28 +171,34 @@ class Positions:
         return False
 
     def go_long(self, price: float, prediction: float, kline_open_time: int):
-        self.cash = self.cash * self.slippage * self.fees
-        self.position = self.cash / price
-        self.cash = 0.0
+        if not self.is_trading_forced_stop:
+            self.cash = self.cash * self.slippage * self.fees
+            self.position = self.cash / price
+            self.cash = 0.0
 
-        self.init_trade_track_data(price, prediction, kline_open_time)
+            self.init_trade_track_data(price, prediction, kline_open_time)
 
     def go_short(self, price: float, prediction: float, kline_open_time: int):
-        self.cash = self.cash * self.slippage * self.fees
-        position_size = self.cash / price
-        short_proceedings = position_size * price
-        self.short_debt = position_size
-        self.cash += short_proceedings
+        if not self.is_trading_forced_stop:
+            self.cash = self.cash * self.slippage * self.fees
+            position_size = self.cash / price
+            short_proceedings = position_size * price
+            self.short_debt = position_size
+            self.cash += short_proceedings
 
-        self.init_trade_track_data(price, prediction, kline_open_time)
+            self.init_trade_track_data(price, prediction, kline_open_time)
 
     def update_balance(self, price: float, prediction: float, kline_open_time: int):
         portfolio_worth = self.cash
         if self.position > 0.0:
             portfolio_worth += price * self.position
         if self.short_debt > 0.0:
-            portfolio_worth -= price * self.short_debt
             self.short_debt *= self.short_fee_coeff
+            portfolio_worth -= price * self.short_debt
+
+        if portfolio_worth <= START_BALANCE * 0.2:
+            self.is_trading_forced_stop = True
+
         self.total_positions_value = portfolio_worth
         self.trade_prices.append(price)
 
