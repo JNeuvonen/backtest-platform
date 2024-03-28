@@ -7,7 +7,7 @@ total_file_count=$((py_file_count + ts_file_count + go_file_count))
 
 py_lines=$(find . -type f -name '*.py' -not -path '*/venv/*' -not -path '*/node_modules/*' -not -path '*/build/*' -not -path "*/.mypy_cache/*" -not -path "*/binaries/*" | xargs cat | wc -l)
 ts_lines=$(find . -type f \( -name '*.ts' -o -name '*.tsx' \) -not -path '*/node_modules/*' -not -path '*/build/*' -not -path "*/binaries/*" | xargs cat | wc -l)
-go_lines=$(find . -type f -name '*.go' | xargs cat | wc -l) 
+go_lines=$(find . -type f -name '*.go' -not -path '*/venv/*' -not -path '*/node_modules/*' -not -path '*/.mypy_cache/*' -not -path '*/binaries/*' -not -path '*/build/*' | xargs cat | wc -l) 
 total_line_count=$((py_lines + ts_lines + go_lines))
 
 echo "Line Counts:"
