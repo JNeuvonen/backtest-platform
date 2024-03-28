@@ -1,6 +1,7 @@
 import json
 from typing import Dict, List
 from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import defer, deferred, load_only
 
 from log import LogExceptionContext
 from orm import Base, Session
@@ -102,9 +103,10 @@ class BacktestQuery:
                 backtests = (
                     session.query(Backtest)
                     .filter(Backtest.dataset_id == dataset_id)
+                    .options(defer(Backtest.data))
                     .all()
                 )
-                return [BacktestQuery.deserialize_data(bt) for bt in backtests]
+                return backtests
 
     @staticmethod
     def delete_backtests_by_ids(ids: List[int]):
