@@ -258,6 +258,10 @@ class ManualBacktest:
             should_close_long = True
             should_close_short = True
 
+        if self.positions.is_trading_forced_stop is True:
+            should_close_long = True
+            should_close_short = True
+
         self.tick(
             price,
             kline_open_time,
