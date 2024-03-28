@@ -1,9 +1,12 @@
+import math
 import threading
 from io import BytesIO
 import os
 from fastapi import UploadFile
 import pandas as pd
 import sqlite3
+
+from sqlalchemy.inspection import inspect
 
 from constants import (
     DB_DATASETS,
@@ -132,3 +135,31 @@ def to_dict(obj):
 def get_col(datasetColStrFormat: str):
     parts = datasetColStrFormat.split("_")
     return parts[1]
+
+
+def get_is_invalid_number(num):
+    if num == math.inf:
+        return True
+    elif num == -math.inf:
+        return True
+    elif math.isnan(num):
+        return True
+
+    return False
+
+
+def base_model_to_dict(obj):
+    return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
+
+
+def contains_infinity(dct):
+    return any(
+        math.isinf(value) for value in dct.values() if isinstance(value, (float, int))
+    )
+
+
+def replace_infinities(dct):
+    for k, v in dct.items():
+        if isinstance(v, (float, int)) and math.isinf(v):
+            dct[k] = 0
+    return dct
