@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { GenericAreaChart } from "../../../../components/charts/AreaChart";
 import {
+  BacktestBalance,
   FetchBacktestByIdRes,
   Trade,
 } from "../../../../clients/queries/response-types";
@@ -46,22 +47,66 @@ const getPortfolioGrowthData = (backtestData: FetchBacktestByIdRes) => {
 
   const trades = backtestData.trades;
 
+  const setOfUsedKlines = new Set();
+
+  for (let i = 0; i < trades.length; i++) {
+    const tickEnter = findTickBasedOnOpenTime(
+      portfolioData,
+      trades[i].open_time
+    );
+    const tickClose = findTickBasedOnOpenTime(
+      portfolioData,
+      trades[i].close_time
+    );
+
+    if (!tickEnter || !tickClose) {
+      continue;
+    }
+
+    ret.push({
+      strategy: tickEnter["portfolio_worth"],
+      kline_open_time: tickEnter["kline_open_time"],
+      buy_and_hold: tickEnter["buy_and_hold_worth"],
+      enter_trade: tickEnter["buy_and_hold_worth"],
+      exit_trade: null,
+    });
+
+    ret.push({
+      strategy: tickClose["portfolio_worth"],
+      kline_open_time: tickClose["kline_open_time"],
+      buy_and_hold: tickClose["buy_and_hold_worth"],
+      enter_trade: null,
+      exit_trade: tickClose["buy_and_hold_worth"],
+    });
+    setOfUsedKlines.add(tickEnter["kline_open_time"]);
+    setOfUsedKlines.add(tickClose["kline_open_time"]);
+  }
+
   for (let i = 0; i < portfolioData.length; i += increment) {
     const item = portfolioData[i];
-
-    const isEnterTick = isTradeEnterTick(trades, item["kline_open_time"]);
-    const isExitTick = isTradeExitTick(trades, item["kline_open_time"]);
-
+    if (setOfUsedKlines.has(item["kline_open_time"])) {
+      continue;
+    }
     ret.push({
       strategy: item["portfolio_worth"],
       kline_open_time: item["kline_open_time"],
       buy_and_hold: item["buy_and_hold_worth"],
-      enter_trade: isEnterTick ? item["buy_and_hold_worth"] : null,
-      exit_trade: isExitTick ? item["buy_and_hold_worth"] : null,
+      enter_trade: null,
+      exit_trade: null,
     });
   }
 
+  ret.sort((a, b) => a.kline_open_time - b.kline_open_time);
+
   return ret;
+};
+
+const findTickBasedOnOpenTime = (
+  ticks: BacktestBalance[],
+  kline_open_time: number
+) => {
+  const tick = ticks.filter((item) => item.kline_open_time === kline_open_time);
+  return tick.length > 0 ? tick[0] : null;
 };
 
 const isTradeExitTick = (trades: Trade[], kline_open_time: number) => {
