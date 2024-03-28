@@ -1,5 +1,4 @@
 import json
-from typing import List
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import Response
 
@@ -7,7 +6,7 @@ from context import HttpResponseContext
 from manual_backtest import run_manual_backtest
 from query_backtest import BacktestQuery
 from query_trade import TradeQuery
-from request_types import BodyCreateManualBacktest, BodyDeleteManyBacktestsById
+from request_types import BodyCreateManualBacktest
 
 
 router = APIRouter()
@@ -24,6 +23,7 @@ class RoutePaths:
 async def route_get_backtest_by_id(backtest_id):
     with HttpResponseContext():
         backtest = BacktestQuery.fetch_backtest_by_id(backtest_id)
+
         if backtest is None:
             raise HTTPException(
                 detail=f"No backtest found for {backtest_id}", status_code=400
