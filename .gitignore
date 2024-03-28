@@ -17,6 +17,7 @@ pyserver/build
 venv
 .vscode
 .wdm
+.env
 
 datasets_util.db
 datasets.db
