@@ -1,3 +1,4 @@
+from typing import List
 from tests.t_constants import BinanceCols
 from tests.t_utils import create_backtest_body, create_train_job_body
 
@@ -90,6 +91,12 @@ def create_manual_backtest(
     use_time_based_close: bool,
     trading_fees_perc: float,
     slippage_perc: float,
+    backtest_data_range: List[int],
+    use_profit_based_close: bool,
+    use_stop_loss_based_close: bool,
+    short_fee_hourly: float,
+    take_profit_threshold_perc: float,
+    stop_loss_threshold_perc: float,
 ):
     return {
         "dataset_id": dataset_id,
@@ -101,6 +108,12 @@ def create_manual_backtest(
         "use_time_based_close": use_time_based_close,
         "trading_fees_perc": trading_fees_perc,
         "slippage_perc": slippage_perc,
+        "backtest_data_range": backtest_data_range,
+        "use_profit_based_close": use_profit_based_close,
+        "use_stop_loss_based_close": use_stop_loss_based_close,
+        "short_fee_hourly": short_fee_hourly,
+        "take_profit_threshold_perc": take_profit_threshold_perc,
+        "stop_loss_threshold_perc": stop_loss_threshold_perc,
     }
 
 

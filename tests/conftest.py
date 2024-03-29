@@ -136,6 +136,12 @@ def fixt_manual_backtest(fixt_btc_small_1h):
         False,
         0.1,
         0.01,
+        [0, 100],
+        False,
+        False,
+        0.000016,
+        0.0,
+        0.0,
     )
     Post.create_manual_backtest(backtest_body)
     return fixt_btc_small_1h
