@@ -1,10 +1,10 @@
 #!/bin/bash
 
-export APP_DATA_PATH="tests"
+export APP_DATA_PATH="tests/backtest_platform"
 export ENV="PROD"
 export TEST_SPEED="FAST"
 export IS_TESTING="1"
 
-pytest "tests" -m acceptance
+pytest "tests/backtest_platform" -m acceptance
 
 

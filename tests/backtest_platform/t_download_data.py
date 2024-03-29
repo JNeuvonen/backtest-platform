@@ -3,7 +3,7 @@ import sys
 import os
 from binance import Client
 
-from tests.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
 
 sys.path.append(SERVER_SOURCE_DIR)
 from constants import BINANCE_DATA_COLS

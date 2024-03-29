@@ -1,9 +1,13 @@
 import pytest
-from tests.fixtures import NUM_EPOCHS_DEFAULT, create_backtest, create_train_job_basic
-from tests.t_conf import SERVER_SOURCE_DIR
-from tests.t_constants import Constants, DatasetMetadata
+from tests.backtest_platform.fixtures import (
+    NUM_EPOCHS_DEFAULT,
+    create_backtest,
+    create_train_job_basic,
+)
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_constants import Constants, DatasetMetadata
 
-from tests.t_utils import Fetch, Post
+from tests.backtest_platform.t_utils import Fetch, Post
 
 import sys
 

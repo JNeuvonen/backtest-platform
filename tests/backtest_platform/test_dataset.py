@@ -3,11 +3,15 @@ import pytest
 import sys
 
 from decimal import Decimal
-from tests.fixtures import criterion_basic, linear_model_basic
-from tests.t_conf import SERVER_SOURCE_DIR
-from tests.t_constants import BinanceCols, BinanceData, DatasetMetadata
-from tests.t_populate import t_upload_dataset
-from tests.t_utils import (
+from tests.backtest_platform.fixtures import criterion_basic, linear_model_basic
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_constants import (
+    BinanceCols,
+    BinanceData,
+    DatasetMetadata,
+)
+from tests.backtest_platform.t_populate import t_upload_dataset
+from tests.backtest_platform.t_utils import (
     Delete,
     Fetch,
     Post,

@@ -1,7 +1,7 @@
 import pytest
-from tests.t_constants import CodePresetId
+from tests.backtest_platform.t_constants import CodePresetId
 
-from tests.t_utils import Fetch
+from tests.backtest_platform.t_utils import Fetch
 
 
 @pytest.mark.acceptance

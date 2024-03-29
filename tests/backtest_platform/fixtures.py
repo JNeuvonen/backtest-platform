@@ -1,8 +1,8 @@
 from typing import List
-from tests.t_constants import BinanceCols
-from tests.t_utils import create_backtest_body, create_train_job_body
+from tests.backtest_platform.t_constants import BinanceCols
+from tests.backtest_platform.t_utils import create_backtest_body, create_train_job_body
 
-from tests.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
 from code_gen import PyCode
 
 

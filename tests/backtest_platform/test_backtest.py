@@ -1,13 +1,13 @@
 import pytest
 
-from tests.fixtures import (
+from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
     close_short_trade_cond_basic,
     create_manual_backtest,
     open_long_trade_cond_basic,
     open_short_trade_cond_basic,
 )
-from tests.t_utils import Fetch, Post
+from tests.backtest_platform.t_utils import Fetch, Post
 
 
 @pytest.mark.acceptance

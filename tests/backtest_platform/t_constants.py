@@ -1,5 +1,5 @@
 import sys
-from tests.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
 
 sys.path.append(SERVER_SOURCE_DIR)
 

@@ -1,7 +1,7 @@
 import requests
 
-from tests.t_constants import URL, DatasetMetadata
-from tests.t_context import t_file
+from tests.backtest_platform.t_constants import URL, DatasetMetadata
+from tests.backtest_platform.t_context import t_file
 
 
 def t_upload_dataset(dataset: DatasetMetadata):

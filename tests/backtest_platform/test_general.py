@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from tests.t_constants import URL
+from tests.backtest_platform.t_constants import URL
 
 
 @pytest.mark.acceptance

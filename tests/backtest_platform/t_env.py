@@ -1,6 +1,6 @@
 import os
 
-from tests.t_constants import EnvTestSpeed
+from tests.backtest_platform.t_constants import EnvTestSpeed
 
 TEST_SPEED = os.getenv("TEST_SPEED", "FAST")  # slow and fast
 

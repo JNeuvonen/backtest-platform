@@ -5,7 +5,7 @@ from pandas.compat import platform
 import pytest
 import time
 import sys
-from tests.fixtures import (
+from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
     close_short_trade_cond_basic,
     create_code_preset_body,
@@ -16,9 +16,9 @@ from tests.fixtures import (
     open_long_trade_cond_basic,
     open_short_trade_cond_basic,
 )
-from tests.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
 
-from tests.t_constants import (
+from tests.backtest_platform.t_constants import (
     BinanceCols,
     BinanceData,
     CodePresetId,
@@ -26,9 +26,9 @@ from tests.t_constants import (
     DatasetMetadata,
     Size,
 )
-from tests.t_download_data import download_historical_binance_data
-from tests.t_env import is_fast_test_mode
-from tests.t_utils import (
+from tests.backtest_platform.t_download_data import download_historical_binance_data
+from tests.backtest_platform.t_env import is_fast_test_mode
+from tests.backtest_platform.t_utils import (
     Fetch,
     Post,
     create_model_body,

@@ -5,9 +5,9 @@ from typing import List
 import pandas as pd
 from pandas.core.algorithms import mode
 import requests
-from tests.t_conf import SERVER_SOURCE_DIR
-from tests.t_constants import URL, DatasetMetadata
-from tests.t_context import t_file
+from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
+from tests.backtest_platform.t_constants import URL, DatasetMetadata
+from tests.backtest_platform.t_context import t_file
 
 
 sys.path.append(SERVER_SOURCE_DIR)
