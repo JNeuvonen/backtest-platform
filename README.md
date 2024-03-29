@@ -1,1 +1,1 @@
-I will provide extensive `README.md` for this project soon.
+I will provide an extensive `README.md` for this project soon.
