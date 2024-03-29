@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List
 from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import defer, deferred, load_only
+from sqlalchemy.orm import defer
 
 from log import LogExceptionContext
 from orm import Base, Session
