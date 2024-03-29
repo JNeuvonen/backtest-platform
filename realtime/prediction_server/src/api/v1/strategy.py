@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Response, status
 from context import HttpResponseContext
 from request_types import BodyCreateStrategy
+from schema.strategy import StrategyQuery
 
 
 router = APIRouter()
@@ -21,6 +22,7 @@ async def route_get_root():
 @router.post(RoutePaths.STRATEGY)
 async def route_create_strategy(body: BodyCreateStrategy):
     with HttpResponseContext():
+        StrategyQuery.create_entry(body.model_dump())
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
