@@ -61,3 +61,4 @@ def setup_test_environment():
     yield
     process.terminate()
     process.join()
+    orm.drop_tables()
