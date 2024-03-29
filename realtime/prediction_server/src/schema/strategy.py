@@ -18,29 +18,27 @@ class Strategy(Base):
     fetch_datasources_code = Column(String)
     data_transformations_code = Column(String)
 
-    trade_count = Column(Integer)
     priority = Column(Integer)
     kline_size_ms = Column(Integer)
     klines_left_till_autoclose = Column(Integer)
 
-    gross_profit = Column(Float)
-    gross_loss = Column(Float)
     allocated_size_perc = Column(Float)
     take_profit_threshold_perc = Column(Float)
     stop_loss_threshold_perc = Column(Float)
 
+    use_testnet = Column(Boolean)
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)
     use_stop_loss_based_close = Column(Boolean)
     use_taker_order = Column(Boolean)
 
-    should_enter_trade = Column(Boolean)
-    should_close_trade = Column(Boolean)
+    should_enter_trade = Column(Boolean, default=False)
+    should_close_trade = Column(Boolean, default=False)
 
     is_leverage_allowed = Column(Boolean)
     is_short_selling_strategy = Column(Boolean)
-    is_disabled = Column(Boolean)
-    is_in_position = Column(Boolean)
+    is_disabled = Column(Boolean, default=False)
+    is_in_position = Column(Boolean, default=False)
 
 
 class StrategyQuery:
