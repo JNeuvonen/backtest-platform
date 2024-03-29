@@ -12,8 +12,8 @@ dist
 dist-ssr
 *.local
 *.cpython*
-src-tauri/binaries
-pyserver/build
+backtest_platform/src-tauri/binaries
+backtest_platform/pyserver/build
 venv
 .vscode
 .wdm

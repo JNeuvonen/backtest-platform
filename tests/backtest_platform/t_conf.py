@@ -1,1 +1,1 @@
-SERVER_SOURCE_DIR = "pyserver/src"
+SERVER_SOURCE_DIR = "backtest_platform/pyserver/src"
