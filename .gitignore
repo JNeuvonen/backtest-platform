@@ -18,6 +18,7 @@ venv
 .vscode
 .wdm
 .env
+__pycache__
 
 datasets_util.db
 datasets.db
