@@ -22,11 +22,6 @@ import orm
 
 
 def start_service():
-    os.environ[
-        "DATABASE_URI"
-    ] = "postgresql://username:password@localhost/live_env_local_test"
-    os.environ["SERVICE_PORT"] = TEST_RUN_PORT
-    os.environ["ENV"] = "DEV"
     start_server()
 
 

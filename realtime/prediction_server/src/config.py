@@ -4,9 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URI = os.getenv(
-    "DATABASE_URI", "postgresql://username:password@localhost/live_env_local_test"
-)
+DATABASE_URI = os.getenv("DATABASE_URI", "")
 SERVICE_PORT = os.getenv("SERVICE_PORT", "")
 ENV = os.getenv("ENV", "")
 LOG_FILE = "logs"
