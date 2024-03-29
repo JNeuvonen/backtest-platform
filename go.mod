@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/binance/binance-connector-go v0.5.2 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func getBinanceKeys() (apiKey string, apiSecret string) {
+func getBinanceKeys() (apiKey string, apiSecret string, baseUrl string) {
 	err := godotenv.Load()
 	if err != nil {
 		panic("No ENV variables provided")
@@ -15,12 +15,13 @@ func getBinanceKeys() (apiKey string, apiSecret string) {
 
 	apiKey = os.Getenv("API_KEY")
 	apiSecret = os.Getenv("API_SECRET")
+	baseUrl = os.Getenv("TRADING_BASE_URL")
 
-	if apiKey == "" || apiSecret == "" {
-		panic("No API_KEY or API_SECRET provided")
+	if apiKey == "" || apiSecret == "" || baseUrl == "" {
+		panic("No API_KEY, API_SECRET or TRADING_BASE_URL provided")
 	}
 
-	return apiKey, apiSecret
+	return apiKey, apiSecret, baseUrl
 }
 
 func isProd() (isProd bool) {
