@@ -1,6 +1,5 @@
 import pytest
 import os
-import sys
 import subprocess
 import multiprocessing
 import time
@@ -9,16 +8,9 @@ from pandas.compat import platform
 from dotenv import load_dotenv
 
 from conf import TEST_RUN_PORT
+from import_helper import start_server, drop_tables
 
 load_dotenv()
-
-
-SERVICE_CODE_SOURCE_DIR = "realtime/prediction_server/src"
-
-sys.path.append(SERVICE_CODE_SOURCE_DIR)
-
-from main import start_server
-import orm
 
 
 def start_service():
@@ -48,7 +40,7 @@ def kill_process_on_port(port):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
-    orm.drop_tables()
+    drop_tables()
     kill_process_on_port(TEST_RUN_PORT)
     process = multiprocessing.Process(target=start_service)
     process.start()
@@ -56,4 +48,4 @@ def setup_test_environment():
     yield
     process.terminate()
     process.join()
-    orm.drop_tables()
+    drop_tables()

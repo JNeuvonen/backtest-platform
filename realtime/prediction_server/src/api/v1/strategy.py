@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status
 from context import HttpResponseContext
-from request_types import BodyCreateStrategy
+from api.v1.request_types import BodyCreateStrategy
 from schema.strategy import StrategyQuery
 
 
