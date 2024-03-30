@@ -11,6 +11,7 @@ class BodyCreateStrategy(BaseModel):
     priority: int
     kline_size_ms: int
     klines_left_till_autoclose: int
+    minimum_time_between_trades_ms: int
 
     allocated_size_perc: float
     take_profit_threshold_perc: float
