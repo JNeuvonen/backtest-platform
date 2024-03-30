@@ -1,27 +1,69 @@
-from constants import ONE_DAY_IN_MS
+from t_constants import ONE_DAY_IN_MS
 
 
 class TradingRules:
     class RSI_30_MA_50_CLOSE_PRICE:
         OPEN = """
-        def open_long_trade(tick):
-            return tick["RSI_30_MA_50_close_price"] > 95
-        """
+def get_enter_trade_decision(tick):
+    return tick["RSI_30_MA_50_close_price"] > 95
+"""
 
         CLOSE = """
-        def close_long_trade(tick):
-            return tick["RSI_30_MA_50_close_price"] < 95
-        """
+def get_exit_trade_decision(tick):
+    return tick["RSI_30_MA_50_close_price"] < 95
+"""
 
         FETCH = """
-        #todo
-        print("hello world")
-        """
+def fetch_datasources():
+    import pandas as pd
+    from binance import Client
+    def get_historical_klines(symbol, interval):
+        BINANCE_DATA_COLS = [
+            "kline_open_time",
+            "open_price",
+            "high_price",
+            "low_price",
+            "close_price",
+            "volume",
+            "kline_close_time",
+            "quote_asset_volume",
+            "number_of_trades",
+            "taker_buy_base_asset_volume",
+            "taker_buy_quote_asset_volume",
+            "ignore",
+        ]
+        client = Client()
+        start_time = "1 Jan, 2017"
+        klines = []
+
+        while True:
+            new_klines = client.get_historical_klines(
+                symbol, interval, start_time, limit=1000
+            )
+            if not new_klines:
+                break
+
+            klines.extend(new_klines)
+            start_time = int(new_klines[-1][0]) + 1
+
+        df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
+        df.drop(["ignore", "kline_close_time"], axis=1, inplace=True)
+        df["kline_open_time"] = pd.to_numeric(df["kline_open_time"])
+
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        df.sort_values("kline_open_time", inplace=True)
+        return df
+
+    df = get_historical_klines("BTCUSDT", Client.KLINE_INTERVAL_1DAY)
+    return df
+"""
 
         TRANSFORMATIONS = """
-        #todo
-        print("hello world")
-        """
+def make_data_transformations():
+    print("hello world")
+"""
 
 
 def create_strategy_body(

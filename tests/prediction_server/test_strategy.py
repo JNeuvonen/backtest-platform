@@ -1,6 +1,6 @@
 import pytest
 import time
-from utils import Get, Post
+from t_utils import Get, Post
 from fixtures.strategy import strategy_simple_1
 
 

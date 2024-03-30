@@ -1,7 +1,7 @@
 import requests
 
 from contextlib import contextmanager
-from constants import URL
+from t_constants import URL
 
 
 @contextmanager
