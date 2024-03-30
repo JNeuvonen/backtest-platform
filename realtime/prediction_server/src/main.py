@@ -1,13 +1,13 @@
 import uvicorn
-import time
+import os
 from contextlib import asynccontextmanager
 
+from threading import Event, Thread
 from orm import create_tables, test_db_conn
 from config import get_service_port
 from fastapi import FastAPI
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
-from utils import run_in_thread
 from schema.strategy import StrategyQuery
 
 
@@ -26,26 +26,53 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
 
 
-def make_predictions_loop():
-    logger = get_logger()
-    logger.info("Initiating prediction service")
+class PredictionService:
+    def __init__(self):
+        self.stop_event = Event()
+        self.thread = Thread(target=self.make_predictions_loop)
 
-    while True:
-        strategies = StrategyQuery.get_strategies()
-        for item in strategies:
-            print(item)
-        logger.info("Hello from pred loop")
-        time.sleep(5)
+    def make_predictions_loop(self):
+        logger = get_logger()
+        logger.info("Initiating prediction service")
+
+        while not self.stop_event.is_set():
+            strategies = StrategyQuery.get_strategies()
+            for item in strategies:
+                print(item)
+            logger.info("Hello from pred loop")
+            self.stop_event.wait(5)
+
+    def start(self):
+        if self.thread is None or not self.thread.is_alive():
+            self.thread = Thread(target=self.make_predictions_loop)
+            self.thread.start()
+
+    def stop(self):
+        if self.thread and self.thread.is_alive():
+            self.stop_event.set()
+            self.thread.join()
+            self.thread = None  # Reset the thread
+
+
+prediction_service = PredictionService()
 
 
 def start_server():
     logger = get_logger()
     create_tables()
-    run_in_thread(make_predictions_loop)
+    prediction_service.start()
     logger.info("Starting server")
     uvicorn.run("main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
 
 
+def stop_server():
+    prediction_service.stop()
+    os._exit(0)
+
+
 if __name__ == "__main__":
     test_db_conn()
-    start_server()
+    try:
+        start_server()
+    finally:
+        stop_server()
