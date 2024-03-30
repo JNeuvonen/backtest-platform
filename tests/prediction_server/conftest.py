@@ -8,7 +8,7 @@ from pandas.compat import platform
 from dotenv import load_dotenv
 
 from conf import TEST_RUN_PORT
-from import_helper import start_server, drop_tables
+from import_helper import start_server, drop_tables, stop_server
 
 load_dotenv()
 
@@ -42,10 +42,12 @@ def kill_process_on_port(port):
 def setup_test_environment():
     drop_tables()
     kill_process_on_port(TEST_RUN_PORT)
-    process = multiprocessing.Process(target=start_service)
-    process.start()
-    time.sleep(5)
+    server_process = multiprocessing.Process(target=start_service, daemon=True)
+    server_process.start()
+    time.sleep(5)  # Allow server to start
     yield
-    process.terminate()
-    process.join()
+    stop_server()
+    server_process.terminate()
+    server_process.join(timeout=5)
+    kill_process_on_port(TEST_RUN_PORT)  # Ensure the process is killed
     drop_tables()

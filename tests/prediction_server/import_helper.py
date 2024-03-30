@@ -13,8 +13,13 @@ def start_server():
     main.start_server()
 
 
+def stop_server():
+    main.stop_server()
+
+
 def drop_tables():
-    orm.drop_tables()
+    engine = get_db_engine()
+    orm.drop_tables(engine)
 
 
 def strategy_router():
@@ -23,3 +28,7 @@ def strategy_router():
 
 def pred_server_routers():
     return main.Routers
+
+
+def get_db_engine():
+    return orm.engine
