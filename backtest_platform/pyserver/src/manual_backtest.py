@@ -189,7 +189,6 @@ class ManualBacktest:
         short_fee_hourly_coeff = turn_short_fee_perc_to_coeff(
             short_fee_hourly_perc, candles_time_delta
         )
-        print(short_fee_hourly_coeff)
 
         self.enter_and_exit_criteria_placeholders = enter_and_exit_criteria_placeholders
         self.positions = Positions(
