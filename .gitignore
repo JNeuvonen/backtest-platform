@@ -36,3 +36,4 @@ downloaded
 *.njsproj
 *.sln
 *.sw?
+sandbox.py
