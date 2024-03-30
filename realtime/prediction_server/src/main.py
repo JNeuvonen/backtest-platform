@@ -8,6 +8,7 @@ from config import get_service_port
 from fastapi import FastAPI
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
+from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
 
 
@@ -37,10 +38,18 @@ class PredictionService:
 
         while not self.stop_event.is_set():
             strategies = StrategyQuery.get_strategies()
-            for item in strategies:
-                print(item)
-            logger.info("Hello from pred loop")
-            self.stop_event.wait(5)
+            active_strategies = 0
+            for strategy in strategies:
+                trading_decisions = get_trading_decisions(strategy)
+
+                print(trading_decisions)
+
+                if not strategy.is_disabled:
+                    active_strategies += 1
+            logger.info(
+                f"Prediction loop completed. Active strategies: {active_strategies}"
+            )
+            self.stop_event.wait(2)
 
     def start(self):
         if self.thread is None or not self.thread.is_alive():
@@ -51,7 +60,7 @@ class PredictionService:
         if self.thread and self.thread.is_alive():
             self.stop_event.set()
             self.thread.join()
-            self.thread = None  # Reset the thread
+            self.thread = None
 
 
 prediction_service = PredictionService()
