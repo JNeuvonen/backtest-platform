@@ -1,4 +1,5 @@
 from typing import Dict
+from log import LogExceptionContext
 from orm import Base, Session
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy import DateTime
@@ -44,8 +45,15 @@ class Strategy(Base):
 class StrategyQuery:
     @staticmethod
     def create_entry(fields: Dict):
-        with Session() as session:
-            entry = Strategy(**fields)
-            session.add(entry)
-            session.commit()
-            return entry.id
+        with LogExceptionContext():
+            with Session() as session:
+                entry = Strategy(**fields)
+                session.add(entry)
+                session.commit()
+                return entry.id
+
+    @staticmethod
+    def get_strategies():
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Strategy).all()
