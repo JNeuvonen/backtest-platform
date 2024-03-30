@@ -14,4 +14,4 @@ def test_setup_sanity(cleanup_db):
 @pytest.mark.slow
 def test_strategy_polling(cleanup_db):
     Post.create_strategy(body=strategy_simple_1())
-    time.sleep(10)
+    time.sleep(15)

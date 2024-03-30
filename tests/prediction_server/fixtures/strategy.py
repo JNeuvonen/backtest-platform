@@ -4,12 +4,18 @@ from t_constants import ONE_DAY_IN_MS
 class TradingRules:
     class RSI_30_MA_50_CLOSE_PRICE:
         OPEN = """
-def get_enter_trade_decision(tick):
+def get_enter_trade_decision(transformed_df):
+    if transformed_df is None or transformed_df.empty: 
+        return False
+    tick = transformed_df.iloc[len(df) - 1]
     return tick["RSI_30_MA_50_close_price"] > 95
 """
 
         CLOSE = """
-def get_exit_trade_decision(tick):
+def get_exit_trade_decision(transformed_df):
+    if transformed_df is None or transformed_df.empty: 
+        return False
+    tick = transformed_df.iloc[len(df) - 1]
     return tick["RSI_30_MA_50_close_price"] < 95
 """
 
@@ -61,8 +67,30 @@ def fetch_datasources():
 """
 
         TRANSFORMATIONS = """
-def make_data_transformations():
-    print("hello world")
+def make_data_transformations(fetched_data):
+    def calculate_ma(df, column="close_price", periods=[50]):
+        for period in periods:
+            ma_label = f"MA_{period}_{column}"
+            df[ma_label] = df[column].rolling(window=period).mean()
+
+    periods = [50]
+    column = "close_price"
+    calculate_ma(fetched_data, column=column, periods=periods)
+
+    def calculate_rsi(df, column="open_price", periods=[14]):
+        for period in periods:
+            delta = df[column].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+            rs = gain / loss
+            df_label = f"RSI_{period}_{column}"
+            df[df_label] = 100 - (100 / (1 + rs))
+
+    periods = [30]
+    column = "MA_50_close_price"
+    calculate_rsi(fetched_data, column=column, periods=periods)
+    return fetched_data
 """
 
 
