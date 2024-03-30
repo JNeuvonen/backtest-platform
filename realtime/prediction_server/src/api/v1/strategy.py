@@ -14,15 +14,16 @@ class RoutePaths:
 @router.get(RoutePaths.STRATEGY)
 async def route_get_root():
     with HttpResponseContext():
-        return Response(
-            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
-        )
+        strategies = StrategyQuery.get_strategies()
+        return {"data": strategies}
 
 
 @router.post(RoutePaths.STRATEGY)
 async def route_create_strategy(body: BodyCreateStrategy):
     with HttpResponseContext():
-        StrategyQuery.create_entry(body.model_dump())
+        id = StrategyQuery.create_entry(body.model_dump())
         return Response(
-            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+            content=f"{str(id)}",
+            status_code=status.HTTP_200_OK,
+            media_type="text/plain",
         )
