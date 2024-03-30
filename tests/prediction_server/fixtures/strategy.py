@@ -7,7 +7,7 @@ class TradingRules:
 def get_enter_trade_decision(transformed_df):
     if transformed_df is None or transformed_df.empty: 
         return False
-    tick = transformed_df.iloc[len(df) - 1]
+    tick = transformed_df.iloc[len(transformed_df) - 1]
     return tick["RSI_30_MA_50_close_price"] > 95
 """
 
@@ -15,7 +15,7 @@ def get_enter_trade_decision(transformed_df):
 def get_exit_trade_decision(transformed_df):
     if transformed_df is None or transformed_df.empty: 
         return False
-    tick = transformed_df.iloc[len(df) - 1]
+    tick = transformed_df.iloc[len(transformed_df) - 1]
     return tick["RSI_30_MA_50_close_price"] < 95
 """
 

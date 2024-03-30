@@ -47,6 +47,6 @@ def get_trading_decisions(strategy: Strategy):
     )
 
     return {
-        "trade_entry_decision": results_dict["should_enter_trade"],
-        "trade_exit_decision": results_dict["should_exit_trade"],
+        "should_enter_trade": results_dict["should_enter_trade"],
+        "should_close_trade": results_dict["should_exit_trade"],
     }
