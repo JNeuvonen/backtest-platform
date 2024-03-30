@@ -4,18 +4,21 @@ from contextlib import asynccontextmanager
 
 from threading import Event, Thread
 from orm import create_tables, test_db_conn
-from config import get_service_port
-from fastapi import FastAPI
+from config import get_auto_whitelisted_ip, get_service_port
+from fastapi import FastAPI, Response, status
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
+from middleware import ValidateIPMiddleware
 from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
+from schema.whitelisted_ip import WhiteListedIPQuery
 
 
 @asynccontextmanager
 async def lifespan(
     app: FastAPI,
 ):
+    WhiteListedIPQuery.create_entry({"ip": get_auto_whitelisted_ip()})
     yield
 
 
@@ -25,6 +28,7 @@ class Routers:
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
+app.add_middleware(ValidateIPMiddleware)
 
 
 class PredictionService:
@@ -64,6 +68,13 @@ class PredictionService:
 
 
 prediction_service = PredictionService()
+
+
+@app.get("/", response_class=Response)
+def webserver_root():
+    return Response(
+        content="Curious?", media_type="text/plain", status_code=status.HTTP_200_OK
+    )
 
 
 def start_server():
