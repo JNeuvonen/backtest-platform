@@ -1,6 +1,7 @@
 import inspect
 import logging
 from contextlib import contextmanager
+import os
 
 from config import is_dev, LOG_FILE
 from logging.handlers import RotatingFileHandler
@@ -33,9 +34,11 @@ class Logger:
         max_size=10 * 1024 * 1024,
         backup_count=5,
     ):
+        if os.path.exists(log_file):
+            os.remove(log_file)
+
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(log_level)
-        self.websocket_connections = []
 
         rotating_handler = RotatingFileHandler(
             log_file, maxBytes=max_size, backupCount=backup_count
