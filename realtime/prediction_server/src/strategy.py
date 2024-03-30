@@ -13,12 +13,6 @@ def get_trading_decisions(strategy: Strategy):
 
     fetch_data_helper = {"{FETCH_DATASOURCES_FUNC}": strategy.fetch_datasources_code}
 
-    print(
-        replace_placeholders_on_code_templ(
-            CodeTemplates.FETCH_DATASOURCES, fetch_data_helper
-        )
-    )
-
     exec(
         replace_placeholders_on_code_templ(
             CodeTemplates.FETCH_DATASOURCES, fetch_data_helper
@@ -27,32 +21,30 @@ def get_trading_decisions(strategy: Strategy):
         results_dict,
     )
 
-    print(results_dict)
+    data_transformations_helper = {
+        "{DATA_TRANSFORMATIONS_FUNC}": strategy.data_transformations_code
+    }
 
-    # data_transformations_helper = {
-    #     "{DATA_TRANSFORMATIONS_FUNC}": strategy.data_transformations_code
-    # }
-    #
-    # exec(
-    #     replace_placeholders_on_code_templ(
-    #         CodeTemplates.DATA_TRANSFORMATIONS, data_transformations_helper
-    #     ),
-    #     globals(),
-    #     results_dict,
-    # )
-    #
-    # trade_decision_helper = {
-    #     "{ENTER_TRADE_FUNC}": strategy.enter_trade_code,
-    #     "{EXIT_TRADE_FUNC}": strategy.exit_trade_code,
-    # }
-    #
-    # exec(
-    #     replace_placeholders_on_code_templ(
-    #         CodeTemplates.GEN_TRADE_DECISIONS, trade_decision_helper
-    #     ),
-    #     globals(),
-    #     results_dict,
-    # )
+    exec(
+        replace_placeholders_on_code_templ(
+            CodeTemplates.DATA_TRANSFORMATIONS, data_transformations_helper
+        ),
+        globals(),
+        results_dict,
+    )
+
+    trade_decision_helper = {
+        "{ENTER_TRADE_FUNC}": strategy.enter_trade_code,
+        "{EXIT_TRADE_FUNC}": strategy.exit_trade_code,
+    }
+
+    exec(
+        replace_placeholders_on_code_templ(
+            CodeTemplates.GEN_TRADE_DECISIONS, trade_decision_helper
+        ),
+        globals(),
+        results_dict,
+    )
 
     return {
         "trade_entry_decision": results_dict["should_enter_trade"],
