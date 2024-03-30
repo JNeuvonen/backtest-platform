@@ -42,10 +42,16 @@ class PredictionService:
             for strategy in strategies:
                 trading_decisions = get_trading_decisions(strategy)
 
-                print(trading_decisions)
-
                 if not strategy.is_disabled:
                     active_strategies += 1
+
+                StrategyQuery.update_strategy(
+                    strategy.id,
+                    {
+                        "should_enter_trade": trading_decisions["trade_entry_decision"],
+                        "should_exit_trade": trading_decisions["trade_exit_decision"],
+                    },
+                )
             logger.info(
                 f"Prediction loop completed. Active strategies: {active_strategies}"
             )

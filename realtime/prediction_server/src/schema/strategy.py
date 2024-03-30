@@ -21,6 +21,7 @@ class Strategy(Base):
 
     priority = Column(Integer)
     kline_size_ms = Column(Integer)
+    minimum_time_between_trades_ms = Column(Integer)
     klines_left_till_autoclose = Column(Integer)
 
     allocated_size_perc = Column(Float)
@@ -57,3 +58,12 @@ class StrategyQuery:
         with LogExceptionContext():
             with Session() as session:
                 return session.query(Strategy).all()
+
+    @staticmethod
+    def update_strategy(strategy_id: int, update_fields: Dict):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Strategy).filter(Strategy.id == strategy_id).update(
+                    update_fields
+                )
+                session.commit()
