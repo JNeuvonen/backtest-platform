@@ -20,3 +20,7 @@ class URL:
     @classmethod
     def create_strategy(cls):
         return cls._strategy_route() + StrategyRouter.STRATEGY
+
+    @classmethod
+    def fetch_strategies(cls):
+        return cls._strategy_route() + StrategyRouter.STRATEGY

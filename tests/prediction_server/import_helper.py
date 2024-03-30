@@ -32,3 +32,7 @@ def pred_server_routers():
 
 def get_db_engine():
     return orm.engine
+
+
+def db_delete_all_data():
+    orm.db_delete_all_data()

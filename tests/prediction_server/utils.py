@@ -14,5 +14,13 @@ def Req(method, url, **kwargs):
 class Post:
     @staticmethod
     def create_strategy(body):
-        with Req("get", URL.create_strategy(), json=body) as res:
+        with Req("post", URL.create_strategy(), json=body) as res:
             return res
+
+
+class Get:
+    @staticmethod
+    def fetch_strategies():
+        with Req("get", URL.fetch_strategies()) as res:
+            res_json = res.json()
+            return res_json["data"]
