@@ -3,18 +3,36 @@ import os
 import subprocess
 import multiprocessing
 import time
+import secrets
 
 from pandas.compat import platform
 from dotenv import load_dotenv
 
 from conf import TEST_RUN_PORT
-from import_helper import start_server, drop_tables, stop_server, db_delete_all_data
+from import_helper import (
+    start_server,
+    drop_tables,
+    stop_server,
+    db_delete_all_data,
+    create_api_key_entry,
+)
 
 load_dotenv()
 
 
 def start_service():
     start_server()
+
+
+def generate_api_key_for_testrun():
+    pass
+
+
+@pytest.fixture
+def create_api_key():
+    api_key = secrets.token_urlsafe(32)
+    create_api_key_entry(api_key)
+    return api_key
 
 
 @pytest.fixture

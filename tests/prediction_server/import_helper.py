@@ -7,6 +7,7 @@ sys.path.append(SERVICE_CODE_SOURCE_DIR)
 import main
 import orm
 from api.v1.strategy import RoutePaths as strat_router
+from schema.api_key import APIKeyQuery
 
 
 def start_server():
@@ -36,3 +37,7 @@ def get_db_engine():
 
 def db_delete_all_data():
     orm.db_delete_all_data()
+
+
+def create_api_key_entry(api_key: str):
+    APIKeyQuery.create_entry({"key": api_key})
