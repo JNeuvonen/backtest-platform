@@ -1,15 +1,19 @@
 FROM python:3.9-slim
 
-ENV DATABASE_URI=postgresql://username:password@localhost/live_env_local_test
-ENV SERVICE_PORT=3001
-ENV ENV=DEV
+ARG DATABASE_URI
+ENV DATABASE_URI=$DATABASE_URI
+ENV SERVICE_PORT=8000
+ENV AUTO_WHITELISTED_IP=87.94.138.211
+ENV ENV=PROD
+
+RUN if [ -z "$DATABASE_URI" ]; then echo "DATABASE_URI argument not provided" && exit 1; fi
 
 WORKDIR /usr/src/app
 
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r realtime/prediction_server/requirements.txt
 
-EXPOSE 3001
+EXPOSE 8000
 
 CMD ["python", "realtime/prediction_server/src/main.py"]
