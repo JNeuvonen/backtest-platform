@@ -25,6 +25,7 @@ __pycache__
 datasets_util.db
 datasets.db
 downloaded
+test_db_conn.py
 
 # Editor directories and files
 .vscode/*
