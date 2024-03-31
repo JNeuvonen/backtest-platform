@@ -1,0 +1,8 @@
+venv
+venv_pred_server
+backtest_platform
+.git
+.mypy_cache
+.vscode
+scripts
+tests
