@@ -1,0 +1,15 @@
+FROM python:3.9-slim
+
+ENV DATABASE_URI=postgresql://username:password@localhost/live_env_local_test
+ENV SERVICE_PORT=3001
+ENV ENV=DEV
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 3001
+
+CMD ["python", "realtime/prediction_server/src/main.py"]
