@@ -37,3 +37,4 @@ downloaded
 *.sln
 *.sw?
 sandbox.py
+venv_pred_server
