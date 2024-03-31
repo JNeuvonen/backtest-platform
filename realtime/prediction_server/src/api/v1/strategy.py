@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from context import HttpResponseContext
 from api.v1.request_types import BodyCreateStrategy
+from middleware import api_key_auth
 from schema.strategy import StrategyQuery
 
 
@@ -11,14 +12,14 @@ class RoutePaths:
     STRATEGY = "/"
 
 
-@router.get(RoutePaths.STRATEGY)
+@router.get(RoutePaths.STRATEGY, dependencies=[Depends(api_key_auth)])
 async def route_get_root():
     with HttpResponseContext():
         strategies = StrategyQuery.get_strategies()
         return {"data": strategies}
 
 
-@router.post(RoutePaths.STRATEGY)
+@router.post(RoutePaths.STRATEGY, dependencies=[Depends(api_key_auth)])
 async def route_create_strategy(body: BodyCreateStrategy):
     with HttpResponseContext():
         id = StrategyQuery.create_entry(body.model_dump())
