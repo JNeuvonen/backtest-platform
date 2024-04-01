@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/adshao/go-binance/v2"
 	"github.com/joho/godotenv"
@@ -32,6 +33,12 @@ func isProd() (isProd bool) {
 
 	isProd = os.Getenv("IS_PROD") == "1"
 	return isProd
+}
+
+func assertIsTestnet(baseUrl string) {
+	if !strings.Contains(strings.ToLower(baseUrl), "testnet") {
+		panic("ENV TRADING_BASE_URL was not for testnet even though it is required.")
+	}
 }
 
 func getBinanceClient(apiKey string, apiSecret string) (client *binance.Client) {
