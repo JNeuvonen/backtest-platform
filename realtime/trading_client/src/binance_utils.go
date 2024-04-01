@@ -37,7 +37,7 @@ func (bc *BinanceClient) SendOrder(
 		bc.client.BaseURL = MAINNET
 		isUsingMainnet = true
 	} else {
-		bc.client.APIKey = bc.tradingConfig.TestnetApiSecret
+		bc.client.APIKey = bc.tradingConfig.TestnetApiKey
 		bc.client.SecretKey = bc.tradingConfig.TestnetApiSecret
 		bc.client.BaseURL = TESTNET
 	}
