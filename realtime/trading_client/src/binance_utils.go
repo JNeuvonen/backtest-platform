@@ -15,8 +15,9 @@ type BinanceClient struct {
 func NewBinanceClient(tradingConfig TradingConfig) *BinanceClient {
 	return &BinanceClient{
 		client: binance_connector.NewClient(
-			tradingConfig.TestnetApiKey,
-			tradingConfig.TestnetApiSecret,
+			tradingConfig.ApiKey,
+			tradingConfig.ApiSecret,
+			tradingConfig.BaseUrl,
 		),
 		tradingConfig: tradingConfig,
 	}
@@ -29,19 +30,6 @@ func (bc *BinanceClient) SendOrder(
 	quantity float64,
 	useTestnet bool,
 ) {
-	isUsingMainnet := false
-
-	if !useTestnet && bc.tradingConfig.LiveTradingEnabled == 1 {
-		bc.client.APIKey = bc.tradingConfig.ProdApiKey
-		bc.client.SecretKey = bc.tradingConfig.ProdApiSecret
-		bc.client.BaseURL = MAINNET
-		isUsingMainnet = true
-	} else {
-		bc.client.APIKey = bc.tradingConfig.TestnetApiKey
-		bc.client.SecretKey = bc.tradingConfig.TestnetApiSecret
-		bc.client.BaseURL = TESTNET
-	}
-
 	order, err := bc.client.NewCreateOrderService().Symbol(symbol).
 		Side(side).Type(orderType).Quantity(quantity).
 		Do(context.Background())
@@ -50,6 +38,17 @@ func (bc *BinanceClient) SendOrder(
 		return
 	}
 
-	fmt.Println(isUsingMainnet)
 	fmt.Println(binance_connector.PrettyPrint(order))
+}
+
+func (bc *BinanceClient) FetchBalances() {
+	account, err := bc.client.NewGetAccountService().Do(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, balance := range account.Balances {
+		fmt.Printf("Asset: %s, Free: %s, Locked: %s\n", balance.Asset, balance.Free, balance.Locked)
+	}
 }

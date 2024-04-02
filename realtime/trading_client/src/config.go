@@ -8,10 +8,9 @@ import (
 )
 
 type TradingConfig struct {
-	TestnetApiKey      string
-	TestnetApiSecret   string
-	ProdApiKey         string
-	ProdApiSecret      string
+	ApiKey             string
+	ApiSecret          string
+	BaseUrl            string
 	LiveTradingEnabled int32
 }
 
@@ -48,18 +47,22 @@ func GetTradingConfig() TradingConfig {
 	}
 
 	config := TradingConfig{
-		TestnetApiKey:    os.Getenv("TESTNET_API_KEY"),
-		TestnetApiSecret: os.Getenv("TESTNET_API_SECRET"),
-		ProdApiKey:       os.Getenv("PROD_API_KEY"),
-		ProdApiSecret:    os.Getenv("PROD_API_SECRET"),
+		ApiKey:    os.Getenv("API_KEY"),
+		ApiSecret: os.Getenv("API_SECRET"),
 	}
 
 	liveTradingEnabledStr := os.Getenv("LIVE_TRADING_ENABLED")
 	liveTradingEnabledInt, err := strconv.ParseInt(liveTradingEnabledStr, 10, 32)
 	if err != nil {
-		panic("LIVE_TRADING_ENABLED must be an integer")
+		panic("LIVE_TRADING_ENABLED must be an integer 0 or 1")
 	}
 	config.LiveTradingEnabled = int32(liveTradingEnabledInt)
+
+	if config.LiveTradingEnabled == 1 {
+		config.BaseUrl = MAINNET
+	} else {
+		config.BaseUrl = TESTNET
+	}
 
 	return config
 }

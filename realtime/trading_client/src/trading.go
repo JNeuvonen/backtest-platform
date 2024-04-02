@@ -9,6 +9,7 @@ func TradingLoop() {
 
 	for {
 		_ = predServClient.FetchStrategies()
+
 		predServClient.CreateCloudLog("Trading loop completed", "info")
 	}
 }

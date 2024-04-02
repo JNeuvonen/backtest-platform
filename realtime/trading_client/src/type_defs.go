@@ -20,13 +20,13 @@ type Strategy struct {
 	AllocatedSizePerc          float64 `json:"allocated_size_perc"`
 	TakeProfitThresholdPerc    float64 `json:"take_profit_threshold_perc"`
 	StopLossThresholdPerc      float64 `json:"stop_loss_threshold_perc"`
-	UseTestnet                 bool    `json:"use_testnet"`
 	UseTimeBasedClose          bool    `json:"use_time_based_close"`
 	UseProfitBasedClose        bool    `json:"use_profit_based_close"`
 	UseStopLossBasedClose      bool    `json:"use_stop_loss_based_close"`
 	UseTakerOrder              bool    `json:"use_taker_order"`
 	ShouldEnterTrade           bool    `json:"should_enter_trade"`
 	ShouldCloseTrade           bool    `json:"should_close_trade"`
+	IsPaperTradeMode           bool    `json:"is_paper_trade_mode"`
 	IsLeverageAllowed          bool    `json:"is_leverage_allowed"`
 	IsShortSellingStrategy     bool    `json:"is_short_selling_strategy"`
 	IsDisabled                 bool    `json:"is_disabled"`

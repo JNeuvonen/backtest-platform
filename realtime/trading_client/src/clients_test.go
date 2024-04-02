@@ -51,3 +51,9 @@ func TestCloudLog(t *testing.T) {
 	err := client.CreateCloudLog("hello_world", "info")
 	assert.Nil(t, err, "Error creating log: %v", err)
 }
+
+func TestFetchingBalances(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+	binanceClient.FetchBalances()
+}
