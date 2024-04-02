@@ -19,10 +19,21 @@ class Post:
         with Req("post", URL.create_strategy(), api_key, json=body) as res:
             return res
 
+    @staticmethod
+    def create_cloud_log(api_key: str, body):
+        with Req("post", URL.create_log(), api_key, json=body) as res:
+            return res
+
 
 class Get:
     @staticmethod
     def fetch_strategies(api_key: str):
         with Req("get", URL.fetch_strategies(), api_key) as res:
+            res_json = res.json()
+            return res_json["data"]
+
+    @staticmethod
+    def fetch_cloud_logs(api_key: str):
+        with Req("get", URL.fetch_logs(), api_key) as res:
             res_json = res.json()
             return res_json["data"]

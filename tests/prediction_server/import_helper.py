@@ -7,6 +7,7 @@ sys.path.append(SERVICE_CODE_SOURCE_DIR)
 import main
 import orm
 from api.v1.strategy import RoutePaths as strat_router
+from api.v1.log import RoutePaths as logs_router
 from schema.api_key import APIKeyQuery
 
 
@@ -25,6 +26,10 @@ def drop_tables():
 
 def strategy_router():
     return strat_router
+
+
+def cloudlogs_router():
+    return logs_router
 
 
 def pred_server_routers():
