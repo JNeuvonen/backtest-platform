@@ -52,23 +52,32 @@ func (client *HttpClient) Post(
 	return client.makeRequest("POST", endpoint, data)
 }
 
-func (client *HttpClient) FetchStrategies() ([]Strategy, error) {
+func (client *HttpClient) FetchStrategies() []Strategy {
 	response, err := client.Get(PRED_SERV_V1_STRAT)
 	if err != nil {
-		return nil, err
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return []Strategy{}
 	}
-
 	if response != nil && len(response) > 0 {
 		var strategyResponse StrategyResponse
 		err := json.Unmarshal(response, &strategyResponse)
 		if err != nil {
-			return nil, err
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+			return []Strategy{}
 		}
-
-		return strategyResponse.Data, nil
+		return strategyResponse.Data
 	} else {
-		return []Strategy{}, nil
+		return []Strategy{}
 	}
+}
+
+func CreateCloudLog(msg string, level string) {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	predServClient.CreateCloudLog(msg, level)
 }
 
 func (client *HttpClient) CreateCloudLog(msg string, level string) error {
