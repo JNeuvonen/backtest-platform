@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -42,24 +43,16 @@ func (client *HttpClient) Get(endpoint string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-func (client *HttpClient) Post(endpoint string, contentType string, data []byte) ([]byte, error) {
+func (client *HttpClient) Post(
+	endpoint string,
+	contentType string,
+	data []byte,
+) (*http.Response, error) {
 	client.Headers["Content-Type"] = contentType
-	resp, err := client.makeRequest("POST", endpoint, data)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return io.ReadAll(resp.Body)
+	return client.makeRequest("POST", endpoint, data)
 }
 
-func FetchStrategies() ([]Strategy, error) {
-	predServConfig := GetPredServerConfig()
-	headers := map[string]string{
-		"X-API-KEY": predServConfig.API_KEY,
-	}
-	client := NewHttpClient(predServConfig.URI, headers)
-
+func (client *HttpClient) FetchStrategies() ([]Strategy, error) {
 	response, err := client.Get(PRED_SERV_V1_STRAT)
 	if err != nil {
 		return nil, err
@@ -76,4 +69,27 @@ func FetchStrategies() ([]Strategy, error) {
 	} else {
 		return []Strategy{}, nil
 	}
+}
+
+func (client *HttpClient) CreateCloudLog(msg string, level string) error {
+	body := CloudLogBody{
+		Message: msg,
+		Level:   level,
+	}
+
+	jsonData, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Post(PRED_SERV_V1_LOG, "application/json", jsonData)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("server returned non-success status code: %d", resp.StatusCode)
+	}
+
+	return nil
 }

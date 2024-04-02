@@ -32,3 +32,8 @@ type Strategy struct {
 	IsDisabled                 bool    `json:"is_disabled"`
 	IsInPosition               bool    `json:"is_in_position"`
 }
+
+type CloudLogBody struct {
+	Message string `json:"message"`
+	Level   string `json:"level"`
+}

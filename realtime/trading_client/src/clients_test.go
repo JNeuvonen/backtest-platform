@@ -25,7 +25,12 @@ func TestCallingPredServer(t *testing.T) {
 }
 
 func TestFetchingStrategies(t *testing.T) {
-	strategies, err := FetchStrategies()
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	client := NewHttpClient(predServConfig.URI, headers)
+	strategies, err := client.FetchStrategies()
 	assert.Nil(t, err, "Error fetching strategies: %v", err)
 
 	for _, strategy := range strategies {
@@ -36,4 +41,14 @@ func TestFetchingStrategies(t *testing.T) {
 			strategy.Priority,
 		)
 	}
+}
+
+func TestCloudLog(t *testing.T) {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	client := NewHttpClient(predServConfig.URI, headers)
+	err := client.CreateCloudLog("hello_world", "info")
+	assert.Nil(t, err, "Error creating log: %v", err)
 }
