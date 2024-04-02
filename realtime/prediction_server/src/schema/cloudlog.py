@@ -6,6 +6,13 @@ from orm import Base, Session
 from datetime import datetime, timedelta
 
 
+class LogLevels:
+    EXCEPTION = "exception"
+    INFO = "info"
+    SYS = "system"
+    DEBUG = "debug"
+
+
 class CloudLog(Base):
     __tablename__ = "cloud_log"
     id = Column(Integer, primary_key=True)
@@ -59,7 +66,7 @@ class CloudLogQuery:
                 session.commit()
 
     @staticmethod
-    def get_recent_logs(time_delta: datetime):
+    def get_recent_logs(time_delta: timedelta):
         cutoff_date = datetime.now() - time_delta
         with LogExceptionContext():
             with Session() as session:

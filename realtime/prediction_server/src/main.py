@@ -8,10 +8,12 @@ from config import get_auto_whitelisted_ip, get_service_port
 from fastapi import FastAPI, Response, status
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
+from api.v1.log import router as v1_cloudlogs_router
 from middleware import ValidateIPMiddleware
 from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
 from schema.whitelisted_ip import WhiteListedIPQuery
+from schema.cloudlog import CloudLogQuery
 
 
 @asynccontextmanager
@@ -24,9 +26,11 @@ async def lifespan(
 
 class Routers:
     V1_STRATEGY = "/v1/strategy"
+    V1_LOGS = "/v1/log"
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(v1_cloudlogs_router, prefix=Routers.V1_LOGS)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
 app.add_middleware(ValidateIPMiddleware)
 
@@ -53,6 +57,7 @@ class PredictionService:
             logger.info(
                 f"Prediction loop completed. Active strategies: {active_strategies}"
             )
+            CloudLogQuery.clear_outdated_logs()
             self.stop_event.wait(2)
 
     def start(self):

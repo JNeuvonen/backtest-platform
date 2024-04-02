@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class BodyCreateStrategy(BaseModel):
@@ -30,3 +30,9 @@ class BodyCreateStrategy(BaseModel):
 class BodyCreateCloudLog(BaseModel):
     message: str
     level: str
+
+    @validator("level")
+    def validate_level(cls, v):
+        if v not in ("exception", "info", "system", "debug"):
+            raise ValueError("Invalid log level")
+        return v

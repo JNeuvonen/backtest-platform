@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, Response, status
 from middleware import api_key_auth
 from context import HttpResponseContext
 from schema.cloudlog import CloudLogQuery
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from src.api.v1.request_types import BodyCreateCloudLog
+from api.v1.request_types import BodyCreateCloudLog
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ class RoutePaths:
 @router.get(RoutePaths.LOG, dependencies=[Depends(api_key_auth)])
 async def route_get_root():
     with HttpResponseContext():
-        seven_days_ago = datetime.now() - timedelta(days=7)
+        seven_days_ago = timedelta(days=7)
         logs = CloudLogQuery.get_recent_logs(seven_days_ago)
         return {"data": logs}
 
