@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -26,29 +25,15 @@ func TestCallingPredServer(t *testing.T) {
 }
 
 func TestFetchingStrategies(t *testing.T) {
-	predServConfig := GetPredServerConfig()
-	headers := map[string]string{
-		"X-API-KEY": predServConfig.API_KEY,
-	}
-	client := NewHttpClient(predServConfig.URI, headers)
+	strategies, err := FetchStrategies()
+	assert.Nil(t, err, "Error fetching strategies: %v", err)
 
-	response, err := client.Get(PRED_SERV_V1_STRAT)
-	assert.Nil(t, err, "Error calling prediction server: %v", err)
-
-	if response != nil && len(response) > 0 {
-		var strategyResponse StrategyResponse
-		err := json.Unmarshal(response, &strategyResponse)
-		assert.Nil(t, err, "Error unmarshaling JSON: %v", err)
-
-		for _, strategy := range strategyResponse.Data {
-			fmt.Printf(
-				"Strategy ID: %d, Symbol: %s, Priority: %d\n",
-				strategy.ID,
-				strategy.Symbol,
-				strategy.Priority,
-			)
-		}
-	} else {
-		fmt.Println("Empty response or nil")
+	for _, strategy := range strategies {
+		fmt.Printf(
+			"Strategy ID: %d, Symbol: %s, Priority: %d\n",
+			strategy.ID,
+			strategy.Symbol,
+			strategy.Priority,
+		)
 	}
 }
