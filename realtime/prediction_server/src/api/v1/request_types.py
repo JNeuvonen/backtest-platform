@@ -17,7 +17,7 @@ class BodyCreateStrategy(BaseModel):
     take_profit_threshold_perc: float
     stop_loss_threshold_perc: float
 
-    use_testnet: bool
+    is_paper_trade_mode: bool
     use_time_based_close: bool
     use_profit_based_close: bool
     use_stop_loss_based_close: bool

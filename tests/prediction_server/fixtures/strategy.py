@@ -114,6 +114,7 @@ def create_strategy_body(
     use_taker_order: bool,
     is_leverage_allowed: bool,
     is_short_selling_strategy: bool,
+    is_paper_trade_mode: bool,
 ):
     return {
         "symbol": symbol,
@@ -135,6 +136,7 @@ def create_strategy_body(
         "use_taker_order": use_taker_order,
         "is_leverage_allowed": is_leverage_allowed,
         "is_short_selling_strategy": is_short_selling_strategy,
+        "is_paper_trade_mode": is_paper_trade_mode,
     }
 
 
@@ -159,4 +161,5 @@ def strategy_simple_1():
         use_taker_order=False,
         is_leverage_allowed=False,
         is_short_selling_strategy=False,
+        is_paper_trade_mode=False,
     )
