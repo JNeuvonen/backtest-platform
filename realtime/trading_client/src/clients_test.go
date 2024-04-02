@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,4 +22,17 @@ func TestCallingPredServer(t *testing.T) {
 	client := NewHttpClient(predServConfig.URI, headers)
 	_, err := client.Get("")
 	assert.Nil(t, err, "Error calling prediction server: %v", err)
+}
+
+func TestFetchingStrategies(t *testing.T) {
+	predServConfig := getPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	client := NewHttpClient(predServConfig.URI, headers)
+
+	response, err := client.Get(PRED_SERV_V1_STRAT)
+	assert.Nil(t, err, "Error calling prediction server: %v", err)
+
+	fmt.Println("Response:", string(response))
 }
