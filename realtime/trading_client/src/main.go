@@ -1,6 +1,6 @@
 package main
 
 func main() {
-	tradingConfig := getTradingConfig()
+	tradingConfig := GetTradingConfig()
 	NewBinanceClient(tradingConfig)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -8,14 +9,14 @@ import (
 )
 
 func TestMarketOrder(t *testing.T) {
-	tradingConfig := getTradingConfig()
+	tradingConfig := GetTradingConfig()
 
 	binanceClient := NewBinanceClient(tradingConfig)
 	binanceClient.SendOrder("BTCUSDT", "BUY", "MARKET", 0.001, true)
 }
 
 func TestCallingPredServer(t *testing.T) {
-	predServConfig := getPredServerConfig()
+	predServConfig := GetPredServerConfig()
 	headers := map[string]string{
 		"X-API-KEY": predServConfig.API_KEY,
 	}
@@ -25,7 +26,7 @@ func TestCallingPredServer(t *testing.T) {
 }
 
 func TestFetchingStrategies(t *testing.T) {
-	predServConfig := getPredServerConfig()
+	predServConfig := GetPredServerConfig()
 	headers := map[string]string{
 		"X-API-KEY": predServConfig.API_KEY,
 	}
@@ -34,5 +35,20 @@ func TestFetchingStrategies(t *testing.T) {
 	response, err := client.Get(PRED_SERV_V1_STRAT)
 	assert.Nil(t, err, "Error calling prediction server: %v", err)
 
-	fmt.Println("Response:", string(response))
+	if response != nil && len(response) > 0 {
+		var strategyResponse StrategyResponse
+		err := json.Unmarshal(response, &strategyResponse)
+		assert.Nil(t, err, "Error unmarshaling JSON: %v", err)
+
+		for _, strategy := range strategyResponse.Data {
+			fmt.Printf(
+				"Strategy ID: %d, Symbol: %s, Priority: %d\n",
+				strategy.ID,
+				strategy.Symbol,
+				strategy.Priority,
+			)
+		}
+	} else {
+		fmt.Println("Empty response or nil")
+	}
 }

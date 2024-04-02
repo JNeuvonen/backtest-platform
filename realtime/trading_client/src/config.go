@@ -20,7 +20,7 @@ type PredServerConfig struct {
 	API_KEY string
 }
 
-func getPredServerConfig() PredServerConfig {
+func GetPredServerConfig() PredServerConfig {
 	err := godotenv.Load()
 	if err != nil {
 		panic("No ENV variables provided")
@@ -41,7 +41,7 @@ func getPredServerConfig() PredServerConfig {
 	return config
 }
 
-func getTradingConfig() TradingConfig {
+func GetTradingConfig() TradingConfig {
 	err := godotenv.Load()
 	if err != nil {
 		panic("No ENV variables provided")
@@ -64,7 +64,7 @@ func getTradingConfig() TradingConfig {
 	return config
 }
 
-func isProd() (isProd bool) {
+func IsProd() (isProd bool) {
 	err := godotenv.Load()
 	if err != nil {
 		panic("No ENV variables provided")
