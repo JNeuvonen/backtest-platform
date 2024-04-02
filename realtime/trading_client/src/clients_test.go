@@ -30,8 +30,7 @@ func TestFetchingStrategies(t *testing.T) {
 		"X-API-KEY": predServConfig.API_KEY,
 	}
 	client := NewHttpClient(predServConfig.URI, headers)
-	strategies, err := client.FetchStrategies()
-	assert.Nil(t, err, "Error fetching strategies: %v", err)
+	strategies := client.FetchStrategies()
 
 	for _, strategy := range strategies {
 		fmt.Printf(
