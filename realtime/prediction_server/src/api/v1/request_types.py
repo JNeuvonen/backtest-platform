@@ -25,3 +25,8 @@ class BodyCreateStrategy(BaseModel):
 
     is_leverage_allowed: bool
     is_short_selling_strategy: bool
+
+
+class BodyCreateCloudLog(BaseModel):
+    message: str
+    level: str
