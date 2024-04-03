@@ -57,3 +57,30 @@ func TestFetchingBalances(t *testing.T) {
 	binanceClient := NewBinanceClient(tradingConfig)
 	binanceClient.FetchBalances()
 }
+
+func TestFetchingPrice(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+
+	price, err := binanceClient.FetchLatestPrice("BTCUSDT")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(price)
+}
+
+// func TestTradingLoop(t *testing.T) {
+// 	timeout := time.After(10 * time.Second)
+// 	done := make(chan bool)
+//
+// 	go func() {
+// 		TradingLoop()
+// 		done <- true
+// 	}()
+//
+// 	select {
+// 	case <-timeout:
+// 		t.Log("Test reached 10 second timeout")
+// 	case <-done:
+// 	}
+// }
