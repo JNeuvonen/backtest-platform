@@ -1,3 +1,3 @@
 cd realtime
 cd trading_client
-go test -v ./src
+go test -count=1 -v ./src
