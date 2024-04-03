@@ -21,16 +21,19 @@ class Strategy(Base):
 
     priority = Column(Integer)
     kline_size_ms = Column(Integer)
+    prev_kline_ms = Column(Integer)
     minimum_time_between_trades_ms = Column(Integer)
     klines_left_till_autoclose = Column(Integer)
+    time_on_trade_open_ms = Column(Integer)
 
+    price_on_trade_open = Column(Float)
     allocated_size_perc = Column(Float)
     take_profit_threshold_perc = Column(Float)
     stop_loss_threshold_perc = Column(Float)
 
-    use_time_based_close = Column(Boolean)
-    use_profit_based_close = Column(Boolean)
-    use_stop_loss_based_close = Column(Boolean)
+    use_time_based_close = Column(Boolean, nullable=False)
+    use_profit_based_close = Column(Boolean, nullable=False)
+    use_stop_loss_based_close = Column(Boolean, nullable=False)
     use_taker_order = Column(Boolean)
 
     should_enter_trade = Column(Boolean, default=False)
