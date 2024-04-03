@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 
 	binance_connector "github.com/binance/binance-connector-go"
@@ -92,4 +95,36 @@ func (bc *BinanceClient) FetchLatestPrice(symbol string) (float64, error) {
 	}
 
 	return price, nil
+}
+
+func GetAllUSDTPrices() ([]SymbolInfoSimple, error) {
+	baseURL := GetBinanceAPIBaseURL()
+	resp, err := http.Get(baseURL + V3_PRICE)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil, err
+	}
+
+	var prices []SymbolInfoSimple
+	err = json.Unmarshal(body, &prices)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil, err
+	}
+
+	var usdtPairs []SymbolInfoSimple
+	for _, price := range prices {
+		if len(price.Symbol) > 4 && price.Symbol[len(price.Symbol)-4:] == "USDT" {
+			usdtPairs = append(usdtPairs, price)
+		}
+	}
+
+	return usdtPairs, nil
 }

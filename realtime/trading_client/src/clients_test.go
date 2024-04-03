@@ -69,6 +69,17 @@ func TestFetchingPrice(t *testing.T) {
 	fmt.Println(price)
 }
 
+func TestFetchingAllPrices(t *testing.T) {
+	prices, err := GetAllUSDTPrices()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	for _, price := range prices {
+		fmt.Println(price.Price)
+	}
+}
+
 // func TestTradingLoop(t *testing.T) {
 // 	timeout := time.After(10 * time.Second)
 // 	done := make(chan bool)
