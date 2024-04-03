@@ -31,7 +31,7 @@ func shouldProfitBasedClose(strat Strategy, price float64) bool {
 	}
 }
 
-func CheckForStrategyClose(bc *BinanceClient, strat Strategy) bool {
+func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 	price, err := bc.FetchLatestPrice(strat.Symbol)
 	if err != nil {
 		return false
@@ -39,6 +39,21 @@ func CheckForStrategyClose(bc *BinanceClient, strat Strategy) bool {
 
 	return shouldStopLossClose(strat, price) || shouldTimebasedClose(strat) ||
 		shouldProfitBasedClose(strat, price) || strat.ShouldCloseTrade
+}
+
+func ShouldEnterTrade(bc *BinanceClient, strat Strategy) bool {
+	currTimeMs := GetTimeInMs()
+
+	if strat.TimeOnTradeOpenMs-int(currTimeMs) >= strat.MinimumTimeBetweenTradesMs {
+		return true
+	}
+	return false
+}
+
+func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {
+}
+
+func EnterStrategyTrade(bc *BinanceClient, strat Strategy) {
 }
 
 func TradingLoop() {
@@ -66,8 +81,13 @@ func TradingLoop() {
 
 		for _, strat := range strategies {
 			if strat.IsInPosition {
-				_ = CheckForStrategyClose(binanceClient, strat)
+				if ShouldCloseTrade(binanceClient, strat) {
+					CloseStrategyTrade(binanceClient, strat)
+				}
 			} else if !strat.IsInPosition {
+				if ShouldEnterTrade(binanceClient, strat) {
+					EnterStrategyTrade(binanceClient, strat)
+				}
 			}
 		}
 
