@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime/debug"
+	"time"
 )
 
 func FormatCloudLog(err error, message string, functionName string) string {
@@ -38,4 +39,8 @@ func NewFmtError(err error, stack string) *FmtError {
 
 func (e *FmtError) Error() string {
 	return fmt.Sprintf("%v\nStack Trace:\n%s", e.error, e.stack)
+}
+
+func GetTimeInMs() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
