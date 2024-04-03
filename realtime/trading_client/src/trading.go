@@ -38,7 +38,7 @@ func CheckForStrategyClose(bc *BinanceClient, strat Strategy) bool {
 	}
 
 	return shouldStopLossClose(strat, price) || shouldTimebasedClose(strat) ||
-		shouldProfitBasedClose(strat, price)
+		shouldProfitBasedClose(strat, price) || strat.ShouldCloseTrade
 }
 
 func TradingLoop() {
