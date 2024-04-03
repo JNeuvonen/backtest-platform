@@ -40,6 +40,22 @@ func GetPredServerConfig() PredServerConfig {
 	return config
 }
 
+func GetBinanceAPIBaseURL() string {
+	err := godotenv.Load()
+
+	liveTradingEnabledStr := os.Getenv("LIVE_TRADING_ENABLED")
+	liveTradingEnabledInt, err := strconv.ParseInt(liveTradingEnabledStr, 10, 32)
+	if err != nil {
+		panic("LIVE_TRADING_ENABLED must be an integer 0 or 1")
+	}
+
+	if liveTradingEnabledInt == 1 {
+		return MAINNET
+	}
+
+	return TESTNET
+}
+
 func GetTradingConfig() TradingConfig {
 	err := godotenv.Load()
 	if err != nil {
