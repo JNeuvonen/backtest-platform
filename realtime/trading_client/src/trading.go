@@ -1,8 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"math"
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {
@@ -55,24 +55,40 @@ func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {
 }
 
 func GetStrategyAvailableBetsize(bc *BinanceClient, strat Strategy) float64 {
-	_, errUsdtPrices := getAllUSDTPrices()
-	balances := bc.FetchBalances()
+	accUSDTValue, accUSDTValueErr := bc.GetPortfolioValueInUSDT()
 
-	if errUsdtPrices == nil && balances != nil {
-		if strat.IsShortSellingStrategy {
-		} else {
-		}
+	if accUSDTValueErr != nil {
+		CreateCloudLog(
+			NewFmtError(
+				accUSDTValueErr,
+				CaptureStack(),
+			).Error(),
+			"exception",
+		)
+		return 0.0
 	}
 
-	CreateCloudLog(
-		NewFmtError(
-			errors.New(
-				"Unexpected state: FetchBalances() or GetAllUSDTPrices() returned nil inside GetStrategyAvailableBetsize()",
-			),
-			CaptureStack(),
-		).Error(),
-		"exception",
-	)
+	balances := bc.FetchBalances()
+
+	if balances != nil {
+		if strat.IsShortSellingStrategy {
+		} else {
+			freeUSDT, freeUSDTErr := GetFreeBalanceForAsset(balances.Balances, "USDT")
+			if freeUSDTErr != nil {
+				CreateCloudLog(
+					NewFmtError(
+						accUSDTValueErr,
+						CaptureStack(),
+					).Error(),
+					"exception",
+				)
+				return 0.0
+			}
+
+			maxAllocatedUSDTValue := strat.AllocatedSizePerc * accUSDTValue
+			return math.Min(ParseToFloat64(freeUSDT, 0.0), maxAllocatedUSDTValue)
+		}
+	}
 	return 0.0
 }
 
