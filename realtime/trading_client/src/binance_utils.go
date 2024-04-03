@@ -78,3 +78,18 @@ func (bc *BinanceClient) GetCurrentAccountWorthInUSDT() (float64, error) {
 	}
 	return totalWorth, nil
 }
+
+func (bc *BinanceClient) FetchLatestPrice(symbol string) (float64, error) {
+	priceRes, err := bc.client.NewTickerPriceService().Symbol(symbol).Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return 0, err
+	}
+
+	price, err := strconv.ParseFloat(priceRes.Price, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return price, nil
+}
