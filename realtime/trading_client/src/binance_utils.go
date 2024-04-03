@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	binance_connector "github.com/binance/binance-connector-go"
 )
@@ -34,21 +35,46 @@ func (bc *BinanceClient) SendOrder(
 		Side(side).Type(orderType).Quantity(quantity).
 		Do(context.Background())
 	if err != nil {
-		fmt.Println(err)
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
 		return
 	}
 
 	fmt.Println(binance_connector.PrettyPrint(order))
 }
 
-func (bc *BinanceClient) FetchBalances() {
+func (bc *BinanceClient) FetchBalances() *binance_connector.AccountResponse {
 	account, err := bc.client.NewGetAccountService().Do(context.Background())
 	if err != nil {
-		fmt.Println(err)
-		return
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil
+	}
+	return account
+}
+
+func (bc *BinanceClient) GetCurrentAccountWorthInUSDT() (float64, error) {
+	account, err := bc.client.NewGetAccountService().Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return 0, err
 	}
 
+	totalWorth := 0.0
 	for _, balance := range account.Balances {
-		fmt.Printf("Asset: %s, Free: %s, Locked: %s\n", balance.Asset, balance.Free, balance.Locked)
+		fmt.Println(balance.Free)
+		if balance.Asset == "USDT" {
+			worth, _ := strconv.ParseFloat(balance.Free, 64)
+			totalWorth += worth
+		} else {
+			symbol := balance.Asset + "USDT"
+			priceResponse, err := bc.client.NewAvgPriceService().Symbol(symbol).Do(context.Background())
+			if priceResponse == nil || err != nil {
+				continue
+			}
+
+			assetWorth, _ := strconv.ParseFloat(balance.Free, 64)
+			price, _ := strconv.ParseFloat(priceResponse.Price, 64)
+			totalWorth += assetWorth * price
+		}
 	}
+	return totalWorth, nil
 }
