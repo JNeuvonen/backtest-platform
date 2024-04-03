@@ -140,3 +140,12 @@ func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
 
 	return accountValueUSDT, nil
 }
+
+func GetFreeBalanceForAsset(balances []binance_connector.Balance, asset string) (string, error) {
+	for _, balance := range balances {
+		if balance.Asset == asset {
+			return balance.Free, nil
+		}
+	}
+	return "", fmt.Errorf("asset not found")
+}
