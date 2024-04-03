@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -41,7 +42,7 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 		shouldProfitBasedClose(strat, price) || strat.ShouldCloseTrade
 }
 
-func ShouldEnterTrade(bc *BinanceClient, strat Strategy) bool {
+func ShouldEnterTrade(strat Strategy) bool {
 	currTimeMs := GetTimeInMs()
 
 	if strat.TimeOnTradeOpenMs-int(currTimeMs) >= strat.MinimumTimeBetweenTradesMs {
@@ -51,6 +52,28 @@ func ShouldEnterTrade(bc *BinanceClient, strat Strategy) bool {
 }
 
 func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {
+}
+
+func GetStrategyAvailableBetsize(bc *BinanceClient, strat Strategy) float64 {
+	_, errUsdtPrices := getAllUSDTPrices()
+	balances := bc.FetchBalances()
+
+	if errUsdtPrices == nil && balances != nil {
+		if strat.IsShortSellingStrategy {
+		} else {
+		}
+	}
+
+	CreateCloudLog(
+		NewFmtError(
+			errors.New(
+				"Unexpected state: FetchBalances() or GetAllUSDTPrices() returned nil inside GetStrategyAvailableBetsize()",
+			),
+			CaptureStack(),
+		).Error(),
+		"exception",
+	)
+	return 0.0
 }
 
 func EnterStrategyTrade(bc *BinanceClient, strat Strategy) {
@@ -65,9 +88,6 @@ func TradingLoop() {
 	predServClient := NewHttpClient(predServConfig.URI, headers)
 	binanceClient := NewBinanceClient(tradingConfig)
 
-	accountValueInUSDT, _ := binanceClient.GetCurrentAccountWorthInUSDT()
-	fmt.Println(accountValueInUSDT)
-
 	for {
 		balances := binanceClient.FetchBalances()
 
@@ -77,21 +97,18 @@ func TradingLoop() {
 
 		strategies := predServClient.FetchStrategies()
 
-		optimalSizesMap := make(map[string]float64)
-
 		for _, strat := range strategies {
 			if strat.IsInPosition {
 				if ShouldCloseTrade(binanceClient, strat) {
 					CloseStrategyTrade(binanceClient, strat)
 				}
 			} else if !strat.IsInPosition {
-				if ShouldEnterTrade(binanceClient, strat) {
+				if ShouldEnterTrade(strat) {
 					EnterStrategyTrade(binanceClient, strat)
 				}
 			}
 		}
 
-		fmt.Println(optimalSizesMap)
 		predServClient.CreateCloudLog("Trading loop completed", "info")
 	}
 }

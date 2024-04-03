@@ -70,7 +70,7 @@ func TestFetchingPrice(t *testing.T) {
 }
 
 func TestFetchingAllPrices(t *testing.T) {
-	prices, err := GetAllUSDTPrices()
+	prices, err := getAllUSDTPrices()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -78,6 +78,17 @@ func TestFetchingAllPrices(t *testing.T) {
 	for _, price := range prices {
 		fmt.Println(price.Price)
 	}
+}
+
+func TestCalculatingPortfolioUSDTValue(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+
+	value, err := binanceClient.GetPortfolioValueInUSDT()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(value)
 }
 
 // func TestTradingLoop(t *testing.T) {

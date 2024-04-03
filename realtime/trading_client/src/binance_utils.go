@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -54,34 +55,6 @@ func (bc *BinanceClient) FetchBalances() *binance_connector.AccountResponse {
 	return account
 }
 
-func (bc *BinanceClient) GetCurrentAccountWorthInUSDT() (float64, error) {
-	account, err := bc.client.NewGetAccountService().Do(context.Background())
-	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
-		return 0, err
-	}
-
-	totalWorth := 0.0
-	for _, balance := range account.Balances {
-		fmt.Println(balance.Free)
-		if balance.Asset == "USDT" {
-			worth, _ := strconv.ParseFloat(balance.Free, 64)
-			totalWorth += worth
-		} else {
-			symbol := balance.Asset + "USDT"
-			priceResponse, err := bc.client.NewAvgPriceService().Symbol(symbol).Do(context.Background())
-			if priceResponse == nil || err != nil {
-				continue
-			}
-
-			assetWorth, _ := strconv.ParseFloat(balance.Free, 64)
-			price, _ := strconv.ParseFloat(priceResponse.Price, 64)
-			totalWorth += assetWorth * price
-		}
-	}
-	return totalWorth, nil
-}
-
 func (bc *BinanceClient) FetchLatestPrice(symbol string) (float64, error) {
 	priceRes, err := bc.client.NewTickerPriceService().Symbol(symbol).Do(context.Background())
 	if err != nil {
@@ -97,7 +70,7 @@ func (bc *BinanceClient) FetchLatestPrice(symbol string) (float64, error) {
 	return price, nil
 }
 
-func GetAllUSDTPrices() ([]SymbolInfoSimple, error) {
+func getAllUSDTPrices() ([]SymbolInfoSimple, error) {
 	baseURL := GetBinanceAPIBaseURL()
 	resp, err := http.Get(baseURL + V3_PRICE)
 	if err != nil {
@@ -127,4 +100,43 @@ func GetAllUSDTPrices() ([]SymbolInfoSimple, error) {
 	}
 
 	return usdtPairs, nil
+}
+
+func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
+	prices, pricesErr := getAllUSDTPrices()
+
+	if pricesErr != nil {
+		CreateCloudLog(NewFmtError(pricesErr, CaptureStack()).Error(), "exception")
+		return 0.0, pricesErr
+	}
+	balances := bc.FetchBalances()
+
+	if balances == nil {
+		CreateCloudLog(NewFmtError(pricesErr, CaptureStack()).Error(), "exception")
+		return 0.0, errors.New(
+			"Could not fetch balances: bc.FetchBalances() in GetPortfolioValueInUSDT()",
+		)
+
+	}
+	accountValueUSDT := 0.0
+
+	for _, balance := range balances.Balances {
+		free := ParseToFloat64(balance.Free, 0.0)
+		if free >= 0.0 {
+			symbolInfo := FindListItem[SymbolInfoSimple](
+				prices,
+				func(i SymbolInfoSimple) bool { return i.Symbol == balance.Asset+"USDT" },
+			)
+
+			if symbolInfo == nil {
+				continue
+			}
+
+			fmt.Println("exec here")
+			fmt.Println(symbolInfo.Price)
+			accountValueUSDT += ParseToFloat64(symbolInfo.Price, 0.0) * free
+		}
+	}
+
+	return accountValueUSDT, nil
 }

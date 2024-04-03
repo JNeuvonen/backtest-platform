@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime/debug"
+	"strconv"
 	"time"
 )
 
@@ -43,4 +44,21 @@ func (e *FmtError) Error() string {
 
 func GetTimeInMs() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+func ParseToFloat64(s string, fallback float64) float64 {
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return fallback
+	}
+	return value
+}
+
+func FindListItem[T any](items []T, predicate func(T) bool) *T {
+	for _, item := range items {
+		if predicate(item) {
+			return &item
+		}
+	}
+	return nil
 }
