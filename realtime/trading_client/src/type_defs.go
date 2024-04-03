@@ -39,3 +39,8 @@ type CloudLogBody struct {
 	Message string `json:"message"`
 	Level   string `json:"level"`
 }
+
+type SymbolInfoSimple struct {
+	Symbol string `json:"symbol"`
+	Price  string `json:"price"`
+}
