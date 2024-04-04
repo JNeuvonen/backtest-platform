@@ -55,3 +55,7 @@ class URL:
     @classmethod
     def fetch_accounts(cls):
         return cls._account_route() + AccRouter.ACCOUNT
+
+    @classmethod
+    def fetch_account_by_name(cls, name):
+        return cls._account_route() + AccRouter.ACCOUNT_BY_NAME.format(name=name)

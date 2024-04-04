@@ -10,6 +10,7 @@ router = APIRouter()
 
 class RoutePaths:
     ACCOUNT = "/"
+    ACCOUNT_BY_NAME = "/{name}"
 
 
 @router.get(RoutePaths.ACCOUNT, dependencies=[Depends(api_key_auth)])
@@ -28,3 +29,10 @@ async def route_post_root(body: BodyCreateAccount):
             status_code=status.HTTP_200_OK,
             media_type="text/plain",
         )
+
+
+@router.get(RoutePaths.ACCOUNT_BY_NAME, dependencies=[Depends(api_key_auth)])
+async def route_fetch_account_by_name(name: str):
+    with HttpResponseContext():
+        account = AccountQuery.get_account_by_name(name)
+        return {"data": account}

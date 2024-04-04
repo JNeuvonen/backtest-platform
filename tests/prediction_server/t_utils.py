@@ -48,3 +48,9 @@ class Get:
         with Req("get", URL.fetch_accounts(), api_key) as res:
             res_json = res.json()
             return res_json["data"]
+
+    @staticmethod
+    def fetch_account_by_name(api_key: str, name: str):
+        with Req("get", URL.fetch_account_by_name(name), api_key) as res:
+            res_json = res.json()
+            return res_json["data"]
