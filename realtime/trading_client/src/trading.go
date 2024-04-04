@@ -46,7 +46,7 @@ func ShouldEnterTrade(strat Strategy) bool {
 	currTimeMs := GetTimeInMs()
 
 	if strat.TimeOnTradeOpenMs-int(currTimeMs) >= strat.MinimumTimeBetweenTradesMs {
-		return true
+		return strat.ShouldEnterTrade
 	}
 	return false
 }
