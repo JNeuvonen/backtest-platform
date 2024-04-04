@@ -91,6 +91,23 @@ func TestCalculatingPortfolioUSDTValue(t *testing.T) {
 	fmt.Println(value)
 }
 
+func TestFetchingAccountCrossMarginDebt(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+	binanceClient.GetAccountDebtInUSDT()
+}
+
+func TestFetchingAccountDebtRatio(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+
+	debtRatio, err := binanceClient.GetAccountDebtRatio()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(debtRatio)
+}
+
 // func TestTradingLoop(t *testing.T) {
 // 	timeout := time.After(10 * time.Second)
 // 	done := make(chan bool)

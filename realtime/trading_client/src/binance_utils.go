@@ -132,8 +132,6 @@ func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
 				continue
 			}
 
-			fmt.Println("exec here")
-			fmt.Println(symbolInfo.Price)
 			accountValueUSDT += ParseToFloat64(symbolInfo.Price, 0.0) * free
 		}
 	}
@@ -148,4 +146,66 @@ func GetFreeBalanceForAsset(balances []binance_connector.Balance, asset string) 
 		}
 	}
 	return "", fmt.Errorf("asset not found")
+}
+
+func (bc *BinanceClient) GetAccountDebtInUSDT() (float64, error) {
+	crossMarginDetailsRes, err := bc.client.NewCrossMarginAccountDetailService().
+		Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		fmt.Println(err)
+		return 0.0, err
+	}
+
+	usdtPrices, err := getAllUSDTPrices()
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		fmt.Println(err)
+		return 0.0, err
+	}
+
+	totalDebtUSDT := 0.0
+
+	for _, userAsset := range crossMarginDetailsRes.UserAssets {
+		if ParseToFloat64(userAsset.Borrowed, 0.0) > 0.0 {
+			symbolInfo := FindListItem[SymbolInfoSimple](
+				usdtPrices,
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset },
+			)
+
+			totalDebtUSDT += ParseToFloat64(
+				userAsset.Borrowed,
+				0.0,
+			) * ParseToFloat64(
+				symbolInfo.Price,
+				0.0,
+			)
+		}
+	}
+
+	return totalDebtUSDT, nil
+}
+
+func (bc *BinanceClient) GetAccountDebtRatio() (float64, error) {
+	totalAccountDebtUSDT, err := bc.GetAccountDebtInUSDT()
+	if err != nil {
+
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		fmt.Println(err)
+		return 0.0, err
+	}
+
+	totalAccountValueUSDT, err := bc.GetPortfolioValueInUSDT()
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		fmt.Println(err)
+		return 0.0, err
+	}
+
+	if totalAccountValueUSDT == 0 {
+		err := errors.New("totalAccountValueUSDT was 0, GetAccountDebtRatio()")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return 0.0, err
+	}
+	return totalAccountDebtUSDT / totalAccountValueUSDT, nil
 }
