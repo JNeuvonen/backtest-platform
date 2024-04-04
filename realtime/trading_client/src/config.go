@@ -19,6 +19,20 @@ type PredServerConfig struct {
 	API_KEY string
 }
 
+func GetAccountName() string {
+	err := godotenv.Load()
+	if err != nil {
+		panic("No ENV variables provided")
+	}
+
+	account := os.Getenv("ACCOUNT_NAME")
+
+	if account == "" {
+		panic("ACCOUNT_NAME is not set")
+	}
+	return account
+}
+
 func GetPredServerConfig() PredServerConfig {
 	err := godotenv.Load()
 	if err != nil {

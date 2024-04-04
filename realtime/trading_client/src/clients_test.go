@@ -108,6 +108,21 @@ func TestFetchingAccountDebtRatio(t *testing.T) {
 	fmt.Println(debtRatio)
 }
 
+func TestFetchingAccountByName(t *testing.T) {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	client := NewHttpClient(predServConfig.URI, headers)
+
+	accountName := GetAccountName()
+	account, err := client.FetchAccount(accountName)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(account)
+}
+
 // func TestTradingLoop(t *testing.T) {
 // 	timeout := time.After(10 * time.Second)
 // 	done := make(chan bool)

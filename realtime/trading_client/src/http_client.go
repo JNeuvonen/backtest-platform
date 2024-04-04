@@ -71,6 +71,28 @@ func (client *HttpClient) FetchStrategies() []Strategy {
 	}
 }
 
+func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
+	endpoint := PRED_SERV_V1_ACC + "/" + accountName
+	response, err := client.Get(endpoint)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return Account{}, err
+	}
+
+	if response != nil {
+		var accountByNameResponse AccountByNameResponse
+
+		err := json.Unmarshal(response, &accountByNameResponse)
+		if err != nil {
+
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+			return Account{}, err
+		}
+		return accountByNameResponse.Data, nil
+	}
+	return Account{}, nil
+}
+
 func CreateCloudLog(msg string, level string) {
 	predServConfig := GetPredServerConfig()
 	headers := map[string]string{

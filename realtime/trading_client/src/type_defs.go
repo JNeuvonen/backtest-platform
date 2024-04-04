@@ -4,6 +4,10 @@ type StrategyResponse struct {
 	Data []Strategy `json:"data"`
 }
 
+type AccountByNameResponse struct {
+	Data Account `json:"data"`
+}
+
 type Strategy struct {
 	ID                         int     `json:"id"`
 	CreatedAt                  string  `json:"created_at"`
@@ -43,4 +47,11 @@ type CloudLogBody struct {
 type SymbolInfoSimple struct {
 	Symbol string `json:"symbol"`
 	Price  string `json:"price"`
+}
+
+type Account struct {
+	CreatedAt    string  `json:"created_at"`
+	UpdatedAt    string  `json:"updated_at"`
+	Name         string  `json:"name"`
+	MaxDebtRatio float64 `json:"max_debt_ratio"`
 }
