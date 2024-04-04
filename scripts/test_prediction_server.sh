@@ -6,6 +6,6 @@ export ENV=DEV
 export IS_TESTING="1"
 export DATABASE_URI=postgresql://username:password@localhost/pred_server_integration_tests
 
-pytest "tests/prediction_server" -s -m "slow"
+pytest "tests/prediction_server" -s -m "acceptance"
 
 
