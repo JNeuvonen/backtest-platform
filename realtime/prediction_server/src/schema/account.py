@@ -22,7 +22,7 @@ class Account(Base):
 class AccountQuery:
     @staticmethod
     def create_account(fields: Dict):
-        with LogExceptionContext():
+        with LogExceptionContext(re_raise=False):
             with Session() as session:
                 account = Account(**fields)
                 session.add(account)
