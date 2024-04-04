@@ -24,6 +24,11 @@ class Post:
         with Req("post", URL.create_log(), api_key, json=body) as res:
             return res
 
+    @staticmethod
+    def create_account(api_key: str, body):
+        with Req("post", URL.create_account(), api_key, json=body) as res:
+            return res
+
 
 class Get:
     @staticmethod
@@ -35,5 +40,11 @@ class Get:
     @staticmethod
     def fetch_cloud_logs(api_key: str):
         with Req("get", URL.fetch_logs(), api_key) as res:
+            res_json = res.json()
+            return res_json["data"]
+
+    @staticmethod
+    def fetch_accounts(api_key: str):
+        with Req("get", URL.fetch_accounts(), api_key) as res:
             res_json = res.json()
             return res_json["data"]

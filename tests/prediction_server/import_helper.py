@@ -8,6 +8,7 @@ import main
 import orm
 from api.v1.strategy import RoutePaths as strat_router
 from api.v1.log import RoutePaths as logs_router
+from api.v1.account import RoutePaths as acc_router
 from schema.api_key import APIKeyQuery
 
 
@@ -30,6 +31,10 @@ def strategy_router():
 
 def cloudlogs_router():
     return logs_router
+
+
+def account_router():
+    return acc_router
 
 
 def pred_server_routers():

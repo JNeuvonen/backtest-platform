@@ -1,5 +1,10 @@
 from conf import TEST_RUN_PORT
-from import_helper import pred_server_routers, strategy_router, cloudlogs_router
+from import_helper import (
+    account_router,
+    pred_server_routers,
+    strategy_router,
+    cloudlogs_router,
+)
 
 
 MINUTE_IN_MS = 1000 * 60
@@ -9,6 +14,7 @@ ONE_DAY_IN_MS = HOUR_IN_MS * 24
 Routers = pred_server_routers()
 StrategyRouter = strategy_router()
 LogsRouter = cloudlogs_router()
+AccRouter = account_router()
 
 
 class URL:
@@ -21,6 +27,10 @@ class URL:
     @classmethod
     def _cloudlogs_route(cls):
         return cls.BASE_URL + Routers.V1_LOGS
+
+    @classmethod
+    def _account_route(cls):
+        return cls.BASE_URL + Routers.V1_ACC
 
     @classmethod
     def create_strategy(cls):
@@ -37,3 +47,11 @@ class URL:
     @classmethod
     def fetch_logs(cls):
         return cls._cloudlogs_route() + LogsRouter.LOG
+
+    @classmethod
+    def create_account(cls):
+        return cls._account_route() + AccRouter.ACCOUNT
+
+    @classmethod
+    def fetch_accounts(cls):
+        return cls._account_route() + AccRouter.ACCOUNT
