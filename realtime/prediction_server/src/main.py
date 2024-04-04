@@ -9,6 +9,7 @@ from fastapi import FastAPI, Response, status
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
 from api.v1.log import router as v1_cloudlogs_router
+from api.v1.account import router as v1_account_router
 from middleware import ValidateIPMiddleware
 from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
@@ -27,11 +28,13 @@ async def lifespan(
 class Routers:
     V1_STRATEGY = "/v1/strategy"
     V1_LOGS = "/v1/log"
+    V1_ACC = "/v1/acc"
 
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(v1_cloudlogs_router, prefix=Routers.V1_LOGS)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
+app.include_router(v1_account_router, prefix=Routers.V1_ACC)
 app.add_middleware(ValidateIPMiddleware)
 
 

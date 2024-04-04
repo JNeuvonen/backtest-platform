@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, status
 from context import HttpResponseContext
 from middleware import api_key_auth
 from schema.account import AccountQuery
-from src.api.v1.request_types import BodyCreateAccount
+from api.v1.request_types import BodyCreateAccount
 
 
 router = APIRouter()
@@ -22,7 +22,7 @@ async def route_get_root():
 @router.post(RoutePaths.ACCOUNT, dependencies=[Depends(api_key_auth)])
 async def route_post_root(body: BodyCreateAccount):
     with HttpResponseContext():
-        id = AccountQuery.create_account(body.model_dump())
+        id = AccountQuery.create_entry(body.model_dump())
         return Response(
             content=f"{str(id)}",
             status_code=status.HTTP_200_OK,

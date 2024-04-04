@@ -1,7 +1,6 @@
 from typing import Dict
 from orm import Base, Session
 from sqlalchemy import Column, DateTime, Float, Integer, String
-from sqlalchemy import DateTime
 from sqlalchemy.sql import func
 
 from log import LogExceptionContext
@@ -21,7 +20,7 @@ class Account(Base):
 
 class AccountQuery:
     @staticmethod
-    def create_account(fields: Dict):
+    def create_entry(fields: Dict):
         with LogExceptionContext(re_raise=False):
             with Session() as session:
                 account = Account(**fields)
