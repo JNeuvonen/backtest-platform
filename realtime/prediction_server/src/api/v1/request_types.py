@@ -36,3 +36,8 @@ class BodyCreateCloudLog(BaseModel):
         if v not in ("exception", "info", "system", "debug"):
             raise ValueError("Invalid log level")
         return v
+
+
+class BodyCreateAccount(BaseModel):
+    name: str
+    max_debt_ratio: float
