@@ -41,3 +41,7 @@ class BodyCreateCloudLog(BaseModel):
 class BodyCreateAccount(BaseModel):
     name: str
     max_debt_ratio: float
+
+
+class BodyPutStrategy(BaseModel):
+    id: int

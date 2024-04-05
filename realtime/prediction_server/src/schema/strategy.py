@@ -27,6 +27,7 @@ class Strategy(Base):
     kline_size_ms = Column(Integer)
     prev_kline_ms = Column(Integer)
     minimum_time_between_trades_ms = Column(Integer)
+    maximum_klines_hold_time = Column(Integer, nullable=True)
     klines_left_till_autoclose = Column(Integer)
     time_on_trade_open_ms = Column(Integer, default=0)
 
