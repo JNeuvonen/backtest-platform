@@ -336,6 +336,18 @@ func (bc *BinanceClient) NewMarginOrder(
 	orderType string,
 	strat Strategy,
 ) error {
+	if !GetAllowedToSendOrders() {
+		ret := errors.New("Environment is not allowed to send orders")
+		CreateCloudLog(
+			NewFmtError(
+				ret,
+				CaptureStack(),
+			).Error(),
+			"exception",
+		)
+		return ret
+	}
+
 	res, err := bc.client.NewMarginAccountNewOrderService().
 		Symbol(symbol).
 		Side(side).
