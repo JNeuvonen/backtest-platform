@@ -29,6 +29,11 @@ class Post:
         with Req("post", URL.create_account(), api_key, json=body) as res:
             return res
 
+    @staticmethod
+    def create_trade(api_key: str, body):
+        with Req("post", URL.create_trade(), api_key, json=body) as res:
+            return res
+
 
 class Get:
     @staticmethod
@@ -52,5 +57,11 @@ class Get:
     @staticmethod
     def fetch_account_by_name(api_key: str, name: str):
         with Req("get", URL.fetch_account_by_name(name), api_key) as res:
+            res_json = res.json()
+            return res_json["data"]
+
+    @staticmethod
+    def fetch_trades(api_key: str):
+        with Req("get", URL.fetch_trades(), api_key) as res:
             res_json = res.json()
             return res_json["data"]

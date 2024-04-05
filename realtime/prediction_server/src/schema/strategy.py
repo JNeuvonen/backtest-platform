@@ -1,7 +1,7 @@
 from typing import Dict
 from log import LogExceptionContext
 from orm import Base, Session
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy import DateTime
 from sqlalchemy.sql import func
 
@@ -29,7 +29,7 @@ class Strategy(Base):
     minimum_time_between_trades_ms = Column(Integer)
     maximum_klines_hold_time = Column(Integer, nullable=True)
     klines_left_till_autoclose = Column(Integer)
-    time_on_trade_open_ms = Column(Integer, default=0)
+    time_on_trade_open_ms = Column(BigInteger, default=0)
 
     price_on_trade_open = Column(Float)
     allocated_size_perc = Column(Float)

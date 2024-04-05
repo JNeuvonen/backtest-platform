@@ -1,5 +1,14 @@
 from typing import Dict
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSON
 from orm import Base, Session
 from log import LogExceptionContext
@@ -13,8 +22,8 @@ class Trade(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    open_time_ms = Column(Integer, nullable=False)
-    close_time_ms = Column(Integer)
+    open_time_ms = Column(BigInteger, nullable=False)
+    close_time_ms = Column(BigInteger)
 
     open_price = Column(Float, nullable=False)
     close_price = Column(Float, nullable=True)

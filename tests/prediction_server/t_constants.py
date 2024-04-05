@@ -4,6 +4,7 @@ from import_helper import (
     pred_server_routers,
     strategy_router,
     cloudlogs_router,
+    trade_router,
 )
 
 
@@ -15,6 +16,7 @@ Routers = pred_server_routers()
 StrategyRouter = strategy_router()
 LogsRouter = cloudlogs_router()
 AccRouter = account_router()
+TradeRouter = trade_router()
 
 
 class URL:
@@ -33,12 +35,24 @@ class URL:
         return cls.BASE_URL + Routers.V1_ACC
 
     @classmethod
+    def _trade_route(cls):
+        return cls.BASE_URL + Routers.V1_TRADE
+
+    @classmethod
     def create_strategy(cls):
         return cls._strategy_route() + StrategyRouter.STRATEGY
 
     @classmethod
+    def create_trade(cls):
+        return cls._trade_route() + TradeRouter.TRADE
+
+    @classmethod
     def fetch_strategies(cls):
         return cls._strategy_route() + StrategyRouter.STRATEGY
+
+    @classmethod
+    def fetch_trades(cls):
+        return cls._trade_route() + TradeRouter.TRADE
 
     @classmethod
     def create_log(cls):

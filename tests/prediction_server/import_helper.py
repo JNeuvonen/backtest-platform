@@ -9,6 +9,7 @@ import orm
 from api.v1.strategy import RoutePaths as strat_router
 from api.v1.log import RoutePaths as logs_router
 from api.v1.account import RoutePaths as acc_router
+from api.v1.trade import RoutePaths as trade_router_helper
 from schema.api_key import APIKeyQuery
 
 
@@ -35,6 +36,10 @@ def cloudlogs_router():
 
 def account_router():
     return acc_router
+
+
+def trade_router():
+    return trade_router_helper
 
 
 def pred_server_routers():
