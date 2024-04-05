@@ -14,6 +14,8 @@ type Strategy struct {
 	CreatedAt                  string  `json:"created_at"`
 	UpdatedAt                  string  `json:"updated_at"`
 	Symbol                     string  `json:"symbol"`
+	BaseAsset                  string  `json:"base_asset"`
+	QuoteAsset                 string  `json:"quote_asset"`
 	EnterTradeCode             string  `json:"enter_trade_code"`
 	ExitTradeCode              string  `json:"exit_trade_code"`
 	FetchDatasourcesCode       string  `json:"fetch_datasources_code"`
@@ -23,6 +25,7 @@ type Strategy struct {
 	KlineSizeMs                int     `json:"kline_size_ms"`
 	MinimumTimeBetweenTradesMs int     `json:"minimum_time_between_trades_ms"`
 	KlinesLeftTillAutoclose    int     `json:"klines_left_till_autoclose"`
+	MaximumKlinesHoldTime      int     `json:"maximum_klines_hold_time"`
 	TimeOnTradeOpenMs          int     `json:"time_on_trade_open_ms"`
 	PriceOnTradeOpen           float64 `json:"price_on_trade_open"`
 	AllocatedSizePerc          float64 `json:"allocated_size_perc"`

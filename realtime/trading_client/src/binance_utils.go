@@ -28,7 +28,7 @@ func NewBinanceClient(tradingConfig TradingConfig) *BinanceClient {
 	}
 }
 
-func (bc *BinanceClient) SendOrder(
+func (bc *BinanceClient) SendSpotOrder(
 	symbol string,
 	side string,
 	orderType string,
@@ -316,6 +316,7 @@ func (bc *BinanceClient) GetAccountDebtRatio() (float64, error) {
 }
 
 func (bc *BinanceClient) NewMarginLoan(asset string, quantity float64) error {
+	fmt.Println(asset, quantity)
 	_, err := bc.client.NewBorrowService().
 		Asset(asset).
 		Amount(quantity).
@@ -325,5 +326,48 @@ func (bc *BinanceClient) NewMarginLoan(asset string, quantity float64) error {
 		return err
 	}
 
+	return nil
+}
+
+func (bc *BinanceClient) NewMarginOrder(
+	symbol string,
+	quantity float64,
+	side string,
+	orderType string,
+	strat Strategy,
+) error {
+	res, err := bc.client.NewMarginAccountNewOrderService().
+		Symbol(symbol).
+		Side(side).
+		OrderType(orderType).
+		Quantity(quantity).Do(context.Background())
+	fmt.Println(res, err)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return err
+	}
+
+	if res != nil {
+		resBytes, ok := res.([]byte)
+		if !ok {
+			// Handle type assertion error
+			errMsg := "Type assertion for response to []byte failed"
+			CreateCloudLog(errMsg, "exception")
+			return errors.New(errMsg)
+		}
+
+		var response binance_connector.MarginAccountNewOrderResponseFULL
+		err = json.Unmarshal(resBytes, &response)
+		if err != nil {
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+			return err
+		}
+
+		UpdateStrategy(int32(strat.ID), map[string]interface{}{
+			"price_on_trade_open":   response.Price,
+			"time_on_trade_open_ms": response.TransactTime,
+		})
+
+	}
 	return nil
 }

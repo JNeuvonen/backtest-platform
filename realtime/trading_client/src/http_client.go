@@ -34,6 +34,15 @@ func (client *HttpClient) makeRequest(
 	return http.DefaultClient.Do(req)
 }
 
+func (client *HttpClient) Put(endpoint string, body []byte) ([]byte, error) {
+	resp, err := client.makeRequest("PUT", endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
 func (client *HttpClient) Get(endpoint string) ([]byte, error) {
 	resp, err := client.makeRequest("GET", endpoint, nil)
 	if err != nil {
@@ -91,6 +100,36 @@ func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 		return accountByNameResponse.Data, nil
 	}
 	return Account{}, nil
+}
+
+func (client *HttpClient) UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
+	updateMap := make(map[string]interface{})
+	for key, value := range fieldsToUpdate {
+		updateMap[key] = value
+	}
+	updateMap["id"] = id
+	jsonBody, err := json.Marshal(updateMap)
+	if err != nil {
+		return err
+	}
+
+	endpoint := PRED_SERV_V1_STRAT
+	_, err = client.Put(endpoint, jsonBody)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return err
+	}
+
+	return nil
+}
+
+func UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	return predServClient.UpdateStrategy(id, fieldsToUpdate)
 }
 
 func CreateCloudLog(msg string, level string) {
