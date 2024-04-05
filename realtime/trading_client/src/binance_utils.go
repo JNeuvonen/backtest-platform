@@ -396,10 +396,12 @@ func (bc *BinanceClient) NewMarginOrder(
 			"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
 		})
 		CreateTradeEntry(map[string]interface{}{
-			"open_price":   response.Price,
-			"open_time_ms": response.TransactTime,
-			"direction":    "SHORT",
-			"strategy_id":  int32(strat.ID),
+			"open_price":                response.Price,
+			"open_time_ms":              response.TransactTime,
+			"quantity":                  response.ExecutedQty,
+			"cumulative_quote_quantity": response.CumulativeQuoteQty,
+			"direction":                 "SHORT",
+			"strategy_id":               int32(strat.ID),
 		})
 	}
 	return nil
