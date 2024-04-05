@@ -9,9 +9,8 @@ import (
 
 func TestMarketOrder(t *testing.T) {
 	tradingConfig := GetTradingConfig()
-
-	binanceClient := NewBinanceClient(tradingConfig)
-	binanceClient.SendOrder("BTCUSDT", "BUY", "MARKET", 0.001, true)
+	_ = NewBinanceClient(tradingConfig)
+	// binanceClient.SendOrder("BTCUSDT", "BUY", "MARKET", 0.001, true)
 }
 
 func TestCallingPredServer(t *testing.T) {
@@ -144,6 +143,12 @@ func TestEnterStrategyTrade(t *testing.T) {
 	for _, strat := range strategies {
 		EnterStrategyTrade(binanceClient, strat, account)
 	}
+}
+
+func TestGetAccountNetValue(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+	binanceClient.GetAccountNetValueUSDT()
 }
 
 // func TestTradingLoop(t *testing.T) {

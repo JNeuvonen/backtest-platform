@@ -63,19 +63,12 @@ func calculateShortStratBetSizeUSDT(
 	strat Strategy,
 	accUSDTValue float64,
 ) float64 {
-	accDebtRatio, err := bc.GetAccountDebtRatio()
-	if err != nil {
-		CreateCloudLog(
-			NewFmtError(err, CaptureStack()).Error(),
-			"exception",
-		)
-		return 0.0
-	}
+	accDebtRatio := bc.GetAssetDebtRatioUSDT()
 
 	if accDebtRatio > account.MaxDebtRatio {
 		CreateCloudLog(
-			NewFmtError(err, CaptureStack()).Error(),
-			"exception",
+			NewFmtError(errors.New("accDebtRatio > account.MaxDebtRatio"), CaptureStack()).Error(),
+			"info",
 		)
 		return 0.0
 	}
@@ -109,7 +102,7 @@ func calculateLongStratBetSizeUSDT(
 }
 
 func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account Account) float64 {
-	accUSDTValue, err := bc.GetPortfolioValueInUSDT()
+	accUSDTValue, err := bc.GetAccountNetValueUSDT()
 	if err != nil {
 		CreateCloudLog(
 			NewFmtError(err, CaptureStack()).Error(),
@@ -149,7 +142,7 @@ func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account 
 }
 
 func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
-	price, err := bc.FetchLatestPrice("BTCUSDT")
+	price, err := bc.FetchLatestPrice(strat.Symbol)
 	if err != nil {
 		CreateCloudLog(
 			NewFmtError(
@@ -160,9 +153,25 @@ func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 		)
 		return
 	}
+
+	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
+	fmt.Println(quantity)
 }
 
 func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
+	price, err := bc.FetchLatestPrice(strat.Symbol)
+	if err != nil {
+		CreateCloudLog(
+			NewFmtError(
+				err,
+				CaptureStack(),
+			).Error(),
+			"exception",
+		)
+		return
+	}
+
+	_ = GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 }
 
 func EnterStrategyTrade(bc *BinanceClient, strat Strategy, account Account) {

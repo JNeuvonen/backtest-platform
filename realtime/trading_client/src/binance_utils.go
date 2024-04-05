@@ -148,6 +148,101 @@ func GetFreeBalanceForAsset(balances []binance_connector.Balance, asset string) 
 	return "", fmt.Errorf("asset not found")
 }
 
+func (bc *BinanceClient) GetAssetDebtRatioUSDT() float64 {
+	crossMarginDetailsRes, err := bc.client.NewCrossMarginAccountDetailService().
+		Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return 0.0
+	}
+
+	usdtPrices, err := getAllUSDTPrices()
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return 0.0
+	}
+
+	totalAssetsUSDT, totalDebtUSDT := 0.0, 0.0
+
+	for _, userAsset := range crossMarginDetailsRes.UserAssets {
+		netAsset := ParseToFloat64(userAsset.NetAsset, 0.0)
+		borrowed := ParseToFloat64(userAsset.Borrowed, 0.0)
+		interest := ParseToFloat64(userAsset.Interest, 0.0)
+		totalDebt := borrowed + interest
+
+		assetUSDTValue, debtUSDTValue := 0.0, 0.0
+
+		if userAsset.Asset == "USDT" {
+			assetUSDTValue = netAsset
+			debtUSDTValue = totalDebt
+		} else {
+			symbolInfo := FindListItem[SymbolInfoSimple](
+				usdtPrices,
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+"USDT" },
+			)
+
+			if symbolInfo != nil {
+				usdtPrice := ParseToFloat64(symbolInfo.Price, 0.0)
+				assetUSDTValue = netAsset * usdtPrice
+				debtUSDTValue = totalDebt * usdtPrice
+			}
+		}
+
+		totalAssetsUSDT += assetUSDTValue
+		totalDebtUSDT += debtUSDTValue
+	}
+
+	if totalDebtUSDT == 0 {
+		return 0.0
+	}
+
+	return totalAssetsUSDT / totalDebtUSDT
+}
+
+func (bc *BinanceClient) GetAccountNetValueUSDT() (float64, error) {
+	crossMarginDetailsRes, err := bc.client.NewCrossMarginAccountDetailService().
+		Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		fmt.Println(err)
+		return 0.0, err
+	}
+
+	usdtPrices, err := getAllUSDTPrices()
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		fmt.Println(err)
+		return 0.0, err
+	}
+
+	accountNetUSDTValue := 0.0
+
+	for _, userAsset := range crossMarginDetailsRes.UserAssets {
+		netAsset := ParseToFloat64(userAsset.NetAsset, 0.0)
+
+		if netAsset > 0.0 {
+
+			if userAsset.Asset == "USDT" {
+				accountNetUSDTValue += netAsset
+				continue
+			}
+
+			symbolInfo := FindListItem[SymbolInfoSimple](
+				usdtPrices,
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+"USDT" },
+			)
+
+			if symbolInfo == nil {
+				continue
+			}
+
+			accountNetUSDTValue += netAsset * ParseToFloat64(symbolInfo.Price, 0.0)
+		}
+	}
+
+	return accountNetUSDTValue, nil
+}
+
 func (bc *BinanceClient) GetAccountDebtInUSDT() (float64, error) {
 	crossMarginDetailsRes, err := bc.client.NewCrossMarginAccountDetailService().
 		Do(context.Background())
@@ -168,10 +263,20 @@ func (bc *BinanceClient) GetAccountDebtInUSDT() (float64, error) {
 
 	for _, userAsset := range crossMarginDetailsRes.UserAssets {
 		if ParseToFloat64(userAsset.Borrowed, 0.0) > 0.0 {
+
+			if userAsset.Asset == "USDT" {
+				totalDebtUSDT += ParseToFloat64(userAsset.Borrowed, 0.0)
+				continue
+			}
+
 			symbolInfo := FindListItem[SymbolInfoSimple](
 				usdtPrices,
-				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset },
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+"USDT" },
 			)
+
+			if symbolInfo == nil {
+				continue
+			}
 
 			totalDebtUSDT += ParseToFloat64(
 				userAsset.Borrowed,
@@ -208,4 +313,17 @@ func (bc *BinanceClient) GetAccountDebtRatio() (float64, error) {
 		return 0.0, err
 	}
 	return totalAccountDebtUSDT / totalAccountValueUSDT, nil
+}
+
+func (bc *BinanceClient) NewMarginLoan(asset string, quantity float64) error {
+	_, err := bc.client.NewBorrowService().
+		Asset(asset).
+		Amount(quantity).
+		Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return err
+	}
+
+	return nil
 }
