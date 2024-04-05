@@ -148,9 +148,31 @@ func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account 
 	return 0.0
 }
 
+func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
+	price, err := bc.FetchLatestPrice("BTCUSDT")
+	if err != nil {
+		CreateCloudLog(
+			NewFmtError(
+				err,
+				CaptureStack(),
+			).Error(),
+			"exception",
+		)
+		return
+	}
+}
+
+func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
+}
+
 func EnterStrategyTrade(bc *BinanceClient, strat Strategy, account Account) {
-	size := GetStrategyAvailableBetsizeUSDT(bc, strat, account)
-	fmt.Println("size", size)
+	sizeUSDT := GetStrategyAvailableBetsizeUSDT(bc, strat, account)
+
+	if strat.IsShortSellingStrategy {
+		OpenShortTrade(strat, bc, sizeUSDT)
+	} else {
+		OpenLongTrade(strat, bc, sizeUSDT)
+	}
 }
 
 func TradingLoop() {
