@@ -1,7 +1,16 @@
 from typing import Dict
 from log import LogExceptionContext
 from orm import Base, Session
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Float, Integer, String
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy import DateTime
 from sqlalchemy.sql import func
 
@@ -9,6 +18,7 @@ from sqlalchemy.sql import func
 class Strategy(Base):
     __tablename__ = "strategy"
     id = Column(Integer, primary_key=True)
+    active_trade_id = Column(Integer, ForeignKey("trade.id"))
     name = Column(String, unique=True)
 
     created_at = Column(DateTime, default=func.now())
