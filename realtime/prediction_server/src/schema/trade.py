@@ -13,7 +13,7 @@ class Trade(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    open_time_ms = Column(Integer)
+    open_time_ms = Column(Integer, nullable=False)
     close_time_ms = Column(Integer)
 
     open_price = Column(Float, nullable=False)
