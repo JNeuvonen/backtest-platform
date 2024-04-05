@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math"
 )
@@ -54,50 +55,63 @@ func ShouldEnterTrade(strat Strategy) bool {
 func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {
 }
 
-func GetStrategyAvailableBetsize(bc *BinanceClient, strat Strategy) float64 {
-	accUSDTValue, accUSDTValueErr := bc.GetPortfolioValueInUSDT()
+func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account Account) float64 {
+	accUSDTValue, err := bc.GetPortfolioValueInUSDT()
+	if err != nil {
+		return LogAndRetFallback(err, 0.0)
+	}
 
-	if accUSDTValueErr != nil {
-		CreateCloudLog(
-			NewFmtError(
-				accUSDTValueErr,
-				CaptureStack(),
-			).Error(),
-			"exception",
-		)
-		return 0.0
+	if accUSDTValue == 0.0 {
+		return LogAndRetFallback(err, 0.0)
 	}
 
 	balances := bc.FetchBalances()
 
 	if balances != nil {
 		if strat.IsShortSellingStrategy {
-		} else {
-			freeUSDT, freeUSDTErr := GetFreeBalanceForAsset(balances.Balances, "USDT")
-			if freeUSDTErr != nil {
-				CreateCloudLog(
-					NewFmtError(
-						accUSDTValueErr,
-						CaptureStack(),
-					).Error(),
-					"exception",
+			accDebtRatio, err := bc.GetAccountDebtRatio()
+			if err != nil {
+				return LogAndRetFallback(err, 0.0)
+			}
+
+			if accDebtRatio > account.MaxDebtRatio {
+				return LogAndRetFallback(errors.New(
+					"GetStrategyAvailableBetsizeUSDT(): maximum leverage already used"), 0.0,
 				)
-				return 0.0
 			}
 
 			maxAllocatedUSDTValue := strat.AllocatedSizePerc * accUSDTValue
+			debtInUSDT, _ := bc.GetAccountDebtInUSDT()
+
+			if maxAllocatedUSDTValue+debtInUSDT/accUSDTValue < account.MaxDebtRatio {
+				return maxAllocatedUSDTValue
+			} else {
+				return (account.MaxDebtRatio - accDebtRatio) * accUSDTValue
+			}
+
+		} else {
+			freeUSDT, err := GetFreeBalanceForAsset(balances.Balances, "USDT")
+			if err != nil {
+				return LogAndRetFallback(err, 0.0)
+			}
+
+			maxAllocatedUSDTValue := (strat.AllocatedSizePerc / 100) * accUSDTValue
 			return math.Min(ParseToFloat64(freeUSDT, 0.0), maxAllocatedUSDTValue)
 		}
 	}
 	return 0.0
 }
 
-func EnterStrategyTrade(bc *BinanceClient, strat Strategy) {
+func EnterStrategyTrade(bc *BinanceClient, strat Strategy, account Account) {
+	size := GetStrategyAvailableBetsizeUSDT(bc, strat, account)
+	fmt.Println("size", size)
 }
 
 func TradingLoop() {
 	predServConfig := GetPredServerConfig()
 	tradingConfig := GetTradingConfig()
+	accountName := GetAccountName()
+
 	headers := map[string]string{
 		"X-API-KEY": predServConfig.API_KEY,
 	}
@@ -112,6 +126,7 @@ func TradingLoop() {
 		}
 
 		strategies := predServClient.FetchStrategies()
+		account, _ := predServClient.FetchAccount(accountName)
 
 		for _, strat := range strategies {
 			if strat.IsInPosition {
@@ -120,7 +135,7 @@ func TradingLoop() {
 				}
 			} else if !strat.IsInPosition {
 				if ShouldEnterTrade(strat) {
-					EnterStrategyTrade(binanceClient, strat)
+					EnterStrategyTrade(binanceClient, strat, account)
 				}
 			}
 		}
