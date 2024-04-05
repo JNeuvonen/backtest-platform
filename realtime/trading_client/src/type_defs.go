@@ -10,6 +10,7 @@ type AccountByNameResponse struct {
 
 type Strategy struct {
 	ID                         int     `json:"id"`
+	Name                       string  `json:"name"`
 	CreatedAt                  string  `json:"created_at"`
 	UpdatedAt                  string  `json:"updated_at"`
 	Symbol                     string  `json:"symbol"`
@@ -17,6 +18,7 @@ type Strategy struct {
 	ExitTradeCode              string  `json:"exit_trade_code"`
 	FetchDatasourcesCode       string  `json:"fetch_datasources_code"`
 	DataTransformationsCode    string  `json:"data_transformations_code"`
+	TradeQuantityPrecision     int     `json:"trade_quantity_precision"`
 	Priority                   int     `json:"priority"`
 	KlineSizeMs                int     `json:"kline_size_ms"`
 	MinimumTimeBetweenTradesMs int     `json:"minimum_time_between_trades_ms"`
