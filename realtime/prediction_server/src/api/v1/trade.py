@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 class RoutePaths:
-    TRADE = "/trade"
+    TRADE = "/"
 
 
 @router.get(RoutePaths.TRADE, dependencies=[Depends(api_key_auth)])

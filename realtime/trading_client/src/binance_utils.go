@@ -396,6 +396,7 @@ func (bc *BinanceClient) NewMarginOrder(
 		"time_on_trade_open_ms":      fullRes.TransactTime,
 		"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
 		"active_trade_id":            tradeID,
+		"is_in_position":             true,
 	})
 
 	return nil
