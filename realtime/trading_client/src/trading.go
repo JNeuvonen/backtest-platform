@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+
+	binance_connector "github.com/binance/binance-connector-go"
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {
@@ -55,50 +57,94 @@ func ShouldEnterTrade(strat Strategy) bool {
 func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {
 }
 
+func calculateShortStratBetSizeUSDT(
+	bc *BinanceClient,
+	account Account,
+	strat Strategy,
+	accUSDTValue float64,
+) float64 {
+	accDebtRatio, err := bc.GetAccountDebtRatio()
+	if err != nil {
+		CreateCloudLog(
+			NewFmtError(err, CaptureStack()).Error(),
+			"exception",
+		)
+		return 0.0
+	}
+
+	if accDebtRatio > account.MaxDebtRatio {
+		CreateCloudLog(
+			NewFmtError(err, CaptureStack()).Error(),
+			"exception",
+		)
+		return 0.0
+	}
+
+	maxAllocatedUSDTValue := (strat.AllocatedSizePerc / 100) * accUSDTValue
+	debtInUSDT, _ := bc.GetAccountDebtInUSDT()
+
+	if maxAllocatedUSDTValue+debtInUSDT/accUSDTValue < account.MaxDebtRatio {
+		return maxAllocatedUSDTValue
+	} else {
+		return math.Min((account.MaxDebtRatio-accDebtRatio)*accUSDTValue, maxAllocatedUSDTValue)
+	}
+}
+
+func calculateLongStratBetSizeUSDT(
+	strat Strategy,
+	balances []binance_connector.Balance,
+	accUSDTValue float64,
+) float64 {
+	freeUSDT, err := GetFreeBalanceForAsset(balances, "USDT")
+	if err != nil {
+		CreateCloudLog(
+			NewFmtError(err, CaptureStack()).Error(),
+			"exception",
+		)
+		return 0.0
+	}
+
+	maxAllocatedUSDTValue := (strat.AllocatedSizePerc / 100) * accUSDTValue
+	return math.Min(ParseToFloat64(freeUSDT, 0.0), maxAllocatedUSDTValue)
+}
+
 func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account Account) float64 {
 	accUSDTValue, err := bc.GetPortfolioValueInUSDT()
 	if err != nil {
-		return LogAndRetFallback(err, 0.0)
+		CreateCloudLog(
+			NewFmtError(err, CaptureStack()).Error(),
+			"exception",
+		)
+		return 0.0
 	}
 
 	if accUSDTValue == 0.0 {
-		return LogAndRetFallback(err, 0.0)
+		CreateCloudLog(
+			NewFmtError(err, CaptureStack()).Error(),
+			"exception",
+		)
+		return 0.0
 	}
 
 	balances := bc.FetchBalances()
 
 	if balances != nil {
 		if strat.IsShortSellingStrategy {
-			accDebtRatio, err := bc.GetAccountDebtRatio()
-			if err != nil {
-				return LogAndRetFallback(err, 0.0)
-			}
-
-			if accDebtRatio > account.MaxDebtRatio {
-				return LogAndRetFallback(errors.New(
-					"GetStrategyAvailableBetsizeUSDT(): maximum leverage already used"), 0.0,
-				)
-			}
-
-			maxAllocatedUSDTValue := strat.AllocatedSizePerc * accUSDTValue
-			debtInUSDT, _ := bc.GetAccountDebtInUSDT()
-
-			if maxAllocatedUSDTValue+debtInUSDT/accUSDTValue < account.MaxDebtRatio {
-				return maxAllocatedUSDTValue
-			} else {
-				return (account.MaxDebtRatio - accDebtRatio) * accUSDTValue
-			}
-
+			return calculateShortStratBetSizeUSDT(bc, account, strat, accUSDTValue)
 		} else {
-			freeUSDT, err := GetFreeBalanceForAsset(balances.Balances, "USDT")
-			if err != nil {
-				return LogAndRetFallback(err, 0.0)
-			}
-
-			maxAllocatedUSDTValue := (strat.AllocatedSizePerc / 100) * accUSDTValue
-			return math.Min(ParseToFloat64(freeUSDT, 0.0), maxAllocatedUSDTValue)
+			return calculateLongStratBetSizeUSDT(strat, balances.Balances, accUSDTValue)
 		}
 	}
+
+	CreateCloudLog(
+		NewFmtError(
+			errors.New(
+				"GetStrategyAvailableBetsizeUSDT(): balances := bc.FetchBalances() was unexpectedly nil",
+			),
+			CaptureStack(),
+		).Error(),
+		"exception",
+	)
 	return 0.0
 }
 
