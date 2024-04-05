@@ -48,7 +48,7 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 func ShouldEnterTrade(strat Strategy) bool {
 	currTimeMs := GetTimeInMs()
 
-	if strat.TimeOnTradeOpenMs-int(currTimeMs) >= strat.MinimumTimeBetweenTradesMs {
+	if strat.TimeOnTradeOpenMs-int64(currTimeMs) >= int64(strat.MinimumTimeBetweenTradesMs) {
 		return strat.ShouldEnterTrade
 	}
 	return false

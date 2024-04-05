@@ -196,7 +196,7 @@ func (bc *BinanceClient) GetAssetDebtRatioUSDT() float64 {
 		return 0.0
 	}
 
-	return totalAssetsUSDT / totalDebtUSDT
+	return totalDebtUSDT / totalAssetsUSDT
 }
 
 func (bc *BinanceClient) GetAccountNetValueUSDT() (float64, error) {
@@ -364,45 +364,39 @@ func (bc *BinanceClient) NewMarginOrder(
 		Symbol(symbol).
 		Side(side).
 		OrderType(orderType).
+		NewOrderRespType("FULL").
 		Quantity(quantity).Do(context.Background())
-	fmt.Println(res, err)
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
 		return err
 	}
 
-	if res != nil {
-		resBytes, ok := res.([]byte)
-		if !ok {
-			err = errors.New("Type assertion for response to []byte failed")
-			CreateCloudLog(
-				NewFmtError(
-					err,
-					CaptureStack(),
-				).Error(), "exception")
-			return err
-		}
-
-		var response binance_connector.MarginAccountNewOrderResponseFULL
-		err = json.Unmarshal(resBytes, &response)
-		if err != nil {
-			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
-			return err
-		}
-
-		UpdateStrategy(int32(strat.ID), map[string]interface{}{
-			"price_on_trade_open":        response.Price,
-			"time_on_trade_open_ms":      response.TransactTime,
-			"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
-		})
-		CreateTradeEntry(map[string]interface{}{
-			"open_price":                response.Price,
-			"open_time_ms":              response.TransactTime,
-			"quantity":                  response.ExecutedQty,
-			"cumulative_quote_quantity": response.CumulativeQuoteQty,
-			"direction":                 "SHORT",
-			"strategy_id":               int32(strat.ID),
-		})
+	fullRes, ok := res.(*binance_connector.MarginAccountNewOrderResponseFULL)
+	if !ok {
+		err = errors.New("Type assertion for response to MarginAccountNewOrderResponseFULL failed")
+		CreateCloudLog(
+			NewFmtError(
+				err,
+				CaptureStack(),
+			).Error(), "exception")
+		return err
 	}
+
+	tradeID := CreateTradeEntry(map[string]interface{}{
+		"open_price":                fullRes.Price,
+		"open_time_ms":              fullRes.TransactTime,
+		"quantity":                  fullRes.ExecutedQty,
+		"cumulative_quote_quantity": fullRes.CumulativeQuoteQty,
+		"direction":                 "SHORT",
+		"strategy_id":               int32(strat.ID),
+	})
+
+	UpdateStrategy(int32(strat.ID), map[string]interface{}{
+		"price_on_trade_open":        fullRes.Price,
+		"time_on_trade_open_ms":      fullRes.TransactTime,
+		"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
+		"active_trade_id":            tradeID,
+	})
+
 	return nil
 }

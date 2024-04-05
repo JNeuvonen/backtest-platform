@@ -71,7 +71,7 @@ func GetBinanceAPIBaseURL() string {
 	mainNetDataStr := os.Getenv("USE_MAINNET_DATA")
 	mainNetDataInt, err := strconv.ParseInt(mainNetDataStr, 10, 32)
 	if err != nil {
-		panic("LIVE_TRADING_ENABLED must be an integer 0 or 1")
+		panic("USE_MAINNET_DATA must be an integer 0 or 1")
 	}
 
 	if mainNetDataInt == 1 {
@@ -92,10 +92,10 @@ func GetTradingConfig() TradingConfig {
 		ApiSecret: os.Getenv("API_SECRET"),
 	}
 
-	liveTradingEnabledStr := os.Getenv("LIVE_TRADING_ENABLED")
+	liveTradingEnabledStr := os.Getenv("USE_MAINNET_DATA")
 	liveTradingEnabledInt, err := strconv.ParseInt(liveTradingEnabledStr, 10, 32)
 	if err != nil {
-		panic("LIVE_TRADING_ENABLED must be an integer 0 or 1")
+		panic("USE_MAINNET_DATA must be an integer 0 or 1")
 	}
 	config.LiveTradingEnabled = int32(liveTradingEnabledInt)
 

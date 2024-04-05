@@ -7,12 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMarketOrder(t *testing.T) {
-	tradingConfig := GetTradingConfig()
-	_ = NewBinanceClient(tradingConfig)
-	// binanceClient.SendOrder("BTCUSDT", "BUY", "MARKET", 0.001, true)
-}
-
 func TestCallingPredServer(t *testing.T) {
 	predServConfig := GetPredServerConfig()
 	headers := map[string]string{

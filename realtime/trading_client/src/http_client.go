@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 type HttpClient struct {
@@ -128,30 +129,45 @@ func UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
 	return predServClient.UpdateStrategy(id, fieldsToUpdate)
 }
 
-func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) error {
+func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) *int32 {
 	jsonBody, err := json.Marshal(fields)
 	if err != nil {
-		return err
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil
 	}
 
 	endpoint := PRED_SERV_V1_TRADE
 
-	_, err = client.Post(endpoint, "application/json", jsonBody)
-
+	res, err := client.Post(endpoint, "application/json", jsonBody)
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
-		return err
+		return nil
+	}
+	defer res.Body.Close()
+
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil
 	}
 
-	return nil
+	id, err := strconv.Atoi(string(bodyBytes))
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil
+	}
+
+	tradeID := int32(id)
+	return &tradeID
 }
 
-func CreateTradeEntry(fields map[string]interface{}) error {
+func CreateTradeEntry(fields map[string]interface{}) *int32 {
 	predServConfig := GetPredServerConfig()
 	headers := map[string]string{
 		"X-API-KEY": predServConfig.API_KEY,
 	}
 	predServClient := NewHttpClient(predServConfig.URI, headers)
+
 	return predServClient.CreateTradeEntry(fields)
 }
 
