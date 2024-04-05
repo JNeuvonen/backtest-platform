@@ -123,6 +123,29 @@ func TestFetchingAccountByName(t *testing.T) {
 	fmt.Println(account)
 }
 
+func TestEnterStrategyTrade(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+
+	accountName := GetAccountName()
+	account, err := predServClient.FetchAccount(accountName)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	strategies := predServClient.FetchStrategies()
+
+	for _, strat := range strategies {
+		EnterStrategyTrade(binanceClient, strat, account)
+	}
+}
+
 // func TestTradingLoop(t *testing.T) {
 // 	timeout := time.After(10 * time.Second)
 // 	done := make(chan bool)
