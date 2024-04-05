@@ -57,10 +57,10 @@ func GetPredServerConfig() PredServerConfig {
 func GetAllowedToSendOrders() bool {
 	err := godotenv.Load()
 
-	allowedToSendOrdersStr := os.Getenv("USE_REAL_ORDERS")
+	allowedToSendOrdersStr := os.Getenv("ALLOWED_TO_SEND_REAL_ORDERS")
 	allowedToSendOrdersInt, err := strconv.ParseInt(allowedToSendOrdersStr, 10, 32)
 	if err != nil {
-		panic("USE_REAL_ORDERS must be an integer 0 or 1")
+		panic("ALLOWED_TO_SEND_REAL_ORDERS must be an integer 0 or 1")
 	}
 	return allowedToSendOrdersInt == 1
 }
