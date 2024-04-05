@@ -9,6 +9,7 @@ from sqlalchemy.sql import func
 class Strategy(Base):
     __tablename__ = "strategy"
     id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
