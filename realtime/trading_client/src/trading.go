@@ -173,7 +173,7 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 
-	err = bc.NewMarginLoan(strat.BaseAsset, quantity)
+	err = bc.TakeMarginLoan(strat.BaseAsset, quantity)
 
 	fmt.Println(err)
 
