@@ -1,3 +1,4 @@
+from sqlalchemy.sql.operators import op
 from t_constants import ONE_DAY_IN_MS
 
 
@@ -93,8 +94,124 @@ def make_data_transformations(fetched_data):
     return fetched_data
 """
 
+    class ShortDebugStrat:
+        OPEN = """
+def get_enter_trade_decision(transformed_df):
+    if transformed_df is None or transformed_df.empty: 
+        return False
+    tick = transformed_df.iloc[len(transformed_df) - 1]
+    return tick["RSI_100_MA_720_OBV"] < 10 and tick["RSI_160_MA_200_close_price"] < 10 and tick["close_price"] > tick["MA_200_close_price"]
+"""
+
+        CLOSE = """
+def get_exit_trade_decision(transformed_df):
+    if transformed_df is None or transformed_df.empty: 
+        return False
+    tick = transformed_df.iloc[len(transformed_df) - 1]
+    return tick["RSI_100_MA_720_OBV"] > 30
+"""
+
+        TRANSFORMATIONS = """
+def make_data_transformations(fetched_data):
+    def calculate_obv(df):
+        df['OBV'] = 0
+        for i in range(1, len(df)):
+            if df['open_price'][i] > df['open_price'][i-1]:
+                df['OBV'][i] = df['OBV'][i-1] + df['volume'][i]
+            elif df['open_price'][i] < df['open_price'][i-1]:
+                df['OBV'][i] = df['OBV'][i-1] - df['volume'][i]
+            else:
+                df['OBV'][i] = df['OBV'][i-1]
+
+    def calculate_ma(df, column="close_price", periods=[50]):
+        for period in periods:
+            ma_label = f"MA_{period}_{column}"
+            df[ma_label] = df[column].rolling(window=period).mean()
+
+
+    def calculate_rsi(df, column="open_price", periods=[14]):
+        for period in periods:
+            delta = df[column].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+            rs = gain / loss
+            df_label = f"RSI_{period}_{column}"
+            df[df_label] = 100 - (100 / (1 + rs))
+
+    
+    calculate_obv(fetched_data)
+
+    periods = [720]
+    column = "OBV"
+    calculate_ma(fetched_data, column=column, periods=periods)
+
+    periods = [100]
+    column = "MA_720_OBV"
+    calculate_rsi(fetched_data, column=column, periods=periods)
+
+
+    periods = [200]
+    column = "close_price"
+    calculate_ma(fetched_data, column=column, periods=periods)
+
+    periods = [160]
+    column = "MA_200_close_price"
+    calculate_rsi(fetched_data, column=column, periods=periods)
+
+    return fetched_data
+"""
+
+        FETCH = """
+def fetch_datasources():
+    import pandas as pd
+    from binance import Client
+    def get_historical_klines(symbol, interval):
+        BINANCE_DATA_COLS = [
+            "kline_open_time",
+            "open_price",
+            "high_price",
+            "low_price",
+            "close_price",
+            "volume",
+            "kline_close_time",
+            "quote_asset_volume",
+            "number_of_trades",
+            "taker_buy_base_asset_volume",
+            "taker_buy_quote_asset_volume",
+            "ignore",
+        ]
+        client = Client()
+        start_time = "1 Jan, 2017"
+        klines = []
+
+        while True:
+            new_klines = client.get_historical_klines(
+                symbol, interval, start_time, limit=1000
+            )
+            if not new_klines:
+                break
+
+            klines.extend(new_klines)
+            start_time = int(new_klines[-1][0]) + 1
+
+        df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
+        df.drop(["ignore", "kline_close_time"], axis=1, inplace=True)
+        df["kline_open_time"] = pd.to_numeric(df["kline_open_time"])
+
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        df.sort_values("kline_open_time", inplace=True)
+        return df
+
+    df = get_historical_klines("BTCUSDT", Client.KLINE_INTERVAL_1HOUR)
+    return df
+"""
+
 
 def create_strategy_body(
+    name: str,
     symbol: str,
     enter_trade_code: str,
     exit_trade_code: str,
@@ -116,6 +233,7 @@ def create_strategy_body(
     is_paper_trade_mode: bool,
 ):
     return {
+        "name": name,
         "symbol": symbol,
         "enter_trade_code": enter_trade_code,
         "exit_trade_code": exit_trade_code,
@@ -140,6 +258,7 @@ def create_strategy_body(
 
 def strategy_simple_1():
     return create_strategy_body(
+        name="SimpleLongStrat",
         symbol="BTCUSDT",
         enter_trade_code=TradingRules.RSI_30_MA_50_CLOSE_PRICE.OPEN,
         exit_trade_code=TradingRules.RSI_30_MA_50_CLOSE_PRICE.CLOSE,
@@ -158,5 +277,30 @@ def strategy_simple_1():
         use_taker_order=False,
         is_leverage_allowed=False,
         is_short_selling_strategy=False,
+        is_paper_trade_mode=False,
+    )
+
+
+def create_short_strategy_simple_1():
+    return create_strategy_body(
+        name="SimpleShortStrat",
+        symbol="BTCUSDT",
+        enter_trade_code=TradingRules.ShortDebugStrat.OPEN,
+        exit_trade_code=TradingRules.ShortDebugStrat.CLOSE,
+        fetch_datasources_code=TradingRules.ShortDebugStrat.FETCH,
+        data_transformations_code=TradingRules.ShortDebugStrat.TRANSFORMATIONS,
+        priority=1,
+        kline_size_ms=ONE_DAY_IN_MS,
+        klines_left_till_autoclose=0,
+        allocated_size_perc=100,
+        take_profit_threshold_perc=0,
+        stop_loss_threshold_perc=2,
+        minimum_time_between_trades_ms=1000,
+        use_time_based_close=False,
+        use_profit_based_close=False,
+        use_stop_loss_based_close=True,
+        use_taker_order=False,
+        is_leverage_allowed=False,
+        is_short_selling_strategy=True,
         is_paper_trade_mode=False,
     )
