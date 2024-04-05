@@ -374,10 +374,13 @@ func (bc *BinanceClient) NewMarginOrder(
 	if res != nil {
 		resBytes, ok := res.([]byte)
 		if !ok {
-			// Handle type assertion error
-			errMsg := "Type assertion for response to []byte failed"
-			CreateCloudLog(errMsg, "exception")
-			return errors.New(errMsg)
+			err = errors.New("Type assertion for response to []byte failed")
+			CreateCloudLog(
+				NewFmtError(
+					err,
+					CaptureStack(),
+				).Error(), "exception")
+			return err
 		}
 
 		var response binance_connector.MarginAccountNewOrderResponseFULL
@@ -392,7 +395,12 @@ func (bc *BinanceClient) NewMarginOrder(
 			"time_on_trade_open_ms":      response.TransactTime,
 			"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
 		})
-
+		CreateTradeEntry(map[string]interface{}{
+			"open_price":   response.Price,
+			"open_time_ms": response.TransactTime,
+			"direction":    "SHORT",
+			"strategy_id":  int32(strat.ID),
+		})
 	}
 	return nil
 }

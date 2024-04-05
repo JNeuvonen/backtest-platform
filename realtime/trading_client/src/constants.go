@@ -9,6 +9,7 @@ const (
 	PRED_SERV_V1_STRAT = "v1/strategy"
 	PRED_SERV_V1_LOG   = "v1/log"
 	PRED_SERV_V1_ACC   = "v1/acc"
+	PRED_SERV_V1_TRADE = "v1/trade"
 )
 
 const (

@@ -128,17 +128,31 @@ func UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
 	return predServClient.UpdateStrategy(id, fieldsToUpdate)
 }
 
-func (client *HttpClient) CreateTradeEntry(strategy_id int32, fields map[string]interface{}) error {
+func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) error {
+	jsonBody, err := json.Marshal(fields)
+	if err != nil {
+		return err
+	}
+
+	endpoint := PRED_SERV_V1_TRADE
+
+	_, err = client.Post(endpoint, "application/json", jsonBody)
+
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return err
+	}
+
 	return nil
 }
 
-func CreateTradeEntry(strategy_id int32, fields map[string]interface{}) error {
+func CreateTradeEntry(fields map[string]interface{}) error {
 	predServConfig := GetPredServerConfig()
 	headers := map[string]string{
 		"X-API-KEY": predServConfig.API_KEY,
 	}
 	predServClient := NewHttpClient(predServConfig.URI, headers)
-	return predServClient.CreateTradeEntry(strategy_id, fields)
+	return predServClient.CreateTradeEntry(fields)
 }
 
 func CreateCloudLog(msg string, level string) {
