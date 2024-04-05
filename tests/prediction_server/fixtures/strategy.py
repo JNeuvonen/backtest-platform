@@ -94,7 +94,7 @@ def make_data_transformations(fetched_data):
     return fetched_data
 """
 
-    class ShortDebugStrat:
+    class ShortSimple:
         OPEN = """
 def get_enter_trade_decision(transformed_df):
     if transformed_df is None or transformed_df.empty: 
@@ -209,6 +209,70 @@ def fetch_datasources():
     return df
 """
 
+    class ShortDevPurposes:
+        OPEN = """
+def get_enter_trade_decision(transformed_df):
+    return True 
+"""
+
+        CLOSE = """
+def get_exit_trade_decision(transformed_df):
+    return False 
+"""
+
+        FETCH = """
+def fetch_datasources():
+    import pandas as pd
+    from binance import Client
+    def get_historical_klines(symbol, interval):
+        BINANCE_DATA_COLS = [
+            "kline_open_time",
+            "open_price",
+            "high_price",
+            "low_price",
+            "close_price",
+            "volume",
+            "kline_close_time",
+            "quote_asset_volume",
+            "number_of_trades",
+            "taker_buy_base_asset_volume",
+            "taker_buy_quote_asset_volume",
+            "ignore",
+        ]
+        client = Client()
+        start_time = "1 Jan, 2017"
+        klines = []
+
+        while True:
+            new_klines = client.get_historical_klines(
+                symbol, interval, start_time, limit=1000
+            )
+            if not new_klines:
+                break
+
+            klines.extend(new_klines)
+            start_time = int(new_klines[-1][0]) + 1
+
+        df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
+        df.drop(["ignore", "kline_close_time"], axis=1, inplace=True)
+        df["kline_open_time"] = pd.to_numeric(df["kline_open_time"])
+
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        df.sort_values("kline_open_time", inplace=True)
+        return df
+
+    df = get_historical_klines("BTCUSDT", Client.KLINE_INTERVAL_1HOUR)
+    return df
+"""
+
+        TRANSFORMATIONS = """
+def make_data_transformations(fetched_data):
+    #debugging strategy - no need to actually transform the data
+    return fetched_data
+"""
+
 
 def create_strategy_body(
     name: str,
@@ -285,14 +349,39 @@ def create_short_strategy_simple_1():
     return create_strategy_body(
         name="SimpleShortStrat",
         symbol="BTCUSDT",
-        enter_trade_code=TradingRules.ShortDebugStrat.OPEN,
-        exit_trade_code=TradingRules.ShortDebugStrat.CLOSE,
-        fetch_datasources_code=TradingRules.ShortDebugStrat.FETCH,
-        data_transformations_code=TradingRules.ShortDebugStrat.TRANSFORMATIONS,
+        enter_trade_code=TradingRules.ShortSimple.OPEN,
+        exit_trade_code=TradingRules.ShortSimple.CLOSE,
+        fetch_datasources_code=TradingRules.ShortSimple.FETCH,
+        data_transformations_code=TradingRules.ShortSimple.TRANSFORMATIONS,
         priority=1,
         kline_size_ms=ONE_DAY_IN_MS,
         klines_left_till_autoclose=0,
-        allocated_size_perc=100,
+        allocated_size_perc=50,
+        take_profit_threshold_perc=0,
+        stop_loss_threshold_perc=2,
+        minimum_time_between_trades_ms=1000,
+        use_time_based_close=False,
+        use_profit_based_close=False,
+        use_stop_loss_based_close=True,
+        use_taker_order=False,
+        is_leverage_allowed=False,
+        is_short_selling_strategy=True,
+        is_paper_trade_mode=False,
+    )
+
+
+def create_short_strategy_simple_2():
+    return create_strategy_body(
+        name="ShortDevPurposes",
+        symbol="BTCUSDT",
+        enter_trade_code=TradingRules.ShortDevPurposes.OPEN,
+        exit_trade_code=TradingRules.ShortDevPurposes.CLOSE,
+        fetch_datasources_code=TradingRules.ShortDevPurposes.FETCH,
+        data_transformations_code=TradingRules.ShortDevPurposes.TRANSFORMATIONS,
+        priority=1,
+        kline_size_ms=ONE_DAY_IN_MS,
+        klines_left_till_autoclose=24,
+        allocated_size_perc=50,
         take_profit_threshold_perc=0,
         stop_loss_threshold_perc=2,
         minimum_time_between_trades_ms=1000,
