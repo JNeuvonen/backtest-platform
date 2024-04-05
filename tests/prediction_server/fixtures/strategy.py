@@ -1,4 +1,3 @@
-from sqlalchemy.sql.operators import op
 from t_constants import ONE_DAY_IN_MS
 
 
@@ -277,6 +276,8 @@ def make_data_transformations(fetched_data):
 def create_strategy_body(
     name: str,
     symbol: str,
+    base_asset: str,
+    quote_asset: str,
     enter_trade_code: str,
     exit_trade_code: str,
     fetch_datasources_code: str,
@@ -300,6 +301,8 @@ def create_strategy_body(
     return {
         "name": name,
         "symbol": symbol,
+        "base_asset": base_asset,
+        "quote_asset": quote_asset,
         "enter_trade_code": enter_trade_code,
         "exit_trade_code": exit_trade_code,
         "fetch_datasources_code": fetch_datasources_code,
@@ -326,6 +329,8 @@ def strategy_simple_1():
     return create_strategy_body(
         name="SimpleLongStrat",
         symbol="BTCUSDT",
+        base_asset="BTC",
+        quote_asset="USDT",
         enter_trade_code=TradingRules.RSI_30_MA_50_CLOSE_PRICE.OPEN,
         exit_trade_code=TradingRules.RSI_30_MA_50_CLOSE_PRICE.CLOSE,
         fetch_datasources_code=TradingRules.RSI_30_MA_50_CLOSE_PRICE.FETCH,
@@ -352,6 +357,8 @@ def create_short_strategy_simple_1():
     return create_strategy_body(
         name="SimpleShortStrat",
         symbol="BTCUSDT",
+        base_asset="BTC",
+        quote_asset="USDT",
         enter_trade_code=TradingRules.ShortSimple.OPEN,
         exit_trade_code=TradingRules.ShortSimple.CLOSE,
         fetch_datasources_code=TradingRules.ShortSimple.FETCH,
@@ -378,6 +385,8 @@ def create_short_strategy_simple_2():
     return create_strategy_body(
         name="ShortDevPurposes",
         symbol="BTCUSDT",
+        base_asset="BTC",
+        quote_asset="USDT",
         enter_trade_code=TradingRules.ShortDevPurposes.OPEN,
         exit_trade_code=TradingRules.ShortDevPurposes.CLOSE,
         fetch_datasources_code=TradingRules.ShortDevPurposes.FETCH,
