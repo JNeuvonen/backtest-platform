@@ -1,5 +1,5 @@
 from typing import List, Optional, Any
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 
 
@@ -36,11 +36,12 @@ class BodyCreateCloudLog(BaseModel):
     message: str
     level: str
 
-    @validator("level")
-    def validate_level(cls, v):
-        if v not in ("exception", "info", "system", "debug"):
+    @field_validator("level")
+    @classmethod
+    def validate_level(cls, level):
+        if level not in ("exception", "info", "system", "debug"):
             raise ValueError("Invalid log level")
-        return v
+        return level
 
 
 class BodyCreateAccount(BaseModel):
@@ -50,8 +51,16 @@ class BodyCreateAccount(BaseModel):
 
 class BodyCreateTrade(BaseModel):
     open_time_ms: int
+    strategy_id: int
     open_price: float
     direction: str
+
+    @field_validator("direction")
+    @classmethod
+    def validate_level(cls, v):
+        if v not in ("LONG", "SHORT"):
+            raise ValueError("Invalid trade direction. Valid values are: [LONG, SHORT]")
+        return v
 
 
 class BodyPutStrategy(BaseModel):
@@ -104,3 +113,9 @@ class BodyPutTrade(BaseModel):
     percent_result: Optional[float] = None
     direction: Optional[str] = None
     profit_history: Optional[List[Any]] = None
+
+    @field_validator("direction")
+    def validate_direction(cls, v):
+        if v not in (None, "LONG", "SHORT"):
+            raise ValueError("Invalid trade direction. Valid values are: [LONG, SHORT]")
+        return v
