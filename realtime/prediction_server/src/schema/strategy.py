@@ -20,6 +20,7 @@ class Strategy(Base):
     fetch_datasources_code = Column(String)
     data_transformations_code = Column(String)
 
+    trade_quantity_precision = Column(Integer, nullable=False)
     priority = Column(Integer)
     kline_size_ms = Column(Integer)
     prev_kline_ms = Column(Integer)
