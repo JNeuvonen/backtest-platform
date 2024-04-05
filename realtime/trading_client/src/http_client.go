@@ -103,12 +103,8 @@ func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 }
 
 func (client *HttpClient) UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
-	updateMap := make(map[string]interface{})
-	for key, value := range fieldsToUpdate {
-		updateMap[key] = value
-	}
-	updateMap["id"] = id
-	jsonBody, err := json.Marshal(updateMap)
+	fieldsToUpdate["id"] = id
+	jsonBody, err := json.Marshal(fieldsToUpdate)
 	if err != nil {
 		return err
 	}
@@ -130,6 +126,19 @@ func UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
 	}
 	predServClient := NewHttpClient(predServConfig.URI, headers)
 	return predServClient.UpdateStrategy(id, fieldsToUpdate)
+}
+
+func (client *HttpClient) CreateTradeEntry(strategy_id int32, fields map[string]interface{}) error {
+	return nil
+}
+
+func CreateTradeEntry(strategy_id int32, fields map[string]interface{}) error {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	return predServClient.CreateTradeEntry(strategy_id, fields)
 }
 
 func CreateCloudLog(msg string, level string) {
