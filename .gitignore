@@ -39,3 +39,5 @@ test_db_conn.py
 *.sw?
 sandbox.py
 venv_pred_server
+
+*debug_bin*
