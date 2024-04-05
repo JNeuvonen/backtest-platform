@@ -388,8 +388,9 @@ func (bc *BinanceClient) NewMarginOrder(
 		}
 
 		UpdateStrategy(int32(strat.ID), map[string]interface{}{
-			"price_on_trade_open":   response.Price,
-			"time_on_trade_open_ms": response.TransactTime,
+			"price_on_trade_open":        response.Price,
+			"time_on_trade_open_ms":      response.TransactTime,
+			"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
 		})
 
 	}
