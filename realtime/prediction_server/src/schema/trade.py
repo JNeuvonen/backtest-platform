@@ -26,9 +26,12 @@ class Trade(Base):
     close_time_ms = Column(BigInteger)
 
     open_price = Column(Float, nullable=False)
-    close_price = Column(Float, nullable=True)
-    net_result = Column(Float, nullable=True)
-    percent_result = Column(Float, nullable=True)
+    quantity = Column(Float, nullable=False)
+    cumulative_quote_quantity = Column(Float, nullable=False)
+
+    close_price = Column(Float)
+    net_result = Column(Float)
+    percent_result = Column(Float)
 
     direction = Column(String, nullable=False)
 

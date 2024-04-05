@@ -52,6 +52,8 @@ class BodyCreateAccount(BaseModel):
 class BodyCreateTrade(BaseModel):
     open_time_ms: int
     strategy_id: int
+    quantity: float
+    cumulative_quote_quantity: float
     open_price: float
     direction: str
 
