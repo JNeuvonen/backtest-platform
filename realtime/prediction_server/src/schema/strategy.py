@@ -14,14 +14,16 @@ class Strategy(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    symbol = Column(String)
-    enter_trade_code = Column(String)
-    exit_trade_code = Column(String)
-    fetch_datasources_code = Column(String)
-    data_transformations_code = Column(String)
+    symbol = Column(String, nullable=False)
+    base_asset = Column(String, nullable=False)
+    quote_asset = Column(String, nullable=False)
+    enter_trade_code = Column(String, nullable=False)
+    exit_trade_code = Column(String, nullable=False)
+    fetch_datasources_code = Column(String, nullable=False)
+    data_transformations_code = Column(String, nullable=False)
 
     trade_quantity_precision = Column(Integer, nullable=False)
-    priority = Column(Integer)
+    priority = Column(Integer, nullable=False)
     kline_size_ms = Column(Integer)
     prev_kline_ms = Column(Integer)
     minimum_time_between_trades_ms = Column(Integer)
@@ -43,7 +45,7 @@ class Strategy(Base):
 
     is_paper_trade_mode = Column(Boolean)
     is_leverage_allowed = Column(Boolean)
-    is_short_selling_strategy = Column(Boolean)
+    is_short_selling_strategy = Column(Boolean, nullable=False)
     is_disabled = Column(Boolean, default=False)
     is_in_position = Column(Boolean, default=False)
 
