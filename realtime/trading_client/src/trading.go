@@ -42,7 +42,7 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 	currTimeMs := int64(GetTimeInMs())
 	riskManagementParams := GetRiskManagementParams()
 
-	if currTimeMs-currTimeMs-riskManagementParams.TradingCooldownStartedTs < TRADING_COOLDOWN_MS {
+	if currTimeMs-currTimeMs-riskManagementParams.TradingCooldownStartedTs < UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS {
 		return false
 	}
 
@@ -55,7 +55,7 @@ func ShouldEnterTrade(strat Strategy) bool {
 	riskManagementParams := GetRiskManagementParams()
 
 	if currTimeMs-strat.TimeOnTradeOpenMs >= int64(strat.MinimumTimeBetweenTradesMs) &&
-		currTimeMs-riskManagementParams.TradingCooldownStartedTs > TRADING_COOLDOWN_MS {
+		currTimeMs-riskManagementParams.TradingCooldownStartedTs > UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS {
 		return strat.ShouldEnterTrade
 	}
 	return false

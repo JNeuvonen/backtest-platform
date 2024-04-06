@@ -22,7 +22,11 @@ const (
 )
 
 const (
-	TRADING_COOLDOWN_MS = 60000 * 30
+	MINUTE_IN_MS = 1000 * 60
+)
+
+const (
+	UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS = MINUTE_IN_MS * 60 * 24
 )
 
 type RiskManagementParams struct {
