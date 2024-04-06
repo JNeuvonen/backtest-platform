@@ -35,16 +35,16 @@ type RiskManagementParams struct {
 	FailedCallsToUpdateStrategyState int32
 }
 
-var riskManagementsParams *RiskManagementParams // singleton pattern
+var riskManagementParams *RiskManagementParams // singleton pattern
 
 func GetRiskManagementParams() *RiskManagementParams {
-	if riskManagementsParams == nil {
-		riskManagementsParams = &RiskManagementParams{}
-		riskManagementsParams.TradingCooldownStartedTs = 0
-		riskManagementsParams.FailedCallsToUpdateStrategyState = 0
-		return riskManagementsParams
+	if riskManagementParams == nil {
+		riskManagementParams = &RiskManagementParams{}
+		riskManagementParams.TradingCooldownStartedTs = 0
+		riskManagementParams.FailedCallsToUpdateStrategyState = 0
+		return riskManagementParams
 	}
-	return riskManagementsParams
+	return riskManagementParams
 }
 
 func StartTradingCooldown() {
