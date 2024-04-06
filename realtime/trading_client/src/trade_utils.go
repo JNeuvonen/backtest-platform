@@ -40,12 +40,14 @@ func UpdatePredServerAfterTradeOpen(
 	})
 
 	updateStratSuccess := UpdateStrategy(map[string]interface{}{
-		"id":                         int32(strat.ID),
-		"price_on_trade_open":        execPrice,
-		"time_on_trade_open_ms":      res.TransactTime,
-		"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
-		"active_trade_id":            tradeID,
-		"is_in_position":             true,
+		"id":                          int32(strat.ID),
+		"price_on_trade_open":         execPrice,
+		"quantity_on_trade_open":      res.ExecutedQty,
+		"remaining_position_on_trade": res.ExecutedQty,
+		"time_on_trade_open_ms":       res.TransactTime,
+		"klines_left_till_autoclose":  strat.MaximumKlinesHoldTime,
+		"active_trade_id":             tradeID,
+		"is_in_position":              true,
 	})
 
 	if !updateStratSuccess {
@@ -61,4 +63,46 @@ func UpdatePredServerAfterTradeOpen(
 		StartTradingCooldown()
 		IncrementFailedCallsToUpdateStrat()
 	}
+}
+
+func GetInterestInAsset(
+	marginAssetsRes *binance_connector.CrossMarginAccountDetailResponse,
+	asset string,
+) float64 {
+	if marginAssetsRes != nil {
+		for _, item := range marginAssetsRes.UserAssets {
+			if item.Asset == asset {
+				return ParseToFloat64(item.Interest, 0)
+			}
+		}
+	}
+	return 0
+}
+
+func GetTotalLiabilitiesInAsset(
+	marginAssetsRes *binance_connector.CrossMarginAccountDetailResponse,
+	asset string,
+) float64 {
+	if marginAssetsRes != nil {
+		for _, item := range marginAssetsRes.UserAssets {
+			if item.Asset == asset {
+				return ParseToFloat64(item.Borrowed, 0) + ParseToFloat64(item.Interest, 0)
+			}
+		}
+	}
+	return 0.0
+}
+
+func GetFreeBalanceForMarginAsset(
+	marginAssetsRes *binance_connector.CrossMarginAccountDetailResponse,
+	asset string,
+) float64 {
+	if marginAssetsRes != nil {
+		for _, item := range marginAssetsRes.UserAssets {
+			if item.Asset == asset {
+				return ParseToFloat64(item.Free, 0)
+			}
+		}
+	}
+	return 0.0
 }
