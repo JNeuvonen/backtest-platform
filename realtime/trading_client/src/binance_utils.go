@@ -382,8 +382,13 @@ func (bc *BinanceClient) NewMarginOrder(
 		return err
 	}
 
+	execPrice := SafeDivide(
+		ParseToFloat64(fullRes.CumulativeQuoteQty, 0.0),
+		ParseToFloat64(fullRes.ExecutedQty, 0.0),
+	)
+
 	tradeID := CreateTradeEntry(map[string]interface{}{
-		"open_price":                fullRes.Price,
+		"open_price":                execPrice,
 		"open_time_ms":              fullRes.TransactTime,
 		"quantity":                  fullRes.ExecutedQty,
 		"cumulative_quote_quantity": fullRes.CumulativeQuoteQty,
@@ -393,7 +398,7 @@ func (bc *BinanceClient) NewMarginOrder(
 
 	UpdateStrategy(map[string]interface{}{
 		"id":                         int32(strat.ID),
-		"price_on_trade_open":        fullRes.Price,
+		"price_on_trade_open":        execPrice,
 		"time_on_trade_open_ms":      fullRes.TransactTime,
 		"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
 		"active_trade_id":            tradeID,

@@ -135,7 +135,9 @@ func TestEnterStrategyTrade(t *testing.T) {
 	strategies := predServClient.FetchStrategies()
 
 	for _, strat := range strategies {
-		EnterStrategyTrade(binanceClient, strat, account)
+		if !strat.IsInPosition && ShouldEnterTrade(strat) {
+			EnterStrategyTrade(binanceClient, strat, account)
+		}
 	}
 }
 
