@@ -1,6 +1,6 @@
 from typing import Dict
 from orm import Base, Session
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.sql import func
 
 from log import LogExceptionContext
@@ -16,6 +16,7 @@ class Account(Base):
 
     name = Column(String, unique=True)
     max_debt_ratio = Column(Float, default=0.0)
+    prevent_all_trading = Column(Boolean, default=False)
 
 
 class AccountQuery:
