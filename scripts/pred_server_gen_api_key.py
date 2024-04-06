@@ -7,10 +7,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PRED_SERVER_DB_HOST = os.getenv("PRED_SERVER_DB_HOST", "")
-PRED_SERVER_DB_USER = os.getenv("PRED_SERVER_DB_USER", "")
-PRED_SERVER_DB_PASSWORD = os.getenv("PRED_SERVER_DB_PASSWORD", "")
-PRED_SERVER_DB_NAME = os.getenv("PRED_SERVER_DB_NAME", "")
+
+ENV = os.getenv("ENV", "DEV")
+
+print(f"ENV is :{ENV}")
+
+if ENV == "PROD":
+    PRED_SERVER_DB_HOST = os.getenv("PRED_SERVER_DB_HOST")
+    PRED_SERVER_DB_USER = os.getenv("PRED_SERVER_DB_USER")
+    PRED_SERVER_DB_PASSWORD = os.getenv("PRED_SERVER_DB_PASSWORD")
+    PRED_SERVER_DB_NAME = os.getenv("PRED_SERVER_DB_NAME")
+else:
+    PRED_SERVER_DB_HOST = os.getenv("LOCAL_SERVER_DB_HOST")
+    PRED_SERVER_DB_USER = os.getenv("LOCAL_SERVER_DB_USER")
+    PRED_SERVER_DB_PASSWORD = os.getenv("LOCAL_SERVER_DB_PASSWORD")
+    PRED_SERVER_DB_NAME = os.getenv("LOCAL_SERVER_DB_NAME")
 
 
 def generate_api_key():
