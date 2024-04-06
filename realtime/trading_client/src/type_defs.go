@@ -55,10 +55,11 @@ type SymbolInfoSimple struct {
 }
 
 type Account struct {
-	CreatedAt    string  `json:"created_at"`
-	UpdatedAt    string  `json:"updated_at"`
-	Name         string  `json:"name"`
-	MaxDebtRatio float64 `json:"max_debt_ratio"`
+	CreatedAt         string  `json:"created_at"`
+	UpdatedAt         string  `json:"updated_at"`
+	Name              string  `json:"name"`
+	MaxDebtRatio      float64 `json:"max_debt_ratio"`
+	PreventAllTrading bool    `json:"prevent_all_trading"`
 }
 
 type BodyCreateTrade struct {

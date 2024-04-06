@@ -221,6 +221,11 @@ func TradingLoop() {
 		account, _ := predServClient.FetchAccount(accountName)
 
 		for _, strat := range strategies {
+
+			if account.PreventAllTrading {
+				continue
+			}
+
 			if strat.IsInPosition && ShouldCloseTrade(binanceClient, strat) {
 				CloseStrategyTrade(binanceClient, strat)
 			} else if !strat.IsInPosition && ShouldEnterTrade(strat) {
