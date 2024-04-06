@@ -48,7 +48,7 @@ func TestCloudLog(t *testing.T) {
 func TestFetchingBalances(t *testing.T) {
 	tradingConfig := GetTradingConfig()
 	binanceClient := NewBinanceClient(tradingConfig)
-	binanceClient.FetchBalances()
+	binanceClient.FetchSpotBalances()
 }
 
 func TestFetchingPrice(t *testing.T) {

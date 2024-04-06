@@ -46,13 +46,23 @@ func (bc *BinanceClient) SendSpotOrder(
 	fmt.Println(binance_connector.PrettyPrint(order))
 }
 
-func (bc *BinanceClient) FetchBalances() *binance_connector.AccountResponse {
+func (bc *BinanceClient) FetchSpotBalances() *binance_connector.AccountResponse {
 	account, err := bc.client.NewGetAccountService().Do(context.Background())
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
 		return nil
 	}
 	return account
+}
+
+func (bc *BinanceClient) FetchMarginBalances() *binance_connector.CrossMarginAccountDetailResponse {
+	crossMarginDetailsRes, err := bc.client.NewCrossMarginAccountDetailService().
+		Do(context.Background())
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		return nil
+	}
+	return crossMarginDetailsRes
 }
 
 func (bc *BinanceClient) FetchLatestPrice(symbol string) (float64, error) {
@@ -109,7 +119,7 @@ func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
 		CreateCloudLog(NewFmtError(pricesErr, CaptureStack()).Error(), "exception")
 		return 0.0, pricesErr
 	}
-	balances := bc.FetchBalances()
+	balances := bc.FetchSpotBalances()
 
 	if balances == nil {
 		CreateCloudLog(NewFmtError(pricesErr, CaptureStack()).Error(), "exception")
@@ -139,13 +149,30 @@ func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
 	return accountValueUSDT, nil
 }
 
-func GetFreeBalanceForAsset(balances []binance_connector.Balance, asset string) (string, error) {
+func GetFreeBalanceForSpotAsset(
+	balances []binance_connector.Balance,
+	asset string,
+) (string, error) {
 	for _, balance := range balances {
 		if balance.Asset == asset {
 			return balance.Free, nil
 		}
 	}
 	return "", fmt.Errorf("asset not found")
+}
+
+func GetFreeBalanceForMarginAsset(
+	marginAssetsRes *binance_connector.CrossMarginAccountDetailResponse,
+	asset string,
+) float64 {
+	if marginAssetsRes != nil {
+		for _, item := range marginAssetsRes.UserAssets {
+			if item.Asset == asset {
+				return ParseToFloat64(item.Free, 0)
+			}
+		}
+	}
+	return 0.0
 }
 
 func (bc *BinanceClient) GetAssetDebtRatioUSDT() float64 {

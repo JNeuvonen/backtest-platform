@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-
-	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {
@@ -93,21 +91,30 @@ func calculateShortStratBetSizeUSDT(
 }
 
 func calculateLongStratBetSizeUSDT(
+	bc *BinanceClient,
 	strat Strategy,
-	balances []binance_connector.Balance,
 	accUSDTValue float64,
 ) float64 {
-	freeUSDT, err := GetFreeBalanceForAsset(balances, "USDT")
-	if err != nil {
+	marginBalances := bc.FetchMarginBalances()
+
+	if marginBalances == nil {
+		return 0. - 1
+	}
+
+	freeUSDT := GetFreeBalanceForMarginAsset(marginBalances, "USDT")
+
+	if freeUSDT == 0.0 {
 		CreateCloudLog(
-			NewFmtError(err, CaptureStack()).Error(),
-			"exception",
+			NewFmtError(
+				errors.New("Strategy wanted to long but free USDT was 0"),
+				CaptureStack(),
+			).Error(),
+			"info",
 		)
-		return 0.0
 	}
 
 	maxAllocatedUSDTValue := (strat.AllocatedSizePerc / 100) * accUSDTValue
-	return math.Min(ParseToFloat64(freeUSDT, 0.0), maxAllocatedUSDTValue)
+	return math.Min(freeUSDT, maxAllocatedUSDTValue)
 }
 
 func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account Account) float64 {
@@ -128,26 +135,11 @@ func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account 
 		return 0.0
 	}
 
-	balances := bc.FetchBalances()
-
-	if balances != nil {
-		if strat.IsShortSellingStrategy {
-			return calculateShortStratBetSizeUSDT(bc, account, strat, accUSDTValue)
-		} else {
-			return calculateLongStratBetSizeUSDT(strat, balances.Balances, accUSDTValue)
-		}
+	if strat.IsShortSellingStrategy {
+		return calculateShortStratBetSizeUSDT(bc, account, strat, accUSDTValue)
+	} else {
+		return calculateLongStratBetSizeUSDT(bc, strat, accUSDTValue)
 	}
-
-	CreateCloudLog(
-		NewFmtError(
-			errors.New(
-				"GetStrategyAvailableBetsizeUSDT(): balances := bc.FetchBalances() was unexpectedly nil",
-			),
-			CaptureStack(),
-		).Error(),
-		"exception",
-	)
-	return 0.0
 }
 
 func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
@@ -219,7 +211,7 @@ func TradingLoop() {
 	binanceClient := NewBinanceClient(tradingConfig)
 
 	for {
-		balances := binanceClient.FetchBalances()
+		balances := binanceClient.FetchSpotBalances()
 
 		for _, balance := range balances.Balances {
 			fmt.Println(balance.Free)
