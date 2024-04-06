@@ -81,7 +81,11 @@ class StrategyQuery:
     def update_strategy(strategy_id: int, update_fields: Dict):
         with LogExceptionContext():
             with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
                 session.query(Strategy).filter(Strategy.id == strategy_id).update(
-                    update_fields
+                    non_null_update_fields, synchronize_session=False
                 )
                 session.commit()
