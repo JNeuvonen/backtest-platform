@@ -154,9 +154,27 @@ func TestCreatingTradeEntry(t *testing.T) {
 	predServClient.CreateTradeEntry(map[string]interface{}{
 		"cumulative_quote_quantity": 17.5966908,
 		"direction":                 "SHORT",
-		"open_price":                0,
+		"open_price":                65000,
+		"quantity":                  0.00026,
 		"open_time_ms":              1712340861903,
 		"strategy_id":               1,
+	})
+}
+
+func TestUpdateStrategy(t *testing.T) {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+
+	predServClient.UpdateStrategy(map[string]interface{}{
+		"active_trade":               1,
+		"id":                         1,
+		"klines_left_till_autoclose": 24,
+		"price_on_trade_open":        65000,
+		"time_on_trade_open_ms":      1712340861903,
+		"is_in_position":             true,
 	})
 }
 

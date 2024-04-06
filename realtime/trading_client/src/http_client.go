@@ -103,8 +103,7 @@ func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 	return Account{}, nil
 }
 
-func (client *HttpClient) UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
-	fieldsToUpdate["id"] = id
+func (client *HttpClient) UpdateStrategy(fieldsToUpdate map[string]interface{}) error {
 	jsonBody, err := json.Marshal(fieldsToUpdate)
 	if err != nil {
 		return err
@@ -120,13 +119,13 @@ func (client *HttpClient) UpdateStrategy(id int32, fieldsToUpdate map[string]int
 	return nil
 }
 
-func UpdateStrategy(id int32, fieldsToUpdate map[string]interface{}) error {
+func UpdateStrategy(fieldsToUpdate map[string]interface{}) error {
 	predServConfig := GetPredServerConfig()
 	headers := map[string]string{
 		"X-API-KEY": predServConfig.API_KEY,
 	}
 	predServClient := NewHttpClient(predServConfig.URI, headers)
-	return predServClient.UpdateStrategy(id, fieldsToUpdate)
+	return predServClient.UpdateStrategy(fieldsToUpdate)
 }
 
 func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) *int32 {

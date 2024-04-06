@@ -60,3 +60,12 @@ type Account struct {
 	Name         string  `json:"name"`
 	MaxDebtRatio float64 `json:"max_debt_ratio"`
 }
+
+type BodyCreateTrade struct {
+	OpenTimeMs              int64   `json:"open_time_ms"`
+	StrategyID              int     `json:"strategy_id"`
+	Quantity                float64 `json:"quantity"`
+	CumulativeQuoteQuantity float64 `json:"cumulative_quote_quantity"`
+	OpenPrice               float64 `json:"open_price"`
+	Direction               string  `json:"direction"`
+}

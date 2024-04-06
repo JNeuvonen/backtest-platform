@@ -391,7 +391,8 @@ func (bc *BinanceClient) NewMarginOrder(
 		"strategy_id":               int32(strat.ID),
 	})
 
-	UpdateStrategy(int32(strat.ID), map[string]interface{}{
+	UpdateStrategy(map[string]interface{}{
+		"id":                         int32(strat.ID),
 		"price_on_trade_open":        fullRes.Price,
 		"time_on_trade_open_ms":      fullRes.TransactTime,
 		"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
