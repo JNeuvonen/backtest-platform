@@ -26,11 +26,13 @@ const (
 )
 
 const (
-	UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS = MINUTE_IN_MS * 60 * 24
+	UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS     = MINUTE_IN_MS * 60 * 4
+	FAILED_CALLS_TO_UPDATE_STRAT_STATE_LIMIT = 10
 )
 
 type RiskManagementParams struct {
-	TradingCooldownStartedTs int64
+	TradingCooldownStartedTs         int64
+	FailedCallsToUpdateStrategyState int32
 }
 
 var riskManagementsParams *RiskManagementParams // singleton pattern
@@ -39,6 +41,7 @@ func GetRiskManagementParams() *RiskManagementParams {
 	if riskManagementsParams == nil {
 		riskManagementsParams = &RiskManagementParams{}
 		riskManagementsParams.TradingCooldownStartedTs = 0
+		riskManagementsParams.FailedCallsToUpdateStrategyState = 0
 		return riskManagementsParams
 	}
 	return riskManagementsParams
@@ -47,4 +50,14 @@ func GetRiskManagementParams() *RiskManagementParams {
 func StartTradingCooldown() {
 	riskManagementsParams := GetRiskManagementParams()
 	riskManagementsParams.TradingCooldownStartedTs = GetTimeInMs()
+}
+
+func IncrementFailedCallsToUpdateStrat() {
+	riskManagementsParams := GetRiskManagementParams()
+	riskManagementsParams.FailedCallsToUpdateStrategyState += 1
+}
+
+func GetNumFailedCallsToPredServer() int32 {
+	riskManagementsParams := GetRiskManagementParams()
+	return riskManagementsParams.FailedCallsToUpdateStrategyState
 }

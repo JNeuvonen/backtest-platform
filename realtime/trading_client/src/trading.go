@@ -222,7 +222,8 @@ func TradingLoop() {
 
 		for _, strat := range strategies {
 
-			if account.PreventAllTrading {
+			if account.PreventAllTrading ||
+				GetNumFailedCallsToPredServer() >= FAILED_CALLS_TO_UPDATE_STRAT_STATE_LIMIT {
 				continue
 			}
 

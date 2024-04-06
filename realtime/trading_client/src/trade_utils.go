@@ -59,5 +59,6 @@ func UpdatePredServerAfterTradeOpen(
 			"exception",
 		)
 		StartTradingCooldown()
+		IncrementFailedCallsToUpdateStrat()
 	}
 }
