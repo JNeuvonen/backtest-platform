@@ -42,6 +42,8 @@ class Strategy(Base):
     time_on_trade_open_ms = Column(BigInteger, default=0)
 
     price_on_trade_open = Column(Float)
+    quantity_on_trade_open = Column(Float, default=0)
+    remaining_position_on_trade = Column(Float, default=0)
     allocated_size_perc = Column(Float)
     take_profit_threshold_perc = Column(Float)
     stop_loss_threshold_perc = Column(Float)
