@@ -13,6 +13,11 @@ const (
 )
 
 const (
+	DIRECTION_LONG  = "LONG"
+	DIRECTION_SHORT = "SHORT"
+)
+
+const (
 	V3_PRICE = "/api/v3/ticker/price"
 )
 

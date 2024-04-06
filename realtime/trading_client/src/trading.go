@@ -164,7 +164,10 @@ func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 	}
 
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
-	fmt.Println(quantity)
+
+	res := bc.NewMarginOrder(strat.Symbol, quantity, "BUY", "MARKET", strat)
+
+	UpdatePredServerAfterTradeOpen(strat, res, DIRECTION_LONG)
 }
 
 func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
@@ -189,7 +192,7 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 	if err == nil {
 		res := bc.NewMarginOrder(strat.Symbol, quantity, "SELL", "MARKET", strat)
 		UpdatePredServerAfterTradeOpen(
-			strat, res, "SHORT",
+			strat, res, DIRECTION_SHORT,
 		)
 	}
 }
