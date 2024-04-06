@@ -15,6 +15,7 @@ class Account(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     name = Column(String, unique=True)
+    max_ratio_of_longs_to_nav = Column(Float, default=1.0)
     max_debt_ratio = Column(Float, default=0.0)
     prevent_all_trading = Column(Boolean, default=False)
 
