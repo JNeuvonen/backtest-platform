@@ -54,6 +54,13 @@ func ParseToFloat64(s string, fallback float64) float64 {
 	return value
 }
 
+func SafeDivide(numerator, denominator float64) float64 {
+	if denominator == 0.0 {
+		return 0.0
+	}
+	return numerator / denominator
+}
+
 func FindListItem[T any](items []T, predicate func(T) bool) *T {
 	for _, item := range items {
 		if predicate(item) {
