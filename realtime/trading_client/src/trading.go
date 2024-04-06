@@ -41,14 +41,23 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 		return false
 	}
 
+	currTimeMs := int64(GetTimeInMs())
+	riskManagementParams := GetRiskManagementParams()
+
+	if currTimeMs-currTimeMs-riskManagementParams.TradingCooldownStartedTs < TRADING_COOLDOWN_MS {
+		return false
+	}
+
 	return shouldStopLossClose(strat, price) || shouldTimebasedClose(strat) ||
 		shouldProfitBasedClose(strat, price) || strat.ShouldCloseTrade
 }
 
 func ShouldEnterTrade(strat Strategy) bool {
-	currTimeMs := GetTimeInMs()
+	currTimeMs := int64(GetTimeInMs())
+	riskManagementParams := GetRiskManagementParams()
 
-	if int64(currTimeMs)-strat.TimeOnTradeOpenMs >= int64(strat.MinimumTimeBetweenTradesMs) {
+	if currTimeMs-strat.TimeOnTradeOpenMs >= int64(strat.MinimumTimeBetweenTradesMs) &&
+		currTimeMs-riskManagementParams.TradingCooldownStartedTs > TRADING_COOLDOWN_MS {
 		return strat.ShouldEnterTrade
 	}
 	return false
@@ -178,7 +187,10 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 	fmt.Println(err)
 
 	if err == nil {
-		bc.NewMarginOrder(strat.Symbol, quantity, "SELL", "MARKET", strat)
+		res := bc.NewMarginOrder(strat.Symbol, quantity, "SELL", "MARKET", strat)
+		UpdatePredServerAfterTradeOpen(
+			strat, res, "SHORT",
+		)
 	}
 }
 
@@ -214,14 +226,10 @@ func TradingLoop() {
 		account, _ := predServClient.FetchAccount(accountName)
 
 		for _, strat := range strategies {
-			if strat.IsInPosition {
-				if ShouldCloseTrade(binanceClient, strat) {
-					CloseStrategyTrade(binanceClient, strat)
-				}
-			} else if !strat.IsInPosition {
-				if ShouldEnterTrade(strat) {
-					EnterStrategyTrade(binanceClient, strat, account)
-				}
+			if strat.IsInPosition && ShouldCloseTrade(binanceClient, strat) {
+				CloseStrategyTrade(binanceClient, strat)
+			} else if !strat.IsInPosition && ShouldEnterTrade(strat) {
+				EnterStrategyTrade(binanceClient, strat, account)
 			}
 		}
 

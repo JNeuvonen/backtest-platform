@@ -15,3 +15,27 @@ const (
 const (
 	V3_PRICE = "/api/v3/ticker/price"
 )
+
+const (
+	TRADING_COOLDOWN_MS = 60000 * 30
+)
+
+type RiskManagementParams struct {
+	TradingCooldownStartedTs int64
+}
+
+var riskManagementsParams *RiskManagementParams // singleton pattern
+
+func GetRiskManagementParams() *RiskManagementParams {
+	if riskManagementsParams == nil {
+		riskManagementsParams = &RiskManagementParams{}
+		riskManagementsParams.TradingCooldownStartedTs = 0
+		return riskManagementsParams
+	}
+	return riskManagementsParams
+}
+
+func StartTradingCooldown() {
+	riskManagementsParams := GetRiskManagementParams()
+	riskManagementsParams.TradingCooldownStartedTs = GetTimeInMs()
+}

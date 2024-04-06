@@ -347,7 +347,7 @@ func (bc *BinanceClient) NewMarginOrder(
 	side string,
 	orderType string,
 	strat Strategy,
-) error {
+) *binance_connector.MarginAccountNewOrderResponseFULL {
 	if !GetAllowedToSendOrders() {
 		ret := errors.New("Environment is not allowed to send orders")
 		CreateCloudLog(
@@ -357,7 +357,7 @@ func (bc *BinanceClient) NewMarginOrder(
 			).Error(),
 			"info",
 		)
-		return ret
+		return nil
 	}
 
 	res, err := bc.client.NewMarginAccountNewOrderService().
@@ -368,7 +368,7 @@ func (bc *BinanceClient) NewMarginOrder(
 		Quantity(quantity).Do(context.Background())
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
-		return err
+		return nil
 	}
 
 	fullRes, ok := res.(*binance_connector.MarginAccountNewOrderResponseFULL)
@@ -379,31 +379,8 @@ func (bc *BinanceClient) NewMarginOrder(
 				err,
 				CaptureStack(),
 			).Error(), "exception")
-		return err
+		return nil
 	}
 
-	execPrice := SafeDivide(
-		ParseToFloat64(fullRes.CumulativeQuoteQty, 0.0),
-		ParseToFloat64(fullRes.ExecutedQty, 0.0),
-	)
-
-	tradeID := CreateTradeEntry(map[string]interface{}{
-		"open_price":                execPrice,
-		"open_time_ms":              fullRes.TransactTime,
-		"quantity":                  fullRes.ExecutedQty,
-		"cumulative_quote_quantity": fullRes.CumulativeQuoteQty,
-		"direction":                 "SHORT",
-		"strategy_id":               int32(strat.ID),
-	})
-
-	UpdateStrategy(map[string]interface{}{
-		"id":                         int32(strat.ID),
-		"price_on_trade_open":        execPrice,
-		"time_on_trade_open_ms":      fullRes.TransactTime,
-		"klines_left_till_autoclose": strat.MaximumKlinesHoldTime,
-		"active_trade_id":            tradeID,
-		"is_in_position":             true,
-	})
-
-	return nil
+	return fullRes
 }
