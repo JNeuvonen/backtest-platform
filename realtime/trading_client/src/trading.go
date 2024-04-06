@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	binance_connector "github.com/binance/binance-connector-go"
+	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {

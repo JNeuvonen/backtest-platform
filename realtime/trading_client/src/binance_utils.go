@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strconv"
 
-	binance_connector "github.com/binance/binance-connector-go"
+	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
 
 type BinanceClient struct {
