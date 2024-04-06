@@ -27,6 +27,8 @@ type Strategy struct {
 	KlinesLeftTillAutoclose    int     `json:"klines_left_till_autoclose"`
 	MaximumKlinesHoldTime      int     `json:"maximum_klines_hold_time"`
 	TimeOnTradeOpenMs          int64   `json:"time_on_trade_open_ms"`
+	QuantityOnTradeOpen        float64 `json:"quantity_on_trade_open"`
+	RemainingPositionOnTrade   float64 `json:"remaining_position_on_trade"`
 	PriceOnTradeOpen           float64 `json:"price_on_trade_open"`
 	AllocatedSizePerc          float64 `json:"allocated_size_perc"`
 	TakeProfitThresholdPerc    float64 `json:"take_profit_threshold_perc"`
@@ -55,11 +57,12 @@ type SymbolInfoSimple struct {
 }
 
 type Account struct {
-	CreatedAt         string  `json:"created_at"`
-	UpdatedAt         string  `json:"updated_at"`
-	Name              string  `json:"name"`
-	MaxDebtRatio      float64 `json:"max_debt_ratio"`
-	PreventAllTrading bool    `json:"prevent_all_trading"`
+	CreatedAt            string  `json:"created_at"`
+	UpdatedAt            string  `json:"updated_at"`
+	Name                 string  `json:"name"`
+	MaxDebtRatio         float64 `json:"max_debt_ratio"`
+	MaxRatioOfLongsToNav float64 `json:"max_ratio_of_longs_to_nav"`
+	PreventAllTrading    bool    `json:"prevent_all_trading"`
 }
 
 type BodyCreateTrade struct {
