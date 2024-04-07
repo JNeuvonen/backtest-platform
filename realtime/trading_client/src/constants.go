@@ -18,6 +18,11 @@ const (
 )
 
 const (
+	LOG_EXCEPTION = "exception"
+	LOG_INFO      = "info"
+)
+
+const (
 	V3_PRICE = "/api/v3/ticker/price"
 )
 

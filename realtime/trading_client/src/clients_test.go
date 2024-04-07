@@ -41,7 +41,7 @@ func TestCloudLog(t *testing.T) {
 		"X-API-KEY": predServConfig.API_KEY,
 	}
 	client := NewHttpClient(predServConfig.URI, headers)
-	err := client.CreateCloudLog("hello_world", "info")
+	err := client.CreateCloudLog("hello_world", LOG_INFO)
 	assert.Nil(t, err, "Error creating log: %v", err)
 }
 

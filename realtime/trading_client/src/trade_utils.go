@@ -64,7 +64,7 @@ func UpdatePredServerAfterTradeOpen(
 				),
 				CaptureStack(),
 			).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		StartTradingCooldown()
 		IncrementFailedCallsToUpdateStrat()

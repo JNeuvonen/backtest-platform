@@ -77,7 +77,7 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 				err,
 				CaptureStack(),
 			).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return
 	}
@@ -105,7 +105,7 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 				err,
 				CaptureStack(),
 			).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 	}
 }
@@ -132,7 +132,7 @@ func calculateShortStratBetSizeUSDT(
 	if accDebtRatio > account.MaxDebtRatio {
 		CreateCloudLog(
 			NewFmtError(errors.New("accDebtRatio > account.MaxDebtRatio"), CaptureStack()).Error(),
-			"info",
+			LOG_INFO,
 		)
 		return 0.0
 	}
@@ -166,7 +166,7 @@ func calculateLongStratBetSizeUSDT(
 				errors.New("Strategy wanted to long but free USDT was 0"),
 				CaptureStack(),
 			).Error(),
-			"info",
+			LOG_INFO,
 		)
 	}
 
@@ -191,7 +191,7 @@ func getShortSellingAvailableCloseSize(bc *BinanceClient, strat Strategy) float6
 				err,
 				CaptureStack(),
 			).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return 0.0
 	}
@@ -209,7 +209,7 @@ func getLongStrategyCloseSize(bc *BinanceClient, strat Strategy) float64 {
 	if res == nil {
 		CreateCloudLog(
 			NewFmtError(errors.New("Failed to fetch margin balances"), CaptureStack()).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return 0
 	}
@@ -226,7 +226,7 @@ func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account 
 	if err != nil {
 		CreateCloudLog(
 			NewFmtError(err, CaptureStack()).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return 0.0
 	}
@@ -234,7 +234,7 @@ func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account 
 	if accUSDTValue == 0.0 {
 		CreateCloudLog(
 			NewFmtError(err, CaptureStack()).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return 0.0
 	}
@@ -254,7 +254,7 @@ func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 				err,
 				CaptureStack(),
 			).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return
 	}
@@ -274,7 +274,7 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 				err,
 				CaptureStack(),
 			).Error(),
-			"exception",
+			LOG_EXCEPTION,
 		)
 		return
 	}
@@ -332,6 +332,6 @@ func TradingLoop() {
 			}
 		}
 
-		predServClient.CreateCloudLog("Trading loop completed", "info")
+		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
 	}
 }

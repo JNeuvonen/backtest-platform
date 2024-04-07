@@ -28,6 +28,6 @@ func main() {
 				EnterStrategyTrade(binanceClient, strat, account)
 			}
 		}
-		predServClient.CreateCloudLog("Trading loop completed", "info")
+		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
 	}
 }

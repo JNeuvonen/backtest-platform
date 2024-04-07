@@ -71,14 +71,14 @@ func (client *HttpClient) Post(
 func (client *HttpClient) FetchStrategies() []Strategy {
 	response, err := client.Get(PRED_SERV_V1_STRAT)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return []Strategy{}
 	}
 	if response != nil && len(response) > 0 {
 		var strategyResponse StrategyResponse
 		err := json.Unmarshal(response, &strategyResponse)
 		if err != nil {
-			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 			return []Strategy{}
 		}
 		return strategyResponse.Data
@@ -91,7 +91,7 @@ func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 	endpoint := PRED_SERV_V1_ACC + "/" + accountName
 	response, err := client.Get(endpoint)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return Account{}, err
 	}
 
@@ -101,7 +101,7 @@ func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 		err := json.Unmarshal(response, &accountByNameResponse)
 		if err != nil {
 
-			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 			return Account{}, err
 		}
 		return accountByNameResponse.Data, nil
@@ -112,14 +112,14 @@ func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 func (client *HttpClient) UpdateStrategy(fieldsToUpdate map[string]interface{}) bool {
 	jsonBody, err := json.Marshal(fieldsToUpdate)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return false
 	}
 
 	endpoint := PRED_SERV_V1_STRAT
 	_, statusCode, err := client.Put(endpoint, jsonBody)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return false
 	}
 
@@ -138,7 +138,7 @@ func UpdateStrategy(fieldsToUpdate map[string]interface{}) bool {
 func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) *int32 {
 	jsonBody, err := json.Marshal(fields)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return nil
 	}
 
@@ -146,20 +146,20 @@ func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) *int32
 
 	res, err := client.Post(endpoint, "application/json", jsonBody)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return nil
 	}
 	defer res.Body.Close()
 
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return nil
 	}
 
 	id, err := strconv.Atoi(string(bodyBytes))
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), "exception")
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return nil
 	}
 
