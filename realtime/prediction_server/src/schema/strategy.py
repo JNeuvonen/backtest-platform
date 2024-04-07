@@ -91,3 +91,11 @@ class StrategyQuery:
                     non_null_update_fields, synchronize_session=False
                 )
                 session.commit()
+
+    @staticmethod
+    def get_strategy_by_id(strategy_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy).filter(Strategy.id == strategy_id).first()
+                )

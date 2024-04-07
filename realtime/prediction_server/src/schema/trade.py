@@ -27,7 +27,6 @@ class Trade(Base):
 
     open_price = Column(Float, nullable=False)
     quantity = Column(Float, nullable=False)
-    cumulative_quote_quantity = Column(Float, nullable=False)
 
     close_price = Column(Float)
     net_result = Column(Float)
@@ -55,8 +54,24 @@ class TradeQuery:
                 return session.query(Trade).all()
 
     @staticmethod
-    def update_trade(trade_id: int, update_fields: Dict):
+    def update_trade(trade_id: int, update_fields: Dict, filter_nulls=False):
         with LogExceptionContext():
             with Session() as session:
-                session.query(Trade).filter(Trade.id == trade_id).update(update_fields)
+                if filter_nulls is True:
+                    non_null_update_fields = {
+                        k: v for k, v in update_fields.items() if v is not None
+                    }
+                    session.query(Trade).filter(Trade.id == trade_id).update(
+                        non_null_update_fields
+                    )
+                else:
+                    session.query(Trade).filter(Trade.id == trade_id).update(
+                        update_fields
+                    )
                 session.commit()
+
+    @staticmethod
+    def get_trade_by_id(trade_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Trade).filter(Trade.id == trade_id).first()

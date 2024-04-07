@@ -53,7 +53,6 @@ class BodyCreateTrade(BaseModel):
     open_time_ms: int
     strategy_id: int
     quantity: float
-    cumulative_quote_quantity: float
     open_price: float
     direction: str
 
@@ -100,6 +99,13 @@ class BodyPutStrategy(BaseModel):
     is_short_selling_strategy: Optional[bool] = None
     is_disabled: Optional[bool] = None
     is_in_position: Optional[bool] = None
+
+
+class BodyUpdateTradeClose(BaseModel):
+    cumulative_quote_quantity: float
+    quantity: float
+    price: float
+    close_time_ms: float
 
 
 class BodyPutTrade(BaseModel):
