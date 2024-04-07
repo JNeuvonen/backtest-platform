@@ -135,6 +135,34 @@ func UpdateStrategy(fieldsToUpdate map[string]interface{}) bool {
 	return predServClient.UpdateStrategy(fieldsToUpdate)
 }
 
+func (client *HttpClient) UpdateStrategyOnTradeClose(
+	strat Strategy,
+	fieldsToUpdate map[string]interface{},
+) bool {
+	jsonBody, err := json.Marshal(fieldsToUpdate)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		return false
+	}
+
+	endpoint := GetCloseTradeEndpoint(strat.ID)
+	_, statusCode, err := client.Put(endpoint, jsonBody)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		return false
+	}
+	return statusCode == 200
+}
+
+func UpdateStrategyOnTradeClose(strat Strategy, fieldsToUpdate map[string]interface{}) bool {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	return predServClient.UpdateStrategyOnTradeClose(strat, fieldsToUpdate)
+}
+
 func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) *int32 {
 	jsonBody, err := json.Marshal(fields)
 	if err != nil {

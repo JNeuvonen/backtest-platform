@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math"
 
 	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
@@ -19,8 +20,32 @@ func GetBaseQuantity(sizeUSDT float64, price float64, maxPrecision int32) float6
 func UpdatePredServerOnTradeClose(
 	strat Strategy,
 	res *binance_connector.MarginAccountNewOrderResponseFULL,
-	direction string,
 ) {
+	if res == nil {
+		CreateCloudLog(
+			NewFmtError(
+				errors.New(
+					fmt.Sprintf(
+						"%s: res *binance_connector.MarginAccountNewOrderResponseFULL was unexpectedly nil",
+						GetCurrentFunctionName(),
+					),
+				),
+				CaptureStack(),
+			).Error(),
+			LOG_EXCEPTION,
+		)
+	}
+
+	execPrice := SafeDivide(
+		ParseToFloat64(res.CumulativeQuoteQty, 0.0),
+		ParseToFloat64(res.ExecutedQty, 0.0),
+	)
+
+	UpdateStrategyOnTradeClose(strat, map[string]interface{}{
+		"quantity":      res.ExecutedQty,
+		"price":         execPrice,
+		"close_time_ms": res.TransactTime,
+	})
 }
 
 func UpdatePredServerAfterTradeOpen(

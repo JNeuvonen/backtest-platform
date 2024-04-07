@@ -187,6 +187,23 @@ func TestUpdateStrategy(t *testing.T) {
 	})
 }
 
+func TestClosingTrade(t *testing.T) {
+	tradingConfig := GetTradingConfig()
+	binanceClient := NewBinanceClient(tradingConfig)
+
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+
+	strategies := predServClient.FetchStrategies()
+
+	for _, strat := range strategies {
+		CloseStrategyTrade(binanceClient, strat)
+	}
+}
+
 // func TestTradingLoop(t *testing.T) {
 // 	timeout := time.After(10 * time.Second)
 // 	done := make(chan bool)

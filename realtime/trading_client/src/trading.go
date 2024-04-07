@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+
+	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {
@@ -61,6 +63,53 @@ func ShouldEnterTrade(strat Strategy) bool {
 	return false
 }
 
+func handleRepaymentOfMarginLoan(
+	bc *BinanceClient,
+	strat Strategy,
+	execOrderRes *binance_connector.MarginAccountNewOrderResponseFULL,
+) {
+	if execOrderRes != nil {
+		bc.RepayMarginLoan(strat.BaseAsset, ParseToFloat64(execOrderRes.ExecutedQty, 0.0))
+	}
+}
+
+func getQuoteLoanToCloseShortTrade(
+	bc *BinanceClient,
+	strat Strategy,
+	price float64,
+	currMaxCloseQuantity float64,
+	stratLiabilities float64,
+) {
+	quoteLoanSize := RoundToPrecision(
+		(stratLiabilities-currMaxCloseQuantity)*price,
+		int32(strat.TradeQuantityPrecision),
+	)
+
+	err := bc.TakeMarginLoan(strat.QuoteAsset, quoteLoanSize)
+
+	if err == nil {
+		res := bc.NewMarginOrder(
+			strat.Symbol,
+			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
+			"BUY",
+			"MARKET",
+			strat,
+		)
+
+		handleRepaymentOfMarginLoan(bc, strat, res)
+		UpdatePredServerOnTradeClose(strat, res)
+		return
+	} else {
+		CreateCloudLog(
+			NewFmtError(
+				err,
+				CaptureStack(),
+			).Error(),
+			LOG_EXCEPTION,
+		)
+	}
+}
+
 func closeShortTrade(bc *BinanceClient, strat Strategy) {
 	marginBalancesRes := bc.FetchMarginBalances()
 
@@ -85,32 +134,30 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 	currMaxCloseQuantity := SafeDivide(freeUSDT, price)
 
 	if currMaxCloseQuantity >= stratLiabilities {
-		res := bc.NewMarginOrder(strat.Symbol, stratLiabilities, "BUY", "MARKET", strat)
-		UpdatePredServerOnTradeClose(strat, res, "SHORT")
-		return
-	}
-
-	step1 := SafeDivide(10, price)
-	quoteBuffer := step1 * price
-
-	err = bc.TakeMarginLoan(strat.QuoteAsset, stratLiabilities-currMaxCloseQuantity+quoteBuffer)
-
-	if err == nil {
-		res := bc.NewMarginOrder(strat.Symbol, stratLiabilities, "BUY", "MARKET", strat)
-		UpdatePredServerOnTradeClose(strat, res, "SHORT")
-		return
-	} else {
-		CreateCloudLog(
-			NewFmtError(
-				err,
-				CaptureStack(),
-			).Error(),
-			LOG_EXCEPTION,
+		res := bc.NewMarginOrder(
+			strat.Symbol,
+			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
+			"BUY",
+			"MARKET",
+			strat,
 		)
+		handleRepaymentOfMarginLoan(bc, strat, res)
+		UpdatePredServerOnTradeClose(strat, res)
+		return
 	}
+
+	// current quote asset was not enough to close short trade, so taking loan in quote asset
+	getQuoteLoanToCloseShortTrade(bc, strat, price, currMaxCloseQuantity, stratLiabilities)
 }
 
 func closeLongTrade(bc *BinanceClient, strat Strategy) {
+	marginBalancesRes := bc.FetchMarginBalances()
+
+	freeBaseAsset := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.BaseAsset)
+	closeQuantity := math.Min(strat.RemainingPositionOnTrade, freeBaseAsset)
+
+	res := bc.NewMarginOrder(strat.Symbol, closeQuantity, "SELL", "MARKET", strat)
+	UpdatePredServerOnTradeClose(strat, res)
 }
 
 func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {

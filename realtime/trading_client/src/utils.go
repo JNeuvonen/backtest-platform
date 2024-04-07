@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -85,4 +86,8 @@ func FindListItem[T any](items []T, predicate func(T) bool) *T {
 		}
 	}
 	return nil
+}
+
+func IsEmptyStruct(v interface{}) bool {
+	return reflect.DeepEqual(v, reflect.Zero(reflect.TypeOf(v)).Interface())
 }
