@@ -1,18 +1,6 @@
 package main
 
 const (
-	TESTNET = "https://testnet.binance.vision"
-	MAINNET = "https://api.binance.com"
-)
-
-const (
-	PRED_SERV_V1_STRAT = "v1/strategy"
-	PRED_SERV_V1_LOG   = "v1/log"
-	PRED_SERV_V1_ACC   = "v1/acc"
-	PRED_SERV_V1_TRADE = "v1/trade"
-)
-
-const (
 	DIRECTION_LONG  = "LONG"
 	DIRECTION_SHORT = "SHORT"
 )
@@ -20,10 +8,6 @@ const (
 const (
 	LOG_EXCEPTION = "exception"
 	LOG_INFO      = "info"
-)
-
-const (
-	V3_PRICE = "/api/v3/ticker/price"
 )
 
 const (
