@@ -67,6 +67,7 @@ class BodyCreateTrade(BaseModel):
 class BodyPutStrategy(BaseModel):
     id: int
     active_trade_id: Optional[int] = None
+    remaining_position_on_trade: Optional[float] = None
     name: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
