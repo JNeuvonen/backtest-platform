@@ -25,10 +25,6 @@ type FmtError struct {
 	stack string
 }
 
-func CaptureStack() string {
-	return string(debug.Stack())
-}
-
 func NewFmtError(err error, stack string) *FmtError {
 	if err == nil {
 		return nil

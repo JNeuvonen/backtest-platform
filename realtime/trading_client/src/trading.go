@@ -91,8 +91,8 @@ func getQuoteLoanToCloseShortTrade(
 		res := bc.NewMarginOrder(
 			strat.Symbol,
 			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
-			"BUY",
-			"MARKET",
+			ORDER_BUY,
+			MARKET_ORDER,
 			strat,
 		)
 
@@ -137,8 +137,8 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 		res := bc.NewMarginOrder(
 			strat.Symbol,
 			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
-			"BUY",
-			"MARKET",
+			ORDER_BUY,
+			MARKET_ORDER,
 			strat,
 		)
 		handleRepaymentOfMarginLoan(bc, strat, res)
@@ -156,7 +156,7 @@ func closeLongTrade(bc *BinanceClient, strat Strategy) {
 	freeBaseAsset := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.BaseAsset)
 	closeQuantity := math.Min(strat.RemainingPositionOnTrade, freeBaseAsset)
 
-	res := bc.NewMarginOrder(strat.Symbol, closeQuantity, "SELL", "MARKET", strat)
+	res := bc.NewMarginOrder(strat.Symbol, closeQuantity, ORDER_SELL, MARKET_ORDER, strat)
 	UpdatePredServerOnTradeClose(strat, res)
 }
 
@@ -205,12 +205,12 @@ func calculateLongStratBetSizeUSDT(
 		return 0. - 1
 	}
 
-	freeUSDT := GetFreeBalanceForMarginAsset(marginBalances, "USDT")
+	freeUSDT := GetFreeBalanceForMarginAsset(marginBalances, ASSET_USDT)
 
 	if freeUSDT == 0.0 {
 		CreateCloudLog(
 			NewFmtError(
-				errors.New("Strategy wanted to long but free USDT was 0"),
+				errors.New("Strategy tried to long but free USDT was 0"),
 				CaptureStack(),
 			).Error(),
 			LOG_INFO,
@@ -308,7 +308,7 @@ func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 
-	res := bc.NewMarginOrder(strat.Symbol, quantity, "BUY", "MARKET", strat)
+	res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_BUY, MARKET_ORDER, strat)
 
 	UpdatePredServerAfterTradeOpen(strat, res, DIRECTION_LONG)
 }
@@ -333,7 +333,7 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 	fmt.Println(err)
 
 	if err == nil {
-		res := bc.NewMarginOrder(strat.Symbol, quantity, "SELL", "MARKET", strat)
+		res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_SELL, MARKET_ORDER, strat)
 		UpdatePredServerAfterTradeOpen(
 			strat, res, DIRECTION_SHORT,
 		)

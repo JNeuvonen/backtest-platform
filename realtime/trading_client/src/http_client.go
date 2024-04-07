@@ -36,7 +36,7 @@ func (client *HttpClient) makeRequest(
 }
 
 func (client *HttpClient) Put(endpoint string, body []byte) ([]byte, int, error) {
-	resp, err := client.makeRequest("PUT", endpoint, body)
+	resp, err := client.makeRequest(METHOD_PUT, endpoint, body)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -51,7 +51,7 @@ func (client *HttpClient) Put(endpoint string, body []byte) ([]byte, int, error)
 }
 
 func (client *HttpClient) Get(endpoint string) ([]byte, error) {
-	resp, err := client.makeRequest("GET", endpoint, nil)
+	resp, err := client.makeRequest(METHOD_GET, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (client *HttpClient) Post(
 	data []byte,
 ) (*http.Response, error) {
 	client.Headers["Content-Type"] = contentType
-	return client.makeRequest("POST", endpoint, data)
+	return client.makeRequest(METHOD_POST, endpoint, data)
 }
 
 func (client *HttpClient) FetchStrategies() []Strategy {
@@ -145,8 +145,7 @@ func (client *HttpClient) UpdateStrategyOnTradeClose(
 		return false
 	}
 
-	endpoint := GetCloseTradeEndpoint(strat.ID)
-	_, statusCode, err := client.Put(endpoint, jsonBody)
+	_, statusCode, err := client.Put(GetCloseTradeEndpoint(strat.ID), jsonBody)
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return false
@@ -170,9 +169,7 @@ func (client *HttpClient) CreateTradeEntry(fields map[string]interface{}) *int32
 		return nil
 	}
 
-	endpoint := PRED_SERV_V1_TRADE
-
-	res, err := client.Post(endpoint, "application/json", jsonBody)
+	res, err := client.Post(PRED_SERV_V1_TRADE, APPLICATION_JSON, jsonBody)
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return nil
@@ -225,7 +222,7 @@ func (client *HttpClient) CreateCloudLog(msg string, level string) error {
 		return err
 	}
 
-	resp, err := client.Post(PRED_SERV_V1_LOG, "application/json", jsonData)
+	resp, err := client.Post(PRED_SERV_V1_LOG, APPLICATION_JSON, jsonData)
 	if err != nil {
 		return err
 	}

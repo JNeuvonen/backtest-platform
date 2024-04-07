@@ -6,6 +6,19 @@ const (
 )
 
 const (
+	ASSET_USDT = "USDT"
+)
+
+const (
+	ORDER_BUY  = "BUY"
+	ORDER_SELL = "SELL"
+)
+
+const (
+	MARKET_ORDER = "MARKET"
+)
+
+const (
 	LOG_EXCEPTION = "exception"
 	LOG_INFO      = "info"
 )

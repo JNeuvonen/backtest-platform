@@ -104,7 +104,7 @@ func getAllUSDTPrices() ([]SymbolInfoSimple, error) {
 
 	var usdtPairs []SymbolInfoSimple
 	for _, price := range prices {
-		if len(price.Symbol) > 4 && price.Symbol[len(price.Symbol)-4:] == "USDT" {
+		if len(price.Symbol) > 4 && price.Symbol[len(price.Symbol)-4:] == ASSET_USDT {
 			usdtPairs = append(usdtPairs, price)
 		}
 	}
@@ -124,7 +124,7 @@ func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
 	if balances == nil {
 		CreateCloudLog(NewFmtError(pricesErr, CaptureStack()).Error(), LOG_EXCEPTION)
 		return 0.0, errors.New(
-			"Could not fetch balances: bc.FetchBalances() in GetPortfolioValueInUSDT()",
+			fmt.Sprintf("%s: failed to fetch balances", GetCurrentFunctionName()),
 		)
 
 	}
@@ -135,7 +135,7 @@ func (bc *BinanceClient) GetPortfolioValueInUSDT() (float64, error) {
 		if free >= 0.0 {
 			symbolInfo := FindListItem[SymbolInfoSimple](
 				prices,
-				func(i SymbolInfoSimple) bool { return i.Symbol == balance.Asset+"USDT" },
+				func(i SymbolInfoSimple) bool { return i.Symbol == balance.Asset+ASSET_USDT },
 			)
 
 			if symbolInfo == nil {
@@ -205,7 +205,7 @@ func (bc *BinanceClient) GetAssetDebtRatioUSDT() float64 {
 		} else {
 			symbolInfo := FindListItem[SymbolInfoSimple](
 				usdtPrices,
-				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+"USDT" },
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+ASSET_USDT },
 			)
 
 			if symbolInfo != nil {
@@ -249,14 +249,14 @@ func (bc *BinanceClient) GetAccountNetValueUSDT() (float64, error) {
 
 		if netAsset > 0.0 {
 
-			if userAsset.Asset == "USDT" {
+			if userAsset.Asset == ASSET_USDT {
 				accountNetUSDTValue += netAsset
 				continue
 			}
 
 			symbolInfo := FindListItem[SymbolInfoSimple](
 				usdtPrices,
-				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+"USDT" },
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+ASSET_USDT },
 			)
 
 			if symbolInfo == nil {
@@ -291,14 +291,14 @@ func (bc *BinanceClient) GetAccountDebtInUSDT() (float64, error) {
 	for _, userAsset := range crossMarginDetailsRes.UserAssets {
 		if ParseToFloat64(userAsset.Borrowed, 0.0) > 0.0 {
 
-			if userAsset.Asset == "USDT" {
+			if userAsset.Asset == ASSET_USDT {
 				totalDebtUSDT += ParseToFloat64(userAsset.Borrowed, 0.0)
 				continue
 			}
 
 			symbolInfo := FindListItem[SymbolInfoSimple](
 				usdtPrices,
-				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+"USDT" },
+				func(i SymbolInfoSimple) bool { return i.Symbol == userAsset.Asset+ASSET_USDT },
 			)
 
 			if symbolInfo == nil {
