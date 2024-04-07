@@ -16,6 +16,13 @@ func GetBaseQuantity(sizeUSDT float64, price float64, maxPrecision int32) float6
 	return adjustedQuantity
 }
 
+func UpdatePredServerOnTradeClose(
+	strat Strategy,
+	res *binance_connector.MarginAccountNewOrderResponseFULL,
+	direction string,
+) {
+}
+
 func UpdatePredServerAfterTradeOpen(
 	strat Strategy,
 	res *binance_connector.MarginAccountNewOrderResponseFULL,
@@ -31,12 +38,11 @@ func UpdatePredServerAfterTradeOpen(
 	)
 
 	tradeID := CreateTradeEntry(map[string]interface{}{
-		"open_price":                execPrice,
-		"open_time_ms":              res.TransactTime,
-		"quantity":                  res.ExecutedQty,
-		"cumulative_quote_quantity": res.CumulativeQuoteQty,
-		"direction":                 direction,
-		"strategy_id":               int32(strat.ID),
+		"open_price":   execPrice,
+		"open_time_ms": res.TransactTime,
+		"quantity":     res.ExecutedQty,
+		"direction":    direction,
+		"strategy_id":  int32(strat.ID),
 	})
 
 	updateStratSuccess := UpdateStrategy(map[string]interface{}{

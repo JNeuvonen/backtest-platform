@@ -62,6 +62,52 @@ func ShouldEnterTrade(strat Strategy) bool {
 }
 
 func closeShortTrade(bc *BinanceClient, strat Strategy) {
+	marginBalancesRes := bc.FetchMarginBalances()
+
+	stratLiabilities := strat.RemainingPositionOnTrade + GetInterestInAsset(
+		marginBalancesRes,
+		strat.BaseAsset,
+	)
+	freeUSDT := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.QuoteAsset)
+
+	price, err := bc.FetchLatestPrice(strat.Symbol)
+	if err != nil {
+		CreateCloudLog(
+			NewFmtError(
+				err,
+				CaptureStack(),
+			).Error(),
+			"exception",
+		)
+		return
+	}
+
+	currMaxCloseQuantity := SafeDivide(freeUSDT, price)
+
+	if currMaxCloseQuantity >= stratLiabilities {
+		res := bc.NewMarginOrder(strat.Symbol, stratLiabilities, "BUY", "MARKET", strat)
+		UpdatePredServerOnTradeClose(strat, res, "SHORT")
+		return
+	}
+
+	step1 := SafeDivide(10, price)
+	quoteBuffer := step1 * price
+
+	err = bc.TakeMarginLoan(strat.QuoteAsset, stratLiabilities-currMaxCloseQuantity+quoteBuffer)
+
+	if err == nil {
+		res := bc.NewMarginOrder(strat.Symbol, stratLiabilities, "BUY", "MARKET", strat)
+		UpdatePredServerOnTradeClose(strat, res, "SHORT")
+		return
+	} else {
+		CreateCloudLog(
+			NewFmtError(
+				err,
+				CaptureStack(),
+			).Error(),
+			"exception",
+		)
+	}
 }
 
 func closeLongTrade(bc *BinanceClient, strat Strategy) {
@@ -128,7 +174,7 @@ func calculateLongStratBetSizeUSDT(
 	return math.Min(freeUSDT, maxAllocatedUSDTValue)
 }
 
-func getShortSellingStrategyCloseSize(bc *BinanceClient, strat Strategy) float64 {
+func getShortSellingAvailableCloseSize(bc *BinanceClient, strat Strategy) float64 {
 	marginBalancesRes := bc.FetchMarginBalances()
 
 	freeQuoteAsset := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.QuoteAsset)
