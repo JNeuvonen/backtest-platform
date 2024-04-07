@@ -12,7 +12,6 @@ from schema.account import AccountQuery
 
 master_acc = create_master_acc()
 
+account_id = AccountQuery.create_entry(master_acc)
 
-strategy_id = AccountQuery.create_entry(master_acc)
-
-print(f"Created account with ID: {strategy_id}")
+print(f"Created account with ID: {accound_id}")
