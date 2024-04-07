@@ -20,9 +20,9 @@ simple_short_strat_2 = create_short_strategy_simple_2()
 
 
 strategies = [
-    StrategyQuery.create_entry(simple_strat),
+    # StrategyQuery.create_entry(simple_strat),
     # StrategyQuery.create_entry(simple_short_strat),
-    # StrategyQuery.create_entry(simple_short_strat_2),
+    StrategyQuery.create_entry(simple_short_strat_2),
 ]
 
 
