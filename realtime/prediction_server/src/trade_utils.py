@@ -1,9 +1,9 @@
 from api.v1.request_types import BodyUpdateTradeClose
 from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
-from src.log import LogExceptionContext
+from log import LogExceptionContext
 
-from src.math_utils import (
+from math_utils import (
     calc_long_trade_net_result,
     calc_long_trade_perc_result,
     calc_short_trade_net_result,

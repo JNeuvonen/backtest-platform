@@ -6,10 +6,9 @@ from api.v1.request_types import (
     BodyUpdateTradeClose,
 )
 from middleware import api_key_auth
-from schema.strategy import Strategy, StrategyQuery
-from src.math_utils import calc_short_trade_net_result, calc_short_trade_perc_result
-from src.schema.trade import TradeQuery
-from src.trade_utils import close_long_trade, close_short_trade, update_strategy_state
+from schema.strategy import StrategyQuery
+from schema.trade import TradeQuery
+from trade_utils import close_long_trade, close_short_trade, update_strategy_state
 
 
 router = APIRouter()
