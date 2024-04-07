@@ -14,7 +14,7 @@ def test_setup_sanity(cleanup_db, create_api_key):
 
 
 @pytest.mark.acceptance
-def test_closing_trade(cleanup_db, create_api_key):
+def test_closing_long_trade(cleanup_db, create_api_key):
     res_strat = Post.create_strategy(create_api_key, body=strategy_simple_1())
     strat_id = int(res_strat.text)
     res_trade = Post.create_trade(create_api_key, trade_test_backend_sanity(strat_id))
@@ -25,4 +25,3 @@ def test_closing_trade(cleanup_db, create_api_key):
     Put.update_trade_close(
         create_api_key, int(strat_id), close_trade_body_test_case_1()
     )
-
