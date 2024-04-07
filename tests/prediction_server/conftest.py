@@ -13,8 +13,8 @@ from import_helper import (
     start_server,
     drop_tables,
     stop_server,
-    db_delete_all_data,
     create_api_key_entry,
+    create_tables,
 )
 
 load_dotenv()
@@ -37,9 +37,11 @@ def create_api_key():
 
 @pytest.fixture
 def cleanup_db():
-    db_delete_all_data()
+    drop_tables()
+    create_tables()
     yield
-    db_delete_all_data()
+    drop_tables()
+    create_tables()
 
 
 def kill_process_on_port(port):

@@ -38,6 +38,10 @@ def account_router():
     return acc_router
 
 
+def create_tables():
+    return orm.create_tables()
+
+
 def trade_router():
     return trade_router_helper
 

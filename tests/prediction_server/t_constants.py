@@ -73,3 +73,13 @@ class URL:
     @classmethod
     def fetch_account_by_name(cls, name):
         return cls._account_route() + AccRouter.ACCOUNT_BY_NAME.format(name=name)
+
+    @classmethod
+    def update_trade_close(cls, strat_id):
+        return cls._strategy_route() + StrategyRouter.UPDATE_TRADE_CLOSE.format(
+            id=strat_id
+        )
+
+    @classmethod
+    def update_strategy(cls):
+        return cls._strategy_route() + StrategyRouter.STRATEGY

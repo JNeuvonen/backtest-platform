@@ -412,3 +412,13 @@ def create_short_strategy_simple_2():
         is_short_selling_strategy=True,
         is_paper_trade_mode=False,
     )
+
+
+def update_strat_on_trade_open_test_case_1(trade_id: int, strat_id: int):
+    return {
+        "active_trade_id": trade_id,
+        "id": strat_id,
+        "klines_left_till_autoclose": 0,
+        "price_on_trade_open": 65000,
+        "time_on_trade_open_ms": 1712340861903,
+    }

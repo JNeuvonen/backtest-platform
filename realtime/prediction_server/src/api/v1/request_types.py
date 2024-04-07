@@ -66,6 +66,7 @@ class BodyCreateTrade(BaseModel):
 
 class BodyPutStrategy(BaseModel):
     id: int
+    active_trade_id: Optional[int] = None
     name: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -102,7 +103,6 @@ class BodyPutStrategy(BaseModel):
 
 
 class BodyUpdateTradeClose(BaseModel):
-    cumulative_quote_quantity: float
     quantity: float
     price: float
     close_time_ms: float

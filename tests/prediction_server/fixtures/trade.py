@@ -16,6 +16,16 @@ def create_trade_body(
     }
 
 
+def create_trade_close(quantity: float, price: float, close_time_ms: float):
+    return {"quantity": quantity, "price": price, "close_time_ms": close_time_ms}
+
+
+def close_trade_body_test_case_1():
+    return create_trade_close(
+        quantity=10000 / 65000, price=65000, close_time_ms=1712319993307 + 10000
+    )
+
+
 def trade_test_backend_sanity(strategy_id):
     return create_trade_body(
         open_time_ms=1712319993307,

@@ -65,3 +65,15 @@ class Get:
         with Req("get", URL.fetch_trades(), api_key) as res:
             res_json = res.json()
             return res_json["data"]
+
+
+class Put:
+    @staticmethod
+    def update_trade_close(api_key: str, strat_id: int, body):
+        with Req("put", URL.update_trade_close(strat_id), api_key, json=body) as res:
+            return res
+
+    @staticmethod
+    def update_strategy(api_key: str, body):
+        with Req("put", URL.update_strategy(), api_key, json=body) as res:
+            return res

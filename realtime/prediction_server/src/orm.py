@@ -1,6 +1,6 @@
 from sqlalchemy import (
+    MetaData,
     create_engine,
-    inspect,
     text,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -21,12 +21,16 @@ def db_delete_all_data():
 
 
 def drop_tables(engine):
-    with engine.connect() as connection:
-        inspector = inspect(engine)
-        tables = inspector.get_table_names()
+    metadata = MetaData()
+    metadata.reflect(bind=engine)
+    metadata.drop_all(bind=engine)
 
-        for table in tables:
-            connection.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE;"))
+    # with engine.connect() as connection:
+    #     inspector = inspect(engine)
+    #     tables = inspector.get_table_names()
+    #
+    #     for table in tables:
+    #         connection.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE;"))
 
 
 def create_tables():
