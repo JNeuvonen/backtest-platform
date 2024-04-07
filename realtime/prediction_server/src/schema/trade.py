@@ -54,7 +54,7 @@ class TradeQuery:
                 return session.query(Trade).all()
 
     @staticmethod
-    def update_trade(trade_id: int, update_fields: Dict, filter_nulls=False):
+    def update_trade(trade_id, update_fields: Dict, filter_nulls=False):
         with LogExceptionContext():
             with Session() as session:
                 if filter_nulls is True:

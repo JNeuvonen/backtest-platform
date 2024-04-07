@@ -1,7 +1,8 @@
 from api.v1.request_types import BodyUpdateTradeClose
-from schema.trade import Trade
+from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
 from src.log import LogExceptionContext
+
 from src.math_utils import (
     calc_long_trade_net_result,
     calc_long_trade_perc_result,
@@ -43,6 +44,7 @@ def get_trade_close_dict(strat: Strategy, trade: Trade, req_body: BodyUpdateTrad
             trade_update_dict["net_result"] = calc_short_trade_net_result(
                 req_body.quantity, trade.open_price, req_body.price
             )
+
             trade_update_dict["percent_result"] = calc_short_trade_perc_result(
                 req_body.quantity, trade.open_price, req_body.price
             )
@@ -54,14 +56,16 @@ def get_trade_close_dict(strat: Strategy, trade: Trade, req_body: BodyUpdateTrad
                 req_body.quantity, trade.open_price, req_body.price
             )
 
+        return trade_update_dict
+
 
 def close_short_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClose):
     with LogExceptionContext():
         update_dict = get_trade_close_dict(strat, trade, req_body)
-        StrategyQuery.update_strategy(strat.id, update_dict)
+        TradeQuery.update_trade(trade.id, update_dict)
 
 
 def close_long_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClose):
     with LogExceptionContext():
         update_dict = get_trade_close_dict(strat, trade, req_body)
-        StrategyQuery.update_strategy(strat.id, update_dict)
+        TradeQuery.update_trade(trade.id, update_dict)

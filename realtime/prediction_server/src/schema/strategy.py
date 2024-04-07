@@ -80,7 +80,7 @@ class StrategyQuery:
                 return session.query(Strategy).all()
 
     @staticmethod
-    def update_strategy(strategy_id: int, update_fields: Dict):
+    def update_strategy(strategy_id, update_fields: Dict):
         with LogExceptionContext():
             with Session() as session:
                 update_fields.pop("id", None)
