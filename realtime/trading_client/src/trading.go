@@ -221,14 +221,6 @@ func getLongStrategyCloseSize(bc *BinanceClient, strat Strategy) float64 {
 	)
 }
 
-func GetStrategyCloseTradeSize(bc *BinanceClient, strat Strategy) float64 {
-	if strat.IsShortSellingStrategy {
-		return getShortSellingStrategyCloseSize(bc, strat)
-	} else {
-		return getLongStrategyCloseSize(bc, strat)
-	}
-}
-
 func GetStrategyAvailableBetsizeUSDT(bc *BinanceClient, strat Strategy, account Account) float64 {
 	accUSDTValue, err := bc.GetAccountNetValueUSDT()
 	if err != nil {

@@ -98,17 +98,3 @@ func GetTotalLiabilitiesInAsset(
 	}
 	return 0.0
 }
-
-func GetFreeBalanceForMarginAsset(
-	marginAssetsRes *binance_connector.CrossMarginAccountDetailResponse,
-	asset string,
-) float64 {
-	if marginAssetsRes != nil {
-		for _, item := range marginAssetsRes.UserAssets {
-			if item.Asset == asset {
-				return ParseToFloat64(item.Free, 0)
-			}
-		}
-	}
-	return 0.0
-}

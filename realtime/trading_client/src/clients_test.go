@@ -154,12 +154,19 @@ func TestCreatingTradeEntry(t *testing.T) {
 	}
 	predServClient := NewHttpClient(predServConfig.URI, headers)
 	predServClient.CreateTradeEntry(map[string]interface{}{
-		"cumulative_quote_quantity": 17.5966908,
-		"direction":                 "SHORT",
-		"open_price":                65000,
-		"quantity":                  0.00026,
-		"open_time_ms":              1712340861903,
-		"strategy_id":               1,
+		"direction":    "SHORT",
+		"open_price":   65000,
+		"quantity":     0.00026,
+		"open_time_ms": 1712340861903,
+		"strategy_id":  1,
+	})
+
+	predServClient.CreateTradeEntry(map[string]interface{}{
+		"direction":    DIRECTION_LONG,
+		"open_price":   69312.01,
+		"open_time_ms": 1712485308309,
+		"quantity":     0.00025,
+		"strategy_id":  1,
 	})
 }
 
