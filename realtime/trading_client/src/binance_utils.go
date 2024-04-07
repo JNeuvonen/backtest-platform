@@ -411,3 +411,18 @@ func (bc *BinanceClient) NewMarginOrder(
 
 	return fullRes
 }
+
+func (bc *BinanceClient) RepayMarginLoan(asset string, quantity float64) {
+	_, err := bc.client.NewRepayService().Asset(asset).Amount(quantity).Do(context.Background())
+	if err != nil {
+		CreateCloudLog(
+			NewFmtError(
+				errors.New(fmt.Sprintf(
+					"%s: repaying margin loan failed. Err: %s",
+					GetCurrentFunctionName(),
+					err.Error(),
+				)),
+				CaptureStack(),
+			).Error(), LOG_EXCEPTION)
+	}
+}
