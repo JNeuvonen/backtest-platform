@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -204,18 +205,18 @@ func TestClosingTrade(t *testing.T) {
 	}
 }
 
-// func TestTradingLoop(t *testing.T) {
-// 	timeout := time.After(10 * time.Second)
-// 	done := make(chan bool)
-//
-// 	go func() {
-// 		TradingLoop()
-// 		done <- true
-// 	}()
-//
-// 	select {
-// 	case <-timeout:
-// 		t.Log("Test reached 10 second timeout")
-// 	case <-done:
-// 	}
-// }
+func TestTradingLoop(t *testing.T) {
+	timeout := time.After(1000 * time.Second)
+	done := make(chan bool)
+
+	go func() {
+		TradingLoop()
+		done <- true
+	}()
+
+	select {
+	case <-timeout:
+		t.Log("Test reached 10 second timeout")
+	case <-done:
+	}
+}
