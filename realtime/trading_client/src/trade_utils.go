@@ -123,3 +123,35 @@ func GetTotalLiabilitiesInAsset(
 	}
 	return 0.0
 }
+
+func GetTotalLongsUSDT(bc *BinanceClient) float64 {
+	marginAssetsRes := bc.FetchMarginBalances()
+	if marginAssetsRes == nil {
+		return 0.0
+	}
+
+	usdtPrices, err := getAllUSDTPrices()
+	if err != nil {
+		return 0.0
+	}
+
+	totalLongs := 0.0
+
+	if marginAssetsRes != nil {
+		for _, item := range marginAssetsRes.UserAssets {
+			freeAsset := ParseToFloat64(item.Free, 0.0)
+			if freeAsset > 0.0 {
+
+				symbolInfo := FindListItem[SymbolInfoSimple](
+					usdtPrices,
+					func(i SymbolInfoSimple) bool { return i.Symbol == item.Asset+ASSET_USDT },
+				)
+
+				totalLongs += ParseToFloat64(symbolInfo.Price, 0.0) * freeAsset
+
+			}
+		}
+	}
+
+	return totalLongs
+}

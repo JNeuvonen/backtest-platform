@@ -87,6 +87,15 @@ func (client *HttpClient) FetchStrategies() []Strategy {
 	}
 }
 
+func FetchStrategies() []Strategy {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	return predServClient.FetchStrategies()
+}
+
 func (client *HttpClient) FetchAccount(accountName string) (Account, error) {
 	endpoint := PRED_SERV_V1_ACC + "/" + accountName
 	response, err := client.Get(endpoint)

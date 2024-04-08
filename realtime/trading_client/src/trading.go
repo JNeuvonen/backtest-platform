@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 
 	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
@@ -63,7 +64,7 @@ func ShouldEnterTrade(strat Strategy) bool {
 	return false
 }
 
-func handleRepaymentOfMarginLoan(
+func handleRepaymentOfShortMarginLoan(
 	bc *BinanceClient,
 	strat Strategy,
 	execOrderRes *binance_connector.MarginAccountNewOrderResponseFULL,
@@ -96,7 +97,7 @@ func getQuoteLoanToCloseShortTrade(
 			strat,
 		)
 
-		handleRepaymentOfMarginLoan(bc, strat, res)
+		handleRepaymentOfShortMarginLoan(bc, strat, res)
 		UpdatePredServerOnTradeClose(strat, res)
 		return
 	} else {
@@ -141,7 +142,7 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 			MARKET_ORDER,
 			strat,
 		)
-		handleRepaymentOfMarginLoan(bc, strat, res)
+		handleRepaymentOfShortMarginLoan(bc, strat, res)
 		UpdatePredServerOnTradeClose(strat, res)
 		return
 	}
@@ -150,7 +151,10 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 	getQuoteLoanToCloseShortTrade(bc, strat, price, currMaxCloseQuantity, stratLiabilities)
 }
 
-func closeLongTrade(bc *BinanceClient, strat Strategy) {
+func closeLongTrade(
+	bc *BinanceClient,
+	strat Strategy,
+) *binance_connector.MarginAccountNewOrderResponseFULL {
 	marginBalancesRes := bc.FetchMarginBalances()
 
 	freeBaseAsset := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.BaseAsset)
@@ -158,6 +162,8 @@ func closeLongTrade(bc *BinanceClient, strat Strategy) {
 
 	res := bc.NewMarginOrder(strat.Symbol, closeQuantity, ORDER_SELL, MARKET_ORDER, strat)
 	UpdatePredServerOnTradeClose(strat, res)
+
+	return res
 }
 
 func CloseStrategyTrade(bc *BinanceClient, strat Strategy) {
@@ -350,35 +356,107 @@ func EnterStrategyTrade(bc *BinanceClient, strat Strategy, account Account) {
 	}
 }
 
-func TradingLoop() {
-	predServConfig := GetPredServerConfig()
-	tradingConfig := GetTradingConfig()
-	accountName := GetAccountName()
+func GetRatioOfLongsToNav(bc *BinanceClient) float64 {
+	accNetValue, _ := bc.GetAccountNetValueUSDT()
+	totalLongsUSDT := GetTotalLongsUSDT(bc)
+	ratioOfLongsToNav := SafeDivide(totalLongsUSDT, accNetValue)
+	return ratioOfLongsToNav
+}
 
-	headers := map[string]string{
-		"X-API-KEY": predServConfig.API_KEY,
+func closeOffAllExcessiveLongLeverage(
+	bc *BinanceClient,
+	assetUSDTPrice float64,
+	strat Strategy,
+	requiredToSellValueUSDT float64,
+) {
+	sellOffQuantity := RoundToPrecision(
+		requiredToSellValueUSDT/assetUSDTPrice,
+		int32(strat.TradeQuantityPrecision),
+	)
+	res := bc.NewMarginOrder(
+		strat.Symbol,
+		sellOffQuantity,
+		ORDER_SELL,
+		MARKET_ORDER,
+		strat,
+	)
+	UpdatePredServerOnTradeClose(strat, res)
+	marginAssetsRes := bc.FetchMarginBalances()
+
+	totalLiabilitiesUSDT := GetTotalLiabilitiesInAsset(marginAssetsRes, ASSET_USDT)
+	freeUSDT := GetFreeBalanceForMarginAsset(marginAssetsRes, ASSET_USDT)
+
+	if freeUSDT >= totalLiabilitiesUSDT {
+		bc.RepayMarginLoan(
+			ASSET_USDT,
+			RoundToPrecision(totalLiabilitiesUSDT, int32(strat.TradeQuantityPrecision)),
+		)
+	} else {
+		bc.RepayMarginLoan(
+			ASSET_USDT,
+			RoundToPrecision(freeUSDT, int32(strat.TradeQuantityPrecision)),
+		)
 	}
-	predServClient := NewHttpClient(predServConfig.URI, headers)
-	binanceClient := NewBinanceClient(tradingConfig)
+}
 
-	for {
-		strategies := predServClient.FetchStrategies()
-		account, _ := predServClient.FetchAccount(accountName)
+func RemoveRiskFromLongStrats(
+	bc *BinanceClient,
+	strategies []Strategy,
+	ratioOfLongsToNav float64,
+	account Account,
+	recursionCount int32,
+) {
+	if ratioOfLongsToNav < account.MaxRatioOfLongsToNav || recursionCount >= 10 {
+		return
+	}
 
-		for _, strat := range strategies {
+	strategiesCopy := make([]Strategy, len(strategies))
+	copy(strategiesCopy, strategies)
 
-			if account.PreventAllTrading ||
-				GetNumFailedCallsToPredServer() >= FAILED_CALLS_TO_UPDATE_STRAT_STATE_LIMIT {
-				continue
-			}
+	sort.Slice(strategiesCopy, func(i, j int) bool {
+		return strategiesCopy[i].Priority > strategiesCopy[j].Priority
+	})
 
-			if strat.IsInPosition && ShouldCloseTrade(binanceClient, strat) {
-				CloseStrategyTrade(binanceClient, strat)
-			} else if !strat.IsInPosition && ShouldEnterTrade(strat) {
-				EnterStrategyTrade(binanceClient, strat, account)
+	usdtPrices, err := getAllUSDTPrices()
+	if err != nil {
+		return
+	}
+
+	accNetValueUSDT, err := bc.GetAccountNetValueUSDT()
+	if err != nil {
+		return
+	}
+
+	requiredToSellValueUSDT := (account.MaxRatioOfLongsToNav - ratioOfLongsToNav) * accNetValueUSDT
+
+	for _, strat := range strategiesCopy {
+		if strat.IsInPosition && !strat.IsShortSellingStrategy {
+			symbolInfo := FindListItem[SymbolInfoSimple](
+				usdtPrices,
+				func(i SymbolInfoSimple) bool { return i.Symbol == strat.BaseAsset+ASSET_USDT },
+			)
+			assetUSDTPrice := ParseToFloat64(symbolInfo.Price, 0.0)
+			remainingPosUSDTVal := assetUSDTPrice * strat.RemainingPositionOnTrade
+
+			if remainingPosUSDTVal >= requiredToSellValueUSDT {
+				closeOffAllExcessiveLongLeverage(bc, assetUSDTPrice, strat, requiredToSellValueUSDT)
+				break
+			} else {
+				closeLongTrade(bc, strat)
+				marginAssetsRes := bc.FetchMarginBalances()
+				freeUSDT := GetFreeBalanceForMarginAsset(marginAssetsRes, ASSET_USDT)
+				bc.RepayMarginLoan(
+					ASSET_USDT,
+					RoundToPrecision(freeUSDT, int32(strat.TradeQuantityPrecision)),
+				)
+				newLongRatio := GetRatioOfLongsToNav(bc)
+				CreateCloudLog(
+					NewFmtError(
+						errors.New(fmt.Sprintf("Recursively calling %s to reduce long leverage", GetCurrentFunctionName())),
+						CaptureStack(),
+					).Error(), LOG_INFO)
+				RemoveRiskFromLongStrats(bc, FetchStrategies(), newLongRatio, account, recursionCount+1)
 			}
 		}
-
-		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
 	}
 }

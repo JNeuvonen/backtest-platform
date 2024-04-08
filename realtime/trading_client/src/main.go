@@ -15,13 +15,24 @@ func main() {
 		strategies := predServClient.FetchStrategies()
 		account, _ := predServClient.FetchAccount(accountName)
 
+		if IsEmptyStruct(account) || account.PreventAllTrading ||
+			GetNumFailedCallsToPredServer() >= FAILED_CALLS_TO_UPDATE_STRAT_STATE_LIMIT {
+			continue
+		}
+
+		ratioOfLongsToNav := GetRatioOfLongsToNav(binanceClient)
+
+		if ratioOfLongsToNav > account.MaxRatioOfLongsToNav {
+			RemoveRiskFromLongStrats(
+				binanceClient,
+				strategies,
+				ratioOfLongsToNav,
+				account,
+				0,
+			)
+		}
+
 		for _, strat := range strategies {
-
-			if account.PreventAllTrading ||
-				GetNumFailedCallsToPredServer() >= FAILED_CALLS_TO_UPDATE_STRAT_STATE_LIMIT {
-				continue
-			}
-
 			if strat.IsInPosition && ShouldCloseTrade(binanceClient, strat) {
 				CloseStrategyTrade(binanceClient, strat)
 			} else if !strat.IsInPosition && ShouldEnterTrade(strat) {
