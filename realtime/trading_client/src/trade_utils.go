@@ -140,12 +140,22 @@ func GetTotalLongsUSDT(bc *BinanceClient) float64 {
 	if marginAssetsRes != nil {
 		for _, item := range marginAssetsRes.UserAssets {
 			freeAsset := ParseToFloat64(item.Free, 0.0)
+
 			if freeAsset > 0.0 {
+
+				if item.Asset == ASSET_USDT {
+					totalLongs += freeAsset
+					continue
+				}
 
 				symbolInfo := FindListItem[SymbolInfoSimple](
 					usdtPrices,
 					func(i SymbolInfoSimple) bool { return i.Symbol == item.Asset+ASSET_USDT },
 				)
+
+				if symbolInfo == nil {
+					continue
+				}
 
 				totalLongs += ParseToFloat64(symbolInfo.Price, 0.0) * freeAsset
 
