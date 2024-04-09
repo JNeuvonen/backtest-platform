@@ -14,6 +14,7 @@ import { ShowColumnsModal } from "./columns-modal";
 import { RunPythonModal } from "./run-python";
 import { FilterBacktestDrawer } from "./filter-backtests";
 import { ConfirmDeleteSelectedModal } from "./confirm-delete";
+import { DeployStrategyForm } from "../../pages/simulate/dataset/backtest/DeployStrategyForm";
 
 interface BacktestContextType {
   createNewDrawer: UseDisclosureReturn;

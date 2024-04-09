@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { useBacktestById } from "../../../../clients/queries/queries";
-import { Heading, Spinner } from "@chakra-ui/react";
+import { Button, Heading, Spinner, useDisclosure } from "@chakra-ui/react";
 import {
   BacktestBalance,
   FetchBacktestByIdRes,
@@ -11,6 +11,9 @@ import { GenericBarChart } from "../../../../components/charts/BarChart";
 import { ChakraSlider } from "../../../../components/chakra/Slider";
 import { TradingCriteriaCard } from "./TradingCriteriaCard";
 import { BacktestSummaryCard } from "./SummaryCard";
+import { GrDeploy } from "react-icons/gr";
+import { useBacktestContext } from "../../../../context/backtest";
+import { DeployStrategyForm } from "./DeployStrategyForm";
 
 interface PathParams {
   datasetName: string;
@@ -127,6 +130,7 @@ const getTradesData = (
 export const DatasetBacktestPage = () => {
   const { backtestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(backtestId));
+  const deployStrategyDrawer = useDisclosure();
 
   const [tradeFilterPerc, setTradeFilterPerc] = useState(0);
 
@@ -135,40 +139,55 @@ export const DatasetBacktestPage = () => {
   const backtest = backtestQuery.data.data;
 
   return (
-    <div>
-      <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
-      <BacktestSummaryCard backtest={backtest} />
-      <Heading size={"md"} marginTop={"16px"}>
-        Backtest balance growth
-      </Heading>
-      <ShareYAxisTwoLineChart
-        data={getPortfolioGrowthData(backtestQuery.data)}
-        xKey="kline_open_time"
-        line1Key="strategy"
-        line2Key="buy_and_hold"
-        height={500}
-        containerStyles={{ marginTop: "16px" }}
-        showDots={false}
-        displayTradeEntersAndExits={true}
-      />
+    <>
+      <DeployStrategyForm deployStrategyDrawer={deployStrategyDrawer} />
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            justifyContent: "space-between",
+          }}
+        >
+          <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
+          <Button leftIcon={<GrDeploy />} onClick={deployStrategyDrawer.onOpen}>
+            Deploy
+          </Button>
+        </div>
+        <BacktestSummaryCard backtest={backtest} />
+        <Heading size={"md"} marginTop={"16px"}>
+          Backtest balance growth
+        </Heading>
+        <ShareYAxisTwoLineChart
+          data={getPortfolioGrowthData(backtestQuery.data)}
+          xKey="kline_open_time"
+          line1Key="strategy"
+          line2Key="buy_and_hold"
+          height={500}
+          containerStyles={{ marginTop: "16px" }}
+          showDots={false}
+          displayTradeEntersAndExits={true}
+        />
 
-      <Heading size={"md"}>Trade results</Heading>
-      <ChakraSlider
-        label={`Filter trades: ${tradeFilterPerc}%`}
-        containerStyles={{ maxWidth: "300px", marginTop: "16px" }}
-        min={0}
-        max={50}
-        onChange={setTradeFilterPerc}
-        defaultValue={0}
-        value={tradeFilterPerc}
-      />
-      <GenericBarChart
-        data={getTradesData(backtestQuery.data, tradeFilterPerc)}
-        yAxisKey="perc_result"
-        xAxisKey="kline_open_time"
-        containerStyles={{ marginTop: "16px" }}
-      />
-      <TradingCriteriaCard backtestQuery={backtestQuery} />
-    </div>
+        <Heading size={"md"}>Trade results</Heading>
+        <ChakraSlider
+          label={`Filter trades: ${tradeFilterPerc}%`}
+          containerStyles={{ maxWidth: "300px", marginTop: "16px" }}
+          min={0}
+          max={50}
+          onChange={setTradeFilterPerc}
+          defaultValue={0}
+          value={tradeFilterPerc}
+        />
+        <GenericBarChart
+          data={getTradesData(backtestQuery.data, tradeFilterPerc)}
+          yAxisKey="perc_result"
+          xAxisKey="kline_open_time"
+          containerStyles={{ marginTop: "16px" }}
+        />
+        <TradingCriteriaCard backtestQuery={backtestQuery} />
+      </div>
+    </>
   );
 };

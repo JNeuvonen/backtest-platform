@@ -1,5 +1,6 @@
 export const DISK_KEYS = {
   backtest_form: "BACKTEST_FORM",
+  deploy_strategy_form: "DEPLOY_STRATEGY_FORM",
 };
 
 export class DiskManager {
@@ -17,7 +18,7 @@ export class DiskManager {
   }
 
   read() {
-    const savedData = localStorage.getItem(DISK_KEYS.backtest_form);
+    const savedData = localStorage.getItem(this.key);
     return savedData ? JSON.parse(savedData) : null;
   }
 }

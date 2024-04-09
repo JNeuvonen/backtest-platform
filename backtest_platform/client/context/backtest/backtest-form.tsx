@@ -13,7 +13,6 @@ import {
   createManualBacktest,
   execPythonOnDataset,
   setBacktestPriceColumn,
-  updatePriceColumnReq,
 } from "../../clients/requests";
 import { usePathParams } from "../../hooks/usePathParams";
 import { useDatasetQuery } from "../../clients/queries/queries";
@@ -265,7 +264,6 @@ export const BacktestForm = () => {
               style={{ marginTop: "16px" }}
               fontSize={13}
               label="Create columns"
-              disableCodePresets={true}
               codeContainerStyles={{ width: "100%" }}
               height={"250px"}
               presetCategory={CODE_PRESET_CATEGORY.backtest_create_columns}
@@ -326,7 +324,6 @@ export const BacktestForm = () => {
                           style={{ marginTop: "16px" }}
                           fontSize={13}
                           label={"Long condition"}
-                          disableCodePresets={true}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
@@ -350,7 +347,6 @@ export const BacktestForm = () => {
                           style={{ marginTop: "16px" }}
                           fontSize={13}
                           label="Close long condition"
-                          disableCodePresets={true}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
@@ -392,7 +388,6 @@ export const BacktestForm = () => {
                             style={{ marginTop: "16px" }}
                             fontSize={13}
                             label="Short condition"
-                            disableCodePresets={true}
                             codeContainerStyles={{ width: "100%" }}
                             height={"250px"}
                           />
@@ -418,7 +413,6 @@ export const BacktestForm = () => {
                             style={{ marginTop: "16px" }}
                             fontSize={13}
                             label="Close short condition"
-                            disableCodePresets={true}
                             codeContainerStyles={{ width: "100%" }}
                             height={"250px"}
                           />

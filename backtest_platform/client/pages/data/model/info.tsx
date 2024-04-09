@@ -32,7 +32,6 @@ export const ModelInfoPage = () => {
         code={data.model_code}
         readOnly={true}
         fontSize={15}
-        disableCodePresets={true}
         codeContainerStyles={{ width: "100%", marginTop: "16px" }}
         label={"Model"}
       />
@@ -40,7 +39,6 @@ export const ModelInfoPage = () => {
         code={data.optimizer_and_criterion_code}
         readOnly={true}
         fontSize={15}
-        disableCodePresets={true}
         codeContainerStyles={{ width: "100%", marginTop: "16px" }}
         label={"Hyper params and optimizer"}
         height="200px"

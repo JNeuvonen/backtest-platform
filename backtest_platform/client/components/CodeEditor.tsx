@@ -32,7 +32,6 @@ export const CodeEditor = ({
   editorDidMount,
   label,
   readOnly = false,
-  disableCodePresets = false,
   autoFocus = true,
   usePresets = true,
   presetCategory,
@@ -109,8 +108,6 @@ export const CodeEditor = ({
             options={editorOptions}
           />
         </FormControl>
-
-        {!disableCodePresets && <CodePresets />}
       </div>
     );
   }
@@ -135,8 +132,6 @@ export const CodeEditor = ({
           options={editorOptions}
         />
       </div>
-
-      {!disableCodePresets && <CodePresets />}
     </div>
   );
 };
