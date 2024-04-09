@@ -5,7 +5,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import sessionmaker, declarative_base
 from config import get_db_uri
-from log import LogExceptionContext
 
 
 engine = create_engine(get_db_uri())
@@ -34,15 +33,13 @@ def drop_tables(engine):
 
 
 def create_tables():
-    with LogExceptionContext(success_log_msg="Created tables"):
-        Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine)
 
 
 def test_db_conn():
-    with LogExceptionContext(success_log_msg="DB connection established."):
-        try:
-            with Session() as session:
-                _ = session.execute(text("SELECT * FROM information_schema.tables;"))
-            print("Connection to the DB successful.")
-        except Exception as e:
-            raise Exception(f"Unable to connect to the DB: {str(e)}")
+    try:
+        with Session() as session:
+            _ = session.execute(text("SELECT * FROM information_schema.tables;"))
+        print("Connection to the DB successful.")
+    except Exception as e:
+        raise Exception(f"Unable to connect to the DB: {str(e)}")
