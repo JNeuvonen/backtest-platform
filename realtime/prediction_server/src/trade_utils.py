@@ -1,7 +1,8 @@
+import json
 from api.v1.request_types import BodyUpdateTradeClose
 from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
-from log import LogExceptionContext
+from log import LogExceptionContext, get_logger
 
 from math_utils import (
     calc_long_trade_net_result,
@@ -61,11 +62,23 @@ def get_trade_close_dict(strat: Strategy, trade: Trade, req_body: BodyUpdateTrad
 
 def close_short_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClose):
     with LogExceptionContext():
+        logger = get_logger()
         update_dict = get_trade_close_dict(strat, trade, req_body)
+
+        stringified_dict = json.dumps(update_dict)
+
+        logger.info(
+            f"Closing short trade on strat {strat.id} with payload: {stringified_dict}"
+        )
         TradeQuery.update_trade(trade.id, update_dict)
 
 
 def close_long_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClose):
     with LogExceptionContext():
+        logger = get_logger()
         update_dict = get_trade_close_dict(strat, trade, req_body)
+        stringified_dict = json.dumps(update_dict)
+        logger.info(
+            f"Closing short trade on strat {strat.id} with payload: {stringified_dict}"
+        )
         TradeQuery.update_trade(trade.id, update_dict)

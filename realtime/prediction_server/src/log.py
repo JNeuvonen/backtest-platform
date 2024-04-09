@@ -6,6 +6,9 @@ import os
 from config import is_dev, LOG_FILE
 from logging.handlers import RotatingFileHandler
 
+from schema.cloudlog import CloudLogQuery
+from constants import LogLevel
+
 
 def capture_stack_frame(func_name, params):
     param_str = (
@@ -54,22 +57,41 @@ class Logger:
 
         self.logger.info("Logger started")
 
-    def save_exception_stackframe(self, stack_frame, error_msg):
+    def log_exception_stackframe(self, stack_frame, error_msg):
         self.logger.error(
             f"exception was raised: {error_msg}\nstack frame: {stack_frame}"
         )
 
     def info(self, message):
         self.logger.info(message)
+        CloudLogQuery.create_log_entry({"message": message, "level": LogLevel.INFO})
 
     def warning(self, message):
         self.logger.warning(message)
+        CloudLogQuery.create_log_entry(
+            {
+                "message": message,
+                "level:": LogLevel.WARNING,
+            }
+        )
 
     def error(self, message):
         self.logger.error(message)
+        CloudLogQuery.create_log_entry(
+            {
+                "message": message,
+                "level:": LogLevel.EXCEPTION,
+            }
+        )
 
     def debug(self, message):
         self.logger.debug(message)
+        CloudLogQuery.create_log_entry(
+            {
+                "message": message,
+                "level:": LogLevel.DEBUG,
+            }
+        )
 
 
 @contextmanager
@@ -95,8 +117,7 @@ def LogExceptionContext(
         stack_frame = capture_stack_frame(
             inspect.stack()[2].function, get_context_frame_params()
         )
-        logger.save_exception_stackframe(stack_frame, str(e))
-        logger.error(f"{str(e)}")
+        logger.log_exception_stackframe(stack_frame, str(e))
         if re_raise:
             raise
 

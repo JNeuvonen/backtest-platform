@@ -68,6 +68,7 @@ class PredictionService:
 
             if iterations_completed % 100 == 0:
                 CloudLogQuery.clear_outdated_logs()
+                iterations_completed = 0
 
             self.stop_event.wait(2)
             iterations_completed += 1

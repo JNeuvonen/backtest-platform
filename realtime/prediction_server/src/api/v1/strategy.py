@@ -8,6 +8,7 @@ from api.v1.request_types import (
 from middleware import api_key_auth
 from schema.strategy import StrategyQuery
 from schema.trade import TradeQuery
+from log import get_logger
 from trade_utils import close_long_trade, close_short_trade, update_strategy_state
 
 
@@ -40,7 +41,13 @@ async def route_create_strategy(body: BodyCreateStrategy):
 @router.put(RoutePaths.STRATEGY, dependencies=[Depends(api_key_auth)])
 async def route_put_strategy(body: BodyPutStrategy):
     with HttpResponseContext():
-        StrategyQuery.update_strategy(body.id, body.model_dump())
+        body_json = body.model_dump()
+
+        if body.remaining_position_on_trade is not None:
+            logger = get_logger()
+            logger.info(f"Entering trade with payload: {body_json}")
+
+        StrategyQuery.update_strategy(body.id, body_json)
         return Response(
             content="OK",
             status_code=status.HTTP_200_OK,
