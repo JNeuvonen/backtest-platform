@@ -427,7 +427,11 @@ func RemoveRiskFromLongStrats(
 		return
 	}
 
-	requiredToSellValueUSDT := (account.MaxRatioOfLongsToNav - ratioOfLongsToNav) * accNetValueUSDT
+	requiredToSellValueUSDT := (ratioOfLongsToNav - account.MaxRatioOfLongsToNav) * accNetValueUSDT
+
+	if requiredToSellValueUSDT <= MINIMUM_USDT_QUANT_FOR_TRADE {
+		return
+	}
 
 	for _, strat := range strategiesCopy {
 		if strat.IsInPosition && !strat.IsShortSellingStrategy {
@@ -491,6 +495,7 @@ func TradingLoop() {
 				account,
 				0,
 			)
+			strategies = predServClient.FetchStrategies()
 		}
 
 		for _, strat := range strategies {
