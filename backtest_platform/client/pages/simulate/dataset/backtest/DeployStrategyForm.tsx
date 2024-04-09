@@ -8,6 +8,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Switch,
   UseDisclosureReturn,
 } from "@chakra-ui/react";
 import { FormSubmitBar } from "../../../../components/form/FormSubmitBar";
@@ -99,12 +100,12 @@ const getFormInitialValues = (backtest: BacktestObject): FormValues => {
       kline_size_ms: 0,
       maximum_klines_hold_time: backtest.klines_until_close,
       allocated_size_perc: 25,
-      take_profit_threshold_perc: 0,
-      stop_loss_threshold_perc: 0,
+      take_profit_threshold_perc: backtest.take_profit_threshold_perc,
+      stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
       minimum_time_between_trades_ms: 0,
       use_time_based_close: false,
       use_profit_based_Close: false,
-      use_stop_loss_based_close: false,
+      use_stop_loss_based_close: backtest.use_stop_loss_based_close,
       use_taker_order: false,
       is_leverage_allowed: false,
       is_short_selling_strategy: false,
@@ -318,176 +319,412 @@ export const DeployStrategyForm = (props: Props) => {
                       }}
                     </Field>
                   </div>
-                  <div>
-                    <Field name={formKeys.tradeQuantityPrecision}>
-                      {({ field, form }) => {
-                        return (
-                          <WithLabel
-                            label={"Trade quantity precision"}
-                            containerStyles={{
-                              maxWidth: "200px",
-                              marginTop: "16px",
-                            }}
-                          >
-                            <NumberInput
-                              step={1}
-                              min={0}
-                              value={field.value}
-                              onChange={(valueString) =>
-                                form.setFieldValue(
-                                  formKeys.tradeQuantityPrecision,
-                                  parseInt(valueString)
-                                )
-                              }
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <div>
+                      <Field name={formKeys.tradeQuantityPrecision}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Trade quantity precision"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                                marginTop: "16px",
+                              }}
                             >
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper color={"white"} />
-                                <NumberDecrementStepper color={"white"} />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </WithLabel>
-                        );
-                      }}
-                    </Field>
+                              <NumberInput
+                                step={1}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.tradeQuantityPrecision,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.priority}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Priority"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                                marginTop: "16px",
+                              }}
+                            >
+                              <NumberInput
+                                step={1}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.priority,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.klineSizeMs}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Kline size MS"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                                marginTop: "16px",
+                              }}
+                            >
+                              <NumberInput
+                                step={10000}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.klineSizeMs,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
                   </div>
-                  <div>
-                    <Field name={formKeys.priority}>
-                      {({ field, form }) => {
-                        return (
-                          <WithLabel
-                            label={"Priority"}
-                            containerStyles={{
-                              maxWidth: "200px",
-                              marginTop: "16px",
-                            }}
-                          >
-                            <NumberInput
-                              step={1}
-                              min={0}
-                              value={field.value}
-                              onChange={(valueString) =>
-                                form.setFieldValue(
-                                  formKeys.priority,
-                                  parseInt(valueString)
-                                )
-                              }
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <div>
+                      <Field name={formKeys.maximumKlinesHoldTime}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Hold time in klines"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                              }}
                             >
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper color={"white"} />
-                                <NumberDecrementStepper color={"white"} />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </WithLabel>
-                        );
-                      }}
-                    </Field>
+                              <NumberInput
+                                step={10000}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.maximumKlinesHoldTime,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.allocatedSizePerc}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Allocated size perc"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                              }}
+                            >
+                              <NumberInput
+                                step={10000}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.allocatedSizePerc,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+
+                    <div>
+                      <Field name={formKeys.takeProfitThresholdPerc}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Take profit threshold (%)"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                              }}
+                            >
+                              <NumberInput
+                                step={0.5}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.takeProfitThresholdPerc,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+
+                    <div>
+                      <Field name={formKeys.minimumTimeBetweenTradesMs}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Time between trades MS"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                              }}
+                            >
+                              <NumberInput
+                                step={5000}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.minimumTimeBetweenTradesMs,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper color={"white"} />
+                                  <NumberDecrementStepper color={"white"} />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
                   </div>
-                  <div>
-                    <Field name={formKeys.klineSizeMs}>
-                      {({ field, form }) => {
-                        return (
-                          <WithLabel
-                            label={"Kline size MS"}
-                            containerStyles={{
-                              maxWidth: "200px",
-                              marginTop: "16px",
-                            }}
-                          >
-                            <NumberInput
-                              step={10000}
-                              min={0}
-                              value={field.value}
-                              onChange={(valueString) =>
-                                form.setFieldValue(
-                                  formKeys.klineSizeMs,
-                                  parseInt(valueString)
-                                )
-                              }
-                            >
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper color={"white"} />
-                                <NumberDecrementStepper color={"white"} />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </WithLabel>
-                        );
-                      }}
-                    </Field>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <div>
+                      <Field name={formKeys.useTimeBasedClose}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Use time based close"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.useTimeBasedClose,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.useStopLossBasedClose}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Use stop loss based close (%)"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.useStopLossBasedClose,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.useProfitBasedClose}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Use profit based close (%)"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.useProfitBasedClose,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.useTakerOrder}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Use market orders"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.useTakerOrder,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.isLeverageAllowed}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Allow leverage on longs"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.isLeverageAllowed,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
                   </div>
-                  <div>
-                    <Field name={formKeys.maximumKlinesHoldTime}>
-                      {({ field, form }) => {
-                        return (
-                          <WithLabel
-                            label={"Maximum hold time in klines"}
-                            containerStyles={{
-                              maxWidth: "200px",
-                              marginTop: "16px",
-                            }}
-                          >
-                            <NumberInput
-                              step={10000}
-                              min={0}
-                              value={field.value}
-                              onChange={(valueString) =>
-                                form.setFieldValue(
-                                  formKeys.maximumKlinesHoldTime,
-                                  parseInt(valueString)
-                                )
-                              }
-                            >
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper color={"white"} />
-                                <NumberDecrementStepper color={"white"} />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </WithLabel>
-                        );
-                      }}
-                    </Field>
-                  </div>
-                  <div>
-                    <Field name={formKeys.allocatedSizePerc}>
-                      {({ field, form }) => {
-                        return (
-                          <WithLabel
-                            label={"Allocated size perc"}
-                            containerStyles={{
-                              maxWidth: "200px",
-                              marginTop: "16px",
-                            }}
-                          >
-                            <NumberInput
-                              step={10000}
-                              min={0}
-                              value={field.value}
-                              onChange={(valueString) =>
-                                form.setFieldValue(
-                                  formKeys.allocatedSizePerc,
-                                  parseInt(valueString)
-                                )
-                              }
-                            >
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper color={"white"} />
-                                <NumberDecrementStepper color={"white"} />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </WithLabel>
-                        );
-                      }}
-                    </Field>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <div>
+                      <Field name={formKeys.isShortSellingStrategy}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Short selling strategy"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.isShortSellingStrategy,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.isPaperTradeMode}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Paper trade mode"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.isPaperTradeMode,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
                   </div>
                 </Form>
               );
             }}
           </Formik>
-          <FormSubmitBar />
+          <FormSubmitBar style={{ marginTop: "16px" }} />
         </div>
       </ChakraDrawer>
     </div>
