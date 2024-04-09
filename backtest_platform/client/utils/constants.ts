@@ -128,6 +128,10 @@ export const CODE_PRESET_CATEGORY = {
   backtest_long_cond: "backtest_long_condition",
   backtest_close_long_ccond: "backtest_close_long_condition",
   backtest_create_columns: "backtest_create_columns",
+  strategy_deploy_enter_trade: "strategy_enter_trade_code",
+  strategy_deploy_exit_trade: "strategy_enter_trade_code",
+  strategy_deploy_fetch_datasources: "strategy_fetch_datasources",
+  strategy_deploy_data_transformations: "stategy_data_transformations",
 };
 
 export class CodeHelper {
