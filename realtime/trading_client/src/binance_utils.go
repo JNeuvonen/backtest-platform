@@ -247,7 +247,7 @@ func (bc *BinanceClient) GetAccountNetValueUSDT() (float64, error) {
 	for _, userAsset := range crossMarginDetailsRes.UserAssets {
 		netAsset := ParseToFloat64(userAsset.NetAsset, 0.0)
 
-		if netAsset > 0.0 {
+		if netAsset != 0.0 {
 
 			if userAsset.Asset == ASSET_USDT {
 				accountNetUSDTValue += netAsset
