@@ -15,6 +15,10 @@ const (
 )
 
 const (
+	MINIMUM_USDT_QUANT_FOR_TRADE = 15.0
+)
+
+const (
 	MARKET_ORDER = "MARKET"
 )
 
