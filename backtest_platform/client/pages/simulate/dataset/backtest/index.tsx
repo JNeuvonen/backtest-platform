@@ -1,25 +1,16 @@
 import React, { useState } from "react";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { useBacktestById } from "../../../../clients/queries/queries";
-import {
-  Heading,
-  Spinner,
-  Stat,
-  StatLabel,
-  StatNumber,
-} from "@chakra-ui/react";
-import { GenericAreaChart } from "../../../../components/charts/AreaChart";
+import { Heading, Spinner } from "@chakra-ui/react";
 import {
   BacktestBalance,
   FetchBacktestByIdRes,
-  Trade,
 } from "../../../../clients/queries/response-types";
 import { ShareYAxisTwoLineChart } from "../../../../components/charts/ShareYAxisLineChart";
 import { GenericBarChart } from "../../../../components/charts/BarChart";
 import { ChakraSlider } from "../../../../components/chakra/Slider";
-import { ChakraCard } from "../../../../components/chakra/Card";
-import { COLOR_CONTENT_PRIMARY } from "../../../../utils/colors";
-import { roundNumberDropRemaining } from "../../../../utils/number";
+import { TradingCriteriaCard } from "./TradingCriteriaCard";
+import { BacktestSummaryCard } from "./SummaryCard";
 
 interface PathParams {
   datasetName: string;
@@ -109,20 +100,6 @@ const findTickBasedOnOpenTime = (
   return tick.length > 0 ? tick[0] : null;
 };
 
-const isTradeExitTick = (trades: Trade[], kline_open_time: number) => {
-  const found = trades.filter((trade) =>
-    trade && trade.close_time ? trade.close_time === kline_open_time : false
-  );
-  return found.length > 0;
-};
-
-const isTradeEnterTick = (trades: Trade[], kline_open_time: number) => {
-  const found = trades.filter((trade) =>
-    trade && trade.open_time ? trade.open_time === kline_open_time : false
-  );
-  return found.length > 0;
-};
-
 const getTradesData = (
   backtestData: FetchBacktestByIdRes,
   percFilter: number
@@ -160,99 +137,10 @@ export const DatasetBacktestPage = () => {
   return (
     <div>
       <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
-
-      <div style={{ marginTop: "16px" }}>
-        <ChakraCard heading={<Heading size="md">Summary</Heading>}>
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <div>
-              <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Risk adjusted CAGR</StatLabel>
-                <StatNumber>
-                  {backtest.risk_adjusted_return
-                    ? String(
-                        roundNumberDropRemaining(
-                          backtest.risk_adjusted_return * 100,
-                          2
-                        )
-                      ) + "%"
-                    : "N/A"}
-                </StatNumber>
-              </Stat>
-            </div>
-            <div>
-              <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Actual CAGR</StatLabel>
-                <StatNumber>
-                  {backtest.cagr
-                    ? String(roundNumberDropRemaining(backtest.cagr * 100, 2)) +
-                      "%"
-                    : "N/A"}
-                </StatNumber>
-              </Stat>
-            </div>
-            <div>
-              <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Buy and hold CAGR</StatLabel>
-                <StatNumber>
-                  {backtest.buy_and_hold_cagr
-                    ? String(
-                        roundNumberDropRemaining(
-                          backtest.buy_and_hold_cagr * 100,
-                          2
-                        )
-                      ) + "%"
-                    : "N/A"}
-                </StatNumber>
-              </Stat>
-            </div>
-            <div>
-              <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Time exposure</StatLabel>
-                <StatNumber>
-                  {backtest.market_exposure_time
-                    ? String(
-                        roundNumberDropRemaining(
-                          backtest.market_exposure_time * 100,
-                          2
-                        )
-                      ) + "%"
-                    : "N/A"}
-                </StatNumber>
-              </Stat>
-            </div>
-            <div>
-              <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Max drawdown</StatLabel>
-                <StatNumber>
-                  {backtest.max_drawdown_perc
-                    ? String(
-                        roundNumberDropRemaining(backtest.max_drawdown_perc, 2)
-                      ) + "%"
-                    : "N/A"}
-                </StatNumber>
-              </Stat>
-            </div>
-
-            <div>
-              <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Profit factor</StatLabel>
-                <StatNumber>
-                  {backtest.profit_factor
-                    ? String(
-                        roundNumberDropRemaining(backtest.profit_factor, 2)
-                      )
-                    : "N/A"}
-                </StatNumber>
-              </Stat>
-            </div>
-          </div>
-        </ChakraCard>
-      </div>
-
+      <BacktestSummaryCard backtest={backtest} />
       <Heading size={"md"} marginTop={"16px"}>
         Backtest balance growth
       </Heading>
-
       <ShareYAxisTwoLineChart
         data={getPortfolioGrowthData(backtestQuery.data)}
         xKey="kline_open_time"
@@ -280,55 +168,7 @@ export const DatasetBacktestPage = () => {
         xAxisKey="kline_open_time"
         containerStyles={{ marginTop: "16px" }}
       />
-
-      <div style={{ marginTop: "16px" }}>
-        <ChakraCard heading={<Heading size="md">Trading criteria</Heading>}>
-          <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
-            {backtestQuery.data.data.open_long_trade_cond}
-          </pre>
-          <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-            {backtestQuery.data.data.close_long_trade_cond}
-          </pre>
-
-          {backtestQuery.data.data.use_short_selling && (
-            <>
-              <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-                {backtestQuery.data.data.open_short_trade_cond}
-              </pre>
-              <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-                {backtestQuery.data.data.close_short_trade_cond}
-              </pre>
-            </>
-          )}
-        </ChakraCard>
-      </div>
-
-      <div style={{ marginTop: "16px" }}>
-        <ChakraCard heading={<Heading size="md">Strategy</Heading>}>
-          <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
-            Use short selling:{" "}
-            {backtestQuery.data.data.use_short_selling ? "True" : "False"}
-          </pre>
-          <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
-            Use time based close:{" "}
-            {backtestQuery.data.data.use_time_based_close
-              ? `True, ${backtestQuery.data.data.klines_until_close} candles`
-              : "False"}
-          </pre>
-          <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
-            Use stop loss based close:{" "}
-            {backtestQuery.data.data.use_stop_loss_based_close
-              ? `True, ${backtestQuery.data.data.stop_loss_threshold_perc}%`
-              : "False"}
-          </pre>
-          <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
-            Use profit (%) based close:{" "}
-            {backtestQuery.data.data.use_profit_based_close
-              ? `True, ${backtestQuery.data.data.take_profit_threshold_perc}%`
-              : "False"}
-          </pre>
-        </ChakraCard>
-      </div>
+      <TradingCriteriaCard backtestQuery={backtestQuery} />
     </div>
   );
 };
