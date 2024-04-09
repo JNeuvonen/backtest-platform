@@ -6,3 +6,6 @@ build-pred-service-container:
 
 post-test-strategy:
 	python scripts/pred_server_post_strategy.py
+
+dev-platform:
+	./scripts/dev_platform.sh
