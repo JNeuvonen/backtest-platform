@@ -2,7 +2,7 @@ import { writeBinaryFile, writeTextFile } from "@tauri-apps/api/fs";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
-import { URLS } from "./endpoints";
+import { LOCAL_API_URL } from "./endpoints";
 import { buildRequest } from "./fetch";
 import { saveAs } from "file-saver";
 import {
@@ -20,7 +20,7 @@ import { save } from "@tauri-apps/api/dialog";
 import { CodePresetBody } from "../components/SaveCodePresetPopover";
 
 export async function fetchDatasets() {
-  const url = URLS.tables;
+  const url = LOCAL_API_URL.tables;
   const res: DatasetsResponse = await buildRequest({ method: "GET", url });
 
   if (res?.res?.tables) {
@@ -30,7 +30,7 @@ export async function fetchDatasets() {
 }
 
 export async function fetchDataset(datasetName: string) {
-  const url = URLS.get_table(datasetName);
+  const url = LOCAL_API_URL.get_table(datasetName);
   const res: DatasetResponse = await buildRequest({ method: "GET", url });
 
   if (res?.res?.dataset) {
@@ -45,7 +45,7 @@ export async function execPythonOnDatasetCol(
   columnName: string,
   code: string
 ) {
-  const url = URLS.exec_python_on_column(datasetName, columnName);
+  const url = LOCAL_API_URL.exec_python_on_column(datasetName, columnName);
   return buildRequest({ method: "POST", url, payload: { code } });
 }
 
@@ -54,7 +54,7 @@ export async function execPythonOnDataset(
   code: string,
   nullFillStrategy: NullFillStrategy
 ) {
-  const url = URLS.exec_python_on_dataset(datasetName);
+  const url = LOCAL_API_URL.exec_python_on_dataset(datasetName);
   return buildRequest({
     method: "POST",
     url,
@@ -63,7 +63,7 @@ export async function execPythonOnDataset(
 }
 
 export async function createModel(datasetName: string, body: ModelDataPayload) {
-  const url = URLS.create_model(datasetName);
+  const url = LOCAL_API_URL.create_model(datasetName);
   return buildRequest({
     method: "POST",
     url,
@@ -75,24 +75,24 @@ export async function addColumnsToDataset(
   datasetName: string,
   payload: AddColumnsReqPayload
 ) {
-  const url = URLS.add_columns(datasetName);
+  const url = LOCAL_API_URL.add_columns(datasetName);
   return buildRequest({ method: "POST", url, payload: payload });
 }
 
 export async function fetchColumn(datasetName: string, columnName: string) {
-  const url = URLS.get_column(datasetName, columnName);
+  const url = LOCAL_API_URL.get_column(datasetName, columnName);
   return buildRequest({ method: "GET", url });
 }
 
 export async function fetchAllTickers() {
-  const url = URLS.binance_get_all_tickers;
+  const url = LOCAL_API_URL.binance_get_all_tickers;
   return buildRequest({ method: "GET", url });
 }
 
 export async function fetchDatasetModels(datasetName: string) {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetch_dataset_models(datasetName),
+    url: LOCAL_API_URL.fetch_dataset_models(datasetName),
   });
 
   return res;
@@ -101,7 +101,7 @@ export async function fetchDatasetModels(datasetName: string) {
 export async function fetchModelByName(modelName: string) {
   const res: FetchModelByNameRes = await buildRequest({
     method: "GET",
-    url: URLS.fetch_model_by_name(modelName),
+    url: LOCAL_API_URL.fetch_model_by_name(modelName),
   });
   return res.res.model ? res.res.model : null;
 }
@@ -111,7 +111,7 @@ export async function renameColumnName(
   oldName: string,
   newName: string
 ) {
-  const url = URLS.rename_column(datasetName);
+  const url = LOCAL_API_URL.rename_column(datasetName);
   return buildRequest({
     method: "POST",
     url,
@@ -125,7 +125,7 @@ export async function renameColumnName(
 export async function createTrainJob(modelName: string, trainJobForm: object) {
   const res = await buildRequest({
     method: "POST",
-    url: URLS.create_train_job(modelName),
+    url: LOCAL_API_URL.create_train_job(modelName),
     payload: trainJobForm,
   });
   return res;
@@ -136,7 +136,7 @@ export type AllTrainingMetadata = { train: TrainJob; weights: EpochInfo }[];
 export async function fetchAllTrainingMetadataForModel(modelName: string) {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetch_all_training_metadata(modelName),
+    url: LOCAL_API_URL.fetch_all_training_metadata(modelName),
   });
 
   if (res.res) {
@@ -148,7 +148,7 @@ export async function fetchAllTrainingMetadataForModel(modelName: string) {
 export async function stopTrain(trainJobId: string) {
   const res = await buildRequest({
     method: "POST",
-    url: URLS.stop_train(trainJobId),
+    url: LOCAL_API_URL.stop_train(trainJobId),
   });
   return res;
 }
@@ -164,7 +164,7 @@ export type TrainDataDetailed = {
 export async function fetchTrainjobDetailed(trainJobId: string) {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetch_train_job_detailed(trainJobId),
+    url: LOCAL_API_URL.fetch_train_job_detailed(trainJobId),
   });
 
   if (res.res) {
@@ -176,7 +176,7 @@ export async function fetchTrainjobDetailed(trainJobId: string) {
 export async function fetchTrainjobBacktests(trainJobId: string) {
   const res: BacktestsResponse = await buildRequest({
     method: "GET",
-    url: URLS.fetchTrainjobBacktests(trainJobId),
+    url: LOCAL_API_URL.fetchTrainjobBacktests(trainJobId),
   });
 
   if (res.res) {
@@ -188,7 +188,7 @@ export async function fetchTrainjobBacktests(trainJobId: string) {
 export async function runBacktest(trainJobId: string, body: object) {
   const res = await buildRequest({
     method: "POST",
-    url: URLS.create_backtest(trainJobId),
+    url: LOCAL_API_URL.create_backtest(trainJobId),
     payload: body,
   });
   return res;
@@ -200,7 +200,7 @@ export async function setTargetColumnReq(
 ) {
   const res = await buildRequest({
     method: "PUT",
-    url: URLS.setTargetColumn(datasetName, targetColumn),
+    url: LOCAL_API_URL.setTargetColumn(datasetName, targetColumn),
   });
   return res;
 }
@@ -211,7 +211,7 @@ export async function createCopyOfDataset(
 ) {
   const res = await buildRequest({
     method: "POST",
-    url: URLS.createDatasetCopy(datasetName, copyName),
+    url: LOCAL_API_URL.createDatasetCopy(datasetName, copyName),
   });
   return res;
 }
@@ -222,7 +222,7 @@ export async function updatePriceColumnReq(
 ) {
   const res = await buildRequest({
     method: "PUT",
-    url: URLS.setPriceColumn(datasetName, priceColumn),
+    url: LOCAL_API_URL.setPriceColumn(datasetName, priceColumn),
   });
   return res;
 }
@@ -234,7 +234,7 @@ export async function fetchDatasetPagination(
 ) {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetchDatasetPagination(datasetName, page, pageSize),
+    url: LOCAL_API_URL.fetchDatasetPagination(datasetName, page, pageSize),
   });
 
   if (res.status === 200) {
@@ -244,7 +244,7 @@ export async function fetchDatasetPagination(
 }
 
 export async function saveDatasetFile(datasetName: string) {
-  const response = await fetch(URLS.downloadDataset(datasetName));
+  const response = await fetch(LOCAL_API_URL.downloadDataset(datasetName));
   if (!response.ok) throw new Error("Network response was not ok.");
 
   const blob = await response.blob();
@@ -264,7 +264,7 @@ export async function saveDatasetFile(datasetName: string) {
 export async function removeDatasets(datasets: string[]) {
   const res = await buildRequest({
     method: "DELETE",
-    url: URLS.tables,
+    url: LOCAL_API_URL.tables,
     payload: {
       dataset_names: datasets,
     },
@@ -296,7 +296,7 @@ interface CreateManualBacktest {
 export async function createManualBacktest(body: CreateManualBacktest) {
   const res = await buildRequest({
     method: "POST",
-    url: URLS.backtest,
+    url: LOCAL_API_URL.backtest,
     payload: body,
   });
 
@@ -306,7 +306,7 @@ export async function createManualBacktest(body: CreateManualBacktest) {
 export async function fetchBacktestsByDataset(datasetId?: number) {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetch_backtests_by_dataset(datasetId),
+    url: LOCAL_API_URL.fetch_backtests_by_dataset(datasetId),
   });
 
   if (res.status === 200) {
@@ -318,7 +318,7 @@ export async function fetchBacktestsByDataset(datasetId?: number) {
 export async function fetchBacktestById(backtestId: number) {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetch_backtest_by_id(backtestId),
+    url: LOCAL_API_URL.fetch_backtest_by_id(backtestId),
   });
   if (res.status === 200) {
     return res.res;
@@ -329,7 +329,7 @@ export async function fetchBacktestById(backtestId: number) {
 export async function createCodePreset(body: CodePresetBody) {
   const res = await buildRequest({
     method: "POST",
-    url: URLS.createCodePreset(),
+    url: LOCAL_API_URL.createCodePreset(),
     payload: body,
   });
   return res;
@@ -338,7 +338,7 @@ export async function createCodePreset(body: CodePresetBody) {
 export async function fetchCodePresets() {
   const res = await buildRequest({
     method: "GET",
-    url: URLS.fetchCodePresets(),
+    url: LOCAL_API_URL.fetchCodePresets(),
   });
 
   if (res.status === 200) {
@@ -378,7 +378,7 @@ export const setKlineOpenTimeColumn = async (
   datasetName: string,
   successCallback?: () => void
 ) => {
-  const url = URLS.set_time_column(datasetName);
+  const url = LOCAL_API_URL.set_time_column(datasetName);
   const request = fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -400,7 +400,7 @@ export const setKlineOpenTimeColumn = async (
 export const deleteManyBacktests = async (listOfBacktestIds: number[]) => {
   const res = await buildRequest({
     method: "DELETE",
-    url: URLS.deleteManyBacktest(listOfBacktestIds),
+    url: LOCAL_API_URL.deleteManyBacktest(listOfBacktestIds),
   });
   return res;
 };

@@ -12,7 +12,7 @@ import {
 import { Field, Form, Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import { MultiValue } from "react-select";
-import { URLS } from "../clients/endpoints";
+import { LOCAL_API_URL } from "../clients/endpoints";
 import { ApiResponse, buildRequest } from "../clients/fetch";
 import {
   useBinanceTickersQuery,
@@ -105,7 +105,7 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
     const symbols = values.selectedTickers;
 
     const promises: Promise<ApiResponse>[] = [];
-    const url = URLS.binance_fetch_klines;
+    const url = LOCAL_API_URL.binance_fetch_klines;
 
     symbols.map((item) => {
       const payload = {

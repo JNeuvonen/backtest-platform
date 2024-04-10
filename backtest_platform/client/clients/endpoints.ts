@@ -43,7 +43,7 @@ fetchEnvVar(ENV_VAR_KEYS.pred_server_uri).then((uri) => {
 
 export const BASE_URL = CONSTANTS.base_url;
 
-export const URLS = {
+export const LOCAL_API_URL = {
   tables: BASE_URL + LOCAL_API.dataset.tables,
   get_table: (datasetName: string) =>
     BASE_URL + LOCAL_API.dataset.root + `/${datasetName}`,

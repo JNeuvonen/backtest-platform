@@ -7,7 +7,7 @@ import { Button, Input, Spinner, useToast } from "@chakra-ui/react";
 import { FormSubmitBar } from "./form/FormSubmitBar";
 import { ConfirmModal } from "./form/Confirm";
 import { useColumnQuery } from "../clients/queries/queries";
-import { URLS } from "../clients/endpoints";
+import { LOCAL_API_URL } from "../clients/endpoints";
 import { ColumnChart } from "./charts/column";
 import { ChakraModal } from "./chakra/modal";
 import { ConfirmSwitch } from "./form/ConfirmSwitch";
@@ -127,7 +127,7 @@ export const ColumnModal = ({
   const changeTimeseriesColumn = async (newValue: boolean) => {
     setIsTimeseriesCol(newValue);
 
-    const url = URLS.set_time_column(datasetName);
+    const url = LOCAL_API_URL.set_time_column(datasetName);
     const request = fetch(url, {
       headers: {
         "Content-Type": "application/json",

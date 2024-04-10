@@ -14,7 +14,7 @@ import { useModal } from "../../../hooks/useOpen";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { ConfirmInput } from "../../../components/form/ConfirmInput";
 import { buildRequest } from "../../../clients/fetch";
-import { URLS } from "../../../clients/endpoints";
+import { LOCAL_API_URL } from "../../../clients/endpoints";
 import { replaceNthPathItem } from "../../../utils/navigate";
 import { useMessageListener } from "../../../hooks/useMessageListener";
 import {
@@ -110,7 +110,7 @@ export const DatasetInfoPage = () => {
   }
   const renameDataset = (newDatasetName: string) => {
     const res = buildRequest({
-      url: URLS.set_dataset_name(datasetName),
+      url: LOCAL_API_URL.set_dataset_name(datasetName),
       method: "PUT",
       payload: { new_dataset_name: newDatasetName },
     });

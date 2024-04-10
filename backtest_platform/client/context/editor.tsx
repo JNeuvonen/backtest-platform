@@ -17,7 +17,7 @@ import { useAppContext } from "./app";
 import { useKeyListener } from "../hooks/useKeyListener";
 import { useMessageListener } from "../hooks/useMessageListener";
 import { buildRequest } from "../clients/fetch";
-import { URLS } from "../clients/endpoints";
+import { LOCAL_API_URL } from "../clients/endpoints";
 import { useToast } from "@chakra-ui/react";
 import { useDatasetQuery, useDatasetsQuery } from "../clients/queries/queries";
 import cloneDeep from "lodash/cloneDeep";
@@ -247,7 +247,7 @@ export const EditorProvider: React.FC<Props> = ({ children }) => {
     setIsDelMode(false);
 
     buildRequest({
-      url: URLS.delete_dataset_cols(datasetName),
+      url: LOCAL_API_URL.delete_dataset_cols(datasetName),
       payload: {
         cols: deleteColumns,
       },

@@ -6,7 +6,7 @@ import React, {
   useContext,
   useEffect,
 } from "react";
-import { URLS } from "../clients/endpoints";
+import { LOCAL_API_URL } from "../clients/endpoints";
 import {
   SIGNAL_CLOSE_TOOLBAR,
   SIGNAL_EPOCH_COMPLETE,
@@ -90,7 +90,7 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const timerId = setTimeout(() => {
-      socket = new WebSocket(URLS.ws_streams_log);
+      socket = new WebSocket(LOCAL_API_URL.ws_streams_log);
       socket.onmessage = (event) => {
         if (event.data === "health") return;
         const data: LogMessage = JSON.parse(event.data);
