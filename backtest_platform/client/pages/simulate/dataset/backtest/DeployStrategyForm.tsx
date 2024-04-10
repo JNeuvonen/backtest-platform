@@ -448,7 +448,7 @@ export const DeployStrategyForm = (props: Props) => {
                               }}
                             >
                               <NumberInput
-                                step={10000}
+                                step={5}
                                 min={0}
                                 value={field.value}
                                 onChange={(valueString) =>
@@ -480,7 +480,7 @@ export const DeployStrategyForm = (props: Props) => {
                               }}
                             >
                               <NumberInput
-                                step={10000}
+                                step={1}
                                 min={0}
                                 value={field.value}
                                 onChange={(valueString) =>
@@ -513,7 +513,7 @@ export const DeployStrategyForm = (props: Props) => {
                               }}
                             >
                               <NumberInput
-                                step={0.5}
+                                step={1}
                                 min={0}
                                 value={field.value}
                                 onChange={(valueString) =>
