@@ -1,8 +1,8 @@
-import { writeBinaryFile, writeTextFile } from "@tauri-apps/api/fs";
+import { writeBinaryFile } from "@tauri-apps/api/fs";
 import { AddColumnsReqPayload } from "../context/editor";
 import { ModelDataPayload } from "../pages/data/model/create";
 import { NullFillStrategy } from "../utils/constants";
-import { LOCAL_API_URL } from "./endpoints";
+import { LOCAL_API_URL, PRED_SERVER_URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 import { saveAs } from "file-saver";
 import {
@@ -18,6 +18,7 @@ import {
 } from "./queries/response-types";
 import { save } from "@tauri-apps/api/dialog";
 import { CodePresetBody } from "../components/SaveCodePresetPopover";
+import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrategyForm";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -401,6 +402,15 @@ export const deleteManyBacktests = async (listOfBacktestIds: number[]) => {
   const res = await buildRequest({
     method: "DELETE",
     url: LOCAL_API_URL.deleteManyBacktest(listOfBacktestIds),
+  });
+  return res;
+};
+
+export const deployStrategyReq = async (form: DeployStratForm) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: PRED_SERVER_URLS.strategyEndpoint(),
+    payload: form,
   });
   return res;
 };

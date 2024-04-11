@@ -3,6 +3,7 @@ import { ChakraDrawer } from "../../../../components/chakra/Drawer";
 import { usePathParams } from "../../../../hooks/usePathParams";
 import { useBacktestById } from "../../../../clients/queries/queries";
 import {
+  Button,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -10,15 +11,17 @@ import {
   NumberInputStepper,
   Switch,
   UseDisclosureReturn,
+  useToast,
 } from "@chakra-ui/react";
-import { FormSubmitBar } from "../../../../components/form/FormSubmitBar";
-import { Field, Form, Formik, FormikProps } from "formik";
+import { Field, Form, Formik } from "formik";
 import { BacktestObject } from "../../../../clients/queries/response-types";
 import { DISK_KEYS, DiskManager } from "../../../../utils/disk";
 import { WithLabel } from "../../../../components/form/WithLabel";
 import { ChakraInput } from "../../../../components/chakra/input";
 import { CodeEditor } from "../../../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../../../utils/constants";
+import { BUTTON_VARIANTS } from "../../../../theme";
+import { deployStrategyReq } from "../../../../clients/requests";
 
 interface PathParams {
   datasetName: string;
@@ -57,7 +60,7 @@ const formKeys = {
   isPaperTradeMode: "is_paper_trade_mode",
 };
 
-interface FormValues {
+export interface DeployStratForm {
   name: string;
   symbol: string;
   base_asset: string;
@@ -70,12 +73,13 @@ interface FormValues {
   priority: number;
   kline_size_ms: number;
   maximum_klines_hold_time: number;
+  klines_left_till_autoclose?: number;
   allocated_size_perc: number;
   take_profit_threshold_perc: number;
   stop_loss_threshold_perc: number;
   minimum_time_between_trades_ms: number;
   use_time_based_close: boolean;
-  use_profit_based_Close: boolean;
+  use_profit_based_close: boolean;
   use_stop_loss_based_close: boolean;
   use_taker_order: boolean;
   is_leverage_allowed: boolean;
@@ -83,7 +87,7 @@ interface FormValues {
   is_paper_trade_mode: boolean;
 }
 
-const getFormInitialValues = (backtest: BacktestObject): FormValues => {
+const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
   const prevForm = backtestDiskManager.read();
   if (prevForm === null) {
     return {
@@ -103,10 +107,10 @@ const getFormInitialValues = (backtest: BacktestObject): FormValues => {
       take_profit_threshold_perc: backtest.take_profit_threshold_perc,
       stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
       minimum_time_between_trades_ms: 0,
-      use_time_based_close: false,
-      use_profit_based_Close: false,
+      use_time_based_close: backtest.use_time_based_close,
+      use_profit_based_close: backtest.use_profit_based_close,
       use_stop_loss_based_close: backtest.use_stop_loss_based_close,
-      use_taker_order: false,
+      use_taker_order: true,
       is_leverage_allowed: false,
       is_short_selling_strategy: false,
       is_paper_trade_mode: false,
@@ -119,18 +123,41 @@ const getFormInitialValues = (backtest: BacktestObject): FormValues => {
   };
 };
 
-const onSubmit = () => {};
-
 export const DeployStrategyForm = (props: Props) => {
   const { deployStrategyDrawer } = props;
   const { backtestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(backtestId));
+  const toast = useToast();
 
   if (!backtestQuery || !backtestQuery.data || !backtestQuery.data.data) {
     return null;
   }
 
   const backtest = backtestQuery.data.data;
+
+  const onSubmit = async (form: DeployStratForm) => {
+    const res = await deployStrategyReq({
+      ...form,
+      klines_left_till_autoclose: form.maximum_klines_hold_time,
+    });
+
+    if (res.status === 200) {
+      toast({
+        title: `Deployed strategy ${form.name}`,
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      deployStrategyDrawer.onClose();
+    } else {
+      toast({
+        title: `Deploying strategy failed. Error code: ${res.status}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <div>
@@ -144,7 +171,7 @@ export const DeployStrategyForm = (props: Props) => {
             initialValues={getFormInitialValues(backtest)}
             onSubmit={onSubmit}
           >
-            {({ values }: FormikProps<FormValues>) => {
+            {() => {
               return (
                 <Form>
                   <div
@@ -210,7 +237,7 @@ export const DeployStrategyForm = (props: Props) => {
                               <ChakraInput
                                 label="Quote asset"
                                 onChange={(value: string) =>
-                                  form.setFieldValue(formKeys.baseAsset, value)
+                                  form.setFieldValue(formKeys.quoteAsset, value)
                                 }
                               />
                             </WithLabel>
@@ -720,11 +747,28 @@ export const DeployStrategyForm = (props: Props) => {
                       </Field>
                     </div>
                   </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Button
+                      variant={BUTTON_VARIANTS.nofill}
+                      onClick={deployStrategyDrawer.onClose}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" marginTop={"16px"}>
+                      Deploy
+                    </Button>
+                  </div>
                 </Form>
               );
             }}
           </Formik>
-          <FormSubmitBar style={{ marginTop: "16px" }} />
         </div>
       </ChakraDrawer>
     </div>

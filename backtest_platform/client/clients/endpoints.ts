@@ -29,81 +29,85 @@ const LOCAL_API = {
   },
 };
 
-const PRED_SERV_API = {
+export const PRED_SERV_API = {
   v1_strategy: "/v1/strategy",
   v1_trade: "/v1/trade",
   v1_logs: "/v1/log",
   v1_account: "/v1/acc",
 };
 
-let PRED_SERV_BASE_URL;
+export let PRED_SERV_BASE_URL: string;
 fetchEnvVar(ENV_VAR_KEYS.pred_server_uri).then((uri) => {
-  PRED_SERV_BASE_URL = uri;
+  PRED_SERV_BASE_URL = uri as string;
 });
 
-export const BASE_URL = CONSTANTS.base_url;
+export const LOCAL_API_URI = CONSTANTS.base_url;
 
 export const LOCAL_API_URL = {
-  tables: BASE_URL + LOCAL_API.dataset.tables,
+  tables: LOCAL_API_URI + LOCAL_API.dataset.tables,
   get_table: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}`,
   get_column: (datasetName: string, columnName: string) =>
-    BASE_URL +
+    LOCAL_API_URI +
     LOCAL_API.dataset.root +
     `/${datasetName}/col-info/${columnName}`,
   set_time_column: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/update-timeseries-col`,
+    LOCAL_API_URI +
+    LOCAL_API.dataset.root +
+    `/${datasetName}/update-timeseries-col`,
   set_dataset_name: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/update-dataset-name`,
-  binance_get_all_tickers: BASE_URL + LOCAL_API.binance.get_all_tickers,
-  binance_fetch_klines: BASE_URL + LOCAL_API.binance.fetch_klines,
+    LOCAL_API_URI +
+    LOCAL_API.dataset.root +
+    `/${datasetName}/update-dataset-name`,
+  binance_get_all_tickers: LOCAL_API_URI + LOCAL_API.binance.get_all_tickers,
+  binance_fetch_klines: LOCAL_API_URI + LOCAL_API.binance.fetch_klines,
   ws_streams_log: LOCAL_API.streams.log,
   rename_column: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/rename-column`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/rename-column`,
   add_columns: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/add-columns`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/add-columns`,
   delete_dataset_cols: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/delete-cols`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/delete-cols`,
   exec_python_on_column: (datasetName: string, columnName: string) =>
-    BASE_URL +
+    LOCAL_API_URI +
     LOCAL_API.dataset.root +
     `/${datasetName}/exec-python/${columnName}`,
   exec_python_on_dataset: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/exec-python`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/exec-python`,
   create_model: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/models/create`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/models/create`,
   fetch_dataset_models: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/models`,
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/models`,
   fetch_model_by_name: (modelName: string) =>
-    BASE_URL + LOCAL_API.model.root + `/${modelName}`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/${modelName}`,
   create_train_job: (modelName: string) =>
-    BASE_URL + LOCAL_API.model.root + `/${modelName}/create-train`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/${modelName}/create-train`,
   fetch_all_training_metadata: (modelName: string) =>
-    BASE_URL + LOCAL_API.model.root + `/${modelName}/trains`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/${modelName}/trains`,
   stop_train: (trainJobId: string) =>
-    BASE_URL + LOCAL_API.model.root + `/train/stop/${trainJobId}`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/train/stop/${trainJobId}`,
   fetch_train_job_detailed: (trainJobId: string) =>
-    BASE_URL + LOCAL_API.model.root + `/train/${trainJobId}/detailed`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/train/${trainJobId}/detailed`,
   fetch_backtests_by_dataset: (datasetId?: number) =>
-    BASE_URL + LOCAL_API.backtest.root + `/dataset/${datasetId}`,
+    LOCAL_API_URI + LOCAL_API.backtest.root + `/dataset/${datasetId}`,
   fetch_backtest_by_id: (backtestId: number) =>
-    BASE_URL + LOCAL_API.backtest.root + `/${backtestId}`,
+    LOCAL_API_URI + LOCAL_API.backtest.root + `/${backtestId}`,
   create_backtest: (trainJobId: string) =>
-    BASE_URL + LOCAL_API.model.root + `/backtest/${trainJobId}/run`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/backtest/${trainJobId}/run`,
   setTargetColumn: (datasetName: string, targetColumn: string) =>
-    BASE_URL +
+    LOCAL_API_URI +
     LOCAL_API.dataset.root +
     `/${datasetName}/target-column?target_column=${targetColumn}`,
   setPriceColumn: (datasetName: string, priceColumn: string) =>
-    BASE_URL +
+    LOCAL_API_URI +
     LOCAL_API.dataset.root +
     `/${datasetName}/price-column?price_column=${priceColumn}`,
   createDatasetCopy: (datasetName: string, copyName: string) =>
-    BASE_URL +
+    LOCAL_API_URI +
     LOCAL_API.dataset.root +
     `/${datasetName}/copy?new_dataset_name=${copyName}`,
   fetchTrainjobBacktests: (trainJobId: string) =>
-    BASE_URL + LOCAL_API.model.root + `/backtest/${trainJobId}`,
+    LOCAL_API_URI + LOCAL_API.model.root + `/backtest/${trainJobId}`,
 
   fetchDatasetPagination: (
     datasetName: string,
@@ -111,19 +115,23 @@ export const LOCAL_API_URL = {
     pageSize: number
   ) => {
     return (
-      BASE_URL +
+      LOCAL_API_URI +
       LOCAL_API.dataset.root +
       `/${datasetName}/pagination/${page}/${pageSize}`
     );
   },
   downloadDataset: (datasetName: string) =>
-    BASE_URL + LOCAL_API.dataset.root + `/${datasetName}/download`,
-  backtest: BASE_URL + LOCAL_API.backtest.root,
-  createCodePreset: () => BASE_URL + LOCAL_API.code_preset.root,
-  fetchCodePresets: () => BASE_URL + LOCAL_API.code_preset.root + "/all",
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/download`,
+  backtest: LOCAL_API_URI + LOCAL_API.backtest.root,
+  createCodePreset: () => LOCAL_API_URI + LOCAL_API.code_preset.root,
+  fetchCodePresets: () => LOCAL_API_URI + LOCAL_API.code_preset.root + "/all",
   deleteManyBacktest: (listOfIds: number[]) =>
-    BASE_URL +
+    LOCAL_API_URI +
     LOCAL_API.backtest.root +
     "/delete-many" +
     `?list_of_ids=${JSON.stringify(listOfIds)}`,
+};
+
+export const PRED_SERVER_URLS = {
+  strategyEndpoint: () => PRED_SERV_BASE_URL + PRED_SERV_API.v1_strategy,
 };

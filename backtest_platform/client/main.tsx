@@ -15,7 +15,7 @@ const queryClient = new QueryClient();
 
 appWindow.onCloseRequested(() => {
   //performs on shutdown cleanup on the server
-  fetch(CONSTANTS.base_url + "/shutdown", {
+  fetch(CONSTANTS.LOCAL_API_URI + "/shutdown", {
     method: "POST",
   });
 });

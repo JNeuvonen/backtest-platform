@@ -8,7 +8,7 @@ import React, {
 
 import { invoke } from "@tauri-apps/api/tauri";
 import { LAYOUT, TAURI_COMMANDS } from "../utils/constants";
-import { BASE_URL } from "../clients/endpoints";
+import { LOCAL_API_URI } from "../clients/endpoints";
 
 export type Platform = "" | "macos" | "windows" | "linux";
 export type ToolbarMode = "TRAINING" | "";
@@ -55,7 +55,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      fetch(BASE_URL + "/")
+      fetch(LOCAL_API_URI + "/")
         .then((response) => {
           if (response.status === 200) {
             setServerLaunched(true);
