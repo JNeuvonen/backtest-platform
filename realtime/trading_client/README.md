@@ -1,1 +1,1 @@
-Client that fetches prediction server and sends orders based them
+Client that fetches the prediction server on a loop and sends orders based on the active strategies.
