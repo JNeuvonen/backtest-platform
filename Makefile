@@ -9,3 +9,6 @@ post-test-strategy:
 
 dev-platform:
 	./scripts/dev_platform.sh
+
+dev-pred-server:
+	./scripts/dev_prediction_server.sh
