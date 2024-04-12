@@ -1,3 +1,4 @@
+import secrets
 from typing import Dict
 from log import LogExceptionContext
 from sqlalchemy import Column, DateTime, Integer, String, func
@@ -11,6 +12,10 @@ class APIKey(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     key = Column(String, unique=True)
+
+
+def generate_api_key():
+    return secrets.token_urlsafe(32)
 
 
 class APIKeyQuery:
@@ -38,6 +43,14 @@ class APIKeyQuery:
             with Session() as session:
                 session.query(APIKey).filter(APIKey.key == key).delete()
                 session.commit()
+
+    @staticmethod
+    def gen_api_key():
+        with LogExceptionContext():
+            api_key = generate_api_key()
+            entry = {"key": api_key}
+            APIKeyQuery.create_entry(entry)
+            return entry
 
     @staticmethod
     def is_valid_key(key: str) -> bool:

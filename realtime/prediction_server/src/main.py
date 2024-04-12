@@ -11,6 +11,7 @@ from api.v1.strategy import router as v1_strategy_router
 from api.v1.log import router as v1_cloudlogs_router
 from api.v1.account import router as v1_account_router
 from api.v1.trade import router as v1_trade_router
+from api.v1.api_key import router as v1_api_key_router
 from middleware import ValidateIPMiddleware
 from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
@@ -31,6 +32,7 @@ class Routers:
     V1_LOGS = "/v1/log"
     V1_ACC = "/v1/acc"
     V1_TRADE = "/v1/trade"
+    V1_API_KEY = "/v1/api-key"
 
 
 app = FastAPI(lifespan=lifespan)
@@ -38,6 +40,7 @@ app.include_router(v1_cloudlogs_router, prefix=Routers.V1_LOGS)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
 app.include_router(v1_account_router, prefix=Routers.V1_ACC)
 app.include_router(v1_trade_router, prefix=Routers.V1_TRADE)
+app.include_router(v1_api_key_router, prefix=Routers.V1_API_KEY)
 app.add_middleware(ValidateIPMiddleware)
 
 
