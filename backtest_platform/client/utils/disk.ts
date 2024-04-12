@@ -1,6 +1,7 @@
 export const DISK_KEYS = {
   backtest_form: "BACKTEST_FORM",
   deploy_strategy_form: "DEPLOY_STRATEGY_FORM",
+  app_settings: "APP_SETTINGS",
 };
 
 export class DiskManager {

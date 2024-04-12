@@ -9,6 +9,8 @@ import React, {
 import { invoke } from "@tauri-apps/api/tauri";
 import { LAYOUT, TAURI_COMMANDS } from "../utils/constants";
 import { LOCAL_API_URI } from "../clients/endpoints";
+import { DISK_KEYS, DiskManager } from "../utils/disk";
+import { createPredServApiKey } from "../clients/requests";
 
 export type Platform = "" | "macos" | "windows" | "linux";
 export type ToolbarMode = "TRAINING" | "";
@@ -30,6 +32,9 @@ interface AppContextType {
   setInnerSideNavWidth: React.Dispatch<React.SetStateAction<number>>;
   titleBarHeight: number;
   serverLaunched: boolean;
+  appSettings: AppSettings | null;
+  setAppSettings: React.Dispatch<React.SetStateAction<AppSettings | null>>;
+  updatePredServAPIKey: (newApiKey: string) => void;
 }
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -37,6 +42,12 @@ export const AppContext = createContext<AppContextType>({} as AppContextType);
 interface AppProviderProps {
   children: ReactNode;
 }
+
+interface AppSettings {
+  predServAPIKey: string;
+}
+
+const settingsDiskManager = new DiskManager(DISK_KEYS.app_settings);
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [platform, setPlatform] = useState<Platform>("");
@@ -52,6 +63,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [trainJobId, setTrainJobId] = useState("");
   const [titleBarHeight] = useState(40);
   const [serverLaunched, setServerLaunched] = useState(false);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(
+    settingsDiskManager.read()
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -79,7 +93,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       }
     };
 
+    const fetchAppSettings = async () => {
+      if (appSettings === null) {
+        const apiKey = await createPredServApiKey();
+        const settingsDict = {
+          predServAPIKey: apiKey,
+        };
+        settingsDiskManager.save(settingsDict);
+      }
+    };
+
     fetchAppData();
+    fetchAppSettings();
   }, []);
 
   const openTrainingToolbar = () => {
@@ -94,6 +119,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setMaximumEpochs(0);
     setTrainLosses([]);
     setValLosses([]);
+  };
+
+  const updatePredServAPIKey = (newApiKey: string) => {
+    const settingsDict = {
+      predServAPIKey: newApiKey,
+    };
+    settingsDiskManager.save(settingsDict);
+    setAppSettings(settingsDict);
   };
 
   const parseEpochMessage = (msg: string) => {
@@ -138,6 +171,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         setInnerSideNavWidth,
         titleBarHeight,
         serverLaunched,
+        appSettings,
+        setAppSettings,
+        updatePredServAPIKey,
       }}
     >
       {children}
