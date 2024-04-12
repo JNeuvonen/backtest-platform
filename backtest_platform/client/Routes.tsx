@@ -11,6 +11,7 @@ import { SimulateIndex } from "./pages/simulate";
 import { SimulateDatasetIndex } from "./pages/simulate/dataset";
 import { BacktestProvider } from "./context/backtest";
 import { DatasetBacktestPage } from "./pages/simulate/dataset/backtest";
+import { SettingsPage } from "./pages/settings";
 
 export const AppRoutes = () => {
   return (
@@ -46,6 +47,7 @@ export const AppRoutes = () => {
           </BacktestProvider>
         }
       />
+      <Route path={PATHS.settings} element={<SettingsPage />} />
     </Routes>
   );
 };
