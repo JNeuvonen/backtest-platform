@@ -17,6 +17,7 @@ from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
 from schema.whitelisted_ip import WhiteListedIPQuery
 from schema.cloudlog import CloudLogQuery
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -36,12 +37,21 @@ class Routers:
 
 
 app = FastAPI(lifespan=lifespan)
+
 app.include_router(v1_cloudlogs_router, prefix=Routers.V1_LOGS)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
 app.include_router(v1_account_router, prefix=Routers.V1_ACC)
 app.include_router(v1_trade_router, prefix=Routers.V1_TRADE)
 app.include_router(v1_api_key_router, prefix=Routers.V1_API_KEY)
+
 app.add_middleware(ValidateIPMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class PredictionService:
