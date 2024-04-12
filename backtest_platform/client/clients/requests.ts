@@ -19,6 +19,7 @@ import {
 import { save } from "@tauri-apps/api/dialog";
 import { CodePresetBody } from "../components/SaveCodePresetPopover";
 import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrategyForm";
+import { predServerHeaders } from "./headers-utils";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -406,11 +407,29 @@ export const deleteManyBacktests = async (listOfBacktestIds: number[]) => {
   return res;
 };
 
-export const deployStrategyReq = async (form: DeployStratForm) => {
+export const deployStrategyReq = async (
+  apiKey: string,
+  form: DeployStratForm
+) => {
   const res = await buildRequest({
     method: "POST",
     url: PRED_SERVER_URLS.strategyEndpoint(),
     payload: form,
+    options: {
+      headers: predServerHeaders(apiKey),
+    },
   });
+  return res;
+};
+
+export const createPredServApiKey = async () => {
+  const res = await buildRequest({
+    method: "POST",
+    url: PRED_SERVER_URLS.createApiKeyEndpoint(),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"]["key"];
+  }
   return res;
 };

@@ -34,6 +34,7 @@ export const PRED_SERV_API = {
   v1_trade: "/v1/trade",
   v1_logs: "/v1/log",
   v1_account: "/v1/acc",
+  v1_api_key: "/v1/api-key",
 };
 
 export let PRED_SERV_BASE_URL: string;
@@ -134,4 +135,5 @@ export const LOCAL_API_URL = {
 
 export const PRED_SERVER_URLS = {
   strategyEndpoint: () => PRED_SERV_BASE_URL + PRED_SERV_API.v1_strategy,
+  createApiKeyEndpoint: () => PRED_SERV_BASE_URL + PRED_SERV_API.v1_api_key,
 };
