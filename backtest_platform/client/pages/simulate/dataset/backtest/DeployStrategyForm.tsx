@@ -22,6 +22,7 @@ import { CodeEditor } from "../../../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../../../utils/constants";
 import { BUTTON_VARIANTS } from "../../../../theme";
 import { deployStrategyReq } from "../../../../clients/requests";
+import { useAppContext } from "../../../../context/app";
 
 interface PathParams {
   datasetName: string;
@@ -126,6 +127,7 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
 export const DeployStrategyForm = (props: Props) => {
   const { deployStrategyDrawer } = props;
   const { backtestId } = usePathParams<PathParams>();
+  const { getPredServAPIKey } = useAppContext();
   const backtestQuery = useBacktestById(Number(backtestId));
   const toast = useToast();
 
@@ -136,7 +138,7 @@ export const DeployStrategyForm = (props: Props) => {
   const backtest = backtestQuery.data.data;
 
   const onSubmit = async (form: DeployStratForm) => {
-    const res = await deployStrategyReq({
+    const res = await deployStrategyReq(getPredServAPIKey(), {
       ...form,
       klines_left_till_autoclose: form.maximum_klines_hold_time,
     });

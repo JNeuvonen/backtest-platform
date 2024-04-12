@@ -35,6 +35,7 @@ interface AppContextType {
   appSettings: AppSettings | null;
   setAppSettings: React.Dispatch<React.SetStateAction<AppSettings | null>>;
   updatePredServAPIKey: (newApiKey: string) => void;
+  getPredServAPIKey: () => string;
 }
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -129,6 +130,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setAppSettings(settingsDict);
   };
 
+  const getPredServAPIKey = () => {
+    return appSettings?.predServAPIKey || "";
+  };
+
   const parseEpochMessage = (msg: string) => {
     try {
       const data = msg.split("\n")[1].split("/");
@@ -174,6 +179,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         appSettings,
         setAppSettings,
         updatePredServAPIKey,
+        getPredServAPIKey,
       }}
     >
       {children}
