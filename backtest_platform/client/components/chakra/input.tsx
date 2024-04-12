@@ -10,6 +10,8 @@ interface ChakraInputProps {
   containerStyle?: CSSProperties;
   defaultValue?: string;
   placeholder?: string;
+  disabled?: boolean;
+  value?: string;
 }
 
 export const ChakraInput: React.FC<ChakraInputProps> = ({
@@ -20,6 +22,8 @@ export const ChakraInput: React.FC<ChakraInputProps> = ({
   containerStyle = { maxWidth: "200px" },
   defaultValue = "",
   placeholder = "",
+  disabled = false,
+  value = undefined,
 }) => {
   return (
     <FormControl style={containerStyle}>
@@ -30,6 +34,8 @@ export const ChakraInput: React.FC<ChakraInputProps> = ({
         onChange={(e) => onChange?.(e.target.value)}
         defaultValue={defaultValue}
         placeholder={placeholder}
+        isDisabled={disabled}
+        value={value}
       />
     </FormControl>
   );
