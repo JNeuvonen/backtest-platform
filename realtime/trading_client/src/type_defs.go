@@ -38,6 +38,7 @@ type Strategy struct {
 	UseTakerOrder              bool    `json:"use_taker_order"`
 	ShouldEnterTrade           bool    `json:"should_enter_trade"`
 	ShouldCloseTrade           bool    `json:"should_close_trade"`
+	IsOnPredServErr            bool    `json:"is_on_pred_serv_err"`
 	IsPaperTradeMode           bool    `json:"is_paper_trade_mode"`
 	IsLeverageAllowed          bool    `json:"is_leverage_allowed"`
 	IsShortSellingStrategy     bool    `json:"is_short_selling_strategy"`

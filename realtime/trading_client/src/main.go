@@ -33,6 +33,10 @@ func main() {
 		}
 
 		for _, strat := range strategies {
+			if strat.IsOnPredServErr {
+				continue
+			}
+
 			if strat.IsInPosition && ShouldCloseTrade(binanceClient, strat) {
 				CloseStrategyTrade(binanceClient, strat)
 			} else if !strat.IsInPosition && ShouldEnterTrade(strat) {
