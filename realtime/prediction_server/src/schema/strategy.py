@@ -56,8 +56,9 @@ class Strategy(Base):
     should_enter_trade = Column(Boolean, default=False)
     should_close_trade = Column(Boolean, default=False)
 
-    is_paper_trade_mode = Column(Boolean)
-    is_leverage_allowed = Column(Boolean)
+    is_on_pred_serv_err = Column(Boolean, default=False)
+    is_paper_trade_mode = Column(Boolean, default=False)
+    is_leverage_allowed = Column(Boolean, default=False)
     is_short_selling_strategy = Column(Boolean, nullable=False)
     is_disabled = Column(Boolean, default=False)
     is_in_position = Column(Boolean, default=False)
