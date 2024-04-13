@@ -179,12 +179,11 @@ func TestUpdateStrategy(t *testing.T) {
 	predServClient := NewHttpClient(predServConfig.URI, headers)
 
 	predServClient.UpdateStrategy(map[string]interface{}{
-		"active_trade":               1,
-		"id":                         1,
-		"klines_left_till_autoclose": 24,
-		"price_on_trade_open":        65000,
-		"time_on_trade_open_ms":      1712340861903,
-		"is_in_position":             true,
+		"active_trade":          1,
+		"id":                    1,
+		"price_on_trade_open":   65000,
+		"time_on_trade_open_ms": 1712340861903,
+		"is_in_position":        true,
 	})
 }
 

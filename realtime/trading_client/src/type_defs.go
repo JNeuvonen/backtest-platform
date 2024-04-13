@@ -24,7 +24,6 @@ type Strategy struct {
 	Priority                   int     `json:"priority"`
 	KlineSizeMs                int     `json:"kline_size_ms"`
 	MinimumTimeBetweenTradesMs int     `json:"minimum_time_between_trades_ms"`
-	KlinesLeftTillAutoclose    int     `json:"klines_left_till_autoclose"`
 	MaximumKlinesHoldTime      int     `json:"maximum_klines_hold_time"`
 	TimeOnTradeOpenMs          int64   `json:"time_on_trade_open_ms"`
 	QuantityOnTradeOpen        float64 `json:"quantity_on_trade_open"`
