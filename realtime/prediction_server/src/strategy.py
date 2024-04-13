@@ -1,9 +1,7 @@
 from code_gen_templates import CodeTemplates
-from constants import LogLevel
 from log import LogExceptionContext
 from utils import replace_placeholders_on_code_templ
 from schema.strategy import Strategy
-from schema.cloudlog import create_log
 
 
 def get_trading_decisions(strategy: Strategy):
