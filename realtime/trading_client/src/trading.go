@@ -21,7 +21,13 @@ func shouldStopLossClose(strat Strategy, price float64) bool {
 
 func shouldTimebasedClose(strat Strategy) bool {
 	if strat.UseTimeBasedClose {
-		return strat.KlinesLeftTillAutoclose == 0
+		currTimeMs := int64(GetTimeInMs())
+		klineSizeInMS := int64(strat.KlineSizeMs)
+		maxHoldTimeInKlines := int64(strat.MaximumKlinesHoldTime)
+		tradeOpenTime := strat.TimeOnTradeOpenMs
+
+		return !strat.ShouldEnterTrade &&
+			currTimeMs >= tradeOpenTime+klineSizeInMS*maxHoldTimeInKlines
 	}
 	return false
 }
