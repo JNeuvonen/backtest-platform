@@ -7,7 +7,7 @@ from orm import Base, Session
 class DataTransformation(Base):
     __tablename__ = "data_transformation"
     id = Column(Integer, primary_key=True)
-    backtest_id = Column(Integer, ForeignKey("backtest.id"), nullable=False)
+    dataset_id = Column(Integer, ForeignKey("dataset.id"), nullable=False)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -17,7 +17,7 @@ class DataTransformation(Base):
 
 class DataTransformationQuery:
     @staticmethod
-    def create_transformation(fields: Dict):
+    def create_entry(fields: Dict):
         with LogExceptionContext():
             try:
                 with Session() as session:
@@ -44,12 +44,12 @@ class DataTransformationQuery:
                 session.commit()
 
     @staticmethod
-    def get_transformations_by_backtest(backtest_id: int):
+    def get_transformations_by_dataset(dataset_id: int):
         with LogExceptionContext():
             with Session() as session:
                 return (
                     session.query(DataTransformation)
-                    .filter(DataTransformation.backtest_id == backtest_id)
+                    .filter(DataTransformation.dataset_id == dataset_id)
                     .order_by(DataTransformation.id)
                     .all()
                 )

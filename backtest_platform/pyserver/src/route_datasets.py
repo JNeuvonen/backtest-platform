@@ -1,6 +1,5 @@
 import os
 import asyncio
-import base64
 
 from typing import List
 
@@ -27,6 +26,7 @@ from db import (
     rename_table,
 )
 from query_dataset import Dataset, DatasetBody, DatasetQuery
+from query_data_transformation import DataTransformationQuery
 from query_model import ModelQuery
 from request_types import (
     BodyDeleteDatasets,
@@ -87,9 +87,21 @@ async def route_exec_python_on_dataset(
     body: BodyExecPython,
 ):
     with HttpResponseContext():
+        dataset = DatasetQuery.fetch_dataset_by_name(dataset_name)
+
+        if dataset is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Dataset was not found with name {dataset_name}",
+            )
+
         null_fill_strat = NullFillStrategy[body.null_fill_strategy]
         python_program = PythonCode.on_dataset(dataset_name, body.code)
         exec_python(python_program)
+
+        DataTransformationQuery.create_entry(
+            {"transformation_code": body.code, "dataset_id": dataset.id}
+        )
         df_fill_nulls_on_all_cols(dataset_name, null_fill_strat)
         return {"message": "OK"}
 
