@@ -12,6 +12,9 @@ dev-platform:
 dev-pred-server:
 	./scripts/dev_prediction_server.sh
 
+test-pred-server:
+	./scripts/test_prediction_server.sh
+
 dev-trading-client:
 	./scripts/dev_trading_client.sh
 
