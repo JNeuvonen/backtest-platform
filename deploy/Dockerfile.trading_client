@@ -1,10 +1,12 @@
 FROM golang:1.18-alpine
 
-
+RUN apk add --no-cache git
 
 ARG PREDICTION_SERVICE_API_KEY
 ARG API_KEY
 ARG API_SECRET
+
+RUN if [ -z "$PREDICTION_SERVICE_API_KEY" ] || [ -z "$API_KEY" ] || [ -z "$API_SECRET" ]; then echo 'One or more ARGs are missing'; exit 1; fi
 
 ENV USE_MAINNET_DATA=1
 ENV ALLOWED_TO_SEND_REAL_ORDERS=1
@@ -15,6 +17,9 @@ ENV API_SECRET=$API_SECRET
 ENV ACCOUNT_NAME=master_acc
 
 WORKDIR /app
+
+COPY realtime/trading_client/go.mod realtime/trading_client/go.sum ./
+RUN sed -i 's/^go 1\.22\.1/go 1.18/' go.mod && go mod tidy && go mod download
 
 COPY realtime/trading_client /app
 
