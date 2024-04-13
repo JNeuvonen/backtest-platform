@@ -1,6 +1,6 @@
 import pytest
 
-from t_utils import Get, Post
+from t_utils import Post
 
 
 @pytest.mark.acceptance
