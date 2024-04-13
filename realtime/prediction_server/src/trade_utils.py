@@ -22,7 +22,6 @@ def update_strategy_state(strat: Strategy, req_body: BodyUpdateTradeClose):
             strategy_update_dict = {
                 "remaining_position_on_trade": remaining,
                 "is_in_position": False,
-                "klines_left_till_autoclose": strat.maximum_klines_hold_time,
             }
             StrategyQuery.update_strategy(strat.id, strategy_update_dict)
 

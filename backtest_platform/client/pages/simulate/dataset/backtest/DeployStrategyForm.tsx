@@ -74,7 +74,6 @@ export interface DeployStratForm {
   priority: number;
   kline_size_ms: number;
   maximum_klines_hold_time: number;
-  klines_left_till_autoclose?: number;
   allocated_size_perc: number;
   take_profit_threshold_perc: number;
   stop_loss_threshold_perc: number;
@@ -140,7 +139,6 @@ export const DeployStrategyForm = (props: Props) => {
   const onSubmit = async (form: DeployStratForm) => {
     const res = await deployStrategyReq(getPredServAPIKey(), {
       ...form,
-      klines_left_till_autoclose: form.maximum_klines_hold_time,
     });
 
     if (res.status === 200) {

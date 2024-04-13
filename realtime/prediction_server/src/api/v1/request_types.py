@@ -14,7 +14,7 @@ class BodyCreateStrategy(BaseModel):
 
     priority: int
     kline_size_ms: int
-    klines_left_till_autoclose: int
+    maximum_klines_hold_time: int
     minimum_time_between_trades_ms: int
     trade_quantity_precision: int
 
@@ -86,7 +86,6 @@ class BodyPutStrategy(BaseModel):
     prev_kline_ms: Optional[int] = None
     minimum_time_between_trades_ms: Optional[int] = None
     maximum_klines_hold_time: Optional[int] = None
-    klines_left_till_autoclose: Optional[int] = None
     time_on_trade_open_ms: Optional[int] = None
     price_on_trade_open: Optional[float] = None
     allocated_size_perc: Optional[float] = None
