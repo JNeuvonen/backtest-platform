@@ -13,10 +13,11 @@ from api.v1.account import router as v1_account_router
 from api.v1.trade import router as v1_trade_router
 from api.v1.api_key import router as v1_api_key_router
 from middleware import ValidateIPMiddleware
+from constants import LogLevel
 from strategy import get_trading_decisions
 from schema.strategy import StrategyQuery
 from schema.whitelisted_ip import WhiteListedIPQuery
-from schema.cloudlog import CloudLogQuery
+from schema.cloudlog import CloudLogQuery, create_log
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -68,15 +69,25 @@ class PredictionService:
         while not self.stop_event.is_set():
             strategies = StrategyQuery.get_strategies()
             active_strategies = 0
+            strats_on_error = 0
+
             for strategy in strategies:
                 trading_decisions = get_trading_decisions(strategy)
 
                 if not strategy.is_disabled:
                     active_strategies += 1
 
-                StrategyQuery.update_strategy(strategy.id, trading_decisions)
-            logger.info(
-                f"Prediction loop completed. Active strategies: {active_strategies}"
+                if trading_decisions is not None:
+                    StrategyQuery.update_strategy(strategy.id, trading_decisions)
+                else:
+                    StrategyQuery.update_strategy(
+                        strategy.id, {"is_on_pred_serv_err": True}
+                    )
+                    strats_on_error += 1
+
+            create_log(
+                msg=f"Prediction loop completed. Active strategies: {active_strategies}. Strategies in error state: {strats_on_error}",
+                level=LogLevel.INFO,
             )
 
             if iterations_completed % 100 == 0:

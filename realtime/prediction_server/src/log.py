@@ -6,7 +6,7 @@ import os
 from config import is_dev, LOG_FILE
 from logging.handlers import RotatingFileHandler
 
-from schema.cloudlog import CloudLogQuery
+from schema.cloudlog import CloudLogQuery, create_log
 from constants import LogLevel
 
 
@@ -64,34 +64,19 @@ class Logger:
 
     def info(self, message):
         self.logger.info(message)
-        CloudLogQuery.create_log_entry({"message": message, "level": LogLevel.INFO})
+        create_log(msg=message, level=LogLevel.INFO)
 
     def warning(self, message):
         self.logger.warning(message)
-        CloudLogQuery.create_log_entry(
-            {
-                "message": message,
-                "level:": LogLevel.WARNING,
-            }
-        )
+        create_log(msg=message, level=LogLevel.WARNING)
 
     def error(self, message):
         self.logger.error(message)
-        CloudLogQuery.create_log_entry(
-            {
-                "message": message,
-                "level:": LogLevel.EXCEPTION,
-            }
-        )
+        create_log(msg=message, level=LogLevel.EXCEPTION)
 
     def debug(self, message):
         self.logger.debug(message)
-        CloudLogQuery.create_log_entry(
-            {
-                "message": message,
-                "level:": LogLevel.DEBUG,
-            }
-        )
+        create_log(msg=message, level=LogLevel.DEBUG)
 
 
 @contextmanager

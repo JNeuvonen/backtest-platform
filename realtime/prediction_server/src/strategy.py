@@ -52,14 +52,6 @@ def get_trading_decisions(strategy: Strategy):
             results_dict,
         )
 
-        should_enter_trade = results_dict["should_enter_trade"]
-        should_close_trade = results_dict["should_exit_trade"]
-
-        create_log(
-            msg=f"Strategy {strategy.name} ran. Should_enter_trade: {'yes' if should_enter_trade else 'no'}, Should_close_trade: {'yes' if should_close_trade else 'no'}",
-            level=LogLevel.INFO,
-        )
-
         return {
             "should_enter_trade": results_dict["should_enter_trade"],
             "should_close_trade": results_dict["should_exit_trade"],
