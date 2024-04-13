@@ -1,7 +1,7 @@
 import pytest
 import time
 from t_utils import Get, Post
-from fixtures.strategy import strategy_simple_1
+from fixtures.strategy import create_strategy_with_syntax_err, strategy_simple_1
 
 
 @pytest.mark.acceptance
@@ -15,4 +15,5 @@ def test_setup_sanity(cleanup_db, create_api_key):
 @pytest.mark.slow
 def test_strategy_polling(cleanup_db, create_api_key):
     Post.create_strategy(create_api_key, body=strategy_simple_1())
-    time.sleep(15)
+    Post.create_strategy(create_api_key, body=create_strategy_with_syntax_err())
+    time.sleep(1000)

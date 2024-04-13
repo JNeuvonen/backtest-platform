@@ -272,6 +272,31 @@ def make_data_transformations(fetched_data):
     return fetched_data
 """
 
+    class StratWithSyntaxErr:
+        OPEN = """
+def get_enter_trade_decision(transformed_df):
+    return False 
+"""
+
+        CLOSE = """
+def get_exit_trade_decision(transformed_df):
+    return False 
+"""
+
+        FETCH = """
+def fetch_datasources():
+    import pandas as pd
+    from binance import Client
+    #syntax error
+    prin(hello world)
+"""
+
+        TRANSFORMATIONS = """
+def make_data_transformations(fetched_data):
+    #debugging strategy - no need to actually transform the data
+    return fetched_data
+"""
+
 
 def create_strategy_body(
     name: str,
@@ -402,6 +427,35 @@ def create_short_strategy_simple_2():
         allocated_size_perc=50,
         maximum_klines_hold_time=0,
         take_profit_threshold_perc=0,
+        stop_loss_threshold_perc=2,
+        minimum_time_between_trades_ms=1000,
+        use_time_based_close=False,
+        use_profit_based_close=False,
+        use_stop_loss_based_close=True,
+        use_taker_order=False,
+        is_leverage_allowed=False,
+        is_short_selling_strategy=True,
+        is_paper_trade_mode=False,
+    )
+
+
+def create_strategy_with_syntax_err():
+    return create_strategy_body(
+        name="SyntaxError",
+        symbol="BTCUSDT",
+        base_asset="BTC",
+        quote_asset="USDT",
+        enter_trade_code=TradingRules.StratWithSyntaxErr.OPEN,
+        exit_trade_code=TradingRules.StratWithSyntaxErr.CLOSE,
+        fetch_datasources_code=TradingRules.StratWithSyntaxErr.FETCH,
+        data_transformations_code=TradingRules.StratWithSyntaxErr.TRANSFORMATIONS,
+        trade_quantity_precision=5,
+        priority=1,
+        kline_size_ms=ONE_DAY_IN_MS,
+        klines_left_till_autoclose=24,
+        allocated_size_perc=50,
+        maximum_klines_hold_time=0,
+        take_profit_threshold_perc=2,
         stop_loss_threshold_perc=2,
         minimum_time_between_trades_ms=1000,
         use_time_based_close=False,
