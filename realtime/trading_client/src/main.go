@@ -1,5 +1,9 @@
 package main
 
+import (
+	"time"
+)
+
 func main() {
 	predServConfig := GetPredServerConfig()
 	tradingConfig := GetTradingConfig()
@@ -44,5 +48,6 @@ func main() {
 			}
 		}
 		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
+		time.Sleep(time.Minute)
 	}
 }
