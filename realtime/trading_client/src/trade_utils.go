@@ -142,9 +142,7 @@ func GetTotalLongsUSDT(bc *BinanceClient) float64 {
 			freeAsset := ParseToFloat64(item.Free, 0.0)
 
 			if freeAsset > 0.0 {
-
 				if item.Asset == ASSET_USDT {
-					totalLongs += freeAsset
 					continue
 				}
 
