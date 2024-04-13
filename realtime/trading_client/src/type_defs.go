@@ -47,8 +47,9 @@ type Strategy struct {
 }
 
 type CloudLogBody struct {
-	Message string `json:"message"`
-	Level   string `json:"level"`
+	Message       string `json:"message"`
+	Level         string `json:"level"`
+	SourceProgram int32  `json:"source_program"`
 }
 
 type SymbolInfoSimple struct {

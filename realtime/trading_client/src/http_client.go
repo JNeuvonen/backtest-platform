@@ -222,8 +222,9 @@ func CreateCloudLog(msg string, level string) {
 
 func (client *HttpClient) CreateCloudLog(msg string, level string) error {
 	body := CloudLogBody{
-		Message: msg,
-		Level:   level,
+		Message:       msg,
+		Level:         level,
+		SourceProgram: 1,
 	}
 
 	jsonData, err := json.Marshal(body)
