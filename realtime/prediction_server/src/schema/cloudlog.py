@@ -4,6 +4,8 @@ from orm import Base, Session
 
 from datetime import datetime, timedelta
 
+from constants import LogSourceProgram
+
 
 class LogLevels:
     EXCEPTION = "exception"
@@ -16,10 +18,10 @@ class CloudLog(Base):
     __tablename__ = "cloud_log"
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     message = Column(String)
     level = Column(String)
+    source_program = Column(Integer)
 
 
 class CloudLogQuery:
@@ -52,7 +54,7 @@ class CloudLogQuery:
 
     @staticmethod
     def clear_outdated_logs():
-        ninety_days_ago = datetime.now() - timedelta(days=90)
+        ninety_days_ago = datetime.now() - timedelta(days=3)
         with Session() as session:
             session.query(CloudLog).filter(
                 CloudLog.created_at < ninety_days_ago
@@ -66,3 +68,13 @@ class CloudLogQuery:
             return (
                 session.query(CloudLog).filter(CloudLog.created_at >= cutoff_date).all()
             )
+
+
+def create_log(msg: str, level: str):
+    CloudLogQuery.create_log_entry(
+        {
+            "message": msg,
+            "level": level,
+            "source_program": LogSourceProgram.PRED_SERVER,
+        }
+    )

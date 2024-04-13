@@ -35,6 +35,7 @@ class BodyCreateStrategy(BaseModel):
 class BodyCreateCloudLog(BaseModel):
     message: str
     level: str
+    source_program: int
 
     @field_validator("level")
     @classmethod
