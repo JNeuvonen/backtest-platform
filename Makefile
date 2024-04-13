@@ -12,3 +12,14 @@ dev-platform:
 
 dev-pred-server:
 	./scripts/dev_prediction_server.sh
+
+dev-trading-client:
+	./scripts/dev_trading_client.sh
+
+
+build-trading-client-container:
+	docker build -t jneuv/trading_client:latest -f ./deploy/Dockerfile.trading_client \
+  --build-arg PREDICTION_SERVICE_API_KEY=$(PREDICTION_SERVICE_API_KEY) \
+  --build-arg API_KEY=${API_KEY} \
+  --build-arg API_SECRET=${API_SECRET} .
+
