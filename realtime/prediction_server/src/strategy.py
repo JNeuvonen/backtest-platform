@@ -53,4 +53,5 @@ def get_trading_decisions(strategy: Strategy):
         return {
             "should_enter_trade": results_dict["should_enter_trade"],
             "should_close_trade": results_dict["should_exit_trade"],
+            "is_on_pred_serv_err": False,
         }
