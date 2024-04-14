@@ -1,7 +1,7 @@
 from typing import Dict
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from orm import Base, Session
-from src.log import LogExceptionContext
+from log import LogExceptionContext
 
 
 class DataTransformation(Base):

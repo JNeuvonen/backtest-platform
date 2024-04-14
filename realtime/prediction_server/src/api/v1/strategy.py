@@ -32,8 +32,9 @@ async def route_get_root():
 async def route_create_strategy(body: BodyCreateStrategy):
     with HttpResponseContext():
         data_transformations = body.data_transformations
+        body_copy = body.model_dump(exclude={"data_transformations"})
 
-        id = StrategyQuery.create_entry(body.model_dump())
+        id = StrategyQuery.create_entry(body_copy)
 
         for item in data_transformations:
             DataTransformationQuery.create_transformation(
