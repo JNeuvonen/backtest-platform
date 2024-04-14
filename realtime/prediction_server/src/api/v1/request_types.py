@@ -1,6 +1,14 @@
 from typing import List, Optional, Any
-from pydantic import BaseModel, field_validator, conint
+from pydantic import BaseModel, Field, field_validator, conint
 from datetime import datetime
+
+
+class DataTransformation(BaseModel):
+    id: int
+    dataset_id: int
+    created_at: datetime
+    updated_at: datetime
+    transformation_code: str
 
 
 class BodyCreateStrategy(BaseModel):
@@ -30,6 +38,8 @@ class BodyCreateStrategy(BaseModel):
 
     is_leverage_allowed: bool
     is_short_selling_strategy: bool
+
+    data_transformations: List[DataTransformation] = Field(default_factory=list)
 
 
 class BodyCreateCloudLog(BaseModel):

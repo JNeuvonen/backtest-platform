@@ -9,6 +9,7 @@ from middleware import api_key_auth
 from schema.strategy import StrategyQuery
 from schema.trade import TradeQuery
 from log import get_logger
+from schema.data_transformation import DataTransformationQuery
 from trade_utils import close_long_trade, close_short_trade, update_strategy_state
 
 
@@ -30,7 +31,14 @@ async def route_get_root():
 @router.post(RoutePaths.STRATEGY, dependencies=[Depends(api_key_auth)])
 async def route_create_strategy(body: BodyCreateStrategy):
     with HttpResponseContext():
+        data_transformations = body.data_transformations
+
         id = StrategyQuery.create_entry(body.model_dump())
+
+        for item in data_transformations:
+            DataTransformationQuery.create_transformation(
+                {"transformation_code": item.transformation_code, "strategy_id": id}
+            )
         return Response(
             content=f"{str(id)}",
             status_code=status.HTTP_200_OK,
