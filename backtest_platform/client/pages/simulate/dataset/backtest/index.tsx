@@ -138,6 +138,10 @@ export const DatasetBacktestPage = () => {
 
   const backtest = backtestQuery.data.data;
 
+  if (backtest === undefined) {
+    return null;
+  }
+
   return (
     <>
       <DeployStrategyForm deployStrategyDrawer={deployStrategyDrawer} />
