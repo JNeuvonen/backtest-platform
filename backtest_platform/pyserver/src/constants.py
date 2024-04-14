@@ -23,6 +23,8 @@ STREAMING_DEFAULT_CHUNK_SIZE = 1024
 
 DATASET_UTILS_DB_PATH = "datasets_util.db"
 
+ALEMBIC_VERSIONS_TAB = "alembic_version"
+
 
 class DomEventChannels(Enum):
     REFETCH_ALL_DATASETS = "refetch_all_datasets"

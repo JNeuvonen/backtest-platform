@@ -7,12 +7,12 @@ import math
 from query_data_transformation import DataTransformationQuery
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
-import pandas as pd
 from typing import List
 from io import BytesIO
 
 
 from constants import (
+    ALEMBIC_VERSIONS_TAB,
     ONE_YEAR_IN_MS,
     AppConstants,
     CandleSize,
@@ -45,6 +45,9 @@ def get_dataset_tables():
             tables_data = []
             for table in tables:
                 table_name = table[0]
+
+                if table_name == ALEMBIC_VERSIONS_TAB:
+                    continue
 
                 cursor.execute(f"PRAGMA table_info({table_name});")
                 columns = [column_info[1] for column_info in cursor.fetchall()]
