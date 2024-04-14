@@ -1,7 +1,10 @@
 import React from "react";
 import { ChakraDrawer } from "../../../../components/chakra/Drawer";
 import { usePathParams } from "../../../../hooks/usePathParams";
-import { useBacktestById } from "../../../../clients/queries/queries";
+import {
+  useBacktestById,
+  useDatasetQuery,
+} from "../../../../clients/queries/queries";
 import {
   Button,
   NumberDecrementStepper,
@@ -14,7 +17,10 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
-import { BacktestObject } from "../../../../clients/queries/response-types";
+import {
+  BacktestObject,
+  DataTransformation,
+} from "../../../../clients/queries/response-types";
 import { DISK_KEYS, DiskManager } from "../../../../utils/disk";
 import { WithLabel } from "../../../../components/form/WithLabel";
 import { ChakraInput } from "../../../../components/chakra/input";
@@ -85,6 +91,7 @@ export interface DeployStratForm {
   is_leverage_allowed: boolean;
   is_short_selling_strategy: boolean;
   is_paper_trade_mode: boolean;
+  data_transformations: DataTransformation[];
 }
 
 const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
@@ -114,6 +121,7 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
       is_leverage_allowed: false,
       is_short_selling_strategy: false,
       is_paper_trade_mode: false,
+      data_transformations: [],
     };
   }
 
@@ -125,9 +133,11 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
 
 export const DeployStrategyForm = (props: Props) => {
   const { deployStrategyDrawer } = props;
-  const { backtestId } = usePathParams<PathParams>();
+  const { backtestId, datasetName } = usePathParams<PathParams>();
   const { getPredServAPIKey } = useAppContext();
   const backtestQuery = useBacktestById(Number(backtestId));
+  const datasetQuery = useDatasetQuery(datasetName);
+
   const toast = useToast();
 
   if (!backtestQuery || !backtestQuery.data || !backtestQuery.data.data) {
@@ -137,8 +147,13 @@ export const DeployStrategyForm = (props: Props) => {
   const backtest = backtestQuery.data.data;
 
   const onSubmit = async (form: DeployStratForm) => {
+    if (!datasetQuery.data) {
+      return null;
+    }
+
     const res = await deployStrategyReq(getPredServAPIKey(), {
       ...form,
+      data_transformations: datasetQuery.data.data_transformations,
     });
 
     if (res.status === 200) {

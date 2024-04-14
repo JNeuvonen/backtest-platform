@@ -80,6 +80,7 @@ export interface Dataset {
   dataset_name: string;
   target_col: string;
   price_col: string;
+  data_transformations: DataTransformation[];
   id: number;
 }
 
@@ -248,4 +249,12 @@ export interface CodePreset {
   code: string;
   category: string;
   name: string;
+}
+
+export interface DataTransformation {
+  id: number;
+  dataset_id: number;
+  created_at: Date;
+  updated_at: Date;
+  transformation_code: string;
 }
