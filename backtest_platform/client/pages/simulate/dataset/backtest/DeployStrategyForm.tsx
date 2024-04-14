@@ -29,6 +29,12 @@ import { CODE_PRESET_CATEGORY } from "../../../../utils/constants";
 import { BUTTON_VARIANTS } from "../../../../theme";
 import { deployStrategyReq } from "../../../../clients/requests";
 import { useAppContext } from "../../../../context/app";
+import {
+  DATA_TRANSFORMATIONS_EXAMPLE,
+  DEPLOY_STRAT_ENTER_TRADE_DEFAULT,
+  DEPLOY_STRAT_EXIT_TRADE_DEFAULT,
+  FETCH_DATASOURCES_DEFAULT,
+} from "../../../../utils/code";
 
 interface PathParams {
   datasetName: string;
@@ -102,10 +108,10 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
       symbol: "",
       base_asset: "",
       quote_asset: "",
-      enter_trade_code: "",
-      exit_trade_code: "",
-      fetch_datasources_code: "",
-      data_transformations_code: "",
+      enter_trade_code: DEPLOY_STRAT_ENTER_TRADE_DEFAULT(),
+      exit_trade_code: DEPLOY_STRAT_EXIT_TRADE_DEFAULT(),
+      fetch_datasources_code: FETCH_DATASOURCES_DEFAULT,
+      data_transformations_code: DATA_TRANSFORMATIONS_EXAMPLE,
       trade_quantity_precision: 5,
       priority: 1,
       kline_size_ms: 0,
