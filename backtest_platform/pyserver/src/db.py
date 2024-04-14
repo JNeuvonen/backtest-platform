@@ -28,6 +28,7 @@ from dataset import (
 )
 from log import LogExceptionContext, get_logger
 from query_dataset import DatasetQuery
+from utils import base_model_to_dict
 
 
 def create_connection(db_file: str):
@@ -344,6 +345,13 @@ def get_dataset_table(table_name: str):
             row_count = get_table_row_count(cursor, table_name)
             rows = get_dataset_pagination(table_name, 1, 100)
             dataset_id = DatasetQuery.fetch_dataset_id_by_name(table_name)
+
+            data_transformations = (
+                DataTransformationQuery.get_transformations_by_dataset(dataset_id)
+            )
+            transformations_dicts = [
+                base_model_to_dict(trans) for trans in data_transformations
+            ]
             return {
                 "columns": columns,
                 "head": head,
@@ -358,9 +366,7 @@ def get_dataset_table(table_name: str):
                 "price_col": DatasetQuery.get_price_col(table_name),
                 "id": DatasetQuery.fetch_dataset_id_by_name(table_name),
                 "rows": rows,
-                "data_transformations": DataTransformationQuery.get_transformations_by_dataset(
-                    dataset_id
-                ),
+                "data_transformations": transformations_dicts,
             }
 
 
