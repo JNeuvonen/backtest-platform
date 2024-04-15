@@ -26,4 +26,13 @@ echo "Go file count: $go_file_count"
 echo "Total file count: $total_file_count"
 
 
+# Prepare the message
+message="Line Counts:\n------------\nPython line count: $py_lines\nTypeScript line count: $ts_lines\nGo line count: $go_lines\nTotal line count: $total_line_count\n\nFile Counts:\n------------\nPython file count: $py_file_count\nTypeScript file count: $ts_file_count\nGo file count: $go_file_count\nTotal file count: $total_file_count"
+
+# Your Slack webhook URL
+webhook_url='https://hooks.slack.com/services/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'
+
+# Use curl to send the message as a JSON payload to the Slack webhook
+curl -X POST -H 'Content-Type: application/json' --data "{\"text\": \"${message//\"/\\\"}\"}" $webhook_url
+
 
