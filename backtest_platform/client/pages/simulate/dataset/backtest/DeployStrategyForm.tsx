@@ -342,32 +342,6 @@ export const DeployStrategyForm = (props: Props) => {
                       }}
                     </Field>
                   </div>
-                  <div>
-                    <Field name={formKeys.dataTransformationsCode}>
-                      {({ field, form }) => {
-                        return (
-                          <CodeEditor
-                            code={field.value}
-                            setCode={(newState) =>
-                              form.setFieldValue(
-                                formKeys.dataTransformationsCode,
-                                newState
-                              )
-                            }
-                            style={{ marginTop: "16px" }}
-                            fontSize={13}
-                            label={"Transform data code"}
-                            codeContainerStyles={{ width: "100%" }}
-                            height={"250px"}
-                            presetCategory={
-                              CODE_PRESET_CATEGORY.strategy_deploy_data_transformations
-                            }
-                          />
-                        );
-                      }}
-                    </Field>
-                  </div>
-
                   <div
                     style={{
                       display: "flex",
