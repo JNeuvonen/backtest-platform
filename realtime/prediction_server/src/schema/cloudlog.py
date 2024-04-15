@@ -4,7 +4,9 @@ from orm import Base, Session
 
 from datetime import datetime, timedelta
 
-from constants import LogSourceProgram
+from constants import LogSourceProgram, SlackWebhooks
+from slack import post_message
+from schema.slack_bots import SlackWebhookQuery
 
 
 class LogLevels:
@@ -71,6 +73,11 @@ class CloudLogQuery:
 
 
 def create_log(msg: str, level: str):
+    slack_webhook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.OPS_LOG_BOT)
+
+    if slack_webhook:
+        post_message(msg, slack_webhook.webhook_uri)
+
     CloudLogQuery.create_log_entry(
         {
             "message": msg,
