@@ -55,7 +55,6 @@ const formKeys = {
   enterTradeCode: "enter_trade_code",
   exitTradeCode: "exit_trade_code",
   fetchDatasourcesCode: "fetch_datasources_code",
-  dataTransformationsCode: "data_transformations_code",
   tradeQuantityPrecision: "trade_quantity_precision",
   priority: "priority",
   klineSizeMs: "kline_size_ms",
@@ -81,7 +80,6 @@ export interface DeployStratForm {
   enter_trade_code: string;
   exit_trade_code: string;
   fetch_datasources_code: string;
-  data_transformations_code: string;
   trade_quantity_precision: number;
   priority: number;
   kline_size_ms: number;
@@ -111,7 +109,6 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
       enter_trade_code: DEPLOY_STRAT_ENTER_TRADE_DEFAULT(),
       exit_trade_code: DEPLOY_STRAT_EXIT_TRADE_DEFAULT(),
       fetch_datasources_code: FETCH_DATASOURCES_DEFAULT,
-      data_transformations_code: DATA_TRANSFORMATIONS_EXAMPLE,
       trade_quantity_precision: 5,
       priority: 1,
       kline_size_ms: 0,
