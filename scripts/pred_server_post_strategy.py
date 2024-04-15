@@ -26,7 +26,7 @@ strategies = [
     StrategyQuery.create_entry(simple_strat),
     StrategyQuery.create_entry(simple_short_strat),
     StrategyQuery.create_entry(simple_short_strat_2),
-    StrategyQuery.create_entry(strat_with_syntax_error),
+    # StrategyQuery.create_entry(strat_with_syntax_error),
 ]
 
 
