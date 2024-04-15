@@ -17,7 +17,6 @@ class BodyCreateStrategy(BaseModel):
     enter_trade_code: str
     exit_trade_code: str
     fetch_datasources_code: str
-    data_transformations_code: str
 
     priority: int
     kline_size_ms: int

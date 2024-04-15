@@ -1,5 +1,6 @@
 import uvicorn
 import os
+import time
 from contextlib import asynccontextmanager
 
 from threading import Event, Thread
@@ -120,8 +121,8 @@ def webserver_root():
 
 
 def start_server():
-    logger = get_logger()
     create_tables()
+    logger = get_logger()
     prediction_service.start()
     logger.info("Starting server")
     uvicorn.run("main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
