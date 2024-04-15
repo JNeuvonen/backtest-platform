@@ -76,7 +76,7 @@ def create_log(msg: str, level: str):
     slack_webhook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.OPS_LOG_BOT)
 
     if slack_webhook is not None:
-        post_message(msg, slack_webhook.webhook_uri)
+        post_message(slack_webhook.webhook_uri, msg)
 
     CloudLogQuery.create_log_entry(
         {
