@@ -1,4 +1,48 @@
+import datetime
 from t_constants import ONE_DAY_IN_MS
+
+
+transformation_id = 0
+
+TRANSFORMATION_1 = """
+def calculate_ma(df, column='close_price', periods=[50]):
+    for period in periods:
+        ma_label = f"MA_{period}_{column}"
+        df[ma_label] = df[column].rolling(window=period).mean()
+
+periods = [50]
+column = "close_price"
+calculate_ma(dataset, column=column, periods=periods)
+"""
+
+
+TRANSFORMATION_2 = """
+def calculate_rsi(df, column='open_price', periods=[14]):
+    for period in periods:
+        delta = df[column].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+        rs = gain / loss
+        df_label = f"RSI_{period}_{column}"
+        df[df_label] = 100 - (100 / (1 + rs))
+
+periods = [30]
+column = "MA_50_close_price"
+calculate_rsi(dataset, column=column, periods=periods)
+"""
+
+
+def gen_data_transformation_dict(transformation_str):
+    global transformation_id
+    transformation_id += 1
+    current_time = datetime.datetime.now()
+    return {
+        "id": transformation_id,
+        "transformation_code": transformation_str,
+        "created_at": current_time.isoformat(),
+        "updated_at": current_time.isoformat(),
+    }
 
 
 class TradingRules:
@@ -322,6 +366,7 @@ def create_strategy_body(
     is_leverage_allowed: bool,
     is_short_selling_strategy: bool,
     is_paper_trade_mode: bool,
+    data_transformations=[],
 ):
     return {
         "name": name,
@@ -347,6 +392,7 @@ def create_strategy_body(
         "is_leverage_allowed": is_leverage_allowed,
         "is_short_selling_strategy": is_short_selling_strategy,
         "is_paper_trade_mode": is_paper_trade_mode,
+        "data_transformations": data_transformations,
     }
 
 
@@ -375,6 +421,10 @@ def strategy_simple_1():
         is_leverage_allowed=False,
         is_short_selling_strategy=False,
         is_paper_trade_mode=False,
+        data_transformations=[
+            gen_data_transformation_dict(TRANSFORMATION_1),
+            gen_data_transformation_dict(TRANSFORMATION_2),
+        ],
     )
 
 
@@ -403,6 +453,10 @@ def create_short_strategy_simple_1():
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
         is_paper_trade_mode=False,
+        data_transformations=[
+            gen_data_transformation_dict(TRANSFORMATION_1),
+            gen_data_transformation_dict(TRANSFORMATION_2),
+        ],
     )
 
 
@@ -431,6 +485,10 @@ def create_short_strategy_simple_2():
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
         is_paper_trade_mode=False,
+        data_transformations=[
+            gen_data_transformation_dict(TRANSFORMATION_1),
+            gen_data_transformation_dict(TRANSFORMATION_2),
+        ],
     )
 
 
@@ -459,6 +517,10 @@ def create_strategy_with_syntax_err():
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
         is_paper_trade_mode=False,
+        data_transformations=[
+            gen_data_transformation_dict(TRANSFORMATION_1),
+            gen_data_transformation_dict(TRANSFORMATION_2),
+        ],
     )
 
 

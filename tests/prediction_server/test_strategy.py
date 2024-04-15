@@ -15,5 +15,4 @@ def test_setup_sanity(cleanup_db, create_api_key):
 @pytest.mark.slow
 def test_strategy_polling(cleanup_db, create_api_key):
     Post.create_strategy(create_api_key, body=strategy_simple_1())
-    Post.create_strategy(create_api_key, body=create_strategy_with_syntax_err())
     time.sleep(1000)
