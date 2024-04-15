@@ -11,6 +11,8 @@ from api.v1.log import RoutePaths as logs_router
 from api.v1.account import RoutePaths as acc_router
 from api.v1.trade import RoutePaths as trade_router_helper
 from schema.api_key import APIKeyQuery
+from schema.slack_bots import SlackWebhookQuery
+from constants import SlackWebhooks
 
 
 def start_server():
@@ -60,3 +62,11 @@ def db_delete_all_data():
 
 def create_api_key_entry(api_key: str):
     APIKeyQuery.create_entry({"key": api_key})
+
+
+def create_slackbot_entry(slackbot_name: str, webhook_uri: str):
+    SlackWebhookQuery.create_entry({"name": slackbot_name, "webhook_uri": webhook_uri})
+
+
+def get_slack_webhook_names():
+    return SlackWebhooks
