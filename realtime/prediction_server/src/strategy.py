@@ -1,7 +1,22 @@
-from code_gen_templates import CodeTemplates
+from typing import List
+from code_gen_templates import CodeTemplates, PyCode
 from log import LogExceptionContext
+from schema.data_transformation import DataTransformation, DataTransformationQuery
 from utils import replace_placeholders_on_code_templ
 from schema.strategy import Strategy
+
+
+def gen_data_transformations_code(data_transformations: List[DataTransformation]):
+    sorted_transformations = sorted(data_transformations, key=lambda x: x.strategy_id)
+
+    data_transformations_code = PyCode()
+    data_transformations_code.append_line("def make_data_transformations(dataset):")
+    data_transformations_code.add_indent()
+    for item in sorted_transformations:
+        data_transformations_code.add_block(item.transformation_code)
+
+    data_transformations_code.append_line("return dataset")
+    return data_transformations_code.get()
 
 
 def get_trading_decisions(strategy: Strategy):
@@ -25,8 +40,14 @@ def get_trading_decisions(strategy: Strategy):
             results_dict,
         )
 
+        data_transformations = DataTransformationQuery.get_transformations_by_strategy(
+            strategy.id
+        )
+
         data_transformations_helper = {
-            "{DATA_TRANSFORMATIONS_FUNC}": strategy.data_transformations_code
+            "{DATA_TRANSFORMATIONS_FUNC}": gen_data_transformations_code(
+                data_transformations
+            )
         }
 
         exec(

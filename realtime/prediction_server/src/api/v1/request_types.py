@@ -1,11 +1,10 @@
 from typing import List, Optional, Any
-from pydantic import BaseModel, Field, field_validator, conint
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
 
 class DataTransformation(BaseModel):
     id: int
-    dataset_id: int
     created_at: datetime
     updated_at: datetime
     transformation_code: str

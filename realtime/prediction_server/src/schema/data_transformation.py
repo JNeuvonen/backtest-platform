@@ -44,7 +44,7 @@ class DataTransformationQuery:
                 session.commit()
 
     @staticmethod
-    def get_transformations_by_strategy(strategy_id: int):
+    def get_transformations_by_strategy(strategy_id):
         with LogExceptionContext():
             with Session() as session:
                 return (
