@@ -1,0 +1,1 @@
+Alembic autogen migration script: `export DATABASE_URI='sqlite:////Users/jarnoneuvonen/Library/Application Support/com.jneuvonen.dev/datasets_util.db' && alembic revision --autogenerate -m "Expand backtest schema with SR and PSR"`
