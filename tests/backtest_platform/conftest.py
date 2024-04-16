@@ -23,6 +23,7 @@ from tests.backtest_platform.t_constants import (
     BinanceData,
     CodePresetId,
     Constants,
+    DatasetDumps,
     DatasetMetadata,
     Size,
 )
@@ -33,6 +34,7 @@ from tests.backtest_platform.t_utils import (
     Post,
     create_model_body,
     t_add_binance_dataset_to_db,
+    t_add_custom_dataset_to_db,
     t_generate_big_dataframe,
 )
 
@@ -114,6 +116,16 @@ def fixt_add_all_downloaded_datasets():
         t_add_binance_dataset_to_db(dataset)
 
     return binance_datasets
+
+
+@pytest.fixture
+def add_custom_datasets():
+    datasets = [DatasetDumps.TIME_BASED_CLOSE_DOESNT_WORK]
+
+    for dataset in datasets:
+        t_add_custom_dataset_to_db(dataset)
+
+    return datasets
 
 
 @pytest.fixture

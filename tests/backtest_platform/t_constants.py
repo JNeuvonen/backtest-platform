@@ -113,6 +113,17 @@ class BinanceData:
     )
 
 
+class DatasetDumps:
+    TIME_BASED_CLOSE_DOESNT_WORK = DatasetMetadata(
+        FixturePaths.BINANCE.format("btcusdt_1h_dump.csv"),
+        "btcusdt_1h_dump",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
+        "BTCUSDT",
+    )
+
+
 class EnvTestSpeed:
     FAST = "FAST"
     SLOW = "SLOW"

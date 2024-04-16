@@ -159,3 +159,24 @@ def close_short_trade_cond_basic():
     enter_trade_cond.append_line("return tick['open_price'] < 18000")
 
     return enter_trade_cond.get()
+
+
+backtest_time_based_close_is_not_working = {
+    "open_long_trade_cond": "def open_long_trade(tick):\n    return False",
+    "close_long_trade_cond": "def close_long_trade(tick):\n    return False",
+    "open_short_trade_cond": 'def open_short_trade(tick):\n    return tick["RSI_160_MA_200_close_price"] < 2 and tick["RSI_100_MA_720_OBV"] < 10',
+    "close_short_trade_cond": "def close_short_trade(tick):\n    return False\n",
+    "use_short_selling": True,
+    "dataset_id": 5,
+    "name": "",
+    "use_time_based_close": True,
+    "klines_until_close": 24,
+    "trading_fees_perc": 0.1,
+    "slippage_perc": 0.001,
+    "short_fee_hourly": 0.0000165888,
+    "use_stop_loss_based_close": False,
+    "use_profit_based_close": False,
+    "stop_loss_threshold_perc": 1,
+    "take_profit_threshold_perc": 20,
+    "backtest_data_range": [0, 100],
+}
