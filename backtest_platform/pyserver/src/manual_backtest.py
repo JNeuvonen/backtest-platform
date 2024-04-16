@@ -9,9 +9,11 @@ from backtest_utils import (
     turn_short_fee_perc_to_coeff,
 )
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
+from constants import YEAR_IN_MS
 from dataset import read_dataset_to_mem
 from db import get_df_candle_size, ms_to_years
 from log import LogExceptionContext
+from math_utils import calculate_psr, calculate_sr
 from model_backtest import Positions
 from query_backtest import BacktestQuery
 from query_dataset import DatasetQuery
@@ -160,6 +162,16 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
                 "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
                 "use_short_selling": backtestInfo.use_short_selling,
+                "probabilistic_sharpe_ratio": calculate_psr(
+                    [x["percent_result"] / 100 for x in backtest.positions.trades],
+                    sr_star=0,
+                    periods_per_year=round(YEAR_IN_MS / candles_time_delta),
+                ),
+                "sharpe_ratio": calculate_sr(
+                    [x["percent_result"] / 100 for x in backtest.positions.trades],
+                    rf=0,
+                    periods_per_year=round(YEAR_IN_MS / candles_time_delta),
+                ),
             }
         )
 
@@ -260,6 +272,9 @@ class ManualBacktest:
         if self.positions.is_trading_forced_stop is True:
             should_close_long = True
             should_close_short = True
+
+        if self.use_short_selling is False:
+            should_open_short = False
 
         self.tick(
             price,
