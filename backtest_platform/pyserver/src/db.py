@@ -13,7 +13,7 @@ from io import BytesIO
 
 from constants import (
     ALEMBIC_VERSIONS_TAB,
-    ONE_YEAR_IN_MS,
+    YEAR_IN_MS,
     AppConstants,
     CandleSize,
     DomEventChannels,
@@ -459,7 +459,7 @@ def get_df_corr(df, col_1, col_2):
 
 
 def ms_to_years(ms):
-    return ms / ONE_YEAR_IN_MS
+    return ms / YEAR_IN_MS
 
 
 def get_df_candle_size(df, timeseries_col_name, formatted=True):
