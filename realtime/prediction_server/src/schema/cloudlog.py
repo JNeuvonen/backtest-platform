@@ -111,17 +111,13 @@ def slack_log(msg: str, source_program: int, level: str):
     thread.start()
 
 
-def create_log(msg: str, level: str, slack_bot=None):
-    if slack_bot is not None:
-        slack_webhook = SlackWebhookQuery.get_webhook_by_name(slack_bot)
-
-        if slack_webhook is not None:
-            slack_log(msg, LogSourceProgram.PRED_SERVER, level)
-
-    CloudLogQuery.create_log_entry(
+def create_log(msg: str, level: str, source_program=LogSourceProgram.PRED_SERVER):
+    slack_log(msg, source_program, level)
+    id = CloudLogQuery.create_log_entry(
         {
             "message": msg,
             "level": level,
             "source_program": LogSourceProgram.PRED_SERVER,
         }
     )
+    return id
