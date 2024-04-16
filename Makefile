@@ -18,6 +18,13 @@ loc:
 dev-pred-server:
 	./scripts/dev_prediction_server.sh
 
+dev-pred-serv:
+	./scripts/dev_prediction_server.sh
+
+dev-pred-service:
+	./scripts/dev_prediction_server.sh
+
+
 test-pred-server:
 	./scripts/test_prediction_server.sh
 
