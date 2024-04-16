@@ -39,13 +39,21 @@ def add_object_to_add_cols_payload(payload_arr, table_name, cols):
     payload_arr.append({"table_name": table_name, "columns": cols})
 
 
-def read_csv_to_df(path):
-    return pd.read_csv(append_app_data_path(path))
+def read_csv_to_df(path, header=False):
+    return pd.read_csv(append_app_data_path(path), header=0 if header else None)
 
 
 def t_add_binance_dataset_to_db(dataset: DatasetMetadata):
     df = read_csv_to_df(dataset.path)
     df.columns = BINANCE_DATA_COLS
+    add_to_datasets_db(df, dataset.name)
+    DatasetQuery.create_dataset_entry(
+        dataset.name, dataset.timeseries_col, dataset.target_col, dataset.price_col
+    )
+
+
+def t_add_custom_dataset_to_db(dataset: DatasetMetadata):
+    df = read_csv_to_df(dataset.path, header=True)
     add_to_datasets_db(df, dataset.name)
     DatasetQuery.create_dataset_entry(
         dataset.name, dataset.timeseries_col, dataset.target_col, dataset.price_col

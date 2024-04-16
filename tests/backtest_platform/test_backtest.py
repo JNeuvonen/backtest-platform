@@ -8,6 +8,9 @@ from tests.backtest_platform.fixtures import (
     open_short_trade_cond_basic,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
+from tests.backtest_platform.fixtures import (
+    backtest_time_based_close_is_not_working,
+)
 
 
 @pytest.mark.acceptance
@@ -39,3 +42,11 @@ def test_fetch_backtests(fixt_manual_backtest):
     dataset = Fetch.get_dataset_by_name(fixt_manual_backtest.name)
     backtests = Fetch.get_datasets_manual_backtests(dataset["id"])
     assert len(backtests) == 1, "Backtest wasnt created or fetches succesfully"
+
+
+@pytest.mark.input_dump
+def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
+    dataset = Fetch.get_dataset_by_name("btcusdt_1h_dump")
+    body = backtest_time_based_close_is_not_working
+    body["dataset_id"] = dataset["id"]
+    Post.create_manual_backtest(body)

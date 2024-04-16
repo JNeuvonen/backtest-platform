@@ -9,6 +9,9 @@ post-test-strategy:
 dev-platform:
 	./scripts/dev_platform.sh
 
+test-platform:
+	./scripts/test_platform.sh
+
 loc:
 	./scripts/loc.sh
 
