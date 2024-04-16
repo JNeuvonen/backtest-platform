@@ -275,10 +275,10 @@ class ManualBacktest:
 
     def update_data(self, price: float, kline_open_time: int):
         if self.positions.position > 0.0 or self.positions.short_debt > 0.0:
+            self.pos_open_klines += 1
             self.positions_held_time += self.candles_time_delta
 
         self.positions.update_balance(price, 0, kline_open_time)
-        self.pos_open_klines += 1
         self.cumulative_time += self.candles_time_delta
 
     def tick(
