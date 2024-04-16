@@ -1,8 +1,7 @@
-from logging import info
 import threading
 import requests
 
-from src.constants import LogLevel
+from constants import LogLevel
 
 
 def post_slack_message(uri, message, message_type=None):
