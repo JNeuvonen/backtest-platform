@@ -16,3 +16,12 @@ def calculate_psr(returns, rf=0, sr_star=0, periods_per_year=365):
     denominator = np.sqrt(1 - skewness * SR + ((kurtosis - 1) / 4) * SR**2)
     psr = norm.cdf(numerator / denominator)
     return psr
+
+
+def calculate_sr(returns, rf=0, periods_per_year=365):
+    mean_return = np.mean(returns)
+    std_dev = np.std(returns)
+    annualized_return = mean_return * periods_per_year
+    annualized_std = std_dev * np.sqrt(periods_per_year)
+    SR = (annualized_return - rf) / annualized_std
+    return SR
