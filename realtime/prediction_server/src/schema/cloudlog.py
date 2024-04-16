@@ -1,11 +1,12 @@
+import threading
 from typing import Dict
 from sqlalchemy import Column, DateTime, Integer, String, func
 from orm import Base, Session
 
 from datetime import datetime, timedelta
 
-from constants import LogSourceProgram, SlackWebhooks
-from slack import post_message
+from constants import LogLevel, LogSourceProgram, SlackWebhooks
+from slack import post_slack_message
 from schema.slack_bots import SlackWebhookQuery
 
 
@@ -72,11 +73,50 @@ class CloudLogQuery:
             )
 
 
-def create_log(msg: str, level: str):
-    slack_webhook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.OPS_LOG_BOT)
+def slack_log(msg: str, source_program: int, level: str):
+    def func_helper():
+        if LogSourceProgram.PRED_SERVER == source_program:
+            all_channel_hook = SlackWebhookQuery.get_webhook_by_name(
+                SlackWebhooks.PRED_SERV_ALL
+            )
 
-    if slack_webhook is not None:
-        post_message(slack_webhook.webhook_uri, msg)
+            if LogLevel.EXCEPTION == level:
+                exception_channel_hook = SlackWebhookQuery.get_webhook_by_name(
+                    SlackWebhooks.PRED_SERV_EXCEPTIONS
+                )
+
+                if exception_channel_hook is not None:
+                    post_slack_message(exception_channel_hook.webhook_uri, msg)
+
+            if all_channel_hook is not None:
+                post_slack_message(all_channel_hook.webhook_uri, msg)
+
+        if LogSourceProgram.TRADING_CLIENT == source_program:
+            all_channel_hook = SlackWebhookQuery.get_webhook_by_name(
+                SlackWebhooks.TRADE_CLIENT_ALL
+            )
+
+            if LogLevel.EXCEPTION == level:
+                exception_channel_hook = SlackWebhookQuery.get_webhook_by_name(
+                    SlackWebhooks.TRADE_CLIENT_EXCEPTIONS
+                )
+
+                if exception_channel_hook is not None:
+                    post_slack_message(exception_channel_hook.webhook_uri, msg)
+
+            if all_channel_hook is not None:
+                post_slack_message(all_channel_hook.webhook_uri, msg)
+
+    thread = threading.Thread(target=func_helper)
+    thread.start()
+
+
+def create_log(msg: str, level: str, slack_bot=None):
+    if slack_bot is not None:
+        slack_webhook = SlackWebhookQuery.get_webhook_by_name(slack_bot)
+
+        if slack_webhook is not None:
+            slack_log(msg, LogSourceProgram.PRED_SERVER, level)
 
     CloudLogQuery.create_log_entry(
         {

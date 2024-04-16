@@ -1,12 +1,39 @@
-import requests
+from logging import info
 import threading
+import requests
+
+from src.constants import LogLevel
 
 
-def post_message(uri, message):
+def post_slack_message(uri, message, message_type=None):
+    if uri is None or message is None:
+        return
+
     def send_request():
         try:
             headers = {"Content-Type": "application/json"}
-            payload = {"text": message}
+            # Adjust the payload according to the message type
+            if LogLevel.EXCEPTION == message_type:
+                payload = {
+                    "blocks": [
+                        {
+                            "type": "section",
+                            "text": {"type": "mrkdwn", "text": "*Error*: " + message},
+                        }
+                    ]
+                }
+            elif LogLevel.INFO == message_type:
+                payload = {
+                    "blocks": [
+                        {
+                            "type": "section",
+                            "text": {"type": "mrkdwn", "text": "*Info*: " + message},
+                        }
+                    ]
+                }
+            else:
+                payload = {"text": message}
+
             requests.post(uri, json=payload, headers=headers)
         except Exception as e:
             print(f"Failed to send request: {e}")
