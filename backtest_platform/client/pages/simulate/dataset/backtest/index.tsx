@@ -12,8 +12,10 @@ import { ChakraSlider } from "../../../../components/chakra/Slider";
 import { TradingCriteriaCard } from "./TradingCriteriaCard";
 import { BacktestSummaryCard } from "./SummaryCard";
 import { GrDeploy } from "react-icons/gr";
-import { useBacktestContext } from "../../../../context/backtest";
 import { DeployStrategyForm } from "./DeployStrategyForm";
+import { BUTTON_VARIANTS } from "../../../../theme";
+import { MdScience } from "react-icons/md";
+import { useBacktestContext } from "../../../../context/backtest";
 
 interface PathParams {
   datasetName: string;
@@ -131,6 +133,7 @@ export const DatasetBacktestPage = () => {
   const { backtestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(backtestId));
   const deployStrategyDrawer = useDisclosure();
+  const backtestContext = useBacktestContext();
 
   const [tradeFilterPerc, setTradeFilterPerc] = useState(0);
 
@@ -155,9 +158,22 @@ export const DatasetBacktestPage = () => {
           }}
         >
           <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
-          <Button leftIcon={<GrDeploy />} onClick={deployStrategyDrawer.onOpen}>
-            Deploy
-          </Button>
+
+          <div style={{ display: "flex", gap: "8px" }}>
+            <Button
+              leftIcon={<MdScience />}
+              onClick={backtestContext.runBacktestOnManyPairsModal.onOpen}
+              variant={BUTTON_VARIANTS.grey2}
+            >
+              Run on many pairs
+            </Button>
+            <Button
+              leftIcon={<GrDeploy />}
+              onClick={deployStrategyDrawer.onOpen}
+            >
+              Deploy
+            </Button>
+          </div>
         </div>
         <BacktestSummaryCard backtest={backtest} />
         <Heading size={"md"} marginTop={"16px"}>
