@@ -201,3 +201,23 @@ backtest_psr_debug = {
     "take_profit_threshold_perc": 2,
     "backtest_data_range": [0, 100],
 }
+
+backtest_div_by_zero_bug = {
+    "open_long_trade_cond": 'def open_long_trade(tick):\n    return tick["RSI_160_MA_200_close_price"] == 100 and tick["RSI_50_MA_720_OBV"] == 100\n',
+    "close_long_trade_cond": 'def close_long_trade(tick):\n    return tick["RSI_160_MA_200_close_price"] != 100 or tick["RSI_50_MA_720_OBV"] != 100',
+    "open_short_trade_cond": "def open_short_trade(tick):\n    return True\n",
+    "close_short_trade_cond": "def close_short_trade(tick):\n    return False",
+    "use_short_selling": False,
+    "dataset_id": 5,
+    "name": "TEST",
+    "use_time_based_close": False,
+    "klines_until_close": 24,
+    "trading_fees_perc": 0.1,
+    "slippage_perc": 0.001,
+    "short_fee_hourly": 0.0000165888,
+    "use_stop_loss_based_close": False,
+    "use_profit_based_close": False,
+    "stop_loss_threshold_perc": 2,
+    "take_profit_threshold_perc": 2,
+    "backtest_data_range": [0, 100],
+}
