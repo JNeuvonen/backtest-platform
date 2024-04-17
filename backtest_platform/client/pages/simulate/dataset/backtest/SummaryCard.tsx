@@ -94,6 +94,31 @@ export const BacktestSummaryCard = (props: Props) => {
               </StatNumber>
             </Stat>
           </div>
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>PSR 0</StatLabel>
+              <StatNumber>
+                {backtest.profit_factor
+                  ? String(
+                      roundNumberDropRemaining(
+                        backtest.probabilistic_sharpe_ratio * 100,
+                        2
+                      ) + "%"
+                    )
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Sharpe ratio</StatLabel>
+              <StatNumber>
+                {backtest.profit_factor
+                  ? String(roundNumberDropRemaining(backtest.sharpe_ratio, 2))
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
         </div>
       </ChakraCard>
     </div>
