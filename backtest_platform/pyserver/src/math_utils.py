@@ -25,3 +25,15 @@ def calculate_sr(returns, rf=0, periods_per_year=365):
     annualized_std = std_dev * np.sqrt(periods_per_year)
     SR = (annualized_return - rf) / annualized_std
     return SR
+
+
+def calculate_avg_trade_hold_time_ms(trades):
+    if len(trades) == 0:
+        return 0
+
+    cumulative_time_ms = 0
+
+    for item in trades:
+        cumulative_time_ms += item["close_time"] - item["open_time"]
+
+    return cumulative_time_ms / len(trades)
