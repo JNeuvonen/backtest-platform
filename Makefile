@@ -32,8 +32,8 @@ dev-trading-client:
 	./scripts/dev_trading_client.sh
 
 build-trading-client-container:
-	docker build -t jneuv/trading_client:latest -f ./deploy/Dockerfile.trading_client \
+	docker buildx build --platform linux/amd64 -t jneuv/trading_client:latest -f ./deploy/Dockerfile.trading_client \
   --build-arg PREDICTION_SERVICE_API_KEY=$(PREDICTION_SERVICE_API_KEY) \
   --build-arg API_KEY=${API_KEY} \
-  --build-arg API_SECRET=${API_SECRET} .
+  --build-arg API_SECRET=${API_SECRET} . --load
 
