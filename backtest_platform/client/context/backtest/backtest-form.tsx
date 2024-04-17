@@ -6,8 +6,6 @@ import {
   CREATE_COLUMNS_DEFAULT,
   ENTER_TRADE_DEFAULT,
   EXIT_LONG_TRADE_DEFAULT,
-  EXIT_SHORT_TRADE_DEFAULT,
-  EXIT_TRADE_DEFAULT,
 } from "../../utils/code";
 import {
   createManualBacktest,
@@ -48,12 +46,28 @@ type PathParams = {
   datasetName: string;
 };
 
+const formKeys = {
+  backtestName: "backtestName",
+  openTradeCode: "openTradeCode",
+  closeTradeCode: "closeTradeCode",
+  useShorts: "useShorts",
+  openShortTradeCode: "openShortTradeCode",
+  useTimeBasedClose: "useTimeBasedClose",
+  klinesUntilClose: "klinesUntilClose",
+  useProfitBasedClose: "useProfitBasedClose",
+  takeProfitThresholdPerc: "take_profit_threshold_perc",
+  useStopLossBasedClose: "useStopLossBasedClose",
+  stopLossThresholdPerc: "stopLossThresholdPerc",
+  tradingFees: "tradingFees",
+  slippage: "slippage",
+  shortFeeHourly: "shortFeeHourly",
+  backtestDataRange: "backtestDataRange",
+};
+
 export interface BacktestFormValues {
   backtestName: string;
-  openLongTradeCode: string;
-  closeLongTradeCode: string;
-  openShortTradeCode: string;
-  closeShortTradeCode: string;
+  closeTradeCode: string;
+  openTradeCode: string;
   useShorts: boolean;
   useTimeBasedClose: boolean;
   useProfitBasedClose: boolean;
@@ -74,10 +88,8 @@ const getFormInitialValues = () => {
   if (prevForm === null) {
     return {
       backtestName: "",
-      openLongTradeCode: ENTER_TRADE_DEFAULT(),
-      closeLongTradeCode: EXIT_LONG_TRADE_DEFAULT(),
-      openShortTradeCode: EXIT_TRADE_DEFAULT(),
-      closeShortTradeCode: EXIT_SHORT_TRADE_DEFAULT(),
+      openTradeCode: ENTER_TRADE_DEFAULT(),
+      closeTradeCode: EXIT_LONG_TRADE_DEFAULT(),
       useShorts: false,
       useTimeBasedClose: false,
       useProfitBasedClose: false,
@@ -122,11 +134,9 @@ export const BacktestForm = () => {
     if (!dataset) return;
 
     const res = await createManualBacktest({
-      open_long_trade_cond: values.openLongTradeCode,
-      close_long_trade_cond: values.closeLongTradeCode,
-      open_short_trade_cond: values.openShortTradeCode,
-      close_short_trade_cond: values.closeShortTradeCode,
-      use_short_selling: values.useShorts,
+      open_trade_cond: values.openTradeCode,
+      close_trade_cond: values.closeTradeCode,
+      is_short_selling_strategy: values.useShorts,
       dataset_id: dataset.id,
       name: values.backtestName,
       use_time_based_close: values.useTimeBasedClose,
@@ -298,14 +308,14 @@ export const BacktestForm = () => {
           >
             {({ values }) => (
               <Form>
-                <Field name="backtestName">
+                <Field name={formKeys.backtestName}>
                   {({ form }) => {
                     return (
                       <WithLabel>
                         <ChakraInput
                           label="Name (optional)"
                           onChange={(value: string) =>
-                            form.setFieldValue("backtestName", value)
+                            form.setFieldValue(formKeys.backtestName, value)
                           }
                         />
                       </WithLabel>
@@ -313,13 +323,13 @@ export const BacktestForm = () => {
                   }}
                 </Field>
                 <div>
-                  <Field name="openLongTradeCode">
+                  <Field name={formKeys.openTradeCode}>
                     {({ field, form }) => {
                       return (
                         <CodeEditor
                           code={field.value}
                           setCode={(newState) =>
-                            form.setFieldValue("openLongTradeCode", newState)
+                            form.setFieldValue(formKeys.openTradeCode, newState)
                           }
                           style={{ marginTop: "16px" }}
                           fontSize={13}
@@ -336,17 +346,20 @@ export const BacktestForm = () => {
                 </div>
 
                 <div>
-                  <Field name="closeLongTradeCode">
+                  <Field name={formKeys.closeTradeCode}>
                     {({ field, form }) => {
                       return (
                         <CodeEditor
                           code={field.value}
                           setCode={(newState) =>
-                            form.setFieldValue("closeLongTradeCode", newState)
+                            form.setFieldValue(
+                              formKeys.closeTradeCode,
+                              newState
+                            )
                           }
                           style={{ marginTop: "16px" }}
                           fontSize={13}
-                          label="Close long condition"
+                          label={formKeys.closeTradeCode}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
@@ -359,14 +372,17 @@ export const BacktestForm = () => {
                 </div>
 
                 <div style={{ marginTop: "16px" }}>
-                  <Field name="useShorts">
+                  <Field name={formKeys.useShorts}>
                     {({ field, form }) => {
                       return (
-                        <WithLabel label={"Use short selling"}>
+                        <WithLabel label={"Is short selling strategy"}>
                           <Switch
                             isChecked={field.value}
                             onChange={() =>
-                              form.setFieldValue("useShorts", !field.value)
+                              form.setFieldValue(
+                                formKeys.useShorts,
+                                !field.value
+                              )
                             }
                           />
                         </WithLabel>
@@ -375,55 +391,8 @@ export const BacktestForm = () => {
                   </Field>
                 </div>
 
-                {values.useShorts && (
-                  <div style={{ marginTop: "16px" }}>
-                    <Field name="openShortTradeCode">
-                      {({ field, form }) => {
-                        return (
-                          <CodeEditor
-                            code={field.value}
-                            setCode={(newState) =>
-                              form.setFieldValue("openShortTradeCode", newState)
-                            }
-                            style={{ marginTop: "16px" }}
-                            fontSize={13}
-                            label="Short condition"
-                            codeContainerStyles={{ width: "100%" }}
-                            height={"250px"}
-                          />
-                        );
-                      }}
-                    </Field>
-                  </div>
-                )}
-
-                {values.useShorts && (
-                  <div style={{ marginTop: "16px" }}>
-                    <Field name="closeShortTradeCode">
-                      {({ field, form }) => {
-                        return (
-                          <CodeEditor
-                            code={field.value}
-                            setCode={(newState) =>
-                              form.setFieldValue(
-                                "closeShortTradeCode",
-                                newState
-                              )
-                            }
-                            style={{ marginTop: "16px" }}
-                            fontSize={13}
-                            label="Close short condition"
-                            codeContainerStyles={{ width: "100%" }}
-                            height={"250px"}
-                          />
-                        );
-                      }}
-                    </Field>
-                  </div>
-                )}
-
                 <div style={{ marginTop: "16px" }}>
-                  <Field name="useTimeBasedClose">
+                  <Field name={formKeys.useTimeBasedClose}>
                     {({ field, form }) => {
                       return (
                         <WithLabel label={"Use time based closing strategy"}>
@@ -431,7 +400,7 @@ export const BacktestForm = () => {
                             isChecked={field.value}
                             onChange={() =>
                               form.setFieldValue(
-                                "useTimeBasedClose",
+                                formKeys.useTimeBasedClose,
                                 !field.value
                               )
                             }
@@ -443,7 +412,7 @@ export const BacktestForm = () => {
                 </div>
 
                 {values.useTimeBasedClose && (
-                  <Field name="klinesUntilClose">
+                  <Field name={formKeys.klinesUntilClose}>
                     {({ field, form }) => {
                       return (
                         <WithLabel
@@ -459,7 +428,7 @@ export const BacktestForm = () => {
                             value={field.value}
                             onChange={(valueString) =>
                               form.setFieldValue(
-                                "klinesUntilClose",
+                                formKeys.klinesUntilClose,
                                 parseInt(valueString)
                               )
                             }
@@ -473,7 +442,7 @@ export const BacktestForm = () => {
                 )}
 
                 <div style={{ marginTop: "16px" }}>
-                  <Field name="useProfitBasedClose">
+                  <Field name={formKeys.useProfitBasedClose}>
                     {({ field, form }) => {
                       return (
                         <WithLabel label={"Use profit based close"}>
@@ -481,7 +450,7 @@ export const BacktestForm = () => {
                             isChecked={field.value}
                             onChange={() =>
                               form.setFieldValue(
-                                "useProfitBasedClose",
+                                formKeys.useProfitBasedClose,
                                 !field.value
                               )
                             }
@@ -493,7 +462,7 @@ export const BacktestForm = () => {
                 </div>
 
                 {values.useProfitBasedClose && (
-                  <Field name="takeProfitThresholdPerc">
+                  <Field name={formKeys.takeProfitThresholdPerc}>
                     {({ field, form }) => {
                       return (
                         <WithLabel
@@ -509,7 +478,7 @@ export const BacktestForm = () => {
                             value={field.value}
                             onChange={(valueString) =>
                               form.setFieldValue(
-                                "takeProfitThresholdPerc",
+                                formKeys.takeProfitThresholdPerc,
                                 parseInt(valueString)
                               )
                             }
@@ -523,7 +492,7 @@ export const BacktestForm = () => {
                 )}
 
                 <div style={{ marginTop: "16px" }}>
-                  <Field name="useStopLossBasedClose">
+                  <Field name={formKeys.useStopLossBasedClose}>
                     {({ field, form }) => {
                       return (
                         <WithLabel label={"Use stop loss based close"}>
@@ -531,7 +500,7 @@ export const BacktestForm = () => {
                             isChecked={field.value}
                             onChange={() =>
                               form.setFieldValue(
-                                "useStopLossBasedClose",
+                                formKeys.useStopLossBasedClose,
                                 !field.value
                               )
                             }
@@ -543,7 +512,7 @@ export const BacktestForm = () => {
                 </div>
 
                 {values.useStopLossBasedClose && (
-                  <Field name="stopLossThresholdPerc">
+                  <Field name={formKeys.stopLossThresholdPerc}>
                     {({ field, form }) => {
                       return (
                         <WithLabel
@@ -559,7 +528,7 @@ export const BacktestForm = () => {
                             value={field.value}
                             onChange={(valueString) =>
                               form.setFieldValue(
-                                "stopLossThresholdPerc",
+                                formKeys.stopLossThresholdPerc,
                                 parseInt(valueString)
                               )
                             }
@@ -575,7 +544,7 @@ export const BacktestForm = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "16px" }}
                 >
-                  <Field name="tradingFees">
+                  <Field name={formKeys.tradingFees}>
                     {({ field, form }) => {
                       return (
                         <WithLabel
@@ -592,7 +561,7 @@ export const BacktestForm = () => {
                             precision={3}
                             onChange={(valueString) =>
                               form.setFieldValue(
-                                "tradingFees",
+                                formKeys.tradingFees,
                                 parseFloat(valueString)
                               )
                             }
@@ -608,7 +577,7 @@ export const BacktestForm = () => {
                     }}
                   </Field>
 
-                  <Field name="slippage">
+                  <Field name={formKeys.slippage}>
                     {({ field, form }) => {
                       return (
                         <WithLabel
@@ -625,7 +594,7 @@ export const BacktestForm = () => {
                             precision={4}
                             onChange={(valueString) =>
                               form.setFieldValue(
-                                "slippage",
+                                formKeys.slippage,
                                 parseFloat(valueString)
                               )
                             }
@@ -642,7 +611,7 @@ export const BacktestForm = () => {
                   </Field>
 
                   {values.useShorts && (
-                    <Field name="shortFeeHourly">
+                    <Field name={formKeys.shortFeeHourly}>
                       {({ field, form }) => {
                         return (
                           <WithLabel
@@ -659,7 +628,7 @@ export const BacktestForm = () => {
                               precision={6}
                               onChange={(valueString) =>
                                 form.setFieldValue(
-                                  "shortFeeHourly",
+                                  formKeys.shortFeeHourly,
                                   parseFloat(valueString)
                                 )
                               }
@@ -678,14 +647,17 @@ export const BacktestForm = () => {
                 </div>
                 <div style={{ marginTop: "16px" }}>
                   <div style={{ width: "400px" }}>
-                    <Field name="backtestDataRange">
+                    <Field name={formKeys.backtestDataRange}>
                       {({ field, form }) => {
                         return (
                           <ValidationSplitSlider
                             sliderValue={field.value}
                             formLabelText="Backtest data range (%)"
                             setSliderValue={(newVal: number[]) =>
-                              form.setFieldValue("backtestDataRange", newVal)
+                              form.setFieldValue(
+                                formKeys.backtestDataRange,
+                                newVal
+                              )
                             }
                           />
                         );
