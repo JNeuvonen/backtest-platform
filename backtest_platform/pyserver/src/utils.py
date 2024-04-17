@@ -163,3 +163,13 @@ def replace_infinities(dct):
         if isinstance(v, (float, int)) and math.isinf(v):
             dct[k] = 0
     return dct
+
+
+def is_string(var):
+    return isinstance(var, str)
+
+
+def get_binance_dataset_tablename(symbol: str, interval: str):
+    interval = "1mo" if interval == "1M" else interval
+    table_name = symbol.lower() + "_" + interval
+    return table_name

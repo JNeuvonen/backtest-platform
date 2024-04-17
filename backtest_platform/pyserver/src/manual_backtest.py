@@ -1,6 +1,8 @@
 import json
+import logging
 import math
 from typing import Dict, List
+from api_binance import save_historical_klines
 from backtest_utils import (
     find_max_drawdown,
     get_backtest_profit_factor_comp,
@@ -9,19 +11,86 @@ from backtest_utils import (
     turn_short_fee_perc_to_coeff,
 )
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
-from constants import YEAR_IN_MS
+from constants import YEAR_IN_MS, DomEventChannels
 from dataset import read_dataset_to_mem
-from db import get_df_candle_size, ms_to_years
-from log import LogExceptionContext
+from db import exec_python, get_df_candle_size, ms_to_years
+from log import LogExceptionContext, get_logger
 from math_utils import calculate_avg_trade_hold_time_ms, calculate_psr, calculate_sr
 from model_backtest import Positions
-from query_backtest import BacktestQuery
+from query_backtest import Backtest, BacktestQuery
+from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from query_trade import TradeQuery
-from request_types import BodyCreateManualBacktest
+from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
+from utils import PythonCode, get_binance_dataset_tablename, is_string
 
 
 START_BALANCE = 10000
+
+
+async def run_rule_based_mass_backtest(
+    mass_backtest_id: int,
+    body: BodyCreateMassBacktest,
+    interval,
+    original_backtest: Backtest,
+):
+    logger = get_logger()
+    n_symbols = len(body.symbols)
+    curr_iter = 1
+
+    original_dataset = DatasetQuery.fetch_dataset_by_id(original_backtest.dataset_id)
+    data_transformations = DataTransformationQuery.get_transformations_by_dataset(
+        original_dataset.id
+    )
+
+    for symbol in body.symbols:
+        await save_historical_klines(symbol, interval, False)
+
+        table_name = get_binance_dataset_tablename(symbol, interval)
+        symbols_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+
+        for transformation in data_transformations:
+            python_program = PythonCode.on_dataset(table_name, transformation)
+            exec_python(python_program)
+            DataTransformationQuery.create_entry(
+                {
+                    "transformation_code": transformation,
+                    "dataset_id": symbols_dataset.id,
+                }
+            )
+
+        backtest_body = {
+            "backtest_data_range": [
+                original_backtest.backtest_range_start,
+                original_backtest.backtest_range_end,
+            ],
+            "open_trade_cond": original_backtest.open_trade_cond,
+            "close_trade_cond": original_backtest.close_trade_cond,
+            "is_short_selling_strategy": original_backtest.is_short_selling_strategy,
+            "use_time_based_close": original_backtest.use_time_based_close,
+            "use_profit_based_close": original_backtest.use_profit_based_close,
+            "use_stop_loss_based_close": original_backtest.use_stop_loss_based_close,
+            "dataset_id": symbols_dataset.id,
+            "trading_fees_perc": original_backtest.trading_fees_perc,
+            "slippage_perc": original_backtest.slippage_perc,
+            "short_fee_hourly": original_backtest.short_fee_hourly,
+            "take_profit_threshold_perc": original_backtest.take_profit_threshold_perc,
+            "stop_loss_threshold_perc": original_backtest.stop_loss_threshold_perc,
+            "name": original_backtest.name,
+            "klines_until_close": original_backtest.klines_until_close,
+            "mass_backtest_id": mass_backtest_id,
+        }
+
+        run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
+
+        logger.log(
+            f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
+            logging.INFO,
+            True,
+            True,
+            DomEventChannels.REFETCH_COMPONENT.value,
+        )
+        curr_iter += 1
 
 
 def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
@@ -136,6 +205,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "share_of_losing_trades_perc": share_of_losing_trades_perc,
                 "best_trade_result_perc": best_trade_result_perc,
                 "worst_trade_result_perc": worst_trade_result_perc,
+                "backtest_range_start": backtest_data_range_start,
+                "backtest_range_end": backtest_data_range_end,
                 "kline_time_delta_ms": candles_time_delta,
                 "buy_and_hold_result_net": (
                     (asset_closing_price / asset_starting_price * START_BALANCE)
@@ -161,6 +232,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
                 "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
                 "is_short_selling_strategy": backtestInfo.is_short_selling_strategy,
+                "slippage_perc": backtestInfo.slippage_perc,
                 "probabilistic_sharpe_ratio": calculate_psr(
                     [x["percent_result"] / 100 for x in backtest.positions.trades],
                     sr_star=0,
@@ -181,6 +253,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                     if len(backtest.positions.trades) != 0
                     else 0,
                 ),
+                "short_fee_hourly": backtestInfo.short_fee_hourly,
             }
         )
 

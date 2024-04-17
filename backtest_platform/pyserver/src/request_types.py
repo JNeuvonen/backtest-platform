@@ -74,7 +74,13 @@ class BodyCreateManualBacktest(BaseModel):
     stop_loss_threshold_perc: float
     name: Optional[str] = None
     klines_until_close: Optional[int] = None
+    mass_backtest_id: Optional[str] = None
 
 
 class BodyDeleteManyBacktestsById:
     list_of_ids: List[int]
+
+
+class BodyCreateMassBacktest(BaseModel):
+    symbols: List[str]
+    original_backtest_id: int
