@@ -2,7 +2,13 @@ import React from "react";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useBacktestContext } from ".";
 import { Field, Form, Formik } from "formik";
-import { FormControl, FormLabel, Select, Spinner } from "@chakra-ui/react";
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Select,
+  Spinner,
+} from "@chakra-ui/react";
 import {
   OptionType,
   SelectWithTextFilter,
@@ -14,7 +20,6 @@ import { GET_KLINE_OPTIONS } from "../../utils/constants";
 
 const formKeys = {
   pairs: "pairs",
-  interval: "interval",
 };
 
 const getFormInitialValues = () => {
@@ -59,7 +64,7 @@ export const BacktestOnManyPairs = () => {
             <Form>
               <FormControl>
                 <FormLabel fontSize={"x-large"}>
-                  Pairs to be downloaded
+                  Select pairs for mass sim
                 </FormLabel>
                 <Field
                   name={formKeys.pairs}
@@ -74,16 +79,10 @@ export const BacktestOnManyPairs = () => {
                   closeMenuOnSelect={false}
                 />
               </FormControl>
-              <FormControl marginTop={"8px"}>
-                <FormLabel fontSize={"x-large"}>Candle interval</FormLabel>
-                <Field name={formKeys.interval} as={Select}>
-                  {GET_KLINE_OPTIONS().map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </Field>
-              </FormControl>
+
+              <Button type="submit" marginTop={"16px"}>
+                Submit
+              </Button>
             </Form>
           );
         }}
