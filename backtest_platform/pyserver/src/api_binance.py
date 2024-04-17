@@ -8,6 +8,7 @@ from constants import BINANCE_DATA_COLS, AppConstants, DomEventChannels
 from db import create_connection
 from log import LogExceptionContext, get_logger
 from query_dataset import DatasetQuery
+from utils import get_binance_dataset_tablename
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
@@ -39,14 +40,12 @@ async def get_historical_klines(symbol, interval):
     return df
 
 
-async def save_historical_klines(symbol, interval):
+async def save_historical_klines(symbol, interval, send_msg_to_fe=True):
     with LogExceptionContext(notification_duration=60000):
         logger = get_logger()
         datasets_conn = create_connection(AppConstants.DB_DATASETS)
         klines = await get_historical_klines(symbol, interval)
-        interval = "1mo" if interval == "1M" else interval
-
-        table_name = symbol.lower() + "_" + interval
+        table_name = get_binance_dataset_tablename(symbol, interval)
 
         table_exists_query = (
             f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
@@ -59,13 +58,15 @@ async def save_historical_klines(symbol, interval):
 
         klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
         DatasetQuery.create_dataset_entry(table_name, "kline_open_time")
-        logger.log(
-            f"Downloaded klines on {symbol} with {interval} interval",
-            logging.INFO,
-            True,
-            True,
-            DomEventChannels.REFETCH_ALL_DATASETS.value,
-        )
+
+        if send_msg_to_fe is True:
+            logger.log(
+                f"Downloaded klines on {symbol} with {interval} interval",
+                logging.INFO,
+                True,
+                True,
+                DomEventChannels.REFETCH_ALL_DATASETS.value,
+            )
 
 
 def get_all_tickers():
