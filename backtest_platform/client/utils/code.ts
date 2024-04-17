@@ -3,7 +3,7 @@ import { CodeHelper } from "./constants";
 export const ENTER_TRADE_DEFAULT = () => {
   const code = new CodeHelper();
 
-  code.appendLine("def open_long_trade(tick):");
+  code.appendLine("def get_enter_trade_decision(tick):");
   code.addIndent();
   code.appendLine("return True");
   return code.get();
@@ -12,7 +12,7 @@ export const ENTER_TRADE_DEFAULT = () => {
 export const EXIT_LONG_TRADE_DEFAULT = () => {
   const code = new CodeHelper();
 
-  code.appendLine("def close_long_trade(tick):");
+  code.appendLine("def get_exit_trade_decision(tick):");
   code.addIndent();
   code.appendLine("return True");
   return code.get();
