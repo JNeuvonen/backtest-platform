@@ -210,6 +210,8 @@ export interface BacktestObject {
   market_exposure_time: number;
   risk_adjusted_return: number;
   buy_and_hold_cagr: number;
+  sharpe_ratio: number;
+  probabilistic_sharpe_ratio: number;
 }
 
 export interface Trade {
