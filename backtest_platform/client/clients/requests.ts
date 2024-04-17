@@ -279,12 +279,10 @@ interface CreateManualBacktest {
   name?: string;
   use_profit_based_close: boolean;
   use_stop_loss_based_close: boolean;
-  use_short_selling: boolean;
+  is_short_selling_strategy: boolean;
   use_time_based_close: boolean;
-  open_long_trade_cond: string;
-  close_long_trade_cond: string;
-  open_short_trade_cond: string;
-  close_short_trade_cond: string;
+  open_trade_cond: string;
+  close_trade_cond: string;
   dataset_id: number;
   trading_fees_perc: number;
   slippage_perc: number;

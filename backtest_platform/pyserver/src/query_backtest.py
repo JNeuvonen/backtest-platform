@@ -22,6 +22,11 @@ class Backtest(Base):
     close_long_trade_cond = Column(String)
     close_short_trade_cond = Column(String)
 
+    open_trade_cond = Column(String)
+    close_trade_cond = Column(String)
+
+    is_short_selling_strategy = Column(Boolean)
+
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)
     use_stop_loss_based_close = Column(Boolean)
@@ -29,6 +34,7 @@ class Backtest(Base):
 
     klines_until_close = Column(Integer)
     trade_count = Column(Integer)
+
     backtest_range_start = Column(Integer)
     backtest_range_end = Column(Integer)
 
