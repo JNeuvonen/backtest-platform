@@ -13,7 +13,7 @@ from constants import YEAR_IN_MS
 from dataset import read_dataset_to_mem
 from db import get_df_candle_size, ms_to_years
 from log import LogExceptionContext
-from math_utils import calculate_psr, calculate_sr
+from math_utils import calculate_avg_trade_hold_time_ms, calculate_psr, calculate_sr
 from model_backtest import Positions
 from query_backtest import BacktestQuery
 from query_dataset import DatasetQuery
@@ -119,6 +119,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             ms_to_years(backtest.cumulative_time),
         )
 
+        print(end_balance)
+
         backtest_id = BacktestQuery.create_entry(
             {
                 "open_long_trade_cond": backtestInfo.open_long_trade_cond,
@@ -154,7 +156,9 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "max_drawdown_perc": max_drawdown_perc,
                 "cagr": cagr,
                 "market_exposure_time": market_exposure_time,
-                "risk_adjusted_return": cagr / market_exposure_time,
+                "risk_adjusted_return": cagr / market_exposure_time
+                if market_exposure_time != 0
+                else 0,
                 "buy_and_hold_cagr": buy_and_hold_cagr,
                 "use_time_based_close": backtestInfo.use_time_based_close,
                 "use_profit_based_close": backtestInfo.use_profit_based_close,
@@ -165,12 +169,22 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "probabilistic_sharpe_ratio": calculate_psr(
                     [x["percent_result"] / 100 for x in backtest.positions.trades],
                     sr_star=0,
-                    periods_per_year=round(YEAR_IN_MS / candles_time_delta),
+                    periods_per_year=round(
+                        YEAR_IN_MS
+                        / calculate_avg_trade_hold_time_ms(backtest.positions.trades)
+                    )
+                    if len(backtest.positions.trades) != 0
+                    else 0,
                 ),
                 "sharpe_ratio": calculate_sr(
                     [x["percent_result"] / 100 for x in backtest.positions.trades],
                     rf=0,
-                    periods_per_year=round(YEAR_IN_MS / candles_time_delta),
+                    periods_per_year=round(
+                        YEAR_IN_MS
+                        / calculate_avg_trade_hold_time_ms(backtest.positions.trades)
+                    )
+                    if len(backtest.positions.trades) != 0
+                    else 0,
                 ),
             }
         )
