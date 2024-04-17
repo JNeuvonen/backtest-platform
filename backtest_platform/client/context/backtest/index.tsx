@@ -14,7 +14,7 @@ import { ShowColumnsModal } from "./columns-modal";
 import { RunPythonModal } from "./run-python";
 import { FilterBacktestDrawer } from "./filter-backtests";
 import { ConfirmDeleteSelectedModal } from "./confirm-delete";
-import { DeployStrategyForm } from "../../pages/simulate/dataset/backtest/DeployStrategyForm";
+import { BacktestOnManyPairs } from "./run-on-many-pairs";
 
 interface BacktestContextType {
   createNewDrawer: UseDisclosureReturn;
@@ -25,6 +25,7 @@ interface BacktestContextType {
   klineOpenTimePopover: UseDisclosureReturn;
   confirmDeleteSelectedModal: UseDisclosureReturn;
   runPythonModal: UseDisclosureReturn;
+  runBacktestOnManyPairsModal: UseDisclosureReturn;
   onDeleteMode: UseDisclosureReturn;
   datasetBacktestsQuery: UseQueryResult<BacktestObject[] | null, unknown>;
   datasetQuery: UseQueryResult<Dataset | null, unknown>;
@@ -61,6 +62,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
   const priceColumnPopover = useDisclosure();
   const klineOpenTimePopover = useDisclosure();
   const runPythonModal = useDisclosure();
+  const runBacktestOnManyPairsModal = useDisclosure();
   const filterDrawer = useDisclosure();
   const onDeleteMode = useDisclosure();
   const confirmDeleteSelectedModal = useDisclosure();
@@ -101,6 +103,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
         selectBacktest,
         resetSelection,
         confirmDeleteSelectedModal,
+        runBacktestOnManyPairsModal,
       }}
     >
       <BacktestForm />
@@ -108,6 +111,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
       <RunPythonModal />
       <FilterBacktestDrawer />
       <ConfirmDeleteSelectedModal />
+      <BacktestOnManyPairs />
       {children}
     </BacktestContext.Provider>
   );
