@@ -119,6 +119,16 @@ export const BacktestSummaryCard = (props: Props) => {
               </StatNumber>
             </Stat>
           </div>
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Total trade count</StatLabel>
+              <StatNumber>
+                {backtest.profit_factor
+                  ? String(roundNumberDropRemaining(backtest.trade_count, 2))
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
         </div>
       </ChakraCard>
     </div>
