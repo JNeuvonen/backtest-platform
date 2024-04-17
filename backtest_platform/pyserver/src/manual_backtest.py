@@ -34,10 +34,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         )
 
         replacements = {
-            "{OPEN_LONG_TRADE_FUNC}": backtestInfo.open_long_trade_cond,
-            "{OPEN_SHORT_TRADE_FUNC}": backtestInfo.open_short_trade_cond,
-            "{CLOSE_LONG_TRADE_FUNC}": backtestInfo.close_long_trade_cond,
-            "{CLOSE_SHORT_TRADE_FUNC}": backtestInfo.close_short_trade_cond,
+            "{OPEN_TRADE_FUNC}": backtestInfo.open_trade_cond,
+            "{CLOSE_TRADE_FUNC}": backtestInfo.close_trade_cond,
         }
 
         backtest = ManualBacktest(
@@ -46,7 +44,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             backtestInfo.slippage_perc,
             backtestInfo.short_fee_hourly,
             replacements,
-            backtestInfo.use_short_selling,
+            backtestInfo.is_short_selling_strategy,
             backtestInfo.use_time_based_close,
             backtestInfo.use_profit_based_close,
             backtestInfo.use_stop_loss_based_close,
@@ -123,10 +121,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
 
         backtest_id = BacktestQuery.create_entry(
             {
-                "open_long_trade_cond": backtestInfo.open_long_trade_cond,
-                "open_short_trade_cond": backtestInfo.open_short_trade_cond,
-                "close_long_trade_cond": backtestInfo.close_long_trade_cond,
-                "close_short_trade_cond": backtestInfo.close_short_trade_cond,
+                "open_trade_cond": backtestInfo.open_trade_cond,
+                "close_trade_cond": backtestInfo.close_trade_cond,
                 "data": json.dumps(backtest.positions.balance_history),
                 "dataset_id": dataset.id,
                 "start_balance": START_BALANCE,
@@ -165,7 +161,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "use_stop_loss_based_close": backtestInfo.use_stop_loss_based_close,
                 "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
                 "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
-                "use_short_selling": backtestInfo.use_short_selling,
+                "is_short_selling_strategy": backtestInfo.is_short_selling_strategy,
                 "probabilistic_sharpe_ratio": calculate_psr(
                     [x["percent_result"] / 100 for x in backtest.positions.trades],
                     sr_star=0,
@@ -203,7 +199,7 @@ class ManualBacktest:
         slippage_perc: float,
         short_fee_hourly_perc: float,
         enter_and_exit_criteria_placeholders: Dict,
-        use_short_selling: bool,
+        is_short_selling_strategy: bool,
         use_time_based_close: bool,
         use_profit_based_close: bool,
         use_stop_loss_based_close: bool,
@@ -224,7 +220,7 @@ class ManualBacktest:
             short_fee_hourly_coeff,
         )
         self.history: List = []
-        self.use_short_selling = use_short_selling
+        self.is_short_selling_strategy = is_short_selling_strategy
         self.use_time_based_close = use_time_based_close
         self.max_klines_until_close = max_klines_until_close
         self.pos_open_klines = 0
@@ -247,17 +243,11 @@ class ManualBacktest:
         exec(code, globals(), results_dict)
 
         ## Force close trades on last row to make accounting easier
-        should_open_long = (
-            results_dict["should_open_long"] if is_last_row is False else False
+        should_open_trade = (
+            results_dict["should_open_trade"] if is_last_row is False else False
         )
-        should_open_short = (
-            results_dict["should_open_short"] if is_last_row is False else False
-        )
-        should_close_long = (
-            results_dict["should_close_long"] if is_last_row is False else True
-        )
-        should_close_short = (
-            results_dict["should_close_short"] if is_last_row is False else True
+        should_close_trade = (
+            results_dict["should_close_trade"] if is_last_row is False else True
         )
 
         kline_open_time = df_row[timeseries_col]
@@ -268,38 +258,24 @@ class ManualBacktest:
             and self.use_time_based_close
         ):
             # auto close positions if time threshold is met
-            should_close_short = True
-            should_close_long = True
+            should_close_trade = True
 
         if self.use_profit_based_close and self.positions.take_profit_threshold_hit(
             price, self.take_profit_threshold_perc
         ):
-            should_close_long = True
-            should_close_short = True
+            should_close_trade = True
 
         if self.use_stop_loss_based_close and self.positions.stop_loss_threshold_hit(
             price, self.stop_loss_threshold_perc
         ):
-            should_close_long = True
-            should_close_short = True
+            should_close_trade = True
 
         if self.positions.is_trading_forced_stop is True:
-            should_close_long = True
-            should_close_short = True
+            should_close_trade = True
 
-        if self.use_short_selling is False:
-            should_open_short = False
+        self.tick(price, kline_open_time, should_open_trade, should_close_trade)
 
-        self.tick(
-            price,
-            kline_open_time,
-            should_open_long,
-            should_open_short,
-            should_close_long,
-            should_close_short,
-        )
-
-    def close_trade_cleanup(self):
+    def post_trade_cleanup(self):
         self.pos_open_klines = 0
 
     def update_data(self, price: float, kline_open_time: int):
@@ -314,31 +290,21 @@ class ManualBacktest:
         self,
         price: float,
         kline_open_time: int,
-        should_long: bool,
-        should_short: bool,
-        should_close_long: bool,
-        should_close_short: bool,
+        should_open_trade: bool,
+        should_close_trade: bool,
     ):
         self.update_data(price, kline_open_time)
 
-        if self.positions.position > 0 and should_close_long:
-            self.positions.close_long(price, kline_open_time)
+        if self.is_short_selling_strategy:
+            if self.positions.short_debt > 0 and should_close_trade is True:
+                self.positions.close_short(price, kline_open_time)
+                self.post_trade_cleanup()
+            if self.positions.short_debt == 0 and should_open_trade is True:
+                self.positions.go_short(price, 0, kline_open_time)
+        else:
+            if self.positions.position > 0 and should_close_trade:
+                self.positions.close_long(price, kline_open_time)
 
-        if (
-            self.positions.short_debt > 0
-            and should_close_short is True
-            and self.use_short_selling is True
-        ):
-            self.positions.close_short(price, kline_open_time)
-            self.close_trade_cleanup()
-
-        if self.positions.cash > 0 and should_long:
-            self.positions.go_long(price, 0, kline_open_time)
-            self.close_trade_cleanup()
-
-        if (
-            self.positions.short_debt == 0
-            and should_short is True
-            and self.use_short_selling is True
-        ):
-            self.positions.go_short(price, 0, kline_open_time)
+            if self.positions.cash > 0 and should_open_trade:
+                self.positions.go_long(price, 0, kline_open_time)
+                self.post_trade_cleanup()
