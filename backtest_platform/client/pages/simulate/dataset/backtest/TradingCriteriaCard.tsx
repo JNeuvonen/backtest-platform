@@ -18,31 +18,22 @@ export const TradingCriteriaCard = (props: Props) => {
       <div style={{ marginTop: "16px" }}>
         <ChakraCard heading={<Heading size="md">Trading criteria</Heading>}>
           <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
-            {backtestQuery.data.data.open_long_trade_cond}
+            Strategy type:{" "}
+            {backtestQuery.data.data.is_short_selling_strategy
+              ? "Short"
+              : "Long"}
+          </pre>
+          <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+            {backtestQuery.data.data.open_trade_cond}
           </pre>
           <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-            {backtestQuery.data.data.close_long_trade_cond}
+            {backtestQuery.data.data.close_trade_cond}
           </pre>
-
-          {backtestQuery.data.data.use_short_selling && (
-            <>
-              <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-                {backtestQuery.data.data.open_short_trade_cond}
-              </pre>
-              <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-                {backtestQuery.data.data.close_short_trade_cond}
-              </pre>
-            </>
-          )}
         </ChakraCard>
       </div>
 
       <div style={{ marginTop: "16px" }}>
         <ChakraCard heading={<Heading size="md">Strategy</Heading>}>
-          <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
-            Use short selling:{" "}
-            {backtestQuery.data.data.use_short_selling ? "True" : "False"}
-          </pre>
           <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
             Use time based close:{" "}
             {backtestQuery.data.data.use_time_based_close
