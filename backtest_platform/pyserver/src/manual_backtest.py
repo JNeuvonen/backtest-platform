@@ -117,8 +117,6 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             ms_to_years(backtest.cumulative_time),
         )
 
-        print(end_balance)
-
         backtest_id = BacktestQuery.create_entry(
             {
                 "open_trade_cond": backtestInfo.open_trade_cond,
@@ -138,6 +136,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "share_of_losing_trades_perc": share_of_losing_trades_perc,
                 "best_trade_result_perc": best_trade_result_perc,
                 "worst_trade_result_perc": worst_trade_result_perc,
+                "kline_time_delta_ms": candles_time_delta,
                 "buy_and_hold_result_net": (
                     (asset_closing_price / asset_starting_price * START_BALANCE)
                     - START_BALANCE

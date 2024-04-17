@@ -37,6 +37,7 @@ class Backtest(Base):
 
     backtest_range_start = Column(Integer)
     backtest_range_end = Column(Integer)
+    kline_time_delta_ms = Column(Integer)
 
     profit_factor = Column(Float)
     gross_profit = Column(Float)
