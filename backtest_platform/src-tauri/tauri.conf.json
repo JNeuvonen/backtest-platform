@@ -51,7 +51,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": ["binaries/**/*", ".env"]
+      "resources": [".env"]
     },
     "security": {
       "csp": null
