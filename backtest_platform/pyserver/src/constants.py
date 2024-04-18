@@ -16,6 +16,8 @@ BINANCE_DATA_COLS = [
     "ignore",
 ]
 
+BINANCE_BACKTEST_PRICE_COL = "close_price"
+
 LOG_FILE = "logs"
 DB_DATASETS = "datasets.db"
 
