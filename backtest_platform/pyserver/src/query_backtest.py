@@ -60,6 +60,8 @@ class Backtest(Base):
     market_exposure_time = Column(Float)
     risk_adjusted_return = Column(Float)
     buy_and_hold_cagr = Column(Float)
+    slippage_perc = Column(Float)
+    short_fee_hourly = Column(Float)
 
     def serialize_data(self, backtest_data):
         self.data = json.dumps(backtest_data)
