@@ -128,6 +128,7 @@ export function useBacktestById(
   return useQuery<FetchBacktestByIdRes | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_backtest_by_id],
     queryFn: () => fetchBacktestById(backtestId),
+    enabled: !!backtestId,
   });
 }
 

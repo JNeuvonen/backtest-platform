@@ -8,6 +8,7 @@ import {
   FormLabel,
   Select,
   Spinner,
+  useToast,
 } from "@chakra-ui/react";
 import {
   OptionType,
@@ -15,8 +16,12 @@ import {
 } from "../../components/SelectFilter";
 import { binanceTickSelectOptions } from "../../pages/Datasets";
 import { MultiValue } from "react-select";
-import { useBinanceTickersQuery } from "../../clients/queries/queries";
-import { GET_KLINE_OPTIONS } from "../../utils/constants";
+import {
+  useBacktestById,
+  useBinanceTickersQuery,
+} from "../../clients/queries/queries";
+import { usePathParams } from "../../hooks/usePathParams";
+import { postMassBacktest } from "../../clients/requests";
 
 const formKeys = {
   pairs: "pairs",
@@ -24,19 +29,28 @@ const formKeys = {
 
 const getFormInitialValues = () => {
   return {
-    pairs: [],
-    interval: "1h",
+    pairs: [] as MultiValue<OptionType>,
   };
 };
 
+interface PathParams {
+  datasetName: string;
+  backtestId: number;
+}
+
 export interface MassBacktest {
-  pairs: string[];
+  pairs: MultiValue<OptionType>;
   interval: string;
 }
 
 export const BacktestOnManyPairs = () => {
+  const { backtestId } = usePathParams<PathParams>();
   const { runBacktestOnManyPairsModal } = useBacktestContext();
+
   const binanceTickersQuery = useBinanceTickersQuery();
+  const backtestQuery = useBacktestById(Number(backtestId));
+
+  const toast = useToast();
 
   if (binanceTickersQuery.isLoading || !binanceTickersQuery.data) {
     return (
@@ -50,7 +64,25 @@ export const BacktestOnManyPairs = () => {
     );
   }
 
-  const onSubmit = async (formValues: MassBacktest) => {};
+  const onSubmit = async (formValues: MassBacktest) => {
+    if (!backtestQuery.data?.data.id) return;
+
+    const symbols = formValues.pairs.map((item) => item.label);
+
+    const res = await postMassBacktest({
+      symbols: symbols,
+      original_backtest_id: backtestQuery.data?.data.id,
+    });
+
+    if (res.status === 200) {
+      toast({
+        title: "Started mass backtest",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <ChakraModal
