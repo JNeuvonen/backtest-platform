@@ -109,7 +109,6 @@ export const LOCAL_API_URL = {
     `/${datasetName}/copy?new_dataset_name=${copyName}`,
   fetchTrainjobBacktests: (trainJobId: string) =>
     LOCAL_API_URI + LOCAL_API.model.root + `/backtest/${trainJobId}`,
-
   fetchDatasetPagination: (
     datasetName: string,
     page: number,
@@ -131,6 +130,8 @@ export const LOCAL_API_URL = {
     LOCAL_API.backtest.root +
     "/delete-many" +
     `?list_of_ids=${JSON.stringify(listOfIds)}`,
+  massBacktest: () =>
+    LOCAL_API_URI + LOCAL_API.backtest.root + "/mass-backtest",
 };
 
 export const PRED_SERVER_URLS = {
