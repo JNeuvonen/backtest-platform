@@ -173,3 +173,8 @@ def get_binance_dataset_tablename(symbol: str, interval: str):
     interval = "1mo" if interval == "1M" else interval
     table_name = symbol.lower() + "_" + interval
     return table_name
+
+
+def read_file_to_string(path):
+    with open(path, "r", encoding="utf-8") as file:
+        return file.read()

@@ -17,6 +17,7 @@ from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext, get_logger
 from math_utils import calculate_avg_trade_hold_time_ms, calculate_psr, calculate_sr
 from model_backtest import Positions
+from quant_stats_utils import generate_quant_stats_report_html
 from query_backtest import Backtest, BacktestQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
@@ -271,6 +272,9 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
         TradeQuery.create_many_trade_entry(backtest_id, backtest.positions.trades)
+        generate_quant_stats_report_html(
+            backtest.positions.balance_history, backtestInfo
+        )
 
         return backtest_from_db
 
