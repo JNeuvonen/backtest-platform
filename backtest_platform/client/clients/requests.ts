@@ -431,3 +431,17 @@ export const createPredServApiKey = async () => {
   }
   return res;
 };
+
+interface PostMassBacktestBody {
+  symbols: string[];
+  original_backtest_id: number;
+}
+
+export const postMassBacktest = async (body: PostMassBacktestBody) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.massBacktest(),
+    payload: body,
+  });
+  return res;
+};
