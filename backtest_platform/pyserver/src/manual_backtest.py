@@ -20,9 +20,10 @@ from model_backtest import Positions
 from query_backtest import Backtest, BacktestQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
+from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
-from utils import PythonCode, get_binance_dataset_tablename, is_string
+from utils import PythonCode, get_binance_dataset_tablename
 
 
 START_BALANCE = 10000
@@ -44,10 +45,12 @@ async def run_rule_based_mass_backtest(
     )
 
     for symbol in body.symbols:
-        await save_historical_klines(symbol, interval, False)
-
         table_name = get_binance_dataset_tablename(symbol, interval)
-        symbols_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+        symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+
+        if symbol_dataset is None:
+            await save_historical_klines(symbol, interval, False)
+            symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
         for transformation in data_transformations:
             python_program = PythonCode.on_dataset(table_name, transformation)
@@ -55,7 +58,7 @@ async def run_rule_based_mass_backtest(
             DataTransformationQuery.create_entry(
                 {
                     "transformation_code": transformation,
-                    "dataset_id": symbols_dataset.id,
+                    "dataset_id": symbol_dataset.id,
                 }
             )
 
@@ -70,7 +73,7 @@ async def run_rule_based_mass_backtest(
             "use_time_based_close": original_backtest.use_time_based_close,
             "use_profit_based_close": original_backtest.use_profit_based_close,
             "use_stop_loss_based_close": original_backtest.use_stop_loss_based_close,
-            "dataset_id": symbols_dataset.id,
+            "dataset_id": symbol_dataset.id,
             "trading_fees_perc": original_backtest.trading_fees_perc,
             "slippage_perc": original_backtest.slippage_perc,
             "short_fee_hourly": original_backtest.short_fee_hourly,
@@ -78,10 +81,10 @@ async def run_rule_based_mass_backtest(
             "stop_loss_threshold_perc": original_backtest.stop_loss_threshold_perc,
             "name": original_backtest.name,
             "klines_until_close": original_backtest.klines_until_close,
-            "mass_backtest_id": mass_backtest_id,
         }
 
-        run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
+        backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
+        MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest.id)
 
         logger.log(
             f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
