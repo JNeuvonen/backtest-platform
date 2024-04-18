@@ -11,7 +11,7 @@ from backtest_utils import (
     turn_short_fee_perc_to_coeff,
 )
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
-from constants import YEAR_IN_MS, DomEventChannels
+from constants import BINANCE_BACKTEST_PRICE_COL, YEAR_IN_MS, DomEventChannels
 from dataset import read_dataset_to_mem
 from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext, get_logger
@@ -40,6 +40,7 @@ async def run_rule_based_mass_backtest(
     curr_iter = 1
 
     original_dataset = DatasetQuery.fetch_dataset_by_id(original_backtest.dataset_id)
+    print(original_dataset.id)
     data_transformations = DataTransformationQuery.get_transformations_by_dataset(
         original_dataset.id
     )
@@ -49,11 +50,15 @@ async def run_rule_based_mass_backtest(
         symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
         if symbol_dataset is None:
-            await save_historical_klines(symbol, interval, False)
+            await save_historical_klines(symbol, interval, True)
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
+        DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
+
         for transformation in data_transformations:
-            python_program = PythonCode.on_dataset(table_name, transformation)
+            python_program = PythonCode.on_dataset(
+                table_name, transformation.transformation_code
+            )
             exec_python(python_program)
             DataTransformationQuery.create_entry(
                 {
@@ -103,6 +108,9 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
 
         candles_time_delta = get_df_candle_size(
             dataset_df, dataset.timeseries_column, formatted=False
+        )
+        candle_interval = get_df_candle_size(
+            dataset_df, dataset.timeseries_column, formatted=True
         )
 
         replacements = {
@@ -209,8 +217,8 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "best_trade_result_perc": best_trade_result_perc,
                 "worst_trade_result_perc": worst_trade_result_perc,
                 "backtest_range_start": backtest_data_range_start,
+                "candle_interval": candle_interval,
                 "backtest_range_end": backtest_data_range_end,
-                "kline_time_delta_ms": candles_time_delta,
                 "buy_and_hold_result_net": (
                     (asset_closing_price / asset_starting_price * START_BALANCE)
                     - START_BALANCE
@@ -257,6 +265,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                     else 0,
                 ),
                 "short_fee_hourly": backtestInfo.short_fee_hourly,
+                "trading_fees_perc": backtestInfo.trading_fees_perc,
             }
         )
 

@@ -57,9 +57,7 @@ async def route_mass_backtest(body: BodyCreateMassBacktest):
                 status_code=400,
             )
 
-        candle_size = timedelta_to_candlesize(
-            original_backtest.kline_time_delta_ms / 1000
-        )
+        candle_size = original_backtest.candle_interval
 
         mass_backtest_id = MassBacktestQuery.create_entry(
             {"original_backtest_id": body.original_backtest_id}

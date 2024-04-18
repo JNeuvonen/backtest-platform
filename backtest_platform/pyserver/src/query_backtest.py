@@ -17,6 +17,7 @@ class Backtest(Base):
 
     name = Column(String)
     data = Column(String)
+    candle_interval = Column(String)
     open_long_trade_cond = Column(String)
     open_short_trade_cond = Column(String)
     close_long_trade_cond = Column(String)
@@ -37,7 +38,6 @@ class Backtest(Base):
 
     backtest_range_start = Column(Integer)
     backtest_range_end = Column(Integer)
-    kline_time_delta_ms = Column(Integer)
 
     profit_factor = Column(Float)
     gross_profit = Column(Float)
@@ -62,6 +62,7 @@ class Backtest(Base):
     buy_and_hold_cagr = Column(Float)
     slippage_perc = Column(Float)
     short_fee_hourly = Column(Float)
+    trading_fees_perc = Column(Float)
 
     def serialize_data(self, backtest_data):
         self.data = json.dumps(backtest_data)
