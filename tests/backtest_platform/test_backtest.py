@@ -12,6 +12,7 @@ from tests.backtest_platform.fixtures import (
     backtest_time_based_close_is_not_working,
     backtest_psr_debug,
     backtest_div_by_zero_bug,
+    backtest_rule_based_v2,
 )
 
 
@@ -50,6 +51,6 @@ def test_fetch_backtests(fixt_manual_backtest):
 def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
     dataset = Fetch.get_dataset_by_name("btcusdt_1h_dump")
     # body = backtest_time_based_close_is_not_working
-    body = backtest_div_by_zero_bug
+    body = backtest_rule_based_v2
     body["dataset_id"] = dataset["id"]
     Post.create_manual_backtest(body)

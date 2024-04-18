@@ -221,3 +221,21 @@ backtest_div_by_zero_bug = {
     "take_profit_threshold_perc": 2,
     "backtest_data_range": [0, 100],
 }
+
+backtest_rule_based_v2 = {
+    "open_trade_cond": 'def get_enter_trade_decision(tick):\n    return tick["RSI_160_MA_200_close_price"] > 90 and tick["is_friday_8_utc"] == 1',
+    "close_trade_cond": "def get_exit_trade_decision(tick):\n    return False",
+    "is_short_selling_strategy": False,
+    "dataset_id": 23,
+    "name": "",
+    "use_time_based_close": True,
+    "klines_until_close": 24,
+    "trading_fees_perc": 0.1,
+    "slippage_perc": 0.001,
+    "short_fee_hourly": 0.0000165888,
+    "use_stop_loss_based_close": False,
+    "use_profit_based_close": False,
+    "stop_loss_threshold_perc": 0,
+    "take_profit_threshold_perc": 0,
+    "backtest_data_range": [0, 100],
+}
