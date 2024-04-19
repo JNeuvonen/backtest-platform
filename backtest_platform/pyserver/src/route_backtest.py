@@ -1,7 +1,8 @@
 import asyncio
 import json
 from fastapi import APIRouter, HTTPException, Query, status
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
+from constants import BACKTEST_REPORT_HTML_PATH
 
 from context import HttpResponseContext
 from db import timedelta_to_candlesize
@@ -126,8 +127,8 @@ async def route_detailed_summary(backtest_id):
         generate_quant_stats_report_html(
             backtest.data, backtest_info, get_periods_per_year(backtest.candle_interval)
         )
-        return Response(
-            content="Ok",
-            status_code=status.HTTP_200_OK,
-            media_type="text/plain",
+        return FileResponse(
+            path=BACKTEST_REPORT_HTML_PATH,
+            filename="backtest_report_test.html",
+            media_type="text/html",
         )
