@@ -30,7 +30,6 @@ import { BUTTON_VARIANTS } from "../../../../theme";
 import { deployStrategyReq } from "../../../../clients/requests";
 import { useAppContext } from "../../../../context/app";
 import {
-  DATA_TRANSFORMATIONS_EXAMPLE,
   DEPLOY_STRAT_ENTER_TRADE_DEFAULT,
   DEPLOY_STRAT_EXIT_TRADE_DEFAULT,
   FETCH_DATASOURCES_DEFAULT,
