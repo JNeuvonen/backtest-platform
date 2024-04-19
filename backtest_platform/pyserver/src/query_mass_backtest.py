@@ -43,12 +43,10 @@ class MassBacktestQuery:
                 return mass_backtests
 
     @staticmethod
-    def remove_mass_backtest_by_id(backtest_id: int):
+    def remove_mass_backtest_by_id(id: int):
         with LogExceptionContext():
             with Session() as session:
-                session.query(MassBacktest).filter(
-                    MassBacktest.id == backtest_id
-                ).delete()
+                session.query(MassBacktest).filter(MassBacktest.id == id).delete()
                 session.commit()
 
     @staticmethod

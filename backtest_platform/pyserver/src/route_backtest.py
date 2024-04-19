@@ -5,11 +5,9 @@ from fastapi.responses import FileResponse, Response
 from constants import BACKTEST_REPORT_HTML_PATH
 
 from context import HttpResponseContext
-from db import timedelta_to_candlesize
 from manual_backtest import run_manual_backtest, run_rule_based_mass_backtest
 from quant_stats_utils import (
     generate_quant_stats_report_html,
-    update_backtest_report_html,
 )
 from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
@@ -28,6 +26,7 @@ class RoutePaths:
     BACKTEST_BY_ID = "/{backtest_id}"
     FETCH_BY_DATASET_ID = "/dataset/{dataset_id}"
     DETAILED_SUMMARY = "/{backtest_id}/detailed-summary"
+    MASS_BACKTEST_BY_BACKTEST_ID = "/mass-backtest/by-backtest/{backtest_id}"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -132,3 +131,10 @@ async def route_detailed_summary(backtest_id):
             filename="backtest_report_test.html",
             media_type="text/html",
         )
+
+
+@router.get(RoutePaths.MASS_BACKTEST_BY_BACKTEST_ID)
+async def route_mass_backtests_by_backtest_id(backtest_id):
+    with HttpResponseContext():
+        mass_backtests = MassBacktestQuery.get_mass_backtest_by_original_id(backtest_id)
+        return {"data": mass_backtests}
