@@ -258,3 +258,11 @@ export interface DataTransformation {
   updated_at: Date;
   transformation_code: string;
 }
+
+export interface MassBacktest {
+  id: number;
+  original_backtest_id: number;
+
+  name: string;
+  backtest_ids: number[];
+}
