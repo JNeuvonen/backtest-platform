@@ -1,6 +1,9 @@
 from enum import Enum
 from config import append_app_data_path
 
+
+BACKTEST_REPORT_HTML_PATH = "backtest_report.html"
+
 BINANCE_DATA_COLS = [
     "kline_open_time",
     "open_price",

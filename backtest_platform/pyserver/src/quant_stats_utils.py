@@ -1,11 +1,9 @@
 import pandas as pd
 from bs4 import BeautifulSoup
+from constants import BACKTEST_REPORT_HTML_PATH
 import quantstats_lumi as qs
 
 from utils import read_file_to_string
-
-
-BACKTEST_REPORT_HTML_PATH = "backtest_report.html"
 
 
 PRE_STYLE_BASE = "background-color: #f9f9f9; padding: 10px; margin: 10px; font-family: Consolas, 'Courier New', Courier, monospace; color: #333; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 100%"
@@ -15,7 +13,6 @@ PRE_STYLE_RED = f"{PRE_STYLE_BASE} border-left: 3px solid #eb4036;"
 
 def generate_quant_stats_report_html(balance_history, backtestInfo, periods_per_year):
     balance_history_df = pd.DataFrame(balance_history)
-    balance_history_df.to_csv("input_dump.csv")
     balance_history_df["kline_open_time"] = pd.to_datetime(
         balance_history_df["kline_open_time"], unit="ms"
     )
