@@ -23,9 +23,7 @@ def test_setup_sanity(cleanup_db, fixt_btc_small_1h):
         dataset["id"],
         True,
         open_long_trade_cond_basic(),
-        open_short_trade_cond_basic(),
         close_long_trade_cond_basic(),
-        close_short_trade_cond_basic(),
         False,
         0.1,
         0.01,
@@ -45,6 +43,16 @@ def test_fetch_backtests(fixt_manual_backtest):
     dataset = Fetch.get_dataset_by_name(fixt_manual_backtest.name)
     backtests = Fetch.get_datasets_manual_backtests(dataset["id"])
     assert len(backtests) == 1, "Backtest wasnt created or fetches succesfully"
+
+
+@pytest.mark.acceptance
+def test_quant_stats_report_gen(cleanup_db, add_custom_datasets):
+    dataset = Fetch.get_dataset_by_name("btcusdt_1h_dump")
+    body = backtest_rule_based_v2
+    body["dataset_id"] = dataset["id"]
+    Post.create_manual_backtest(body)
+    backtests = Fetch.get_datasets_manual_backtests(dataset["id"])
+    res = Fetch.get_quant_stats_summary(backtests[0]["id"])
 
 
 @pytest.mark.input_dump

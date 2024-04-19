@@ -194,6 +194,11 @@ class Fetch:
         with Req("get", URL.get_presets_by_category(category)) as res:
             return res.json()["data"]
 
+    @staticmethod
+    def get_quant_stats_summary(backtest_id: int):
+        with Req("get", URL.get_quant_stats_summary(backtest_id)) as res:
+            return res
+
 
 class Post:
     @staticmethod

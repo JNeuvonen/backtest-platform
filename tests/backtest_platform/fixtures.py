@@ -84,10 +84,8 @@ def create_backtest(dataset_name: str):
 def create_manual_backtest(
     dataset_id: int,
     use_short_selling: bool,
-    open_long_trade_cond: str,
-    open_short_trade_cond: str,
-    close_long_trade_cond: str,
-    close_short_trade_cond: str,
+    open_trade_cond: str,
+    close_trade_cond: str,
     use_time_based_close: bool,
     trading_fees_perc: float,
     slippage_perc: float,
@@ -100,12 +98,10 @@ def create_manual_backtest(
 ):
     return {
         "dataset_id": dataset_id,
-        "use_short_selling": use_short_selling,
-        "open_long_trade_cond": open_long_trade_cond,
-        "close_long_trade_cond": close_long_trade_cond,
-        "open_short_trade_cond": open_short_trade_cond,
-        "close_short_trade_cond": close_short_trade_cond,
+        "is_short_selling_strategy": use_short_selling,
         "use_time_based_close": use_time_based_close,
+        "open_trade_cond": open_trade_cond,
+        "close_trade_cond": close_trade_cond,
         "trading_fees_perc": trading_fees_perc,
         "slippage_perc": slippage_perc,
         "backtest_data_range": backtest_data_range,
@@ -124,7 +120,7 @@ def create_code_preset_body(code: str, category: str, name: str):
 def open_long_trade_cond_basic():
     enter_trade_cond = PyCode()
 
-    enter_trade_cond.append_line("def open_long_trade(tick):")
+    enter_trade_cond.append_line("def get_enter_trade_decision(tick):")
     enter_trade_cond.add_indent()
     enter_trade_cond.append_line("return tick['open_price'] > 25000")
 
@@ -134,7 +130,7 @@ def open_long_trade_cond_basic():
 def close_long_trade_cond_basic():
     enter_trade_cond = PyCode()
 
-    enter_trade_cond.append_line("def close_long_trade(tick):")
+    enter_trade_cond.append_line("def get_exit_trade_decision(tick):")
     enter_trade_cond.add_indent()
     enter_trade_cond.append_line("return tick['open_price'] > 30000")
 

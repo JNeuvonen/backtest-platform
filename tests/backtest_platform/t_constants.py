@@ -202,6 +202,12 @@ class URL:
         )
 
     @classmethod
+    def get_quant_stats_summary(cls, backtest_id):
+        return cls._backtest_route() + BacktestRoutePaths.DETAILED_SUMMARY.format(
+            backtest_id=backtest_id
+        )
+
+    @classmethod
     def get_datasets_manual_backtests(cls, dataset_id: int):
         return cls._backtest_route() + BacktestRoutePaths.FETCH_BY_DATASET_ID.format(
             dataset_id=dataset_id
