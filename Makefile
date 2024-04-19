@@ -37,3 +37,6 @@ build-trading-client-container:
   --build-arg API_KEY=${API_KEY} \
   --build-arg API_SECRET=${API_SECRET} . --load
 
+
+cleanup-bot-msgs-slack:
+	cd scripts && cd slack_automation && node index
