@@ -11,6 +11,7 @@ from sqlalchemy.inspection import inspect
 from constants import (
     DB_DATASETS,
     STREAMING_DEFAULT_CHUNK_SIZE,
+    CandleSize,
 )
 from config import append_app_data_path
 from log import LogExceptionContext
@@ -178,3 +179,51 @@ def get_binance_dataset_tablename(symbol: str, interval: str):
 def read_file_to_string(path):
     with open(path, "r", encoding="utf-8") as file:
         return file.read()
+
+
+def get_periods_per_year(candle_interval: str):
+    if candle_interval == CandleSize.ONE_MINUTE:
+        return 365 * 24 * 60
+    if candle_interval == CandleSize.THREE_MINUTES:
+        return 365 * 24 * 20
+
+    if candle_interval == CandleSize.FIVE_MINUTES:
+        return 365 * 24 * 12
+
+    if candle_interval == CandleSize.FIFTEEN_MINUTES:
+        return 365 * 24 * 4
+
+    if candle_interval == CandleSize.THIRTY_MINUTES:
+        return 365 * 24 * 2
+
+    if candle_interval == CandleSize.ONE_HOUR:
+        return 365 * 24
+
+    if candle_interval == CandleSize.TWO_HOURS:
+        return 365 * 12
+
+    if candle_interval == CandleSize.FOUR_HOURS:
+        return 365 * 6
+
+    if candle_interval == CandleSize.SIX_HOURS:
+        return 365 * 4
+
+    if candle_interval == CandleSize.EIGHT_HOURS:
+        return 365 * 3
+
+    if candle_interval == CandleSize.TWELVE_HOURS:
+        return 365 * 2
+
+    if candle_interval == CandleSize.ONE_DAY:
+        return 365
+
+    if candle_interval == CandleSize.THREE_DAYS:
+        return 122
+
+    if candle_interval == CandleSize.ONE_WEEK:
+        return 52
+
+    if candle_interval == CandleSize.ONE_MONTH:
+        return 12
+
+    raise ValueError("Invalid candle size")

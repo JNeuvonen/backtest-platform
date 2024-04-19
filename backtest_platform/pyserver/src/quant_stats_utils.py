@@ -1,6 +1,6 @@
 import pandas as pd
 from bs4 import BeautifulSoup
-import quantstats as qs
+import quantstats_lumi as qs
 
 from utils import read_file_to_string
 
@@ -8,23 +8,28 @@ from utils import read_file_to_string
 BACKTEST_REPORT_HTML_PATH = "backtest_report.html"
 
 
-PRE_STYLE_BASE = "background-color: #f9f9f9; padding: 10px; margin: 10px; font-family: Consolas, 'Courier New', Courier, monospace; color: #333; font-weight: 600;"
+PRE_STYLE_BASE = "background-color: #f9f9f9; padding: 10px; margin: 10px; font-family: Consolas, 'Courier New', Courier, monospace; color: #333; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 100%"
 PRE_STYLE_BLUE = f"{PRE_STYLE_BASE} border-left: 3px solid #36a2eb;"
 PRE_STYLE_RED = f"{PRE_STYLE_BASE} border-left: 3px solid #eb4036;"
 
 
-def generate_quant_stats_report_html(balance_history, backtestInfo):
+def generate_quant_stats_report_html(balance_history, backtestInfo, periods_per_year):
     balance_history_df = pd.DataFrame(balance_history)
+    balance_history_df.to_csv("input_dump.csv")
     balance_history_df["kline_open_time"] = pd.to_datetime(
         balance_history_df["kline_open_time"], unit="ms"
     )
+
     balance_history_df.set_index("kline_open_time", inplace=True)
+
     strat_returns = get_df_returns(balance_history_df, "portfolio_worth")
 
     qs.reports.html(
         strat_returns,
         output=BACKTEST_REPORT_HTML_PATH,
         title="Backtest Performance Report",
+        periods_per_year=periods_per_year,
+        cagr_periods_per_year=365,
     )
     update_backtest_report_html(backtestInfo)
 

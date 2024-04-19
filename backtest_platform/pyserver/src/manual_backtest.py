@@ -217,9 +217,9 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "share_of_losing_trades_perc": share_of_losing_trades_perc,
                 "best_trade_result_perc": best_trade_result_perc,
                 "worst_trade_result_perc": worst_trade_result_perc,
-                "backtest_range_start": backtest_data_range_start,
+                "backtest_range_start": backtestInfo.backtest_data_range[0],
                 "candle_interval": candle_interval,
-                "backtest_range_end": backtest_data_range_end,
+                "backtest_range_end": backtestInfo.backtest_data_range[1],
                 "buy_and_hold_result_net": (
                     (asset_closing_price / asset_starting_price * START_BALANCE)
                     - START_BALANCE
@@ -272,9 +272,6 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
         TradeQuery.create_many_trade_entry(backtest_id, backtest.positions.trades)
-        generate_quant_stats_report_html(
-            backtest.positions.balance_history, backtestInfo
-        )
 
         return backtest_from_db
 
