@@ -132,6 +132,11 @@ export const LOCAL_API_URL = {
     `?list_of_ids=${JSON.stringify(listOfIds)}`,
   massBacktest: () =>
     LOCAL_API_URI + LOCAL_API.backtest.root + "/mass-backtest",
+  downloadBacktestSummary: (backtestId: number) =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    `/${backtestId}` +
+    "/detailed-summary",
 };
 
 export const PRED_SERVER_URLS = {

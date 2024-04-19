@@ -16,6 +16,8 @@ import { DeployStrategyForm } from "./DeployStrategyForm";
 import { BUTTON_VARIANTS } from "../../../../theme";
 import { MdScience } from "react-icons/md";
 import { useBacktestContext } from "../../../../context/backtest";
+import { IoIosDownload } from "react-icons/io";
+import { saveBacktestReport } from "../../../../clients/requests";
 
 interface PathParams {
   datasetName: string;
@@ -145,6 +147,10 @@ export const DatasetBacktestPage = () => {
     return null;
   }
 
+  const downloadDetailedSummary = async () => {
+    await saveBacktestReport(Number(backtestId), "backtest_summary");
+  };
+
   return (
     <>
       <DeployStrategyForm deployStrategyDrawer={deployStrategyDrawer} />
@@ -160,6 +166,13 @@ export const DatasetBacktestPage = () => {
           <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
 
           <div style={{ display: "flex", gap: "8px" }}>
+            <Button
+              leftIcon={<IoIosDownload />}
+              onClick={downloadDetailedSummary}
+              variant={BUTTON_VARIANTS.grey2}
+            >
+              Detailed summary
+            </Button>
             <Button
               leftIcon={<MdScience />}
               onClick={backtestContext.runBacktestOnManyPairsModal.onOpen}
