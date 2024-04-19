@@ -31,6 +31,10 @@ export const getModelInfoPath = (datasetName: string, modelName: string) => {
     .replace(PATH_KEYS.model, modelName);
 };
 
+export const getMassbacktestTablesPath = (backtestId: string) => {
+  return PATHS.mass_backtest.root.replace(PATH_KEYS.backtest, backtestId);
+};
+
 export const getTrainJobPath = (
   datasetName: string,
   modelName: string,

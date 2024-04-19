@@ -4,6 +4,7 @@ export const PATH_KEYS = {
   model: ":modelName",
   train: ":trainJobId",
   backtest: ":backtestId",
+  mass_backtest: ":massBacktestId",
 };
 
 export const CODE = {
@@ -31,6 +32,10 @@ export const PATHS = {
     path: "/simulate",
     dataset: `/simulate/${PATH_KEYS.dataset}`,
     backtest: `/simulate/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
+  },
+  mass_backtest: {
+    root: `/simulate/mass-backtests/${PATH_KEYS.backtest}`,
+    backtest: `/mass-backtests/${PATH_KEYS.backtest}/${PATH_KEYS.mass_backtest}`,
   },
   train: `/data/train-job/${PATH_KEYS.train}`,
   settings: "/settings",

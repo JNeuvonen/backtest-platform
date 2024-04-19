@@ -12,6 +12,8 @@ import { SimulateDatasetIndex } from "./pages/simulate/dataset";
 import { BacktestProvider } from "./context/backtest";
 import { DatasetBacktestPage } from "./pages/simulate/dataset/backtest";
 import { SettingsPage } from "./pages/settings";
+import { AllMassBacktests } from "./pages/mass-backtest/all-backtests";
+import { InvidualMassbacktestDetailsPage } from "./pages/mass-backtest/backtest";
 
 export const AppRoutes = () => {
   return (
@@ -46,6 +48,11 @@ export const AppRoutes = () => {
             <DatasetBacktestPage />
           </BacktestProvider>
         }
+      />
+      <Route path={PATHS.mass_backtest.root} element={<AllMassBacktests />} />
+      <Route
+        path={PATHS.mass_backtest.backtest}
+        element={<InvidualMassbacktestDetailsPage />}
       />
       <Route path={PATHS.settings} element={<SettingsPage />} />
     </Routes>

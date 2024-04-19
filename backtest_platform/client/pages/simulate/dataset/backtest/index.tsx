@@ -18,6 +18,8 @@ import { MdScience } from "react-icons/md";
 import { useBacktestContext } from "../../../../context/backtest";
 import { IoIosDownload } from "react-icons/io";
 import { saveBacktestReport } from "../../../../clients/requests";
+import { useNavigate } from "react-router-dom";
+import { getMassbacktestTablesPath } from "../../../../utils/navigate";
 
 interface PathParams {
   datasetName: string;
@@ -136,6 +138,7 @@ export const DatasetBacktestPage = () => {
   const backtestQuery = useBacktestById(Number(backtestId));
   const deployStrategyDrawer = useDisclosure();
   const backtestContext = useBacktestContext();
+  const navigate = useNavigate();
 
   const [tradeFilterPerc, setTradeFilterPerc] = useState(0);
 
@@ -164,8 +167,13 @@ export const DatasetBacktestPage = () => {
           }}
         >
           <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
-
           <div style={{ display: "flex", gap: "8px" }}>
+            <Button
+              variant={BUTTON_VARIANTS.grey2}
+              onClick={() => navigate(getMassbacktestTablesPath(backtestId))}
+            >
+              View mass backtests
+            </Button>
             <Button
               leftIcon={<IoIosDownload />}
               onClick={downloadDetailedSummary}
