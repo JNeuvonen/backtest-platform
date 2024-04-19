@@ -79,3 +79,14 @@ class MassBacktestQuery:
                     current_ids.append(new_backtest_id)
                     mass_backtest.backtest_ids = json.dumps(current_ids)
                     session.commit()
+
+    @staticmethod
+    def get_mass_backtest_by_id(id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                mass_backtest = (
+                    session.query(MassBacktest).filter(MassBacktest.id == id).first()
+                )
+                if mass_backtest:
+                    mass_backtest.deserialize()
+                return mass_backtest

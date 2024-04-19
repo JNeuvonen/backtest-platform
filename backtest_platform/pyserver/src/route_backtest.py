@@ -22,6 +22,7 @@ router = APIRouter()
 class RoutePaths:
     BACKTEST = "/"
     MASS_BACKTEST = "/mass-backtest"
+    MASS_BACKTEST_ID = "/mass-backtest/{mass_backtest_id}"
     DELETE_MANY = "/delete-many"
     BACKTEST_BY_ID = "/{backtest_id}"
     FETCH_BY_DATASET_ID = "/dataset/{dataset_id}"
@@ -138,3 +139,17 @@ async def route_mass_backtests_by_backtest_id(backtest_id):
     with HttpResponseContext():
         mass_backtests = MassBacktestQuery.get_mass_backtest_by_original_id(backtest_id)
         return {"data": mass_backtests}
+
+
+@router.get(RoutePaths.MASS_BACKTEST_ID)
+async def route_mass_backtest_by_id(mass_backtest_id):
+    with HttpResponseContext():
+        mass_backtest = MassBacktestQuery.get_mass_backtest_by_id(mass_backtest_id)
+
+        if mass_backtest is None:
+            raise HTTPException(
+                detail=f"No mass backtest found for id {mass_backtest_id}",
+                status_code=400,
+            )
+
+        return {"data": mass_backtest}
