@@ -12,6 +12,7 @@ import {
   fetchDataset,
   fetchDatasetModels,
   fetchDatasets,
+  fetchMassbacktestsById,
   fetchModelByName,
   fetchTrainjobBacktests,
   fetchTrainjobDetailed,
@@ -26,6 +27,7 @@ import {
   DatasetModel,
   DatasetModelResponse,
   FetchBacktestByIdRes,
+  MassBacktest,
 } from "./response-types";
 
 export function useDatasetsQuery(): UseQueryResult<
@@ -136,5 +138,14 @@ export function useCodePresets(): UseQueryResult<CodePreset[] | null, unknown> {
   return useQuery<CodePreset[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_code_presets],
     queryFn: () => fetchCodePresets(),
+  });
+}
+
+export function useMassbacktests(
+  backtestId: number
+): UseQueryResult<MassBacktest[] | null, unknown> {
+  return useQuery<MassBacktest[] | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_code_presets, backtestId],
+    queryFn: () => fetchMassbacktestsById(backtestId),
   });
 }

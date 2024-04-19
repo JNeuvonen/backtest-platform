@@ -468,3 +468,15 @@ export const postMassBacktest = async (body: PostMassBacktestBody) => {
   });
   return res;
 };
+
+export const fetchMassbacktestsById = async (backtestId: number) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.massBacktestsByBacktestId(backtestId),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+};

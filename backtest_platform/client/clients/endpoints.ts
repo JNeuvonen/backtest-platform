@@ -137,6 +137,10 @@ export const LOCAL_API_URL = {
     LOCAL_API.backtest.root +
     `/${backtestId}` +
     "/detailed-summary",
+  massBacktestsByBacktestId: (backtestId: number) =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    `/mass-backtest/by-backtest/${backtestId}`,
 };
 
 export const PRED_SERVER_URLS = {
