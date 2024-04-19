@@ -12,4 +12,5 @@ export const QUERY_KEYS = {
   fetch_backtest_by_id: "fetch_backtest_by_id",
   fetch_code_presets: "fetch_code_presets",
   fetch_mass_backtests_by_id: "fetch_mass_backtests_by_id",
+  fetch_mass_backtest: "fetch_mass_backtest",
 };

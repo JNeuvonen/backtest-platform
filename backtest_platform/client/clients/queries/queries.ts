@@ -12,6 +12,7 @@ import {
   fetchDataset,
   fetchDatasetModels,
   fetchDatasets,
+  fetchMassBacktestById,
   fetchMassbacktestsById,
   fetchModelByName,
   fetchTrainjobBacktests,
@@ -145,7 +146,16 @@ export function useMassbacktests(
   backtestId: number
 ): UseQueryResult<MassBacktest[] | null, unknown> {
   return useQuery<MassBacktest[] | null, unknown>({
-    queryKey: [QUERY_KEYS.fetch_code_presets, backtestId],
+    queryKey: [QUERY_KEYS.fetch_mass_backtests_by_id, backtestId],
     queryFn: () => fetchMassbacktestsById(backtestId),
+  });
+}
+
+export function useMassbacktest(
+  massBacktestId: number
+): UseQueryResult<MassBacktest | null, unknown> {
+  return useQuery<MassBacktest | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_mass_backtest, massBacktestId],
+    queryFn: () => fetchMassBacktestById(massBacktestId),
   });
 }

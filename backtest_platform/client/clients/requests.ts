@@ -480,3 +480,15 @@ export const fetchMassbacktestsById = async (backtestId: number) => {
   }
   return res;
 };
+
+export const fetchMassBacktestById = async (massBacktestId: number) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.massBacktestById(massBacktestId),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+};
