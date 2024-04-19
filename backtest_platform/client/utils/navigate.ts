@@ -35,6 +35,13 @@ export const getMassbacktestTablesPath = (backtestId: string) => {
   return PATHS.mass_backtest.root.replace(PATH_KEYS.backtest, backtestId);
 };
 
+export const getInvidualMassBacktestPath = (massBacktestId: string) => {
+  return PATHS.mass_backtest.backtest.replace(
+    PATH_KEYS.mass_backtest,
+    massBacktestId
+  );
+};
+
 export const getTrainJobPath = (
   datasetName: string,
   modelName: string,

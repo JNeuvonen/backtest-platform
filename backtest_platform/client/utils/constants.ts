@@ -35,7 +35,7 @@ export const PATHS = {
   },
   mass_backtest: {
     root: `/simulate/mass-backtests/${PATH_KEYS.backtest}`,
-    backtest: `/mass-backtests/${PATH_KEYS.backtest}/${PATH_KEYS.mass_backtest}`,
+    backtest: `/simulate/mass-backtests/result/${PATH_KEYS.mass_backtest}`,
   },
   train: `/data/train-job/${PATH_KEYS.train}`,
   settings: "/settings",
