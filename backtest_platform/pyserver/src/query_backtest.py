@@ -16,7 +16,6 @@ class Backtest(Base):
     dataset_id = Column(Integer, ForeignKey("dataset.id"))
 
     name = Column(String)
-    data = Column(String)
     candle_interval = Column(String)
     open_long_trade_cond = Column(String)
     open_short_trade_cond = Column(String)
