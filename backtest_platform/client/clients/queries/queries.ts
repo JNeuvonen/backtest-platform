@@ -12,6 +12,7 @@ import {
   fetchDataset,
   fetchDatasetModels,
   fetchDatasets,
+  fetchManyBacktestsById,
   fetchMassBacktestById,
   fetchMassbacktestsById,
   fetchModelByName,
@@ -30,6 +31,7 @@ import {
   FetchBacktestByIdRes,
   MassBacktest,
 } from "./response-types";
+import { removeDuplicates } from "../../utils/number";
 
 export function useDatasetsQuery(): UseQueryResult<
   DatasetMetadata[] | null,
@@ -157,5 +159,14 @@ export function useMassbacktest(
   return useQuery<MassBacktest | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_mass_backtest, massBacktestId],
     queryFn: () => fetchMassBacktestById(massBacktestId),
+  });
+}
+
+export function useManyBacktests(
+  listOfBacktestIds: number[]
+): UseQueryResult<MassBacktest | null, unknown> {
+  return useQuery<MassBacktest | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_many_backtests_by_id, listOfBacktestIds],
+    queryFn: () => fetchManyBacktestsById(removeDuplicates(listOfBacktestIds)),
   });
 }

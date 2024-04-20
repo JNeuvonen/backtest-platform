@@ -142,3 +142,7 @@ export const getNormalDistributionItems = (
   }
   return ret;
 };
+
+export const removeDuplicates = (numbers: number[]) => {
+  return [...new Set(numbers)];
+};

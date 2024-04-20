@@ -492,3 +492,15 @@ export const fetchMassBacktestById = async (massBacktestId: number) => {
   }
   return res;
 };
+
+export const fetchManyBacktestsById = async (listOfBacktestIds: number[]) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchManyBacktestsById(listOfBacktestIds),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+};

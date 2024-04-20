@@ -1,6 +1,9 @@
 import React from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
-import { useMassbacktests } from "../../../clients/queries/queries";
+import {
+  useManyBacktests,
+  useMassbacktests,
+} from "../../../clients/queries/queries";
 import { Heading, Spinner } from "@chakra-ui/react";
 import { AgGridReact } from "ag-grid-react";
 import { ColDef, ICellRendererParams } from "ag-grid-community";
@@ -49,6 +52,38 @@ const COLUMN_DEFS: ColDef[] = [
   },
 ];
 
+const MassBacktestsDatagrid = ({
+  massBacktests,
+}: {
+  massBacktests: MassBacktest[];
+}) => {
+  const getAllIds = () => {
+    const ret: number[] = [];
+    massBacktests.forEach((item) => {
+      item.backtest_ids.forEach((id) => ret.push(id));
+    });
+    return ret;
+  };
+  const useManyBacktestsQuery = useManyBacktests(getAllIds());
+  return (
+    <div
+      className="ag-theme-alpine-dark"
+      style={{
+        width: "100%",
+        height: "calc(100vh - 170px)",
+        marginTop: "16px",
+      }}
+    >
+      <AgGridReact
+        pagination={true}
+        columnDefs={COLUMN_DEFS}
+        paginationAutoPageSize={true}
+        rowData={formatData(massBacktests)}
+      />
+    </div>
+  );
+};
+
 export const AllMassBacktests = () => {
   const { backtestId } = usePathParams<PathParams>();
 
@@ -65,21 +100,8 @@ export const AllMassBacktests = () => {
   return (
     <div>
       <Heading size={"lg"}>Completed backtests on other symbols</Heading>
-      <div
-        className="ag-theme-alpine-dark"
-        style={{
-          width: "100%",
-          height: "calc(100vh - 170px)",
-          marginTop: "16px",
-        }}
-      >
-        <AgGridReact
-          pagination={true}
-          columnDefs={COLUMN_DEFS}
-          paginationAutoPageSize={true}
-          rowData={formatData(massBacktestsQuery.data)}
-        />
-      </div>
+
+      <MassBacktestsDatagrid massBacktests={massBacktestsQuery.data} />
     </div>
   );
 };
