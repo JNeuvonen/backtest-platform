@@ -202,6 +202,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
                 "open_trade_cond": backtestInfo.open_trade_cond,
                 "close_trade_cond": backtestInfo.close_trade_cond,
                 "dataset_id": dataset.id,
+                "dataset_name": dataset.dataset_name,
                 "start_balance": START_BALANCE,
                 "end_balance": end_balance,
                 "profit_factor": profit_factor,
