@@ -22,6 +22,7 @@ router = APIRouter()
 
 class RoutePaths:
     BACKTEST = "/"
+    FETCH_MANY_BACKTESTS = "/fetch-many"
     MASS_BACKTEST = "/mass-backtest"
     MASS_BACKTEST_ID = "/mass-backtest/{mass_backtest_id}"
     DELETE_MANY = "/delete-many"
@@ -157,3 +158,10 @@ async def route_mass_backtest_by_id(mass_backtest_id):
             )
 
         return {"data": mass_backtest}
+
+
+@router.get(RoutePaths.FETCH_MANY_BACKTESTS)
+async def route_fetch_many_backtests(list_of_ids: str = Query(...)):
+    with HttpResponseContext():
+        backtests = BacktestQuery.fetch_many_backtests(json.loads(list_of_ids))
+        return {"data": backtests}

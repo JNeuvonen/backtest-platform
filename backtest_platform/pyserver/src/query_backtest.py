@@ -122,3 +122,12 @@ class BacktestQuery:
                     synchronize_session=False
                 )
                 session.commit()
+
+    @staticmethod
+    def fetch_many_backtests(backtest_ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                backtests = (
+                    session.query(Backtest).filter(Backtest.id.in_(backtest_ids)).all()
+                )
+                return backtests
