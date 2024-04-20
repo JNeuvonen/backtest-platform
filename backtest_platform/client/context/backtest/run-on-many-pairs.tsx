@@ -81,13 +81,14 @@ export const BacktestOnManyPairs = () => {
         duration: 5000,
         isClosable: true,
       });
+      runBacktestOnManyPairsModal.onClose();
     }
   };
 
   return (
     <ChakraModal
       {...runBacktestOnManyPairsModal}
-      title="Run python"
+      title="Run bulk sim"
       modalContentStyle={{ maxWidth: "60%" }}
     >
       <Formik initialValues={getFormInitialValues()} onSubmit={onSubmit}>
