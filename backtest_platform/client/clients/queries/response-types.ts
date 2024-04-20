@@ -267,3 +267,14 @@ export interface MassBacktest {
   name: string;
   backtest_ids: number[];
 }
+
+export interface PortfolioHistoryTerse {
+  kline_open_time: number;
+  portfolio_worth: number;
+}
+
+export interface FetchBulkBacktests {
+  data: BacktestObject[];
+  equity_curves: { [key: number]: PortfolioHistoryTerse[] }[];
+  id_to_dataset_name_map: { [key: number]: string };
+}

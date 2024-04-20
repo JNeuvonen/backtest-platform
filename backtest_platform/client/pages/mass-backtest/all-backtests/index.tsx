@@ -145,7 +145,11 @@ const MassBacktestsDatagrid = ({
   };
   const useManyBacktestsQuery = useManyBacktests(getAllIds());
 
-  if (useManyBacktestsQuery.isLoading || !useManyBacktestsQuery.data) {
+  if (
+    useManyBacktestsQuery.isLoading ||
+    !useManyBacktestsQuery.data ||
+    !useManyBacktestsQuery.data.data
+  ) {
     return (
       <div
         className="ag-theme-alpine-dark"
@@ -177,7 +181,7 @@ const MassBacktestsDatagrid = ({
         pagination={true}
         columnDefs={COLUMN_DEFS}
         paginationAutoPageSize={true}
-        rowData={formatData(massBacktests, useManyBacktestsQuery.data)}
+        rowData={formatData(massBacktests, useManyBacktestsQuery.data.data)}
       />
     </div>
   );

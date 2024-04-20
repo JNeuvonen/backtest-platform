@@ -493,14 +493,20 @@ export const fetchMassBacktestById = async (massBacktestId: number) => {
   return res;
 };
 
-export const fetchManyBacktestsById = async (listOfBacktestIds: number[]) => {
+export const fetchManyBacktestsById = async (
+  listOfBacktestIds: number[],
+  includeEquityCurve: boolean
+) => {
   const res = await buildRequest({
     method: "GET",
-    url: LOCAL_API_URL.fetchManyBacktestsById(listOfBacktestIds),
+    url: LOCAL_API_URL.fetchManyBacktestsById(
+      listOfBacktestIds,
+      includeEquityCurve
+    ),
   });
 
   if (res.status === 200) {
-    return res.res["data"];
+    return res.res;
   }
   return res;
 };

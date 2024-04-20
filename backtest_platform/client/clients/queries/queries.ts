@@ -29,6 +29,7 @@ import {
   DatasetModel,
   DatasetModelResponse,
   FetchBacktestByIdRes,
+  FetchBulkBacktests,
   MassBacktest,
 } from "./response-types";
 import { removeDuplicates } from "../../utils/number";
@@ -163,11 +164,16 @@ export function useMassbacktest(
 }
 
 export function useManyBacktests(
-  listOfBacktestIds: number[]
-): UseQueryResult<BacktestObject[] | null, unknown> {
-  return useQuery<BacktestObject[] | null, unknown>({
+  listOfBacktestIds: number[],
+  includeEquityCurve = false
+): UseQueryResult<FetchBulkBacktests | null, unknown> {
+  return useQuery<FetchBulkBacktests | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_many_backtests_by_id, listOfBacktestIds],
-    queryFn: () => fetchManyBacktestsById(removeDuplicates(listOfBacktestIds)),
+    queryFn: () =>
+      fetchManyBacktestsById(
+        removeDuplicates(listOfBacktestIds),
+        includeEquityCurve
+      ),
     enabled: listOfBacktestIds.length > 0,
   });
 }
