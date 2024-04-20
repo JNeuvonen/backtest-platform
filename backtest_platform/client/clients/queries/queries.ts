@@ -168,5 +168,6 @@ export function useManyBacktests(
   return useQuery<BacktestObject[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_many_backtests_by_id, listOfBacktestIds],
     queryFn: () => fetchManyBacktestsById(removeDuplicates(listOfBacktestIds)),
+    enabled: listOfBacktestIds.length > 0,
   });
 }

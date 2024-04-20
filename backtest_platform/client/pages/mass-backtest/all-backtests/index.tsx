@@ -47,6 +47,7 @@ const createRowDataAggregates = (
       calculateMean(backtestsFiltered, "result_perc"),
       2
     ),
+    trade_count: calculateMean(backtestsFiltered, "trade_count"),
     market_time_exposure: roundNumberDropRemaining(
       calculateMean(backtestsFiltered, "market_exposure_time") * 100,
       2
@@ -94,6 +95,12 @@ const COLUMN_DEFS: ColDef[] = [
   {
     headerName: "Profit factor (mean)",
     field: "profit_factor",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "Trade count (mean)",
+    field: "trade_count",
     sortable: true,
     editable: false,
   },
