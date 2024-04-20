@@ -42,8 +42,8 @@ interface TradesBarChartData {
 const getPortfolioGrowthData = (backtestData: FetchBacktestByIdRes) => {
   const ret = [] as PortfolioGrowthData[];
 
-  const portfolioData = backtestData.data.data;
-  const increment = Math.max(Math.floor(portfolioData.length / 3650), 1);
+  const portfolioData = backtestData.balance_history;
+  const increment = Math.max(Math.floor(portfolioData.length / 1000), 1);
 
   const trades = backtestData.trades;
 

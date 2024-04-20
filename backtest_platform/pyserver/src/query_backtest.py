@@ -110,7 +110,6 @@ class BacktestQuery:
                 backtests = (
                     session.query(Backtest)
                     .filter(Backtest.dataset_id == dataset_id)
-                    .options(defer(Backtest.data))
                     .all()
                 )
                 return backtests

@@ -228,6 +228,7 @@ export interface Trade {
 export interface FetchBacktestByIdRes {
   data: BacktestObject;
   trades: Trade[];
+  balance_history: BacktestBalance[];
 }
 
 export interface BacktestsResponse {
