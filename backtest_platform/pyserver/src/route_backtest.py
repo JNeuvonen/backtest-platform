@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
 from backtest_utils import (
+    get_backtest_id_to_dataset_name_map,
     get_mass_sim_backtests_equity_curves,
 )
 from fastapi_utils import convert_to_bool
@@ -177,7 +178,14 @@ async def route_fetch_many_backtests(
         backtests = BacktestQuery.fetch_many_backtests(list_of_ids_arr)
 
         equity_curves = []
+        datasets_map = {}
 
         if include_equity_curve is True:
             equity_curves = get_mass_sim_backtests_equity_curves(list_of_ids_arr)
-        return {"data": backtests, "equity_curves": equity_curves}
+            datasets_map = get_backtest_id_to_dataset_name_map(list_of_ids_arr)
+
+        return {
+            "data": backtests,
+            "id_to_dataset_name_map": datasets_map,
+            "equity_curves": equity_curves,
+        }

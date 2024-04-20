@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import math
 from typing import List
+from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
 from constants import ONE_HOUR_IN_MS
 
@@ -134,6 +135,16 @@ def get_mass_sim_backtests_equity_curves(list_of_ids: List[int]):
         )
         if len(balance_history) == 0:
             continue
-        ret.append(balance_history)
+        ret.append({str(item): balance_history})
+
+    return ret
+
+
+def get_backtest_id_to_dataset_name_map(list_of_ids: List[int]):
+    ret = []
+
+    for item in list_of_ids:
+        dataset_name = BacktestQuery.fetch_dataset_name_by_id(item)
+        ret.append({str(item): dataset_name})
 
     return ret

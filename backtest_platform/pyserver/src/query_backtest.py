@@ -132,3 +132,14 @@ class BacktestQuery:
                     session.query(Backtest).filter(Backtest.id.in_(backtest_ids)).all()
                 )
                 return backtests
+
+    @staticmethod
+    def fetch_dataset_name_by_id(dataset_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                dataset_name = (
+                    session.query(Backtest.dataset_name)
+                    .filter(Backtest.id == dataset_id)
+                    .scalar()
+                )
+                return dataset_name

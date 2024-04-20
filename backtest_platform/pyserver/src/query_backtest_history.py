@@ -122,12 +122,10 @@ class BacktestHistoryQuery:
         with Session() as session:
             return [
                 {
-                    "backtest_id": entry.backtest_id,
                     "kline_open_time": entry.kline_open_time,
                     "portfolio_worth": entry.portfolio_worth,
                 }
                 for entry in session.query(
-                    BacktestHistoryTick.backtest_id,
                     BacktestHistoryTick.kline_open_time,
                     BacktestHistoryTick.portfolio_worth,
                 )
