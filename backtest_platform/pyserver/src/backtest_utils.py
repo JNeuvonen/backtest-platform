@@ -141,10 +141,11 @@ def get_mass_sim_backtests_equity_curves(list_of_ids: List[int]):
 
 
 def get_backtest_id_to_dataset_name_map(list_of_ids: List[int]):
-    ret = []
+    ret = {}
 
     for item in list_of_ids:
         dataset_name = BacktestQuery.fetch_dataset_name_by_id(item)
-        ret.append({str(item): dataset_name})
+
+        ret[str(item)] = dataset_name
 
     return ret
