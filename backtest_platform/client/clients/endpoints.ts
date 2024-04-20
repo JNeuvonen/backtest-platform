@@ -146,10 +146,15 @@ export const LOCAL_API_URL = {
     LOCAL_API.backtest.root +
     `/mass-backtest/${massBacktestId}`,
 
-  fetchManyBacktestsById: (listOfBacktestIds: number[]) =>
+  fetchManyBacktestsById: (
+    listOfBacktestIds: number[],
+    includeEquityCurve: boolean
+  ) =>
     LOCAL_API_URI +
     LOCAL_API.backtest.root +
-    `?list_of_ids=${JSON.stringify(listOfBacktestIds)}`,
+    `?list_of_ids=${JSON.stringify(
+      listOfBacktestIds
+    )}&include_equity_curve=${includeEquityCurve}`,
 };
 
 export const PRED_SERVER_URLS = {
