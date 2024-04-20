@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer, String
 from log import LogExceptionContext
 from orm import Base, Session
@@ -42,3 +42,25 @@ class BacktestHistoryQuery:
             if entry:
                 session.delete(entry)
                 session.commit()
+
+    @staticmethod
+    def create_many(backtest_id: int, entries: List[Dict]):
+        with LogExceptionContext():
+            with Session() as session:
+                new_entries = [
+                    BacktestHistoryTick(backtest_id=backtest_id, **entry)
+                    for entry in entries
+                ]
+                session.bulk_save_objects(new_entries)
+                session.commit()
+                return [entry.id for entry in new_entries]
+
+    @staticmethod
+    def get_entries_by_backtest_id_sorted(backtest_id: int):
+        with Session() as session:
+            return (
+                session.query(BacktestHistoryTick)
+                .filter_by(backtest_id=backtest_id)
+                .order_by(BacktestHistoryTick.kline_open_time.asc())
+                .all()
+            )

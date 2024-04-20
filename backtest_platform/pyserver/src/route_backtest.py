@@ -2,6 +2,7 @@ import asyncio
 import json
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
+from query_backtest_history import BacktestHistoryQuery
 from constants import BACKTEST_REPORT_HTML_PATH
 
 from context import HttpResponseContext
@@ -41,7 +42,10 @@ async def route_get_backtest_by_id(backtest_id):
             )
 
         trades = TradeQuery.fetch_trades_by_backtest_id(backtest.id)
-        return {"data": backtest, "trades": trades}
+        balance_history = BacktestHistoryQuery.get_entries_by_backtest_id_sorted(
+            backtest.id
+        )
+        return {"data": backtest, "trades": trades, "balance_history": balance_history}
 
 
 @router.post(RoutePaths.BACKTEST)

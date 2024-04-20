@@ -32,7 +32,7 @@ class Trade(Base):
 
 class TradeQuery:
     @staticmethod
-    def create_many_trade_entry(backtest_id: int, trade_data: List[dict]):
+    def create_many(backtest_id: int, trade_data: List[dict]):
         if len(trade_data) == 0:
             return
 

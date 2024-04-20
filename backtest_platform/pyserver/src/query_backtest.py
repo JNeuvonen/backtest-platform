@@ -63,17 +63,8 @@ class Backtest(Base):
     short_fee_hourly = Column(Float)
     trading_fees_perc = Column(Float)
 
-    def serialize_data(self, backtest_data):
-        self.data = json.dumps(backtest_data)
-
 
 class BacktestQuery:
-    @staticmethod
-    def deserialize_data(backtest: Backtest):
-        if backtest and backtest.data:
-            backtest.data = json.loads(backtest.data)
-        return backtest
-
     @staticmethod
     def create_entry(fields: Dict):
         with LogExceptionContext():
@@ -90,7 +81,7 @@ class BacktestQuery:
                 backtest_data = (
                     session.query(Backtest).filter(Backtest.id == backtest_id).first()
                 )
-                return BacktestQuery.deserialize_data(backtest_data)
+                return backtest_data
 
     @staticmethod
     def update_backtest_data(backtest_id: int, new_data: dict):
@@ -110,7 +101,7 @@ class BacktestQuery:
                     .filter(Backtest.train_job_id == train_job_id)
                     .all()
                 )
-                return [BacktestQuery.deserialize_data(bt) for bt in backtests]
+                return backtests
 
     @staticmethod
     def fetch_backtests_by_dataset_id(dataset_id: int):

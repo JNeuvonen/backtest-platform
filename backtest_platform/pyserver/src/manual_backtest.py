@@ -1,8 +1,8 @@
-import json
 import logging
 import math
 from typing import Dict, List
 from api_binance import save_historical_klines
+from query_backtest_history import BacktestHistoryQuery
 from backtest_utils import (
     find_max_drawdown,
     get_backtest_profit_factor_comp,
@@ -17,7 +17,6 @@ from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext, get_logger
 from math_utils import calculate_avg_trade_hold_time_ms, calculate_psr, calculate_sr
 from model_backtest import Positions
-from quant_stats_utils import generate_quant_stats_report_html
 from query_backtest import Backtest, BacktestQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
@@ -202,7 +201,6 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             {
                 "open_trade_cond": backtestInfo.open_trade_cond,
                 "close_trade_cond": backtestInfo.close_trade_cond,
-                "data": json.dumps(backtest.positions.balance_history),
                 "dataset_id": dataset.id,
                 "start_balance": START_BALANCE,
                 "end_balance": end_balance,
@@ -271,7 +269,10 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         )
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
-        TradeQuery.create_many_trade_entry(backtest_id, backtest.positions.trades)
+        TradeQuery.create_many(backtest_id, backtest.positions.trades)
+        BacktestHistoryQuery.create_many(
+            backtest_id, backtest.positions.balance_history
+        )
 
         return backtest_from_db
 
