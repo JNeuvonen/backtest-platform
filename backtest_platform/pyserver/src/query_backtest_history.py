@@ -64,3 +64,77 @@ class BacktestHistoryQuery:
                 .order_by(BacktestHistoryTick.kline_open_time.asc())
                 .all()
             )
+
+    @staticmethod
+    def get_entries_by_backtest_id_sorted_partial(backtest_id: int):
+        with Session() as session:
+            return [
+                {
+                    "kline_open_time": entry.kline_open_time,
+                    "portfolio_worth": entry.portfolio_worth,
+                }
+                for entry in session.query(
+                    BacktestHistoryTick.kline_open_time,
+                    BacktestHistoryTick.portfolio_worth,
+                )
+                .filter_by(backtest_id=backtest_id)
+                .order_by(BacktestHistoryTick.kline_open_time.asc())
+                .all()
+            ]
+
+    @staticmethod
+    def fetch_many(backtest_ids: List[int]):
+        with Session() as session:
+            return [
+                session.query(BacktestHistoryTick)
+                .filter(BacktestHistoryTick.backtest_id == backtest_id)
+                .order_by(BacktestHistoryTick.kline_open_time.asc())
+                .all()
+                for backtest_id in backtest_ids
+            ]
+
+    @staticmethod
+    def get_first_last_kline_times_by_backtest_id(backtest_id: int):
+        with Session() as session:
+            first_entry = (
+                session.query(BacktestHistoryTick.kline_open_time)
+                .filter_by(backtest_id=backtest_id)
+                .order_by(BacktestHistoryTick.kline_open_time.asc())
+                .first()
+            )
+            last_entry = (
+                session.query(BacktestHistoryTick.kline_open_time)
+                .filter_by(backtest_id=backtest_id)
+                .order_by(BacktestHistoryTick.kline_open_time.desc())
+                .first()
+            )
+            return {
+                "first_kline_open_time": first_entry.kline_open_time
+                if first_entry
+                else None,
+                "last_kline_open_time": last_entry.kline_open_time
+                if last_entry
+                else None,
+            }
+
+    @staticmethod
+    def get_ticks_by_kline_open_times(backtest_id: int, kline_open_times: List[int]):
+        with Session() as session:
+            return [
+                {
+                    "backtest_id": entry.backtest_id,
+                    "kline_open_time": entry.kline_open_time,
+                    "portfolio_worth": entry.portfolio_worth,
+                }
+                for entry in session.query(
+                    BacktestHistoryTick.backtest_id,
+                    BacktestHistoryTick.kline_open_time,
+                    BacktestHistoryTick.portfolio_worth,
+                )
+                .filter(
+                    BacktestHistoryTick.backtest_id == backtest_id,
+                    BacktestHistoryTick.kline_open_time.in_(kline_open_times),
+                )
+                .order_by(BacktestHistoryTick.kline_open_time.asc())
+                .all()
+            ]

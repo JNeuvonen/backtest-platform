@@ -1,7 +1,12 @@
 import asyncio
 import json
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
+from backtest_utils import (
+    get_mass_sim_backtests_equity_curves,
+)
+from fastapi_utils import convert_to_bool
 from query_backtest_history import BacktestHistoryQuery
 from constants import BACKTEST_REPORT_HTML_PATH
 
@@ -161,7 +166,18 @@ async def route_mass_backtest_by_id(mass_backtest_id):
 
 
 @router.get(RoutePaths.BACKTEST)
-async def route_fetch_many_backtests(list_of_ids: str = Query(...)):
+async def route_fetch_many_backtests(
+    list_of_ids: str = Query(...),
+    include_equity_curve: Optional[bool] = Query(
+        default=None, converter=convert_to_bool
+    ),
+):
     with HttpResponseContext():
-        backtests = BacktestQuery.fetch_many_backtests(json.loads(list_of_ids))
-        return {"data": backtests}
+        list_of_ids_arr: List[int] = json.loads(list_of_ids)
+        backtests = BacktestQuery.fetch_many_backtests(list_of_ids_arr)
+
+        equity_curves = []
+
+        if include_equity_curve is True:
+            equity_curves = get_mass_sim_backtests_equity_curves(list_of_ids_arr)
+        return {"data": backtests, "equity_curves": equity_curves}

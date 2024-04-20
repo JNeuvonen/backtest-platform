@@ -1,3 +1,7 @@
+from datetime import datetime, timedelta
+import math
+from typing import List
+from query_backtest_history import BacktestHistoryQuery
 from constants import ONE_HOUR_IN_MS
 
 
@@ -91,3 +95,45 @@ def turn_short_fee_perc_to_coeff(short_fee_hourly_perc: float, candles_time_delt
     elif candles_time_delta < ONE_HOUR_IN_MS:
         exponent = ONE_HOUR_IN_MS / candles_time_delta
         return (1 + (short_fee_hourly_perc / 100)) ** (1 / exponent)
+
+
+def get_mass_sim_backtests_equity_curves(list_of_ids: List[int]):
+    ret = []
+    first_kline_open_time_ms = math.inf
+    last_kline_open_time_ms = -math.inf
+
+    for item in list_of_ids:
+        first_and_last_kline = (
+            BacktestHistoryQuery.get_first_last_kline_times_by_backtest_id(item)
+        )
+
+        first_kline = first_and_last_kline["first_kline_open_time"]
+        last_kline = first_and_last_kline["last_kline_open_time"]
+
+        if first_kline is None or last_kline is None:
+            continue
+
+        first_kline_open_time_ms = min(first_kline_open_time_ms, first_kline)
+        last_kline_open_time_ms = max(last_kline_open_time_ms, last_kline)
+
+    start_date = datetime.utcfromtimestamp(first_kline_open_time_ms / 1000)
+    start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_date = datetime.utcfromtimestamp(last_kline_open_time_ms / 1000)
+    current_date = start_date
+
+    kline_open_times = []
+
+    while current_date <= end_date:
+        kline_open_time_ms = int(current_date.timestamp() * 1000)
+        kline_open_times.append(kline_open_time_ms)
+        current_date += timedelta(days=1)
+
+    for item in list_of_ids:
+        balance_history = BacktestHistoryQuery.get_ticks_by_kline_open_times(
+            item, kline_open_times
+        )
+        if len(balance_history) == 0:
+            continue
+        ret.append(balance_history)
+
+    return ret
