@@ -160,7 +160,7 @@ async def route_mass_backtest_by_id(mass_backtest_id):
         return {"data": mass_backtest}
 
 
-@router.get(RoutePaths.FETCH_MANY_BACKTESTS)
+@router.get(RoutePaths.BACKTEST)
 async def route_fetch_many_backtests(list_of_ids: str = Query(...)):
     with HttpResponseContext():
         backtests = BacktestQuery.fetch_many_backtests(json.loads(list_of_ids))
