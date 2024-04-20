@@ -146,3 +146,18 @@ export const getNormalDistributionItems = (
 export const removeDuplicates = (numbers: number[]) => {
   return [...new Set(numbers)];
 };
+
+export type NumericKey<T> = {
+  [K in keyof T]: T[K] extends number ? K : never;
+}[keyof T];
+
+export const calculateMean = <
+  T extends Record<K, number>,
+  K extends NumericKey<T>,
+>(
+  arr: T[],
+  key: K
+): number => {
+  if (arr.length === 0) return 0;
+  return arr.reduce((acc, curr) => acc + curr[key], 0) / arr.length;
+};

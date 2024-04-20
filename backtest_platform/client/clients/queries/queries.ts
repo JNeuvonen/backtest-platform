@@ -164,8 +164,8 @@ export function useMassbacktest(
 
 export function useManyBacktests(
   listOfBacktestIds: number[]
-): UseQueryResult<MassBacktest | null, unknown> {
-  return useQuery<MassBacktest | null, unknown>({
+): UseQueryResult<BacktestObject[] | null, unknown> {
+  return useQuery<BacktestObject[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_many_backtests_by_id, listOfBacktestIds],
     queryFn: () => fetchManyBacktestsById(removeDuplicates(listOfBacktestIds)),
   });
