@@ -24,14 +24,20 @@ import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
 import { ChakraSelect } from "../../../components/chakra/Select";
 import {
   COMBINED_STRATEGY_DATA_KEY,
+  getBestTotalReturn,
   getBulkBacktestDetails,
   getDatasetsInBulkBacktest,
+  getMeanTotalReturn,
+  getMedianTotalReturn,
+  getMultiStrategyTotalReturn,
+  getWorstTotalReturn,
 } from "../../../utils/backtest";
 import { WithLabel } from "../../../components/form/WithLabel";
 import { ChakraPopover } from "../../../components/chakra/popover";
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { COLOR_CONTENT_PRIMARY } from "../../../utils/colors";
+import { roundNumberDropRemaining } from "../../../utils/number";
 
 interface PathParams {
   massBacktestId: number;
@@ -320,6 +326,57 @@ export const InvidualMassbacktestDetailsPage = () => {
           <Stat color={COLOR_CONTENT_PRIMARY}>
             <StatLabel>Num of losing strategies</StatLabel>
             <StatNumber>{bulkBacktestDetails.numOfLosingStrata}</StatNumber>
+          </Stat>
+        </div>
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>Combined eq total return</StatLabel>
+            <StatNumber>
+              {roundNumberDropRemaining(
+                getMultiStrategyTotalReturn(
+                  bulkBacktestDetails.multiStrategyReturnsCurve
+                ),
+                2
+              )}
+              %
+            </StatNumber>
+          </Stat>
+        </div>
+
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>Best total return</StatLabel>
+            <StatNumber>
+              {roundNumberDropRemaining(
+                getBestTotalReturn(bulkBacktestDetails.totalReturnsByStrat),
+                2
+              )}
+              %
+            </StatNumber>
+          </Stat>
+        </div>
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>Worst total return</StatLabel>
+            <StatNumber>
+              {roundNumberDropRemaining(
+                getWorstTotalReturn(bulkBacktestDetails.totalReturnsByStrat),
+                2
+              )}
+              %
+            </StatNumber>
+          </Stat>
+        </div>
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>Median total return</StatLabel>
+            <StatNumber>
+              {roundNumberDropRemaining(
+                getMedianTotalReturn(bulkBacktestDetails.totalReturnsByStrat),
+                2
+              )}
+              %
+            </StatNumber>
           </Stat>
         </div>
       </div>
