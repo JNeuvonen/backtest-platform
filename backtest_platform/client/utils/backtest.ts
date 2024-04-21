@@ -4,7 +4,7 @@ import { getKeysCount } from "./object";
 
 const KLINE_OPEN_TIME_KEY = "kline_open_time";
 const EQUITY_KEY = "equity";
-export const COMBINED_STRATEGY_DATA_KEY = "combined_strategy";
+export const COMBINED_STRATEGY_DATA_KEY = "combined_equity";
 
 export const getMassSimFindTicks = (
   bulkFetchBacktest: FetchBulkBacktests,
@@ -101,7 +101,7 @@ export const getEquityCurveStatistics = (
     }
 
     multiStratCurrBalance = tickBalance;
-    tick["equity"] = multiStratCurrBalance;
+    tick[EQUITY_KEY] = multiStratCurrBalance;
     multiStratBalanceTicks.push(tick);
   }
 
@@ -276,7 +276,7 @@ export const getMassSimEquityCurvesData = (
       );
 
       const combinedEqTickValue =
-        combinedEqTick === null ? null : combinedEqTick["equity"];
+        combinedEqTick === null ? null : combinedEqTick[EQUITY_KEY];
 
       return {
         ...item,
