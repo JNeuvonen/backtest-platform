@@ -15,14 +15,16 @@ import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisM
 import { Line } from "recharts";
 import { useMessageListener } from "../../../hooks/useMessageListener";
 import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
-import { GenericRangeSlider } from "../../../components/chakra/RangeSlider";
-import { isFinite, round } from "lodash";
+import { isFinite } from "lodash";
 import { ChakraSelect } from "../../../components/chakra/Select";
 import { getKeysCount } from "../../../utils/object";
 
 interface PathParams {
   massBacktestId: number;
 }
+
+const FILTER_NOT_SELECTED_VALUE = "not-selected";
+const FILTER_NOT_SELECTED_LABEL = "Unselected";
 
 const getMassSimFindTicks = (
   bulkFetchBacktest: FetchBulkBacktests,
@@ -98,10 +100,6 @@ const getEquityCurveStatistics = (
     const tick = {};
     const roundReturns = {};
 
-    if (i >= returns.length - 10) {
-      console.log(returnsTick);
-    }
-
     for (const [key, value] of Object.entries(returnsTick)) {
       if (key === "kline_open_time") {
         tick["kline_open_time"] = value;
@@ -131,7 +129,6 @@ const getEquityCurveStatistics = (
 
 const getMassSimEquityCurvesData = (
   bulkFetchBacktest: FetchBulkBacktests,
-  dateRangeFilter: [number, number],
   {
     sinceYearFilter,
     selectedYearFilter,
@@ -157,26 +154,19 @@ const getMassSimEquityCurvesData = (
   bulkFetchBacktest.equity_curves.forEach((item) => {
     for (const [key, equityCurveTicks] of Object.entries(item)) {
       if (key === backtestKeyWithMostKlines) {
-        const n = equityCurveTicks.length;
-        equityCurveTicks.forEach((balance, idx) => {
+        equityCurveTicks.forEach((balance) => {
           const timestampToDate = new Date(balance["kline_open_time"]);
           yearsUsedInBacktest.add(timestampToDate.getFullYear());
-          if (
-            idx / n < dateRangeFilter[0] / 100 ||
-            idx / n > dateRangeFilter[1] / 100
-          ) {
-            return;
-          }
 
           if (
-            selectedYearFilter !== "all" &&
+            selectedYearFilter !== FILTER_NOT_SELECTED_VALUE &&
             String(timestampToDate.getFullYear()) !== selectedYearFilter
           ) {
             return;
           }
 
           if (
-            sinceYearFilter !== "none" &&
+            sinceYearFilter !== FILTER_NOT_SELECTED_VALUE &&
             timestampToDate.getFullYear() < Number(sinceYearFilter)
           ) {
             return;
@@ -282,9 +272,12 @@ export const InvidualMassbacktestDetailsPage = () => {
     massBacktestQuery.data?.backtest_ids || [],
     true
   );
-  const [dateRangeFilter, setDateRangeFilter] = useState([0, 100]);
-  const [selectedYearFilter, setSelectedYearFilter] = useState("all");
-  const [sinceYearFilter, setSinceYearFilter] = useState("none");
+  const [selectedYearFilter, setSelectedYearFilter] = useState(
+    FILTER_NOT_SELECTED_VALUE
+  );
+  const [sinceYearFilter, setSinceYearFilter] = useState(
+    FILTER_NOT_SELECTED_VALUE
+  );
 
   useMessageListener({
     messageName: DOM_EVENT_CHANNELS.refetch_component,
@@ -297,15 +290,9 @@ export const InvidualMassbacktestDetailsPage = () => {
   const equityCurves = useMemo(() => {
     return getMassSimEquityCurvesData(
       useManyBacktestsQuery.data as FetchBulkBacktests,
-      dateRangeFilter as [number, number],
       { selectedYearFilter, sinceYearFilter }
     );
-  }, [
-    useManyBacktestsQuery.data,
-    dateRangeFilter,
-    selectedYearFilter,
-    sinceYearFilter,
-  ]);
+  }, [useManyBacktestsQuery.data, selectedYearFilter, sinceYearFilter]);
 
   if (
     massBacktestQuery.isLoading ||
@@ -327,15 +314,6 @@ export const InvidualMassbacktestDetailsPage = () => {
           alignItems: "center",
         }}
       >
-        {/* <GenericRangeSlider
-    minValue={0}
-    maxValue={100}
-    onChange={setDateRangeFilter}
-    values={dateRangeFilter}
-    label={"Date range %"}
-    containerStyle={{ width: "400px" }}
-  /> */}
-
         <div></div>
 
         <div style={{ gap: "16px", display: "flex", alignItems: "center" }}>
@@ -343,14 +321,17 @@ export const InvidualMassbacktestDetailsPage = () => {
             label={"Since year"}
             containerStyle={{ width: "150px" }}
             options={[
-              { label: "None", value: "none" },
+              {
+                label: FILTER_NOT_SELECTED_LABEL,
+                value: FILTER_NOT_SELECTED_VALUE,
+              },
               ...equityCurves["years"].map((item) => ({
                 label: String(item),
                 value: String(item),
               })),
             ]}
             onChange={(value: string) => {
-              setSelectedYearFilter("all");
+              setSelectedYearFilter(FILTER_NOT_SELECTED_VALUE);
               setSinceYearFilter(value);
             }}
           />
@@ -358,14 +339,17 @@ export const InvidualMassbacktestDetailsPage = () => {
             label={"Filter by year"}
             containerStyle={{ width: "150px" }}
             options={[
-              { label: "All", value: "all" },
+              {
+                label: FILTER_NOT_SELECTED_LABEL,
+                value: FILTER_NOT_SELECTED_VALUE,
+              },
               ...equityCurves["years"].map((item) => ({
                 label: String(item),
                 value: String(item),
               })),
             ]}
             onChange={(value: string) => {
-              setSinceYearFilter("none");
+              setSinceYearFilter(FILTER_NOT_SELECTED_VALUE);
               setSelectedYearFilter(value);
             }}
           />
