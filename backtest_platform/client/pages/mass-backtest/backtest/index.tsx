@@ -49,8 +49,6 @@ const SelectDatasetsPopoverBody = ({
   const forceUpdate = useForceUpdate();
   return (
     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-      <Heading size={"md"}>Selected pairs</Heading>
-
       <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
         <Button
           variant={BUTTON_VARIANTS.nofill}
@@ -160,7 +158,6 @@ export const InvidualMassbacktestDetailsPage = () => {
         selectedYearFilter,
         sinceYearFilter,
         FILTER_NOT_SELECTED_VALUE,
-        currentlyDisplayedPairs,
       }
     );
   }, [useManyBacktestsQuery.data, selectedYearFilter, sinceYearFilter]);
@@ -169,7 +166,8 @@ export const InvidualMassbacktestDetailsPage = () => {
     massBacktestQuery.isLoading ||
     !massBacktestQuery.data ||
     useManyBacktestsQuery.isLoading ||
-    !useManyBacktestsQuery.data
+    !useManyBacktestsQuery.data ||
+    bulkBacktestDetails === null
   ) {
     return <Spinner />;
   }
@@ -189,16 +187,13 @@ export const InvidualMassbacktestDetailsPage = () => {
           <div>
             <ChakraPopover
               {...selectPairsPopover}
+              setOpen={selectPairsPopover.onOpen}
               body={
                 <SelectDatasetsPopoverBody datasets={currentlyDisplayedPairs} />
               }
+              headerText="Selected pairs"
             >
-              <Button
-                onClick={selectPairsPopover.onOpen}
-                variant={BUTTON_VARIANTS.nofill}
-              >
-                Select pairs
-              </Button>
+              <Button variant={BUTTON_VARIANTS.nofill}>Select pairs</Button>
             </ChakraPopover>
           </div>
           <div>
