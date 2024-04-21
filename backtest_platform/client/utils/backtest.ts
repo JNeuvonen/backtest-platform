@@ -107,6 +107,86 @@ export const getEquityCurveStatistics = (
   };
 };
 
+const convertBalanceTicksToReturnTicks = (balanceTicks: object[]) => {
+  const returnsCoEff = [] as object[];
+
+  for (let i = 1; i < balanceTicks.length; ++i) {
+    const prevItem = balanceTicks[i - 1];
+    const currItem = balanceTicks[i];
+
+    const tick = {
+      kline_open_time: currItem["kline_open_time"],
+    };
+
+    for (const [key, _] of Object.entries(currItem)) {
+      if (key === "kline_open_time") {
+        continue;
+      }
+      const value = convertToReturn(currItem, prevItem, key);
+      tick[key] = value;
+    }
+    returnsCoEff.push(tick);
+  }
+  return returnsCoEff;
+};
+
+const convertBalanceTicksToEqCurve = (balanceTicks: object[]) => {
+  const returnsCoEff = [] as object[];
+
+  for (let i = 1; i < balanceTicks.length; ++i) {
+    const prevItem = balanceTicks[i - 1];
+    const currItem = balanceTicks[i];
+
+    const tick = {
+      kline_open_time: currItem["kline_open_time"],
+    };
+
+    for (const [key, _] of Object.entries(currItem)) {
+      if (key === "kline_open_time") {
+        continue;
+      }
+      const value = convertToReturn(currItem, prevItem, key);
+      tick[key] = value;
+    }
+    returnsCoEff.push(tick);
+  }
+
+  const retArr = [] as object[];
+  const helper = {};
+
+  for (let i = 0; i < returnsCoEff.length; ++i) {
+    const currItem = returnsCoEff[i];
+    if (i === 0) {
+      for (const [key] of Object.entries(currItem)) {
+        if (key === "kline_open_time") {
+          continue;
+        }
+        helper[key] = 1;
+      }
+      continue;
+    }
+
+    const tick = {
+      kline_open_time: currItem["kline_open_time"],
+    };
+
+    for (const [key, value] of Object.entries(currItem)) {
+      if (key === "kline_open_time") {
+        continue;
+      }
+      if (value === undefined || value === null || isNaN(value) || value == 0) {
+        tick[key] = (helper[key] - 1) * 100;
+        continue;
+      }
+      helper[key] = helper[key] * value;
+      tick[key] = (helper[key] - 1) * 100;
+    }
+
+    retArr.push(tick);
+  }
+  return retArr;
+};
+
 export const getMassSimEquityCurvesData = (
   bulkFetchBacktest: FetchBulkBacktests,
   {
@@ -121,7 +201,7 @@ export const getMassSimEquityCurvesData = (
 ) => {
   if (!bulkFetchBacktest || !bulkFetchBacktest.data) return null;
 
-  const ret: object[] = [];
+  const balanceTicksArr: object[] = [];
   const yearsUsedInBacktest = new Set();
 
   let backtestKeyWithMostKlines = "";
@@ -162,7 +242,7 @@ export const getMassSimEquityCurvesData = (
             balance.kline_open_time
           );
 
-          ret.push({
+          balanceTicksArr.push({
             kline_open_time: balance.kline_open_time,
             ...portfolioValues,
           });
@@ -171,69 +251,17 @@ export const getMassSimEquityCurvesData = (
     }
   });
 
-  const returns = [] as object[];
-
-  for (let i = 1; i < ret.length; ++i) {
-    const prevItem = ret[i - 1];
-    const currItem = ret[i];
-
-    const tick = {
-      kline_open_time: currItem["kline_open_time"],
-    };
-
-    for (const [key, _] of Object.entries(currItem)) {
-      if (key === "kline_open_time") {
-        continue;
-      }
-      const value = convertToReturn(currItem, prevItem, key);
-      tick[key] = value;
-    }
-    returns.push(tick);
-  }
-
-  const final = [] as object[];
-  const helper = {};
-
-  for (let i = 0; i < returns.length; ++i) {
-    const currItem = returns[i];
-    if (i === 0) {
-      for (const [key] of Object.entries(currItem)) {
-        if (key === "kline_open_time") {
-          continue;
-        }
-        helper[key] = 1;
-      }
-      continue;
-    }
-
-    const tick = {
-      kline_open_time: currItem["kline_open_time"],
-    };
-
-    for (const [key, value] of Object.entries(currItem)) {
-      if (key === "kline_open_time") {
-        continue;
-      }
-      if (value === undefined || value === null || isNaN(value) || value == 0) {
-        tick[key] = (helper[key] - 1) * 100;
-        continue;
-      }
-      helper[key] = helper[key] * value;
-      tick[key] = (helper[key] - 1) * 100;
-    }
-
-    final.push(tick);
-  }
+  const returns = convertBalanceTicksToReturnTicks(balanceTicksArr);
 
   const eqCurveStatistics = getEquityCurveStatistics(
     bulkFetchBacktest,
-    ret,
+    balanceTicksArr,
     returns,
     backtestKeyWithMostKlines
   );
 
   return {
-    equityCurves: final,
+    equityCurves: convertBalanceTicksToEqCurve(balanceTicksArr),
     years: Array.from(yearsUsedInBacktest),
     ...eqCurveStatistics,
   };
