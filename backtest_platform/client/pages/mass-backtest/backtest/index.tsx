@@ -36,7 +36,7 @@ interface PathParams {
 const FILTER_NOT_SELECTED_VALUE = "not-selected";
 const FILTER_NOT_SELECTED_LABEL = "Unselected";
 
-interface DisplayPairsItem {
+export interface DisplayPairsItem {
   datasetSymbol: string;
   display: boolean;
 }
@@ -130,7 +130,6 @@ export const InvidualMassbacktestDetailsPage = () => {
   const [currentlyDisplayedPairs, setCurrentlyDisplayedPairs] = useState<
     DisplayPairsItem[]
   >([]);
-  const forceUpdate = useForceUpdate();
 
   useMessageListener({
     messageName: DOM_EVENT_CHANNELS.refetch_component,
@@ -157,7 +156,12 @@ export const InvidualMassbacktestDetailsPage = () => {
   const bulkBacktestDetails = useMemo(() => {
     return getBulkBacktestDetails(
       useManyBacktestsQuery.data as FetchBulkBacktests,
-      { selectedYearFilter, sinceYearFilter, FILTER_NOT_SELECTED_VALUE }
+      {
+        selectedYearFilter,
+        sinceYearFilter,
+        FILTER_NOT_SELECTED_VALUE,
+        currentlyDisplayedPairs,
+      }
     );
   }, [useManyBacktestsQuery.data, selectedYearFilter, sinceYearFilter]);
 
