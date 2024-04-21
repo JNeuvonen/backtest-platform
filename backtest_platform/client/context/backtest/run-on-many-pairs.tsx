@@ -6,8 +6,8 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Select,
   Spinner,
+  Switch,
   useToast,
 } from "@chakra-ui/react";
 import {
@@ -22,14 +22,17 @@ import {
 } from "../../clients/queries/queries";
 import { usePathParams } from "../../hooks/usePathParams";
 import { postMassBacktest } from "../../clients/requests";
+import { WithLabel } from "../../components/form/WithLabel";
 
 const formKeys = {
   pairs: "pairs",
+  useLatestData: "useLatestData",
 };
 
 const getFormInitialValues = () => {
   return {
     pairs: [] as MultiValue<OptionType>,
+    useLatestData: true,
   };
 };
 
@@ -41,6 +44,7 @@ interface PathParams {
 export interface MassBacktest {
   pairs: MultiValue<OptionType>;
   interval: string;
+  useLatestData: boolean;
 }
 
 export const BacktestOnManyPairs = () => {
@@ -72,6 +76,7 @@ export const BacktestOnManyPairs = () => {
     const res = await postMassBacktest({
       symbols: symbols,
       original_backtest_id: backtestQuery.data?.data.id,
+      fetch_latest_data: formValues.useLatestData,
     });
 
     if (res.status === 200) {
@@ -112,6 +117,26 @@ export const BacktestOnManyPairs = () => {
                   closeMenuOnSelect={false}
                 />
               </FormControl>
+
+              <div style={{ marginTop: "16px" }}>
+                <Field name={formKeys.useLatestData}>
+                  {({ field, form }) => {
+                    return (
+                      <WithLabel label={"Download latest data"}>
+                        <Switch
+                          isChecked={field.value}
+                          onChange={() =>
+                            form.setFieldValue(
+                              formKeys.useLatestData,
+                              !field.value
+                            )
+                          }
+                        />
+                      </WithLabel>
+                    );
+                  }}
+                </Field>
+              </div>
 
               <Button type="submit" marginTop={"16px"}>
                 Submit
