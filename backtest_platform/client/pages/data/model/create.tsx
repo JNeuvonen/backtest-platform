@@ -31,11 +31,7 @@ import {
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import { ChakraInput } from "../../../components/chakra/input";
-import {
-  createModel,
-  setTargetColumn,
-  setTargetColumnReq,
-} from "../../../clients/requests";
+import { createModel, setTargetColumn } from "../../../clients/requests";
 import {
   nullFillStratToInt,
   scalingStrategyToInt,
