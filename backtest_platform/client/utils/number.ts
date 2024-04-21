@@ -1,8 +1,11 @@
 export const roundNumberDropRemaining = (
-  num: number,
+  num: number | null,
   decimalPlaces: number,
   format: boolean = false
 ): string => {
+  if (num === null) {
+    return "";
+  }
   const factor = Math.pow(10, decimalPlaces);
   const rounded = Math.floor(num * factor) / factor;
 
