@@ -12,7 +12,10 @@ import { Line } from "recharts";
 import { useMessageListener } from "../../../hooks/useMessageListener";
 import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
 import { ChakraSelect } from "../../../components/chakra/Select";
-import { getMassSimEquityCurvesData } from "../../../utils/backtest";
+import {
+  COMBINED_STRATEGY_DATA_KEY,
+  getMassSimEquityCurvesData,
+} from "../../../utils/backtest";
 
 interface PathParams {
   massBacktestId: number;
@@ -150,25 +153,12 @@ export const InvidualMassbacktestDetailsPage = () => {
               />
             );
           })}
-        </ShareYAxisMultilineChart>
-      </div>
-      <div style={{ marginTop: "16px" }}>
-        <ShareYAxisMultilineChart
-          height={500}
-          data={
-            equityCurves === null
-              ? []
-              : equityCurves["multiStrategyEquityCurve"]
-          }
-          xAxisKey={"kline_open_time"}
-          xAxisTickFormatter={(tick: number) =>
-            new Date(tick).toLocaleDateString("default", {
-              year: "numeric",
-              month: "short",
-            })
-          }
-        >
-          <Line type="monotone" dataKey={"equity"} stroke={"red"} dot={false} />
+          <Line
+            type="monotone"
+            dataKey={COMBINED_STRATEGY_DATA_KEY}
+            stroke={"red"}
+            dot={false}
+          />
         </ShareYAxisMultilineChart>
       </div>
     </div>
