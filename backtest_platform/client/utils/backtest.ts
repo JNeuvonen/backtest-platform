@@ -1,3 +1,4 @@
+import { off } from "process";
 import { FetchBulkBacktests } from "../clients/queries/response-types";
 import { binarySearch } from "./algo";
 import { getKeysCount } from "./object";
@@ -120,6 +121,7 @@ export const getEquityCurveStatistics = (
       multiStratBalanceTicks
     ),
     ...getNumWinningAndLosingStrats(totalReturnsByStrat),
+    totalReturnsByStrat,
   };
 };
 
@@ -331,4 +333,55 @@ export const getDatasetsInBulkBacktest = (
     ret.push(value);
   }
   return ret;
+};
+
+export const getMultiStrategyTotalReturn = (totalReturnArr: object[]) => {
+  if (totalReturnArr.length === 0) {
+    return null;
+  }
+  const lastItem = totalReturnArr[totalReturnArr.length - 1];
+  return lastItem[EQUITY_KEY];
+};
+
+export const getBestTotalReturn = (totalReturnsDict: object) => {
+  let max = -1000;
+  for (const [key, value] of Object.entries(totalReturnsDict)) {
+    if (key === KLINE_OPEN_TIME_KEY) {
+      continue;
+    }
+
+    if (value > max) {
+      max = value;
+    }
+  }
+  return (max - 1) * 100;
+};
+
+export const getWorstTotalReturn = (totalReturnsDict: object) => {
+  let min = 1000;
+  for (const [key, value] of Object.entries(totalReturnsDict)) {
+    if (key === KLINE_OPEN_TIME_KEY) {
+      continue;
+    }
+
+    if (value < min) {
+      min = value;
+    }
+  }
+  return (min - 1) * 100;
+};
+
+export const getMedianTotalReturn = (totalReturnsDict: object) => {
+  const totalReturns: number[] = [];
+
+  for (const [key, value] of Object.entries(totalReturnsDict)) {
+    if (key === KLINE_OPEN_TIME_KEY) {
+      continue;
+    }
+
+    totalReturns.push(value);
+  }
+  if (totalReturns.length === 0) return null;
+  totalReturns.sort((a, b) => a - b);
+  return (totalReturns[Math.floor(totalReturns.length / 2)] - 1) * 100;
 };
