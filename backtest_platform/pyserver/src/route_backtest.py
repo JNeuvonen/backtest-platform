@@ -20,7 +20,7 @@ from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
-from utils import get_periods_per_year
+from utils import base_model_to_dict, get_periods_per_year
 
 
 router = APIRouter()
@@ -135,8 +135,15 @@ async def route_detailed_summary(backtest_id):
             klines_until_close=backtest.klines_until_close,
         )
 
+        balance_history = BacktestHistoryQuery.get_entries_by_backtest_id_sorted(
+            backtest.id
+        )
+        balance_history = [base_model_to_dict(entry) for entry in balance_history]
+
         generate_quant_stats_report_html(
-            backtest.data, backtest_info, get_periods_per_year(backtest.candle_interval)
+            balance_history,
+            backtest_info,
+            get_periods_per_year(backtest.candle_interval),
         )
         return FileResponse(
             path=BACKTEST_REPORT_HTML_PATH,
