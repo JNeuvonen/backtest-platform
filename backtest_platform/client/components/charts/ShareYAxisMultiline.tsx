@@ -17,6 +17,7 @@ interface Props {
   xAxisKey: string;
   children: React.ReactNode | React.ReactNode[];
   xAxisTickFormatter?: any;
+  yAxisTickFormatter?: any;
 }
 
 export const ShareYAxisMultilineChart = ({
@@ -26,13 +27,14 @@ export const ShareYAxisMultilineChart = ({
   xAxisKey,
   children,
   xAxisTickFormatter,
+  yAxisTickFormatter,
 }: Props) => {
   return (
     <ResponsiveContainer width={"100%"} height={height} style={containerStyles}>
       <ComposedChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={xAxisKey} tickFormatter={xAxisTickFormatter} />
-        <YAxis />
+        <YAxis tickFormatter={yAxisTickFormatter} />
         <Tooltip
           formatter={(value: any, name: string) => {
             return name === "kline_open_time"
