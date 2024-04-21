@@ -83,3 +83,4 @@ class BodyDeleteManyBacktestsById:
 class BodyCreateMassBacktest(BaseModel):
     symbols: List[str]
     original_backtest_id: int
+    fetch_latest_data: bool

@@ -40,7 +40,6 @@ async def run_rule_based_mass_backtest(
     curr_iter = 1
 
     original_dataset = DatasetQuery.fetch_dataset_by_id(original_backtest.dataset_id)
-    print(original_dataset.id)
     data_transformations = DataTransformationQuery.get_transformations_by_dataset(
         original_dataset.id
     )
@@ -49,7 +48,7 @@ async def run_rule_based_mass_backtest(
         table_name = get_binance_dataset_tablename(symbol, interval)
         symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
-        if symbol_dataset is None:
+        if symbol_dataset is None or body.fetch_latest_data is True:
             await save_historical_klines(symbol, interval, True)
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
