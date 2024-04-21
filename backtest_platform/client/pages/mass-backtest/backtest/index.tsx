@@ -9,6 +9,9 @@ import {
   Checkbox,
   Heading,
   Spinner,
+  Stat,
+  StatLabel,
+  StatNumber,
   Switch,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -28,6 +31,7 @@ import { WithLabel } from "../../../components/form/WithLabel";
 import { ChakraPopover } from "../../../components/chakra/popover";
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { BUTTON_VARIANTS } from "../../../theme";
+import { COLOR_CONTENT_PRIMARY } from "../../../utils/colors";
 
 interface PathParams {
   massBacktestId: number;
@@ -296,6 +300,28 @@ export const InvidualMassbacktestDetailsPage = () => {
             dot={false}
           />
         </ShareYAxisMultilineChart>
+      </div>
+
+      <div
+        style={{
+          marginTop: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>Num of winning strategies</StatLabel>
+            <StatNumber>{bulkBacktestDetails.numOfWinningStrats}</StatNumber>
+          </Stat>
+        </div>
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>Num of losing strategies</StatLabel>
+            <StatNumber>{bulkBacktestDetails.numOfLosingStrata}</StatNumber>
+          </Stat>
+        </div>
       </div>
     </div>
   );

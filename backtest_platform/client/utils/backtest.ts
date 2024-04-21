@@ -4,6 +4,7 @@ import { getKeysCount } from "./object";
 
 const KLINE_OPEN_TIME_KEY = "kline_open_time";
 const EQUITY_KEY = "equity";
+const BACKTEST_START_BALANCE = 10000;
 export const COMBINED_STRATEGY_DATA_KEY = "combined_equity";
 
 export const getMassSimFindTicks = (
@@ -73,10 +74,16 @@ export const getEquityCurveStatistics = (
     }
   });
 
-  let multiStratCurrBalance = 10000;
+  let multiStratCurrBalance = BACKTEST_START_BALANCE;
   const multiStratBalanceTicks: object[] = [];
 
   const totalStrats = getKeysCount(returns[0]) - 1;
+
+  const totalReturnsByStrat = {};
+
+  for (const [key] of Object.entries(endBalances)) {
+    totalReturnsByStrat[key] = 1;
+  }
 
   for (let i = 0; i < returns.length; ++i) {
     const returnsTick = returns[i];
@@ -92,6 +99,7 @@ export const getEquityCurveStatistics = (
       const coeff = value === 0 ? 1 : value;
 
       roundReturns[key] = (multiStratCurrBalance / totalStrats) * coeff;
+      totalReturnsByStrat[key] = totalReturnsByStrat[key] * coeff;
     }
 
     let tickBalance = 0;
@@ -111,6 +119,7 @@ export const getEquityCurveStatistics = (
     multiStrategyReturnsCurve: convertBalanceTicksToEqCurve(
       multiStratBalanceTicks
     ),
+    ...getNumWinningAndLosingStrats(totalReturnsByStrat),
   };
 };
 
@@ -290,6 +299,24 @@ export const getBulkBacktestDetails = (
     years: Array.from(yearsUsedInBacktest),
     ...eqCurveStatistics,
     datasets: getDatasetsInBulkBacktest(bulkFetchBacktest),
+  };
+};
+
+const getNumWinningAndLosingStrats = (totalReturnsByStrat: object) => {
+  let numOfWinning = 0;
+  let numOfLosing = 0;
+
+  for (const [_, value] of Object.entries(totalReturnsByStrat)) {
+    if (value < 1) {
+      numOfLosing += 1;
+    } else {
+      numOfWinning += 1;
+    }
+  }
+
+  return {
+    numOfWinningStrats: numOfWinning,
+    numOfLosingStrata: numOfLosing,
   };
 };
 

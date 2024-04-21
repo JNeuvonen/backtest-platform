@@ -458,6 +458,7 @@ export const createPredServApiKey = async () => {
 interface PostMassBacktestBody {
   symbols: string[];
   original_backtest_id: number;
+  fetch_latest_data: boolean;
 }
 
 export const postMassBacktest = async (body: PostMassBacktestBody) => {

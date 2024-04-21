@@ -47,7 +47,10 @@ const createRowDataAggregates = (
       calculateMean(backtestsFiltered, "result_perc"),
       2
     ),
-    trade_count: calculateMean(backtestsFiltered, "trade_count"),
+    trade_count: roundNumberDropRemaining(
+      calculateMean(backtestsFiltered, "trade_count"),
+      0
+    ),
     market_time_exposure: roundNumberDropRemaining(
       calculateMean(backtestsFiltered, "market_exposure_time") * 100,
       2
