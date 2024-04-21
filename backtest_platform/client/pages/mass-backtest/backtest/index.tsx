@@ -4,7 +4,7 @@ import {
   useManyBacktests,
   useMassbacktest,
 } from "../../../clients/queries/queries";
-import { Spinner } from "@chakra-ui/react";
+import { Checkbox, Spinner, Switch } from "@chakra-ui/react";
 import { FetchBulkBacktests } from "../../../clients/queries/response-types";
 import { LINE_CHART_COLORS, MAX_NUMBER_OF_LINES } from "../../../utils/algo";
 import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
@@ -16,6 +16,7 @@ import {
   COMBINED_STRATEGY_DATA_KEY,
   getMassSimEquityCurvesData,
 } from "../../../utils/backtest";
+import { WithLabel } from "../../../components/form/WithLabel";
 
 interface PathParams {
   massBacktestId: number;
@@ -48,6 +49,9 @@ export const InvidualMassbacktestDetailsPage = () => {
   const [sinceYearFilter, setSinceYearFilter] = useState(
     FILTER_NOT_SELECTED_VALUE
   );
+
+  const [showOnlyCombinedEqFilter, setShowOnlyCombinedEqFilter] =
+    useState(false);
 
   useMessageListener({
     messageName: DOM_EVENT_CHANNELS.refetch_component,
@@ -87,6 +91,16 @@ export const InvidualMassbacktestDetailsPage = () => {
         <div></div>
 
         <div style={{ gap: "16px", display: "flex", alignItems: "center" }}>
+          <div>
+            <WithLabel label={"Show only combined eq"}>
+              <Switch
+                isChecked={showOnlyCombinedEqFilter}
+                onChange={() =>
+                  setShowOnlyCombinedEqFilter(!showOnlyCombinedEqFilter)
+                }
+              />
+            </WithLabel>
+          </div>
           <ChakraSelect
             label={"Since year"}
             containerStyle={{ width: "150px" }}
@@ -138,21 +152,23 @@ export const InvidualMassbacktestDetailsPage = () => {
           }
           yAxisTickFormatter={(value: number) => `${value}%`}
         >
-          {datasetSymbols.map((item, idx) => {
-            return (
-              <Line
-                type="monotone"
-                dataKey={item}
-                stroke={
-                  idx > MAX_NUMBER_OF_LINES
-                    ? LINE_CHART_COLORS[idx % MAX_NUMBER_OF_LINES]
-                    : LINE_CHART_COLORS[idx]
-                }
-                dot={false}
-                key={item}
-              />
-            );
-          })}
+          {showOnlyCombinedEqFilter
+            ? null
+            : datasetSymbols.map((item, idx) => {
+                return (
+                  <Line
+                    type="monotone"
+                    dataKey={item}
+                    stroke={
+                      idx > MAX_NUMBER_OF_LINES
+                        ? LINE_CHART_COLORS[idx % MAX_NUMBER_OF_LINES]
+                        : LINE_CHART_COLORS[idx]
+                    }
+                    dot={false}
+                    key={item}
+                  />
+                );
+              })}
           <Line
             type="monotone"
             dataKey={COMBINED_STRATEGY_DATA_KEY}
