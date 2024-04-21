@@ -1,10 +1,17 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
 import {
   useManyBacktests,
   useMassbacktest,
 } from "../../../clients/queries/queries";
-import { Checkbox, Spinner, Switch } from "@chakra-ui/react";
+import {
+  Button,
+  Checkbox,
+  Heading,
+  Spinner,
+  Switch,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { FetchBulkBacktests } from "../../../clients/queries/response-types";
 import { LINE_CHART_COLORS, MAX_NUMBER_OF_LINES } from "../../../utils/algo";
 import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
@@ -14,9 +21,13 @@ import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
 import { ChakraSelect } from "../../../components/chakra/Select";
 import {
   COMBINED_STRATEGY_DATA_KEY,
-  getMassSimEquityCurvesData,
+  getBulkBacktestDetails,
+  getDatasetsInBulkBacktest,
 } from "../../../utils/backtest";
 import { WithLabel } from "../../../components/form/WithLabel";
+import { ChakraPopover } from "../../../components/chakra/popover";
+import { useForceUpdate } from "../../../hooks/useForceUpdate";
+import { BUTTON_VARIANTS } from "../../../theme";
 
 interface PathParams {
   massBacktestId: number;
@@ -25,15 +36,77 @@ interface PathParams {
 const FILTER_NOT_SELECTED_VALUE = "not-selected";
 const FILTER_NOT_SELECTED_LABEL = "Unselected";
 
-const getLineKeys = (bulkFetchBacktest: FetchBulkBacktests) => {
-  const ret = [] as string[];
+interface DisplayPairsItem {
+  datasetSymbol: string;
+  display: boolean;
+}
 
-  for (const [_, value] of Object.entries(
-    bulkFetchBacktest.id_to_dataset_name_map
-  )) {
-    ret.push(value);
-  }
-  return ret;
+const SelectDatasetsPopoverBody = ({
+  datasets,
+}: {
+  datasets: DisplayPairsItem[];
+}) => {
+  const forceUpdate = useForceUpdate();
+  return (
+    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+      <Heading size={"md"}>Selected pairs</Heading>
+
+      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          fontSize={"14px"}
+          onClick={() => {
+            datasets.map((item) => {
+              item.display = true;
+            });
+
+            forceUpdate();
+          }}
+        >
+          Select all
+        </Button>
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          fontSize={"14px"}
+          onClick={() => {
+            datasets.map((item) => {
+              item.display = false;
+            });
+            forceUpdate();
+          }}
+        >
+          Unselect all
+        </Button>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "16px",
+          flexDirection: "column",
+          marginTop: "16px",
+        }}
+      >
+        {datasets.map((item) => {
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <Checkbox
+                isChecked={item.display}
+                onChange={() => {
+                  datasets.map((datasetItem) => {
+                    if (datasetItem.datasetSymbol === item.datasetSymbol) {
+                      datasetItem.display = !datasetItem.display;
+                    }
+                  });
+                  forceUpdate();
+                }}
+              />
+              <div>{item.datasetSymbol}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 export const InvidualMassbacktestDetailsPage = () => {
@@ -49,9 +122,15 @@ export const InvidualMassbacktestDetailsPage = () => {
   const [sinceYearFilter, setSinceYearFilter] = useState(
     FILTER_NOT_SELECTED_VALUE
   );
+  const selectPairsPopover = useDisclosure();
 
   const [showOnlyCombinedEqFilter, setShowOnlyCombinedEqFilter] =
     useState(false);
+
+  const [currentlyDisplayedPairs, setCurrentlyDisplayedPairs] = useState<
+    DisplayPairsItem[]
+  >([]);
+  const forceUpdate = useForceUpdate();
 
   useMessageListener({
     messageName: DOM_EVENT_CHANNELS.refetch_component,
@@ -61,8 +140,22 @@ export const InvidualMassbacktestDetailsPage = () => {
     },
   });
 
-  const equityCurves = useMemo(() => {
-    return getMassSimEquityCurvesData(
+  useEffect(() => {
+    if (useManyBacktestsQuery.data) {
+      const datasets = getDatasetsInBulkBacktest(useManyBacktestsQuery.data);
+      setCurrentlyDisplayedPairs(
+        datasets.map((item) => {
+          return {
+            display: true,
+            datasetSymbol: item,
+          };
+        })
+      );
+    }
+  }, [useManyBacktestsQuery.data]);
+
+  const bulkBacktestDetails = useMemo(() => {
+    return getBulkBacktestDetails(
       useManyBacktestsQuery.data as FetchBulkBacktests,
       { selectedYearFilter, sinceYearFilter, FILTER_NOT_SELECTED_VALUE }
     );
@@ -77,8 +170,6 @@ export const InvidualMassbacktestDetailsPage = () => {
     return <Spinner />;
   }
 
-  const datasetSymbols = getLineKeys(useManyBacktestsQuery.data);
-
   return (
     <div>
       <div
@@ -91,6 +182,21 @@ export const InvidualMassbacktestDetailsPage = () => {
         <div></div>
 
         <div style={{ gap: "16px", display: "flex", alignItems: "center" }}>
+          <div>
+            <ChakraPopover
+              {...selectPairsPopover}
+              body={
+                <SelectDatasetsPopoverBody datasets={currentlyDisplayedPairs} />
+              }
+            >
+              <Button
+                onClick={selectPairsPopover.onOpen}
+                variant={BUTTON_VARIANTS.nofill}
+              >
+                Select pairs
+              </Button>
+            </ChakraPopover>
+          </div>
           <div>
             <WithLabel label={"Show only combined eq"}>
               <Switch
@@ -109,7 +215,7 @@ export const InvidualMassbacktestDetailsPage = () => {
                 label: FILTER_NOT_SELECTED_LABEL,
                 value: FILTER_NOT_SELECTED_VALUE,
               },
-              ...equityCurves["years"].map((item) => ({
+              ...bulkBacktestDetails["years"].map((item) => ({
                 label: String(item),
                 value: String(item),
               })),
@@ -127,7 +233,7 @@ export const InvidualMassbacktestDetailsPage = () => {
                 label: FILTER_NOT_SELECTED_LABEL,
                 value: FILTER_NOT_SELECTED_VALUE,
               },
-              ...equityCurves["years"].map((item) => ({
+              ...bulkBacktestDetails["years"].map((item) => ({
                 label: String(item),
                 value: String(item),
               })),
@@ -142,7 +248,11 @@ export const InvidualMassbacktestDetailsPage = () => {
       <div style={{ marginTop: "16px" }}>
         <ShareYAxisMultilineChart
           height={500}
-          data={equityCurves === null ? [] : equityCurves["equityCurves"]}
+          data={
+            bulkBacktestDetails === null
+              ? []
+              : bulkBacktestDetails["equityCurves"]
+          }
           xAxisKey={"kline_open_time"}
           xAxisTickFormatter={(tick: number) =>
             new Date(tick).toLocaleDateString("default", {
@@ -154,7 +264,18 @@ export const InvidualMassbacktestDetailsPage = () => {
         >
           {showOnlyCombinedEqFilter
             ? null
-            : datasetSymbols.map((item, idx) => {
+            : bulkBacktestDetails?.datasets.map((item, idx) => {
+                const currentlyDisplayed = currentlyDisplayedPairs.filter(
+                  (dataset) => dataset.datasetSymbol === item
+                );
+
+                if (
+                  currentlyDisplayed.length > 0 &&
+                  !currentlyDisplayed[0].display
+                ) {
+                  return null;
+                }
+
                 return (
                   <Line
                     type="monotone"

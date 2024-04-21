@@ -194,7 +194,7 @@ const convertBalanceTicksToEqCurve = (balanceTicks: object[]) => {
   return retArr;
 };
 
-export const getMassSimEquityCurvesData = (
+export const getBulkBacktestDetails = (
   bulkFetchBacktest: FetchBulkBacktests,
   {
     sinceYearFilter,
@@ -289,5 +289,19 @@ export const getMassSimEquityCurvesData = (
     equityCurves: equityCurves,
     years: Array.from(yearsUsedInBacktest),
     ...eqCurveStatistics,
+    datasets: getDatasetsInBulkBacktest(bulkFetchBacktest),
   };
+};
+
+export const getDatasetsInBulkBacktest = (
+  bulkFetchBacktest: FetchBulkBacktests
+) => {
+  const ret = [] as string[];
+
+  for (const [_, value] of Object.entries(
+    bulkFetchBacktest.id_to_dataset_name_map
+  )) {
+    ret.push(value);
+  }
+  return ret;
 };
