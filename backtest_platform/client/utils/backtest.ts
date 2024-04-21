@@ -3,6 +3,8 @@ import { binarySearch } from "./algo";
 import { getKeysCount } from "./object";
 
 const KLINE_OPEN_TIME_KEY = "kline_open_time";
+const EQUITY_KEY = "equity";
+export const COMBINED_STRATEGY_DATA_KEY = "combined_strategy";
 
 export const getMassSimFindTicks = (
   bulkFetchBacktest: FetchBulkBacktests,
@@ -56,7 +58,7 @@ export const getEquityCurveStatistics = (
 
   bulkFetchBacktest.equity_curves.forEach((item) => {
     for (const [key, equityCurveTicks] of Object.entries(item)) {
-      if (key === "kline_open_time") {
+      if (key === KLINE_OPEN_TIME_KEY) {
         continue;
       }
       for (let i = equityCurveTicks.length - 1; i >= 0; --i) {
@@ -83,8 +85,8 @@ export const getEquityCurveStatistics = (
     const roundReturns = {};
 
     for (const [key, value] of Object.entries(returnsTick)) {
-      if (key === "kline_open_time") {
-        tick["kline_open_time"] = value;
+      if (key === KLINE_OPEN_TIME_KEY) {
+        tick[KLINE_OPEN_TIME_KEY] = value;
         continue;
       }
       const coeff = value === 0 ? 1 : value;
@@ -105,7 +107,7 @@ export const getEquityCurveStatistics = (
 
   return {
     endBalances: endBalances,
-    multiStrategyEquityCurve: multiStratBalanceTicks,
+    multiStrategyBalanceTicks: multiStratBalanceTicks,
     multiStrategyReturnsCurve: convertBalanceTicksToEqCurve(
       multiStratBalanceTicks
     ),
@@ -124,7 +126,7 @@ const convertBalanceTicksToReturnTicks = (balanceTicks: object[]) => {
     };
 
     for (const [key, _] of Object.entries(currItem)) {
-      if (key === "kline_open_time") {
+      if (key === KLINE_OPEN_TIME_KEY) {
         continue;
       }
       const value = convertToReturn(currItem, prevItem, key);
@@ -147,7 +149,7 @@ const convertBalanceTicksToEqCurve = (balanceTicks: object[]) => {
     };
 
     for (const [key, _] of Object.entries(currItem)) {
-      if (key === "kline_open_time") {
+      if (key === KLINE_OPEN_TIME_KEY) {
         continue;
       }
       const value = convertToReturn(currItem, prevItem, key);
@@ -163,7 +165,7 @@ const convertBalanceTicksToEqCurve = (balanceTicks: object[]) => {
     const currItem = returnsCoEff[i];
     if (i === 0) {
       for (const [key] of Object.entries(currItem)) {
-        if (key === "kline_open_time") {
+        if (key === KLINE_OPEN_TIME_KEY) {
           continue;
         }
         helper[key] = 1;
@@ -172,11 +174,11 @@ const convertBalanceTicksToEqCurve = (balanceTicks: object[]) => {
     }
 
     const tick = {
-      kline_open_time: currItem["kline_open_time"],
+      kline_open_time: currItem[KLINE_OPEN_TIME_KEY],
     };
 
     for (const [key, value] of Object.entries(currItem)) {
-      if (key === "kline_open_time") {
+      if (key === KLINE_OPEN_TIME_KEY) {
         continue;
       }
       if (value === undefined || value === null || isNaN(value) || value == 0) {
@@ -265,8 +267,26 @@ export const getMassSimEquityCurvesData = (
     backtestKeyWithMostKlines
   );
 
+  const equityCurves = convertBalanceTicksToEqCurve(balanceTicksArr).map(
+    (item) => {
+      const combinedEqTick = binarySearch(
+        eqCurveStatistics["multiStrategyReturnsCurve"],
+        item[KLINE_OPEN_TIME_KEY],
+        (item) => item[KLINE_OPEN_TIME_KEY]
+      );
+
+      const combinedEqTickValue =
+        combinedEqTick === null ? null : combinedEqTick["equity"];
+
+      return {
+        ...item,
+        [COMBINED_STRATEGY_DATA_KEY]: combinedEqTickValue,
+      };
+    }
+  );
+
   return {
-    equityCurves: convertBalanceTicksToEqCurve(balanceTicksArr),
+    equityCurves: equityCurves,
     years: Array.from(yearsUsedInBacktest),
     ...eqCurveStatistics,
   };
