@@ -2,6 +2,8 @@ import { FetchBulkBacktests } from "../clients/queries/response-types";
 import { binarySearch } from "./algo";
 import { getKeysCount } from "./object";
 
+const KLINE_OPEN_TIME_KEY = "kline_open_time";
+
 export const getMassSimFindTicks = (
   bulkFetchBacktest: FetchBulkBacktests,
   klineOpenTime: number
@@ -70,7 +72,7 @@ export const getEquityCurveStatistics = (
   });
 
   let multiStratCurrBalance = 10000;
-  const multiStrategyEquityCurve: object[] = [];
+  const multiStratBalanceTicks: object[] = [];
 
   const totalStrats = getKeysCount(returns[0]) - 1;
 
@@ -98,12 +100,15 @@ export const getEquityCurveStatistics = (
 
     multiStratCurrBalance = tickBalance;
     tick["equity"] = multiStratCurrBalance;
-    multiStrategyEquityCurve.push(tick);
+    multiStratBalanceTicks.push(tick);
   }
 
   return {
     endBalances: endBalances,
-    multiStrategyEquityCurve: multiStrategyEquityCurve,
+    multiStrategyEquityCurve: multiStratBalanceTicks,
+    multiStrategyReturnsCurve: convertBalanceTicksToEqCurve(
+      multiStratBalanceTicks
+    ),
   };
 };
 
@@ -115,7 +120,7 @@ const convertBalanceTicksToReturnTicks = (balanceTicks: object[]) => {
     const currItem = balanceTicks[i];
 
     const tick = {
-      kline_open_time: currItem["kline_open_time"],
+      kline_open_time: currItem[KLINE_OPEN_TIME_KEY],
     };
 
     for (const [key, _] of Object.entries(currItem)) {
@@ -138,7 +143,7 @@ const convertBalanceTicksToEqCurve = (balanceTicks: object[]) => {
     const currItem = balanceTicks[i];
 
     const tick = {
-      kline_open_time: currItem["kline_open_time"],
+      kline_open_time: currItem[KLINE_OPEN_TIME_KEY],
     };
 
     for (const [key, _] of Object.entries(currItem)) {
@@ -220,7 +225,7 @@ export const getMassSimEquityCurvesData = (
     for (const [key, equityCurveTicks] of Object.entries(item)) {
       if (key === backtestKeyWithMostKlines) {
         equityCurveTicks.forEach((balance) => {
-          const timestampToDate = new Date(balance["kline_open_time"]);
+          const timestampToDate = new Date(balance[KLINE_OPEN_TIME_KEY]);
           yearsUsedInBacktest.add(timestampToDate.getFullYear());
 
           if (
