@@ -295,7 +295,6 @@ export const getBulkBacktestDetails = (
       };
     }
   );
-
   return {
     equityCurves: equityCurves,
     years: Array.from(yearsUsedInBacktest),

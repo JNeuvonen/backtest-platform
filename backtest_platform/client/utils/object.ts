@@ -32,6 +32,7 @@ export function isOneNestedValueTrue<T extends Record<string, any>>(
 }
 
 export function getKeysCount<T extends object>(obj: T): number {
+  if (!obj) return 0;
   return Object.keys(obj).length;
 }
 
