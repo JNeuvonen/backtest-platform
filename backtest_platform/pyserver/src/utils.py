@@ -159,6 +159,10 @@ def contains_infinity(dct):
     )
 
 
+def contains_inf(d):
+    return any(value in (float("inf"), float("-inf")) for value in d.values())
+
+
 def replace_infinities(dct):
     for k, v in dct.items():
         if isinstance(v, (float, int)) and math.isinf(v):

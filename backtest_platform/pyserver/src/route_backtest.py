@@ -20,7 +20,7 @@ from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
-from utils import base_model_to_dict, get_periods_per_year
+from utils import base_model_to_dict, contains_inf, get_periods_per_year
 
 
 router = APIRouter()
@@ -183,12 +183,15 @@ async def route_fetch_many_backtests(
     with HttpResponseContext():
         list_of_ids_arr: List[int] = json.loads(list_of_ids)
         backtests = BacktestQuery.fetch_many_backtests(list_of_ids_arr)
+        candle_interval = backtests[0].candle_interval
 
         equity_curves = []
         datasets_map = {}
 
         if include_equity_curve is True:
-            equity_curves = get_mass_sim_backtests_equity_curves(list_of_ids_arr)
+            equity_curves = get_mass_sim_backtests_equity_curves(
+                list_of_ids_arr, candle_interval
+            )
             datasets_map = get_backtest_id_to_dataset_name_map(list_of_ids_arr)
 
         return {

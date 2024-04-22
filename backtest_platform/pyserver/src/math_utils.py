@@ -24,7 +24,7 @@ def calculate_sr(returns, rf=0, periods_per_year=365):
     annualized_return = mean_return * periods_per_year
     annualized_std = std_dev * np.sqrt(periods_per_year)
     SR = (annualized_return - rf) / annualized_std
-    return SR
+    return SR if np.isfinite(SR) else None
 
 
 def calculate_avg_trade_hold_time_ms(trades):
