@@ -3,7 +3,7 @@ import math
 from typing import List
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
-from constants import ONE_HOUR_IN_MS
+from constants import ONE_HOUR_IN_MS, CandleSize
 
 
 def get_backtest_profit_factor_comp(trades):
@@ -98,7 +98,7 @@ def turn_short_fee_perc_to_coeff(short_fee_hourly_perc: float, candles_time_delt
         return (1 + (short_fee_hourly_perc / 100)) ** (1 / exponent)
 
 
-def get_mass_sim_backtests_equity_curves(list_of_ids: List[int]):
+def get_mass_sim_backtests_equity_curves(list_of_ids: List[int], candle_interval: str):
     ret = []
     first_kline_open_time_ms = math.inf
     last_kline_open_time_ms = -math.inf
@@ -130,9 +130,14 @@ def get_mass_sim_backtests_equity_curves(list_of_ids: List[int]):
         current_date += timedelta(days=1)
 
     for item in list_of_ids:
-        balance_history = BacktestHistoryQuery.get_ticks_by_kline_open_times(
-            item, kline_open_times
-        )
+        if candle_interval == CandleSize.ONE_DAY:
+            balance_history = (
+                BacktestHistoryQuery.get_entries_by_backtest_id_sorted_partial(item)
+            )
+        else:
+            balance_history = BacktestHistoryQuery.get_ticks_by_kline_open_times(
+                item, kline_open_times
+            )
         if len(balance_history) == 0:
             continue
         ret.append({str(item): balance_history})
