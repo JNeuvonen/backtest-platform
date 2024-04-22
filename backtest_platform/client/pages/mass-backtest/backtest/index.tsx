@@ -225,6 +225,8 @@ export const InvidualMassbacktestDetailsPage = () => {
     );
   }, [useManyBacktestsQuery.data, selectedYearFilter, sinceYearFilter]);
 
+  console.log("test");
+
   if (
     massBacktestQuery.isLoading ||
     !massBacktestQuery.data ||
