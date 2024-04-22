@@ -55,7 +55,7 @@ const formKeys = {
   useTimeBasedClose: "useTimeBasedClose",
   klinesUntilClose: "klinesUntilClose",
   useProfitBasedClose: "useProfitBasedClose",
-  takeProfitThresholdPerc: "take_profit_threshold_perc",
+  takeProfitThresholdPerc: "takeProfitThresholdPerc",
   useStopLossBasedClose: "useStopLossBasedClose",
   stopLossThresholdPerc: "stopLossThresholdPerc",
   tradingFees: "tradingFees",
@@ -132,6 +132,8 @@ export const BacktestForm = () => {
 
   const submitNewBacktest = async (values: BacktestFormValues) => {
     if (!dataset) return;
+
+    console.log(values);
 
     const res = await createManualBacktest({
       open_trade_cond: values.openTradeCode,
