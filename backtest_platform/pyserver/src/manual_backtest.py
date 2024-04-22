@@ -35,69 +35,72 @@ async def run_rule_based_mass_backtest(
     interval,
     original_backtest: Backtest,
 ):
-    logger = get_logger()
-    n_symbols = len(body.symbols)
-    curr_iter = 1
+    with LogExceptionContext():
+        logger = get_logger()
+        n_symbols = len(body.symbols)
+        curr_iter = 1
 
-    original_dataset = DatasetQuery.fetch_dataset_by_id(original_backtest.dataset_id)
-    data_transformations = DataTransformationQuery.get_transformations_by_dataset(
-        original_dataset.id
-    )
+        original_dataset = DatasetQuery.fetch_dataset_by_id(
+            original_backtest.dataset_id
+        )
+        data_transformations = DataTransformationQuery.get_transformations_by_dataset(
+            original_dataset.id
+        )
 
-    for symbol in body.symbols:
-        table_name = get_binance_dataset_tablename(symbol, interval)
-        symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
-
-        if symbol_dataset is None or body.fetch_latest_data is True:
-            await save_historical_klines(symbol, interval, True)
+        for symbol in body.symbols:
+            table_name = get_binance_dataset_tablename(symbol, interval)
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
-        DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
+            if symbol_dataset is None or body.fetch_latest_data is True:
+                await save_historical_klines(symbol, interval, True)
+                symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
-        for transformation in data_transformations:
-            python_program = PythonCode.on_dataset(
-                table_name, transformation.transformation_code
+            DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
+
+            for transformation in data_transformations:
+                python_program = PythonCode.on_dataset(
+                    table_name, transformation.transformation_code
+                )
+                exec_python(python_program)
+                DataTransformationQuery.create_entry(
+                    {
+                        "transformation_code": transformation,
+                        "dataset_id": symbol_dataset.id,
+                    }
+                )
+
+            backtest_body = {
+                "backtest_data_range": [
+                    original_backtest.backtest_range_start,
+                    original_backtest.backtest_range_end,
+                ],
+                "open_trade_cond": original_backtest.open_trade_cond,
+                "close_trade_cond": original_backtest.close_trade_cond,
+                "is_short_selling_strategy": original_backtest.is_short_selling_strategy,
+                "use_time_based_close": original_backtest.use_time_based_close,
+                "use_profit_based_close": original_backtest.use_profit_based_close,
+                "use_stop_loss_based_close": original_backtest.use_stop_loss_based_close,
+                "dataset_id": symbol_dataset.id,
+                "trading_fees_perc": original_backtest.trading_fees_perc,
+                "slippage_perc": original_backtest.slippage_perc,
+                "short_fee_hourly": original_backtest.short_fee_hourly,
+                "take_profit_threshold_perc": original_backtest.take_profit_threshold_perc,
+                "stop_loss_threshold_perc": original_backtest.stop_loss_threshold_perc,
+                "name": original_backtest.name,
+                "klines_until_close": original_backtest.klines_until_close,
+            }
+
+            backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
+            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest.id)
+
+            logger.log(
+                f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
+                logging.INFO,
+                True,
+                True,
+                DomEventChannels.REFETCH_COMPONENT.value,
             )
-            exec_python(python_program)
-            DataTransformationQuery.create_entry(
-                {
-                    "transformation_code": transformation,
-                    "dataset_id": symbol_dataset.id,
-                }
-            )
-
-        backtest_body = {
-            "backtest_data_range": [
-                original_backtest.backtest_range_start,
-                original_backtest.backtest_range_end,
-            ],
-            "open_trade_cond": original_backtest.open_trade_cond,
-            "close_trade_cond": original_backtest.close_trade_cond,
-            "is_short_selling_strategy": original_backtest.is_short_selling_strategy,
-            "use_time_based_close": original_backtest.use_time_based_close,
-            "use_profit_based_close": original_backtest.use_profit_based_close,
-            "use_stop_loss_based_close": original_backtest.use_stop_loss_based_close,
-            "dataset_id": symbol_dataset.id,
-            "trading_fees_perc": original_backtest.trading_fees_perc,
-            "slippage_perc": original_backtest.slippage_perc,
-            "short_fee_hourly": original_backtest.short_fee_hourly,
-            "take_profit_threshold_perc": original_backtest.take_profit_threshold_perc,
-            "stop_loss_threshold_perc": original_backtest.stop_loss_threshold_perc,
-            "name": original_backtest.name,
-            "klines_until_close": original_backtest.klines_until_close,
-        }
-
-        backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
-        MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest.id)
-
-        logger.log(
-            f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
-            logging.INFO,
-            True,
-            True,
-            DomEventChannels.REFETCH_COMPONENT.value,
-        )
-        curr_iter += 1
+            curr_iter += 1
 
 
 def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
