@@ -27,7 +27,6 @@ import {
   getBestTotalReturn,
   getBulkBacktestDetails,
   getDatasetsInBulkBacktest,
-  getMeanTotalReturn,
   getMedianTotalReturn,
   getMultiStrategyTotalReturn,
   getWorstTotalReturn,
@@ -38,10 +37,29 @@ import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { COLOR_CONTENT_PRIMARY } from "../../../utils/colors";
 import { roundNumberDropRemaining } from "../../../utils/number";
+import { GenericTable } from "../../../components/tables/GenericTable";
+import { Link } from "react-router-dom";
+import {
+  getDatasetBacktestPath,
+  getDatasetInfoPagePath,
+} from "../../../utils/navigate";
+import { round } from "lodash";
 
 interface PathParams {
   massBacktestId: number;
 }
+
+const COLUMNS_FOR_RESULTS_TABLE = [
+  "Dataset",
+  "Backtest",
+  "Net ret. (%)",
+  "Buy n hold net ret. (%)",
+  "CAGR (%)",
+  "Risk adj. CAGR (%)",
+  "Buy n hold CAGR (%)",
+  "Profit factor",
+  "Max drawdown (%)",
+];
 
 const FILTER_NOT_SELECTED_VALUE = "not-selected";
 const FILTER_NOT_SELECTED_LABEL = "Unselected";
@@ -115,6 +133,41 @@ const SelectDatasetsPopoverBody = ({
       </div>
     </div>
   );
+};
+
+const generateResultsTableRows = (bulkFetchBacktests: FetchBulkBacktests) => {
+  const ret: (string | number | JSX.Element)[][] = [];
+
+  bulkFetchBacktests.data.forEach((item) => {
+    const row = [
+      <Link
+        to={getDatasetInfoPagePath(item.dataset_name)}
+        className={"link-default"}
+      >
+        {item.dataset_name}
+      </Link>,
+      <Link
+        to={getDatasetBacktestPath(item.dataset_name, item.id)}
+        className={"link-default"}
+      >
+        {item.id}
+      </Link>,
+      roundNumberDropRemaining(item.result_perc, 2),
+      roundNumberDropRemaining(item.buy_and_hold_result_perc, 2),
+      roundNumberDropRemaining(item.cagr * 100, 2),
+      roundNumberDropRemaining(item.risk_adjusted_return * 100, 2),
+      roundNumberDropRemaining(item.buy_and_hold_cagr * 100, 2),
+      roundNumberDropRemaining(item.profit_factor, 2),
+      roundNumberDropRemaining(item.max_drawdown_perc, 2),
+    ];
+    ret.push(row);
+  });
+  ret.sort((a, b) => {
+    const resultB = b[2] as number;
+    const resultA = a[2] as number;
+    return resultB - resultA;
+  });
+  return ret;
 };
 
 export const InvidualMassbacktestDetailsPage = () => {
@@ -203,7 +256,11 @@ export const InvidualMassbacktestDetailsPage = () => {
               }
               headerText="Selected pairs"
             >
-              <Button variant={BUTTON_VARIANTS.nofill}>Select pairs</Button>
+              <Button variant={BUTTON_VARIANTS.nofill}>
+                Select pairs (
+                {currentlyDisplayedPairs.filter((item) => item.display).length}/
+                {currentlyDisplayedPairs.length})
+              </Button>
             </ChakraPopover>
           </div>
           <div>
@@ -378,6 +435,16 @@ export const InvidualMassbacktestDetailsPage = () => {
               %
             </StatNumber>
           </Stat>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "32px" }}>
+        <Heading>Results breakdown</Heading>
+        <div style={{ marginTop: "16px" }}>
+          <GenericTable
+            rows={generateResultsTableRows(useManyBacktestsQuery.data)}
+            columns={COLUMNS_FOR_RESULTS_TABLE}
+          />
         </div>
       </div>
     </div>
