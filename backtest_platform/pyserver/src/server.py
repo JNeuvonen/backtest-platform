@@ -1,5 +1,6 @@
 import os
 from contextlib import asynccontextmanager
+from code_preset_utils import generate_default_code_presets
 from utils import on_shutdown_cleanup
 import uvicorn
 
@@ -23,6 +24,7 @@ async def lifespan(
 
     with LogExceptionContext("Succesfully initiated tables"):
         create_tables()
+        generate_default_code_presets()
     yield
 
 

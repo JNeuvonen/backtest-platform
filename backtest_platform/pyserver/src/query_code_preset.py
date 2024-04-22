@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from sqlalchemy import Column, Integer, String, UniqueConstraint
 from log import LogExceptionContext
 from orm import Base, Session
@@ -48,3 +48,18 @@ class CodePresetQuery:
         with LogExceptionContext():
             with Session() as session:
                 return session.query(CodePreset).all()
+
+    @staticmethod
+    def create_many(entries: List[Dict]):
+        successful_ids = []
+        with LogExceptionContext():
+            with Session() as session:
+                for fields in entries:
+                    try:
+                        entry = CodePreset(**fields)
+                        session.add(entry)
+                        session.commit()
+                        successful_ids.append(entry.id)
+                    except Exception:
+                        session.rollback()
+                return successful_ids
