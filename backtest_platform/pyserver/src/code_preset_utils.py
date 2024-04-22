@@ -9,11 +9,13 @@ class CodePreset:
     code: str
     name: str
     category: str
+    description: str
 
-    def __init__(self, code, name, category) -> None:
+    def __init__(self, code, name, category, description) -> None:
         self.code = code
         self.name = name
         self.category = category
+        self.description = description
 
     def to_dict(self) -> dict:
         return {"code": self.code, "name": self.name, "category": self.category}
@@ -175,43 +177,90 @@ def calculate_bbands_crossing(df, column='close_price', ma_period=20, std_factor
 calculate_bbands_crossing(df=dataset, column='close_price', ma_period=20, std_factor=2, direction='up')
 """
 
+GEN_DEMA = """
+import pandas as pd
+
+def calculate_dema(df, column='close_price', periods=[20]):
+    for period in periods:
+        ema1 = df[column].ewm(span=period, adjust=False).mean()
+        ema2 = ema1.ewm(span=period, adjust=False).mean()
+        dema = 2 * ema1 - ema2
+        dema_label = f"DEMA_{period}_{column}"
+        df[dema_label] = dema
+
+# Example usage:
+periods = [20, 50, 100]
+column = "close_price"
+calculate_dema(dataset, column=column, periods=periods)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
-    CodePreset(code=GEN_RSI_CODE, name="RSI", category=CodePresetCategories.INDICATOR),
-    CodePreset(code=GEN_MA_CODE, name="SMA", category=CodePresetCategories.INDICATOR),
     CodePreset(
-        code=GEN_TARGETS, name="TARGET", category=CodePresetCategories.INDICATOR
+        code=GEN_RSI_CODE,
+        name="RSI",
+        category=CodePresetCategories.INDICATOR,
+        description="Generates RSI indicator on the selected column with the specified look-back periods.",
     ),
-    CodePreset(code=GEN_ATR, name="ATR", category=CodePresetCategories.INDICATOR),
+    CodePreset(
+        code=GEN_MA_CODE,
+        name="SMA",
+        category=CodePresetCategories.INDICATOR,
+        description="Generates SMA indicator on the selected column with the specified look-back periods.",
+    ),
+    CodePreset(
+        code=GEN_TARGETS,
+        name="TARGET",
+        category=CodePresetCategories.INDICATOR,
+        description="Generates forward looking target on the selected target column with the specified forward looking periods. This is useful for gauging correlations to future prices.",
+    ),
+    CodePreset(
+        code=GEN_ATR,
+        name="ATR",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Average True Range (ATR) to measure market volatility over specified periods.",
+    ),
     CodePreset(
         code=IS_FRIDAY_8_UTC,
         name="IS_FRIDAY_8_UTC",
         category=CodePresetCategories.INDICATOR,
+        description="Marks periods on Fridays between 8 and 10 UTC to help identify time-specific market behavior.",
     ),
     CodePreset(
         code=GEN_OBV,
         name="OBV",
         category=CodePresetCategories.INDICATOR,
+        description="Calculates the On-Balance Volume (OBV) to track cumulative trading volume by adding or subtracting each period's volume based on the direction of the price movement.",
     ),
     CodePreset(
         code=GEN_HOURLY_FLAGS,
         name="HOURLY_FLAGS",
         category=CodePresetCategories.INDICATOR,
+        description="Generates flags for each hour of the week, indicating if a particular record falls within that hour. Useful for time-series analysis.",
     ),
     CodePreset(
         code=GEN_SIMPLE_CROSSING,
         name="SIMPLE_CROSSING",
         category=CodePresetCategories.INDICATOR,
+        description="Detects when a value crosses above or below a specified threshold, marking the event for further analysis.",
     ),
     CodePreset(
         code=GEN_PERSISTENT_CROSSING,
         name="PERISTENT_CROSSING",
         category=CodePresetCategories.INDICATOR,
+        description="Identifies persistent crossing events over a look-back period, enhancing reliability in trend identification.",
     ),
     CodePreset(
         code=GEN_BBANDS_CROSSING,
         name="BBANDS_CROSSING",
         category=CodePresetCategories.INDICATOR,
+        description="Determines when prices cross above or below Bollinger Bands, which can signal significant market moves based on volatility and price levels.",
+    ),
+    CodePreset(
+        code=GEN_DEMA,
+        name="DEMA",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Double Exponential Moving Average (DEMA) for a given period to provide a smoother and more responsive moving average.",
     ),
 ]
 
