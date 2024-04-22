@@ -4,9 +4,7 @@ import { useDatasetsQuery } from "../../clients/queries/queries";
 import { GenericTable } from "../../components/tables/GenericTable";
 import { Link } from "react-router-dom";
 import { PATHS, PATH_KEYS } from "../../utils/constants";
-import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
-import { text } from "stream/consumers";
 
 const COLUMNS = ["Dataset name"];
 
