@@ -22,6 +22,7 @@ interface SelectWithTextFilterProps {
   label?: string;
   containerStyle?: CSSProperties;
   id?: string;
+  value?: MultiValue<OptionType> | SingleValue<OptionType>;
 }
 
 const SearchSelect = ({
@@ -30,6 +31,7 @@ const SearchSelect = ({
   isMulti,
   closeMenuOnSelect,
   placeholder,
+  value,
 }) => {
   return (
     <Select
@@ -39,6 +41,7 @@ const SearchSelect = ({
       isSearchable={true}
       closeMenuOnSelect={closeMenuOnSelect}
       placeholder={placeholder || "Select an option"}
+      value={value}
       styles={{
         control: (provided) => {
           return {
@@ -68,6 +71,7 @@ export const SelectWithTextFilter: React.FC<SelectWithTextFilterProps> = ({
   label = "",
   containerStyle = {},
   id = "",
+  value,
 }) => {
   if (label) {
     return (
@@ -79,6 +83,7 @@ export const SelectWithTextFilter: React.FC<SelectWithTextFilterProps> = ({
           placeholder={placeholder}
           isMulti={isMulti}
           closeMenuOnSelect={closeMenuOnSelect}
+          value={value}
         />
       </FormControl>
     );
@@ -91,6 +96,7 @@ export const SelectWithTextFilter: React.FC<SelectWithTextFilterProps> = ({
       placeholder={placeholder}
       isMulti={isMulti}
       closeMenuOnSelect={closeMenuOnSelect}
+      value={value}
     />
   );
 };

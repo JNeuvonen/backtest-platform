@@ -8,6 +8,8 @@ import {
   FormLabel,
   Spinner,
   Switch,
+  Tooltip,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import {
@@ -23,6 +25,9 @@ import {
 import { usePathParams } from "../../hooks/usePathParams";
 import { postMassBacktest } from "../../clients/requests";
 import { WithLabel } from "../../components/form/WithLabel";
+import { BUTTON_VARIANTS } from "../../theme";
+import { ChakraPopover } from "../../components/chakra/popover";
+import { BULK_SIM_PAIR_PRESETS } from "../../utils/hardcodedpresets";
 
 const formKeys = {
   pairs: "pairs",
@@ -43,9 +48,35 @@ interface PathParams {
 
 export interface MassBacktest {
   pairs: MultiValue<OptionType>;
-  interval: string;
   useLatestData: boolean;
 }
+
+interface PropsSelectBulkSimPairs {
+  onSelect: (values: MultiValue<OptionType>) => void;
+}
+
+const SelectBulkSimPairsBody = ({ onSelect }: PropsSelectBulkSimPairs) => {
+  return (
+    <div>
+      {BULK_SIM_PAIR_PRESETS.map((preset) => {
+        return (
+          <div>
+            <Tooltip label={preset.pairs.map((pair) => pair.label).join(", ")}>
+              <Button
+                variant={BUTTON_VARIANTS.nofill}
+                onClick={() => {
+                  onSelect(preset.pairs);
+                }}
+              >
+                {preset.label} ({preset.pairs.length} symbols)
+              </Button>
+            </Tooltip>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export const BacktestOnManyPairs = () => {
   const { backtestId } = usePathParams<PathParams>();
@@ -53,6 +84,7 @@ export const BacktestOnManyPairs = () => {
 
   const binanceTickersQuery = useBinanceTickersQuery();
   const backtestQuery = useBacktestById(Number(backtestId));
+  const presetsPopover = useDisclosure();
 
   const toast = useToast();
 
@@ -97,13 +129,35 @@ export const BacktestOnManyPairs = () => {
       modalContentStyle={{ maxWidth: "60%" }}
     >
       <Formik initialValues={getFormInitialValues()} onSubmit={onSubmit}>
-        {({ setFieldValue }) => {
+        {({ setFieldValue, values }) => {
           return (
             <Form>
               <FormControl>
-                <FormLabel fontSize={"x-large"}>
-                  Select pairs for mass sim
-                </FormLabel>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <FormLabel fontSize={"x-large"}>Select pairs</FormLabel>
+
+                  <ChakraPopover
+                    {...presetsPopover}
+                    setOpen={presetsPopover.onOpen}
+                    body={
+                      <SelectBulkSimPairsBody
+                        onSelect={(values) =>
+                          setFieldValue(formKeys.pairs, values)
+                        }
+                      />
+                    }
+                    headerText="Select pairs from a preset"
+                  >
+                    <Button variant={BUTTON_VARIANTS.nofill}>Presets</Button>
+                  </ChakraPopover>
+                </div>
                 <Field
                   name={formKeys.pairs}
                   as={SelectWithTextFilter}
@@ -115,6 +169,7 @@ export const BacktestOnManyPairs = () => {
                   }
                   isMulti={true}
                   closeMenuOnSelect={false}
+                  value={values.pairs}
                 />
               </FormControl>
 

@@ -174,6 +174,7 @@ export interface BacktestBalance {
 
 export interface BacktestObject {
   id: number;
+  dataset_name: string;
   open_trade_cond: string;
   close_trade_cond: string;
   use_time_based_close: boolean;
