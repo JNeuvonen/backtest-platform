@@ -11,6 +11,7 @@ class DataTransformation(BaseModel):
 
 
 class BodyCreateStrategy(BaseModel):
+    name: str
     symbol: str
     base_asset: str
     quote_asset: str
