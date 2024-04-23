@@ -29,11 +29,7 @@ import { CODE_PRESET_CATEGORY } from "../../../../utils/constants";
 import { BUTTON_VARIANTS } from "../../../../theme";
 import { deployStrategyReq } from "../../../../clients/requests";
 import { useAppContext } from "../../../../context/app";
-import {
-  DEPLOY_STRAT_ENTER_TRADE_DEFAULT,
-  DEPLOY_STRAT_EXIT_TRADE_DEFAULT,
-  FETCH_DATASOURCES_DEFAULT,
-} from "../../../../utils/code";
+import { FETCH_DATASOURCES_DEFAULT } from "../../../../utils/code";
 
 interface PathParams {
   datasetName: string;
@@ -105,8 +101,8 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
       symbol: "",
       base_asset: "",
       quote_asset: "",
-      enter_trade_code: DEPLOY_STRAT_ENTER_TRADE_DEFAULT(),
-      exit_trade_code: DEPLOY_STRAT_EXIT_TRADE_DEFAULT(),
+      enter_trade_code: backtest.open_trade_cond,
+      exit_trade_code: backtest.close_trade_cond,
       fetch_datasources_code: FETCH_DATASOURCES_DEFAULT,
       trade_quantity_precision: 5,
       priority: 1,
@@ -121,7 +117,7 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
       use_stop_loss_based_close: backtest.use_stop_loss_based_close,
       use_taker_order: true,
       is_leverage_allowed: false,
-      is_short_selling_strategy: false,
+      is_short_selling_strategy: backtest.is_short_selling_strategy,
       is_paper_trade_mode: false,
       data_transformations: [],
     };
@@ -129,7 +125,15 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
 
   return {
     ...prevForm,
-    name: "",
+    enter_trade_code: backtest.open_trade_cond,
+    exit_trade_code: backtest.close_trade_cond,
+    is_short_selling_strategy: backtest.is_short_selling_strategy,
+    maximum_klines_hold_time: backtest.klines_until_close,
+    take_profit_threshold_perc: backtest.take_profit_threshold_perc,
+    stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
+    use_time_based_close: backtest.use_time_based_close,
+    use_profit_based_close: backtest.use_profit_based_close,
+    use_stop_loss_based_close: backtest.use_stop_loss_based_close,
   };
 };
 
@@ -165,6 +169,7 @@ export const DeployStrategyForm = (props: Props) => {
         duration: 5000,
         isClosable: true,
       });
+      backtestDiskManager.save(form);
       deployStrategyDrawer.onClose();
     } else {
       toast({
