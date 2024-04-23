@@ -1,4 +1,5 @@
 import asyncio
+import pandas as pd
 import json
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
@@ -14,13 +15,15 @@ from constants import BACKTEST_REPORT_HTML_PATH
 from context import HttpResponseContext
 from manual_backtest import run_manual_backtest, run_rule_based_mass_backtest
 from quant_stats_utils import (
+    generate_combined_report,
     generate_quant_stats_report_html,
+    get_df_returns,
 )
-from query_backtest import BacktestQuery
+from query_backtest import Backtest, BacktestQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
-from utils import base_model_to_dict, contains_inf, get_periods_per_year
+from utils import base_model_to_dict, get_periods_per_year
 
 
 router = APIRouter()
@@ -36,6 +39,7 @@ class RoutePaths:
     FETCH_BY_DATASET_ID = "/dataset/{dataset_id}"
     DETAILED_SUMMARY = "/{backtest_id}/detailed-summary"
     MASS_BACKTEST_BY_BACKTEST_ID = "/mass-backtest/by-backtest/{backtest_id}"
+    COMBINED_STRATEGY_SUMMARY = "/mass-backtest/combined/summary"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -199,3 +203,46 @@ async def route_fetch_many_backtests(
             "id_to_dataset_name_map": datasets_map,
             "equity_curves": equity_curves,
         }
+
+
+@router.get(RoutePaths.COMBINED_STRATEGY_SUMMARY)
+async def route_combined_strat_summary(
+    list_of_ids: str = Query(...),
+):
+    with HttpResponseContext():
+        list_of_ids_arr: List[int] = json.loads(list_of_ids)
+        backtests = BacktestQuery.fetch_many_backtests(list_of_ids_arr)
+        candle_interval = backtests[0].candle_interval
+
+        equity_curves = get_mass_sim_backtests_equity_curves(
+            list_of_ids_arr, candle_interval
+        )
+
+        returns_dict = {}
+
+        datasets_map = get_backtest_id_to_dataset_name_map(list_of_ids_arr)
+
+        for eq_dict in equity_curves:
+            for key, value in eq_dict.items():
+                df = pd.DataFrame(value)
+
+                df["kline_open_time"] = pd.to_datetime(df["kline_open_time"], unit="ms")
+                df.set_index("kline_open_time", inplace=True)
+                returns = get_df_returns(df, "portfolio_worth")
+                returns += 1
+                returns_dict[datasets_map[key]] = returns
+
+        backtest_info = BacktestQuery.fetch_backtest_by_id(list_of_ids_arr[0])
+
+        generate_combined_report(
+            returns_dict,
+            datasets_map,
+            get_periods_per_year(backtest_info.candle_interval),
+            backtest_info,
+        )
+
+        return FileResponse(
+            path=BACKTEST_REPORT_HTML_PATH,
+            filename="backtest_report_test.html",
+            media_type="text/html",
+        )

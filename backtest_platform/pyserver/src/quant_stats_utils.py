@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from constants import BACKTEST_REPORT_HTML_PATH
 import quantstats_lumi as qs
 
-from utils import read_file_to_string
+from utils import binary_search_on_pd_timeseries, read_file_to_string
 
 
 PRE_STYLE_BASE = "background-color: #f9f9f9; padding: 10px; margin: 10px; font-family: Consolas, 'Courier New', Courier, monospace; color: #333; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; width: 100%"
@@ -41,14 +41,24 @@ def append_custom_div(soup, style, content):
     return pre_tag
 
 
-def enhance_report_with_details(soup, backtest_info):
+def enhance_report_with_details(soup, backtest_info, symbols=[]):
     container = soup.find("div", class_="container")
     trading_criteria_div = soup.new_tag("div")
     header_tag = soup.new_tag("h1")
-    header_tag.string = "Strategy details"
+
+    if len(symbols) == 0:
+        header_tag.string = f"{backtest_info.dataset_name} strategy"
+    else:
+        header_tag.string = f"Trading rules are applied to {len(symbols)} pairs"
     trading_criteria_div.append(header_tag)
 
+    if len(symbols) > 0:
+        trading_criteria_div.append(
+            append_custom_div(soup, PRE_STYLE_BASE, f"{', '.join(symbols)} strategy")
+        )
+
     strategy_type = "Short" if backtest_info.is_short_selling_strategy else "Long"
+
     trading_criteria_div.append(
         append_custom_div(soup, PRE_STYLE_BASE, f"{strategy_type} strategy")
     )
@@ -96,11 +106,68 @@ def enhance_report_with_details(soup, backtest_info):
     container.insert(0, trading_criteria_div)
 
 
-def update_backtest_report_html(backtest_info):
+def update_backtest_report_html(backtest_info, symbols=[]):
     report_html_str = read_file_to_string(BACKTEST_REPORT_HTML_PATH)
     soup = BeautifulSoup(report_html_str, "html.parser")
 
-    enhance_report_with_details(soup, backtest_info)
+    enhance_report_with_details(soup, backtest_info, symbols)
 
     with open(BACKTEST_REPORT_HTML_PATH, "w", encoding="utf-8") as file:
         file.write(str(soup))
+
+
+def generate_combined_report(
+    dict_of_returns,
+    id_to_dataset_name_map,
+    periods_per_year,
+    backtestInfo,
+):
+    longest_time_series = max(dict_of_returns.items(), key=lambda x: len(x[1]))[1]
+    longest_time_series_key = max(
+        dict_of_returns, key=lambda k: len(dict_of_returns[k])
+    )
+    num_strategies = len(dict_of_returns)
+
+    results_df = pd.DataFrame(columns=["kline_open_time", "portfolio_worth"])
+    current_equity = 10000
+
+    data = []
+
+    for index, value in longest_time_series.items():
+        round_helper = {
+            key: current_equity / num_strategies for key in dict_of_returns.keys()
+        }
+
+        round_helper[longest_time_series_key] *= value
+
+        for key, series_of_rets in dict_of_returns.items():
+            if key == longest_time_series_key:
+                continue
+
+            other_value = binary_search_on_pd_timeseries(series_of_rets, index)
+            if other_value is not None:
+                round_helper[key] *= other_value
+
+        current_equity = sum(round_helper.values())
+
+        data.append({"kline_open_time": index, "portfolio_worth": current_equity})
+
+    results_df = pd.DataFrame(data)
+
+    results_df.set_index("kline_open_time", inplace=True)
+
+    returns = get_df_returns(results_df, "portfolio_worth")
+    symbols = []
+
+    for key, value in id_to_dataset_name_map.items():
+        symbols.append(value)
+
+    qs.reports.html(
+        returns,
+        output=BACKTEST_REPORT_HTML_PATH,
+        title="Backtest Performance Report",
+        periods_per_year=periods_per_year,
+        cagr_periods_per_year=365,
+    )
+
+    update_backtest_report_html(backtestInfo, symbols)

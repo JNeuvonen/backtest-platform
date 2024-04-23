@@ -231,3 +231,13 @@ def get_periods_per_year(candle_interval: str):
         return 12
 
     raise ValueError("Invalid candle size")
+
+
+def binary_search_on_pd_timeseries(series, target_date):
+    target_date = pd.to_datetime(target_date)
+    dates = series.index
+    pos = dates.searchsorted(target_date)
+    if pos < len(series) and dates[pos] == target_date:
+        return series.iloc[pos]
+    else:
+        return None
