@@ -2,6 +2,7 @@ import { off } from "process";
 import { FetchBulkBacktests } from "../clients/queries/response-types";
 import { binarySearch } from "./algo";
 import { getKeysCount } from "./object";
+import { DisplayPairsItem } from "../pages/mass-backtest/backtest";
 
 const KLINE_OPEN_TIME_KEY = "kline_open_time";
 const EQUITY_KEY = "equity";
@@ -52,9 +53,8 @@ export const convertToReturn = (
 
 export const getEquityCurveStatistics = (
   bulkFetchBacktest: FetchBulkBacktests,
-  balances: object[],
   returns: object[],
-  backtestKeyWithMostKlines: string
+  displayPairsArr: DisplayPairsItem[]
 ) => {
   const endBalances = {};
 
@@ -78,7 +78,7 @@ export const getEquityCurveStatistics = (
   let multiStratCurrBalance = BACKTEST_START_BALANCE;
   const multiStratBalanceTicks: object[] = [];
 
-  const totalStrats = getKeysCount(returns[0]) - 1;
+  const totalStrats = displayPairsArr.filter((item) => item.display).length;
 
   const totalReturnsByStrat = {};
 
@@ -92,15 +92,27 @@ export const getEquityCurveStatistics = (
     const tick = {};
     const roundReturns = {};
 
+    let idx = 0;
+
     for (const [key, value] of Object.entries(returnsTick)) {
       if (key === KLINE_OPEN_TIME_KEY) {
         tick[KLINE_OPEN_TIME_KEY] = value;
         continue;
       }
-      const coeff = value === 0 ? 1 : value;
 
+      const filteredItem = displayPairsArr.filter(
+        (item) => item.datasetSymbol === key
+      );
+
+      if (filteredItem.length > 0 && !filteredItem[0].display) {
+        continue;
+      }
+
+      let coeff = value === 0 ? 1 : value;
       roundReturns[key] = (multiStratCurrBalance / totalStrats) * coeff;
       totalReturnsByStrat[key] = totalReturnsByStrat[key] * coeff;
+
+      idx += 1;
     }
 
     let tickBalance = 0;
@@ -211,10 +223,12 @@ export const getBulkBacktestDetails = (
     sinceYearFilter,
     selectedYearFilter,
     FILTER_NOT_SELECTED_VALUE,
+    displayPairsArr,
   }: {
     sinceYearFilter: string;
     selectedYearFilter: string;
     FILTER_NOT_SELECTED_VALUE: string;
+    displayPairsArr: DisplayPairsItem[];
   }
 ) => {
   if (!bulkFetchBacktest || !bulkFetchBacktest.data) return null;
@@ -273,9 +287,8 @@ export const getBulkBacktestDetails = (
 
   const eqCurveStatistics = getEquityCurveStatistics(
     bulkFetchBacktest,
-    balanceTicksArr,
     returns,
-    backtestKeyWithMostKlines
+    displayPairsArr
   );
 
   const equityCurves = convertBalanceTicksToEqCurve(balanceTicksArr).map(
