@@ -65,6 +65,7 @@ create_targets(dataset, column='close_price', shifts=shifts)
 
 
 GEN_ATR = """
+import pandas as pd
 def calculate_atr(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[14]):
     for period in periods:
         high_low = df[high_col] - df[low_col]
