@@ -12,6 +12,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Spinner,
   Switch,
   UseDisclosureReturn,
   useToast,
@@ -205,7 +206,7 @@ export const DeployStrategyForm = (props: Props) => {
                   >
                     <div>
                       <Field name={formKeys.name}>
-                        {({ form }) => {
+                        {({ form, field }) => {
                           return (
                             <WithLabel>
                               <ChakraInput
@@ -213,6 +214,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 onChange={(value: string) =>
                                   form.setFieldValue(formKeys.name, value)
                                 }
+                                value={field.value}
                               />
                             </WithLabel>
                           );
@@ -221,7 +223,7 @@ export const DeployStrategyForm = (props: Props) => {
                     </div>
                     <div>
                       <Field name={formKeys.symbol}>
-                        {({ form }) => {
+                        {({ form, field }) => {
                           return (
                             <WithLabel>
                               <ChakraInput
@@ -229,6 +231,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 onChange={(value: string) =>
                                   form.setFieldValue(formKeys.symbol, value)
                                 }
+                                value={field.value}
                               />
                             </WithLabel>
                           );
@@ -237,7 +240,7 @@ export const DeployStrategyForm = (props: Props) => {
                     </div>
                     <div>
                       <Field name={formKeys.baseAsset}>
-                        {({ form }) => {
+                        {({ form, field }) => {
                           return (
                             <WithLabel>
                               <ChakraInput
@@ -245,6 +248,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 onChange={(value: string) =>
                                   form.setFieldValue(formKeys.baseAsset, value)
                                 }
+                                value={field.value}
                               />
                             </WithLabel>
                           );
@@ -253,7 +257,7 @@ export const DeployStrategyForm = (props: Props) => {
                     </div>
                     <div>
                       <Field name={formKeys.quoteAsset}>
-                        {({ form }) => {
+                        {({ form, field }) => {
                           return (
                             <WithLabel>
                               <ChakraInput
@@ -261,6 +265,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 onChange={(value: string) =>
                                   form.setFieldValue(formKeys.quoteAsset, value)
                                 }
+                                value={field.value}
                               />
                             </WithLabel>
                           );
