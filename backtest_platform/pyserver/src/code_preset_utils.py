@@ -611,6 +611,7 @@ calculate_apo(dataset, column=column, fast_period=fast_period, slow_period=slow_
 
 
 AROON = """
+import numpy as np
 import pandas as pd
 
 def calculate_aroon(df, column='close_price', periods=25):
@@ -920,6 +921,229 @@ periods = [14, 28]
 calculate_plus_di(dataset, periods=periods)
 """
 
+PLUS_DM = """
+import pandas as pd
+
+def calculate_plus_dm(df, high_col='high_price', low_col='low_price', periods=[14]):
+    for period in periods:
+        plus_dm = df[high_col].diff()
+        minus_dm = df[low_col].diff()
+
+        # Calculate Plus Directional Movement
+        mask = (plus_dm > minus_dm) & (plus_dm > 0)
+        plus_dm = plus_dm.where(mask, 0.0)
+        plus_dm_label = f"PLUS_DM_{period}"
+        df[plus_dm_label] = plus_dm.rolling(window=period).sum()
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+periods = [14]
+calculate_plus_dm(dataset, high_col=high_col, low_col=low_col, periods=periods)
+"""
+
+PPO = """
+import pandas as pd
+
+def calculate_ppo(df, column='close_price', short_periods=[12], long_periods=[26], signal_period=9):
+    for short_period in short_periods:
+        for long_period in long_periods:
+            ema_short = df[column].ewm(span=short_period, adjust=False).mean()
+            ema_long = df[column].ewm(span=long_period, adjust=False).mean()
+            
+            ppo = 100 * ((ema_short - ema_long) / ema_long)
+            ppo_label = f"PPO_{short_period}_{long_period}_{column}"
+            df[ppo_label] = ppo
+
+            signal_label = f"PPO_signal_{short_period}_{long_period}_{column}"
+            df[signal_label] = ppo.ewm(span=signal_period, adjust=False).mean()
+
+# Usage example:
+column = "close_price"
+short_periods = [12]
+long_periods = [26]
+signal_period = 9
+calculate_ppo(dataset, column=column, short_periods=short_periods, long_periods=long_periods, signal_period=signal_period)
+"""
+
+ROC = """
+import pandas as pd
+
+def calculate_roc(df, column='close_price', periods=14):
+    price = df[column]
+    prev_price = df[column].shift(periods)
+    roc = ((price / prev_price) - 1) * 100
+    roc_label = f"ROC_{periods}_{column}"
+    df[roc_label] = roc
+
+# Usage example:
+periods = 14
+column = "close_price"
+calculate_roc(dataset, column=column, periods=periods)
+"""
+
+ROCP = """
+import pandas as pd
+
+def calculate_rocp(df, column='close_price', periods=[1]):
+    for period in periods:
+        rocp_label = f"ROCP_{period}_{column}"
+        df[rocp_label] = ((df[column] - df[column].shift(period)) / df[column].shift(period)).fillna(0)
+
+# Usage example:
+periods = [1, 5, 10]  # You can specify multiple periods
+column = "close_price"
+calculate_rocp(dataset, column=column, periods=periods)
+"""
+
+ROCR = """
+import pandas as pd
+
+def calculate_rocr(df, column='close_price', periods=[10]):
+    for period in periods:
+        rocr_label = f"ROCR_{period}_{column}"
+        df[rocr_label] = df[column] / df[column].shift(period)
+
+# Usage example:
+column = "close_price"
+periods = [10, 20, 30]
+calculate_rocr(dataset, column=column, periods=periods)
+"""
+
+ROCR100 = """
+import pandas as pd
+
+def calculate_rocr100(df, column='close_price', period=1):
+    df['ROCR100'] = ((df[column] / df[column].shift(period)) * 100)
+
+# Usage example:
+column = "close_price"
+period = 1
+calculate_rocr100(dataset, column=column, period=period)
+"""
+
+STOCH = """
+import pandas as pd
+
+def calculate_stochastic(df, high_col='high_price', low_col='low_price', close_col='close_price', k_period=14, d_period=3):
+    low_min = df[low_col].rolling(window=k_period).min()
+    high_max = df[high_col].rolling(window=k_period).max()
+    
+    # Calculate %K line
+    df['%K'] = ((df[close_col] - low_min) / (high_max - low_min)) * 100
+    
+    # Calculate %D line as the moving average of %K
+    df['%D'] = df['%K'].rolling(window=d_period).mean()
+
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+k_period = 14
+d_period = 3
+calculate_stochastic(dataset, high_col=high_col, low_col=low_col, close_col=close_col, k_period=k_period, d_period=d_period)
+"""
+
+STOCHF = """
+import pandas as pd
+
+def calculate_stochf(df, high_col='high_price', low_col='low_price', close_col='close_price', k_period=14, k_smooth=3):
+    # Calculate the raw Stochastic value (%K)
+    lowest_low = df[low_col].rolling(window=k_period).min()
+    highest_high = df[high_col].rolling(window=k_period).max()
+    df['%K_raw'] = 100 * ((df[close_col] - lowest_low) / (highest_high - lowest_low))
+
+    # Smooth the %K value if required
+    df['%K'] = df['%K_raw'].rolling(window=k_smooth).mean()
+    # Calculate %D as moving average of %K
+    df['%D'] = df['%K'].rolling(window=k_smooth).mean()
+
+# Usage example:
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+k_period = 14
+k_smooth = 3
+calculate_stochf(dataset, high_col=high_col, low_col=low_col, close_col=close_col, k_period=k_period, k_smooth=k_smooth)
+"""
+
+STOCHRSI = """
+import pandas as pd
+
+def calculate_stochrsi(df, column='close_price', periods=14, k_period=3, d_period=3):
+    delta = df[column].diff()
+    gain = (delta.where(delta > 0, 0)).fillna(0)
+    loss = (-delta.where(delta < 0, 0)).fillna(0)
+
+    avg_gain = gain.rolling(window=periods).mean()
+    avg_loss = loss.rolling(window=periods).mean()
+
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+
+    min_rsi = rsi.rolling(window=k_period).min()
+    max_rsi = rsi.rolling(window=k_period).max()
+    
+    stochrsi = 100 * (rsi - min_rsi) / (max_rsi - min_rsi)
+    
+    stochrsi_k = stochrsi.rolling(window=k_period).mean()
+    stochrsi_d = stochrsi_k.rolling(window=d_period).mean()
+
+    # Including period and column name in the labels
+    df[f'StochRSI_K_{periods}_{k_period}_{column}'] = stochrsi_k
+    df[f'StochRSI_D_{periods}_{d_period}_{column}'] = stochrsi_d
+
+# Example of usage:
+column = "close_price"
+periods = 14
+k_period = 3
+d_period = 3
+calculate_stochrsi(dataset, column=column, periods=periods, k_period=k_period, d_period=d_period)
+"""
+
+TRIX = """
+import pandas as pd
+
+def calculate_trix(df, column='close_price', period=15):
+    # First EMA
+    ema1 = df[column].ewm(span=period, adjust=False).mean()
+    # Second EMA
+    ema2 = ema1.ewm(span=period, adjust=False).mean()
+    # Third EMA
+    ema3 = ema2.ewm(span=period, adjust=False).mean()
+    
+    # TRIX is the 1-day percent change in the third EMA
+    trix = ema3.pct_change() * 100
+    trix_label = f"TRIX_{period}_{column}"
+    df[trix_label] = trix
+
+# Usage example
+period = 15
+column = "close_price"
+calculate_trix(dataset, column=column, period=period)
+"""
+
+ULTOSC = """
+import pandas as pd
+
+def calculate_ultosc(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[7, 14, 28]):
+    bp = df[close_col] - df[[low_col, close_col.shift()]].min(axis=1)
+    tr = df[high_col] - df[low_col]
+    tr = pd.concat([tr, (df[high_col] - df[close_col].shift()).abs(), (df[low_col] - df[close_col].shift()).abs()], axis=1).max(axis=1)
+    
+    avg_bp = {p: bp.rolling(window=p).sum() for p in periods}
+    avg_tr = {p: tr.rolling(window=p).sum() for p in periods}
+    
+    ultosc = (4 * avg_bp[7] / avg_tr[7] + 2 * avg_bp[14] / avg_tr[14] + avg_bp[28] / avg_tr[28]) / (4 + 2 + 1) * 100
+    df['ULTOSC'] = ultosc
+
+# Define the columns and periods for your dataset
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+periods = [7, 14, 28]
+calculate_ultosc(dataset, high_col=high_col, low_col=low_col, close_col=close_col, periods=periods)
+"""
+
 DEFAULT_CODE_PRESETS = [
     CodePreset(
         code=GEN_RSI_CODE,
@@ -1154,6 +1378,72 @@ DEFAULT_CODE_PRESETS = [
         name="PLUS_DI",
         category=CodePresetCategories.INDICATOR,
         description="Plus Directional Indicator (PLUS_DI): This indicator forms part of the Average Directional Movement Index system (ADX) and measures the presence of upward price movement. It is computed by comparing the current high with the previous high and is typically used to confirm trend direction. Higher values indicate a stronger upward trend.",
+    ),
+    CodePreset(
+        code=PLUS_DM,
+        name="PLUS_DM",
+        category=CodePresetCategories.INDICATOR,
+        description="Plus Directional Movement (PLUS_DM): Helps to quantify the increase in the high price compared to the previous high, indicating the presence of upward price momentum when it outpaces the decreases in the low price. This indicator is used especially in combination with the ADX to measure trend strength.",
+    ),
+    CodePreset(
+        code=PPO,
+        name="PPO",
+        category=CodePresetCategories.INDICATOR,
+        description="PPO (Percentage Price Oscillator): Calculates the Percentage Price Oscillator, which is used to show the difference between two exponential moving averages as a percentage of the larger moving average. This indicator is useful for identifying potential momentum shifts and trend reversals.",
+    ),
+    CodePreset(
+        code=ROC,
+        name="ROC",
+        category=CodePresetCategories.INDICATOR,
+        description="ROC (Rate of Change): Calculates the percentage change between the current price and the price a certain number of periods ago. It reflects the velocity of price changes and can be used to identify the strength of a trend.",
+    ),
+    CodePreset(
+        code=ROCP,
+        name="ROCP",
+        category=CodePresetCategories.INDICATOR,
+        description="ROCP: Calculates the Rate of Change Percentage, which measures the percentage change in price from one period to the next over specified periods to help identify momentum or speed of price changes.",
+    ),
+    CodePreset(
+        code=ROCR,
+        name="ROCR",
+        category=CodePresetCategories.INDICATOR,
+        description="ROCR: Calculates the Rate of Change Ratio which is the ratio of the current price to the price from a specified number of periods ago. This indicator helps to understand the magnitude of price changes and can be used to detect trends.",
+    ),
+    CodePreset(
+        code=ROCR100,
+        name="ROCR100",
+        category=CodePresetCategories.INDICATOR,
+        description="ROCR100: Calculates the Rate of Change Ratio 100, which compares the current price to the price from a previous period, scaled to 100. This indicator is used to show the percentage change in price relative to the prior period, assisting in identifying momentum in price movements.",
+    ),
+    CodePreset(
+        code=STOCH,
+        name="STOCH",
+        category=CodePresetCategories.INDICATOR,
+        description="Stochastic Oscillator (STOCH): Compares the current closing price with its price range over a given period. The calculation results in two lines, %K and %D, which can help identify potential reversal points in the market as the price moves within this range.",
+    ),
+    CodePreset(
+        code=STOCHF,
+        name="STOCHF",
+        category=CodePresetCategories.INDICATOR,
+        description="Stochastic Fast (STOCHF): This indicator helps to identify oversold and overbought conditions. The %K line is calculated from the current close minus the lowest low divided by the highest high minus the lowest low over the period. The %D line is the simple moving average of the %K line, serving as a signal line to interpret buy or sell signals.",
+    ),
+    CodePreset(
+        code=STOCHRSI,
+        name="STOCHRSI",
+        category=CodePresetCategories.INDICATOR,
+        description="Stochastic RSI: The Stochastic Relative Strength Index (Stochastic RSI) is an oscillator used to identify overbought and oversold conditions by measuring the level of the RSI relative to its high-low range over a set period of time. It provides more sensitivity than the traditional RSI, offering quicker signals for entering and exiting trades. The StochRSI_K line is the Stochastic RSI itself, while the StochRSI_D line is a moving average of the StochRSI_K, typically used to generate signals when the two lines cross.",
+    ),
+    CodePreset(
+        code=TRIX,
+        name="TRIX",
+        category=CodePresetCategories.INDICATOR,
+        description="TRIX: This indicator calculates the 1-day Rate-Of-Change (ROC) of a Triple Smooth Exponential Moving Average (EMA) of the specified column over a given period. TRIX helps to filter out insignificant price movements and identify underlying trends.",
+    ),
+    CodePreset(
+        code=ULTOSC,
+        name="ULTOSC",
+        category=CodePresetCategories.INDICATOR,
+        description="Ultimate Oscillator (ULTOSC): This indicator combines buying pressure with true range over multiple time frames (short, intermediate, and long) to produce a value that reflects price momentum. The oscillator is typically used to identify bullish and bearish divergences which might indicate potential reversal points.",
     ),
 ]
 
