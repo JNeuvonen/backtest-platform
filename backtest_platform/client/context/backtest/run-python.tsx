@@ -45,7 +45,7 @@ export const RunPythonModal = () => {
           submitCallback={runPythonSubmit}
         />
       }
-      modalContentStyle={{ maxWidth: "60%" }}
+      modalContentStyle={{ maxWidth: "80%" }}
     >
       <CodeEditor
         code={createColumnsCode}
@@ -54,7 +54,7 @@ export const RunPythonModal = () => {
         fontSize={13}
         label="Create columns"
         codeContainerStyles={{ width: "100%" }}
-        height={"250px"}
+        height={"65vh"}
         presetCategory={CODE_PRESET_CATEGORY.backtest_create_columns}
       />
     </ChakraModal>
