@@ -18,7 +18,12 @@ class CodePreset:
         self.description = description
 
     def to_dict(self) -> dict:
-        return {"code": self.code, "name": self.name, "category": self.category}
+        return {
+            "code": self.code,
+            "name": self.name,
+            "category": self.category,
+            "description": self.description,
+        }
 
 
 GEN_RSI_CODE = """
@@ -194,6 +199,726 @@ column = "close_price"
 calculate_dema(dataset, column=column, periods=periods)
 """
 
+GEN_EMA = """
+import pandas as pd
+
+def calculate_ema(df, column='close_price', periods=[12, 26]):
+    for period in periods:
+        ema_label = f"EMA_{period}_{column}"
+        df[ema_label] = df[column].ewm(span=period, adjust=False).mean()
+
+# Example usage
+periods = [12, 26]
+column = "close_price"
+calculate_ema(dataset, column=column, periods=periods)
+"""
+
+HT_TRENDLINE = """
+import numpy as np
+import pandas as pd
+
+def calculate_ht_trendline(df, column='close_price'):
+    period = 40  # Commonly used period for HT_Trendline
+    cycle_period = 0.075  # Commonly used in HT calculations
+    
+    # Detrend Price
+    detrended = df[column] - df[column].rolling(window=period).mean()
+
+    # Apply the Hilbert Transform to Detrended Data
+    quadrature = detrended.shift(period // 2)
+    inphase = detrended - quadrature
+
+    # Compute the Instantaneous Phase
+    # Prevent division by zero in case inphase equals zero
+    inst_phase = np.where(inphase != 0, np.arctan(quadrature / inphase) / cycle_period, 0)
+    df['HT_TRENDLINE'] = np.sin(inst_phase) * df[column]
+
+calculate_ht_trendline(dataset, column='close_price')
+"""
+
+
+KAMA = """
+import pandas as pd
+
+def calculate_kama(df, column='close_price', period=10, fast=2, slow=30):
+    change = df[column].diff(period).abs()
+    volatility = df[column].diff().abs().rolling(window=period).sum()
+    
+    efficiency_ratio = change / volatility
+    smoothing_constant = ((efficiency_ratio * (2 / (fast + 1) - 2 / (slow + 1)) + 2 / (slow + 1)) ** 2).fillna(0)
+
+    kama = pd.Series(index=df.index)
+    kama.iloc[0] = df[column].iloc[0]
+    
+    for i in range(1, len(df)):
+        kama.iloc[i] = kama.iloc[i - 1] + smoothing_constant.iloc[i] * (df[column].iloc[i] - kama.iloc[i - 1])
+
+    df[f'KAMA_{period}'] = kama
+
+# Configure the parameters
+period = 10
+fast = 2
+slow = 30
+column = 'close_price'
+calculate_kama(dataset, column=column, period=period, fast=fast, slow=slow)
+"""
+
+
+MAVP = """
+import pandas as pd
+
+def calculate_mavp(df, column='close_price', period_col='variable_period'):
+    if period_col not in df.columns or df[period_col].dtype not in ['int64', 'float64']:
+        raise ValueError("period_col must exist in DataFrame and contain numeric values")
+
+    mavp_label = f"mavp_variable_periods_{column}"
+    df[mavp_label] = pd.Series(dtype='float64')
+
+    for index, period in df[period_col].iteritems():
+        if pd.notna(period) and period > 0:
+            # Ensure the period is an integer and within a valid range
+            period = int(period)
+            # Calculate the mean for the period ending at the current index
+            if index >= period - 1:
+                df.at[index, mavp_label] = df.loc[index-period+1:index, column].mean()
+
+    df.drop(columns=[period_col], inplace=True)
+
+def default_period_callback(row, base_period):
+    volatility_threshold = row['MA_50_close_price'] * 1.1
+    return base_period + 2 if row['close_price'] > volatility_threshold else base_period
+
+def generate_variable_periods(df, column='close_price', base_period=3, period_callback=None):
+    if not callable(period_callback):
+        raise ValueError("period_callback must be provided and should be a callable that takes a row and returns an integer")
+    
+    df['variable_period'] = df.apply(lambda row: period_callback(row, base_period), axis=1)
+
+
+
+base_period = 24
+generate_variable_periods(dataset, column='close_price', base_period=base_period, period_callback=default_period_callback)
+calculate_mavp(dataset, column='close_price', period_col='variable_period')
+"""
+
+MAVP = """
+
+import pandas as pd
+
+def generate_variable_periods(df, base_period, callback):
+    if not callable(callback):
+        raise ValueError("callback must be a function")
+
+    df['variable_period'] = df.apply(lambda row: callback(row, base_period), axis=1)
+
+def calculate_mavp(df, price_col='close_price', period_col='variable_period'):
+    mavp_label = f"mavp_{price_col}"
+    df[mavp_label] = None  # Initialize column for moving averages
+
+    for index in df.index:
+        period = int(df.at[index, period_col])  
+        if index >= period - 1:
+            start_index = max(0, index - period + 1)  
+            df.at[index, mavp_label] = df.loc[start_index:index, price_col].mean()  
+
+    df.drop(columns=[period_col], inplace=True)  
+
+def default_period_callback(row, base_period):
+    volatility_threshold = row['MA_50_close_price'] * 1.1
+    return base_period + 2 if row['close_price'] > volatility_threshold else base_period
+
+# Example usage:
+base_period = 24
+generate_variable_periods(dataset, base_period=base_period, callback=default_period_callback)
+calculate_mavp(dataset)
+"""
+
+
+MIDPOINT = """
+import pandas as pd
+
+def calculate_midpoint(df, column='close_price', periods=[14]):
+    for period in periods:
+        high = df[column].rolling(window=period).max()
+        low = df[column].rolling(window=period).min()
+        midpoint_label = f"MIDPOINT_{period}_{column}"
+        df[midpoint_label] = (high + low) / 2
+
+# Example usage:
+periods = [14, 30, 60]
+column = "close_price"
+calculate_midpoint(dataset, column=column, periods=periods)
+"""
+
+MIDPRICE = """
+def calculate_midprice(df, high_col='high_price', low_col='low_price', periods=[20]):
+    for period in periods:
+        midprice_label = f"MIDPRICE_{period}"
+        df[midprice_label] = (df[high_col].rolling(window=period).max() + df[low_col].rolling(window=period).min()) / 2
+
+# Example usage
+periods = [20, 50, 100]
+calculate_midprice(dataset, periods=periods)
+"""
+
+
+PARABOLIC_SAR = """
+import pandas as pd
+
+def calculate_sar(df, high_col='high_price', low_col='low_price', af_start=0.02, af_increment=0.02, af_max=0.2):
+    sar = pd.Series(df[low_col])
+    ep = df[high_col]  # extreme point
+    trend = pd.Series(1, index=df.index)  # trend: 1 for uptrend, -1 for downtrend
+    af = af_start
+
+    for i in range(1, len(df)):
+        if trend[i-1] == 1:  # uptrend
+            sar[i] = max(sar[i-1] + af * (ep[i-1] - sar[i-1]), df[low_col][i], df[low_col][i-1])
+            if df[high_col][i] > ep[i-1]:
+                ep[i] = df[high_col][i]
+                af = min(af + af_increment, af_max)
+            if df[low_col][i] < sar[i]:
+                sar[i] = ep[i-1]
+                trend[i] = -1
+                af = af_start
+                ep[i] = df[low_col][i]
+        else:  # downtrend
+            sar[i] = min(sar[i-1] + af * (ep[i-1] - sar[i-1]), df[high_col][i], df[high_col][i-1])
+            if df[low_col][i] < ep[i-1]:
+                ep[i] = df[low_col][i]
+                af = min(af + af_increment, af_max)
+            if df[high_col][i] > sar[i]:
+                sar[i] = ep[i-1]
+                trend[i] = 1
+                af = af_start
+                ep[i] = df[high_col][i]
+
+    df['SAR'] = sar
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+calculate_sar(dataset, high_col=high_col, low_col=low_col)
+"""
+
+SAREXT = """
+import pandas as pd
+def calculate_sarext(df, high_col='high_price', low_col='low_price', af_start=0.02, af_increment=0.02, af_max=0.2):
+    length = len(df)
+    sar = pd.Series(index=df.index)
+    ep = pd.Series(index=df.index)
+    af = pd.Series(index=df.index)
+    trend = pd.Series(1, index=df.index)  # Start with an assumed uptrend
+
+    # Initialize the first values
+    sar[0] = df[low_col][0]
+    ep[0] = df[high_col][0]
+    af[0] = af_start
+
+    for i in range(1, length):
+        if trend[i-1] == 1:  # uptrend
+            sar[i] = sar[i-1] + af[i-1] * (ep[i-1] - sar[i-1])
+            if df[high_col][i] > ep[i-1]:
+                ep[i] = df[high_col][i]
+                af[i] = min(af[i-1] + af_increment, af_max)
+            else:
+                af[i] = af[i-1]
+            
+            if df[low_col][i] < sar[i]:
+                sar[i] = ep[i-1]
+                trend[i] = -1
+                ep[i] = df[low_col][i]
+                af[i] = af_start
+            else:
+                trend[i] = 1
+        else:  # downtrend
+            sar[i] = sar[i-1] + af[i-1] * (ep[i-1] - sar[i-1])
+            if df[low_col][i] < ep[i-1]:
+                ep[i] = df[low_col][i]
+                af[i] = min(af[i-1] + af_increment, af_max)
+            else:
+                af[i] = af[i-1]
+
+            if df[high_col][i] > sar[i]:
+                sar[i] = ep[i-1]
+                trend[i] = 1
+                ep[i] = df[high_col][i]
+                af[i] = af_start
+            else:
+                trend[i] = -1
+
+    df['SAREXT'] = sar
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+calculate_sarext(dataset, high_col=high_col, low_col=low_col)
+"""
+
+
+T3_INDICATOR = """
+import pandas as pd
+
+def calculate_t3(df, column='close_price', periods=[10], volume_factor=0.7):
+    for period in periods:
+        e1 = df[column].ewm(span=period, adjust=False).mean()
+        e2 = e1.ewm(span=period, adjust=False).mean()
+        e3 = e2.ewm(span=period, adjust=False).mean()
+        e4 = e3.ewm(span=period, adjust=False).mean()
+        e5 = e4.ewm(span=period, adjust=False).mean()
+        e6 = e5.ewm(span=period, adjust=False).mean()
+        c1 = -volume_factor * volume_factor * volume_factor
+        c2 = 3 * volume_factor * volume_factor + 3 * volume_factor * volume_factor * volume_factor
+        c3 = -6 * volume_factor * volume_factor - 3 * volume_factor - 3 * volume_factor * volume_factor * volume_factor
+        c4 = 1 + 3 * volume_factor + volume_factor * volume_factor * volume_factor + 3 * volume_factor * volume_factor
+        t3 = c1 * e6 + c2 * e5 + c3 * e4 + c4 * e3
+        t3_label = f"T3_{period}_{column}"
+        df[t3_label] = t3
+
+# Usage example:
+periods = [10, 20, 30]
+column = "close_price"
+calculate_t3(dataset, column=column, periods=periods)
+"""
+
+TEMA_INDICATOR = """
+import pandas as pd
+
+def calculate_tema(df, column='close_price', periods=[30]):
+    for period in periods:
+        ema1 = df[column].ewm(span=period, adjust=False).mean()
+        ema2 = ema1.ewm(span=period, adjust=False).mean()
+        ema3 = ema2.ewm(span=period, adjust=False).mean()
+        tema_label = f"TEMA_{period}_{column}"
+        df[tema_label] = 3 * (ema1 - ema2) + ema3
+
+# Example usage:
+column = "close_price"
+periods = [20, 50, 100]
+calculate_tema(dataset, column=column, periods=periods)
+"""
+
+
+TRIMA = """
+import pandas as pd
+
+def calculate_trima(df, column='close_price', period=30):
+    n = period // 2 + 1
+    trima_label = f"TRIMA_{period}_{column}"
+    df[trima_label] = df[column].rolling(window=period).apply(lambda x: pd.Series(x).iloc[:n].sum() / n, raw=True)
+
+column = "close_price"
+period = 30
+calculate_trima(dataset, column=column, period=period)
+"""
+
+WMA = """
+import pandas as pd
+
+def calculate_wma(df, column='close_price', periods=[10]):
+    for period in periods:
+        weights = pd.Series(range(1, period + 1))
+        wma_label = f"WMA_{period}_{column}"
+        df[wma_label] = df[column].rolling(window=period).apply(lambda x: np.dot(x, weights) / weights.sum(), raw=True)
+
+# Usage example:
+periods = [10, 20, 50]
+column = "close_price"
+calculate_wma(dataset, column=column, periods=periods)
+"""
+
+ADX = """
+import pandas as pd
+
+def calculate_adx(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=14):
+    plus_dm = df[high_col].diff()
+    minus_dm = df[low_col].diff().abs()
+
+    plus_dm[plus_dm < 0] = 0
+    minus_dm[minus_dm < 0] = 0
+
+    tr1 = df[high_col] - df[low_col]
+    tr2 = (df[high_col] - df[close_col].shift()).abs()
+    tr3 = (df[low_col] - df[close_col].shift()).abs()
+
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    tr_smoothed = tr.rolling(window=periods).sum()
+
+    plus_di = 100 * (plus_dm.rolling(window=periods).sum() / tr_smoothed)
+    minus_di = 100 * (minus_dm.rolling(window=periods).sum() / tr_smoothed)
+
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di)
+    adx = dx.rolling(window=periods).mean()
+
+    df['ADX'] = adx
+
+# Usage example:
+periods = 14
+calculate_adx(dataset, periods=periods)
+"""
+
+ADXR = """
+import pandas as pd
+
+def calculate_adxr(df, period=14):
+    # Calculate the True Range
+    tr = pd.concat([df['high_price'] - df['low_price'],
+                    (df['high_price'] - df['close_price'].shift()).abs(),
+                    (df['low_price'] - df['close_price'].shift()).abs()], axis=1).max(axis=1)
+
+    # Calculate the Plus and Minus Directional Movement
+    plus_dm = df['high_price'].diff()
+    minus_dm = df['low_price'].diff() * -1
+    plus_dm[plus_dm < 0] = 0
+    minus_dm[minus_dm < 0] = 0
+
+    # Smoothed values
+    tr14 = tr.rolling(window=period, min_periods=1).sum()
+    plus_dm14 = plus_dm.rolling(window=period, min_periods=1).sum()
+    minus_dm14 = minus_dm.rolling(window=period, min_periods=1).sum()
+
+    # Directional Indicators
+    plus_di = 100 * (plus_dm14 / tr14)
+    minus_di = 100 * (minus_dm14 / tr14)
+
+    # DX and ADX
+    dx = (abs(plus_di - minus_di) / (plus_di + minus_di)) * 100
+    adx = dx.rolling(window=period, min_periods=1).mean()
+
+    # ADXR
+    adxr = (adx + adx.shift(period // 2)) / 2
+    df['ADXR'] = adxr
+
+# Usage example:
+period = 14
+calculate_adxr(dataset, period=period)
+"""
+
+APO = """
+import pandas as pd
+
+def calculate_apo(df, column='close_price', fast_period=12, slow_period=26):
+    fast_ema = df[column].ewm(span=fast_period, adjust=False).mean()
+    slow_ema = df[column].ewm(span=slow_period, adjust=False).mean()
+    df['APO_fast_{fast_period}_slow_{slow_period}_{column}'] = fast_ema - slow_ema
+
+# Example usage:
+column = "close_price"
+fast_period = 12
+slow_period = 26
+calculate_apo(dataset, column=column, fast_period=fast_period, slow_period=slow_period)
+"""
+
+
+AROON = """
+import pandas as pd
+
+def calculate_aroon(df, column='close_price', periods=25):
+    aroon_up = 100 * df[column].rolling(window=periods, min_periods=0).apply(
+        lambda x: float(np.argmax(x) + 1) / periods * 100, raw=True)
+    aroon_down = 100 * df[column].rolling(window=periods, min_periods=0).apply(
+        lambda x: float(np.argmin(x) + 1) / periods * 100, raw=True)
+
+    df[f'Aroon_Up_{periods}_{column}'] = aroon_up
+    df[f'Aroon_Down_{periods}_{column}'] = aroon_down
+
+# Usage example:
+periods = 25
+column = "close_price"
+calculate_aroon(dataset, column=column, periods=periods)
+"""
+
+AROONOSC = """
+import pandas as pd
+
+def calculate_aroon_oscillator(df, high_col='high_price', low_col='low_price', period=25):
+    aroon_up = 100 * df[high_col].rolling(window=period, min_periods=0).apply(lambda x: x[::-1].idxmax()) / (period - 1)
+    aroon_down = 100 * df[low_col].rolling(window=period, min_periods=0).apply(lambda x: x[::-1].idxmin()) / (period - 1)
+    aroon_osc = aroon_up - aroon_down
+    df_label = f"Aroon_Oscillator_{period}"
+    df[df_label] = aroon_osc
+
+# Usage example:
+period = 25
+calculate_aroon_oscillator(dataset, period=period)
+"""
+
+BOP = """
+import pandas as pd
+
+def calculate_bop(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    bop = (df[close_col] - df[open_col]) / (df[high_col] - df[low_col])
+    df['BOP'] = bop
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_bop(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CCI = """
+import pandas as pd
+
+def calculate_cci(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[20]):
+    for period in periods:
+        tp = (df[high_col] + df[low_col] + df[close_col]) / 3
+        sma = tp.rolling(window=period).mean()
+        mean_dev = tp.rolling(window=period).apply(lambda x: pd.Series(x).mad())
+
+        cci = (tp - sma) / (0.015 * mean_dev)
+        cci_label = f"CCI_{period}"
+        df[cci_label] = cci
+
+# Usage example:
+periods = [20, 40, 60]
+calculate_cci(dataset, periods=periods)
+"""
+
+CMO = """
+import pandas as pd
+
+def calculate_cmo(df, column='close_price', period=14):
+    delta = df[column].diff()
+    gains = delta.where(delta > 0, 0.0)
+    losses = -delta.where(delta < 0, 0.0)
+
+    sum_gains = gains.rolling(window=period).sum()
+    sum_losses = losses.rolling(window=period).sum()
+
+    cmo = 100 * ((sum_gains - sum_losses) / (sum_gains + sum_losses))
+    cmo_label = f"CMO_{period}_{column}"
+    df[cmo_label] = cmo
+
+# Example usage:
+column = "close_price"
+period = 14
+calculate_cmo(dataset, column=column, period=period)
+"""
+
+DMI = """
+import pandas as pd
+
+def calculate_dmi(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=14):
+    plus_dm = df[high_col].diff()
+    minus_dm = df[low_col].diff()
+    
+    plus_dm[plus_dm < 0] = 0
+    minus_dm[minus_dm > 0] = 0
+    minus_dm = minus_dm.abs()
+
+    tr1 = df[high_col] - df[low_col]
+    tr2 = (df[high_col] - df[close_col].shift()).abs()
+    tr3 = (df[low_col] - df[close_col].shift()).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    
+    atr = tr.rolling(window=periods).sum()
+    plus_di = 100 * (plus_dm.rolling(window=periods).sum() / atr)
+    minus_di = 100 * (minus_dm.rolling(window=periods).sum() / atr)
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di)
+    
+    adx = dx.rolling(window=periods).mean()
+
+    df['+DI'] = plus_di
+    df['-DI'] = minus_di
+    df['ADX'] = adx
+
+# Usage example:
+periods = 14
+calculate_dmi(dataset, periods=periods)
+"""
+
+MACD = """
+import pandas as pd
+
+def calculate_macd(df, column='close_price', short_period=12, long_period=26, signal_period=9):
+    # Calculate the Short Term Exponential Moving Average
+    short_ema = df[column].ewm(span=short_period, adjust=False).mean()
+
+    # Calculate the Long Term Exponential Moving Average
+    long_ema = df[column].ewm(span=long_period, adjust=False).mean()
+
+    # Calculate the MACD line
+    macd = short_ema - long_ema
+    macd_label = f"MACD_{column}_short_{short_period}_long_{long_period}"
+    df[macd_label] = macd
+
+    # Calculate the signal line
+    signal_label = f"MACD_Signal_{column}_short_{short_period}_long_{long_period}_signal_{signal_period}"
+    signal = macd.ewm(span=signal_period, adjust=False).mean()
+    df[signal_label] = signal
+
+    # Calculate MACD histogram
+    histogram_label = f"MACD_Histogram_{column}_short_{short_period}_long_{long_period}_signal_{signal_period}"
+    df[histogram_label] = df[macd_label] - df[signal_label]
+
+# Example of how to use the function:
+column = "close_price"
+short_period = 12
+long_period = 26
+signal_period = 9
+calculate_macd(dataset, column=column, short_period=short_period, long_period=long_period, signal_period=signal_period)
+"""
+
+MACDFIX = """
+import pandas as pd
+
+def calculate_macdfix(df, column='close_price', short_period=12, long_period=26, signal_period=9):
+    ema_short = df[column].ewm(span=short_period, adjust=False).mean()
+    ema_long = df[column].ewm(span=long_period, adjust=False).mean()
+    
+    macd = ema_short - ema_long
+    macd_signal = macd.ewm(span=signal_period, adjust=False).mean()
+    
+    macd_label = f'MACD_{short_period}_{long_period}_{column}'
+    signal_label = f'MACD_Signal_{signal_period}_{column}'
+    
+    df[macd_label] = macd
+    df[signal_label] = macd_signal
+
+# Example usage:
+column = "close_price"
+short_period = 12
+long_period = 26
+signal_period = 9
+calculate_macdfix(dataset, column=column, short_period=short_period, long_period=long_period, signal_period=signal_period)
+"""
+
+MFI = """
+import pandas as pd
+
+def calculate_mfi(df, high_col='high_price', low_col='low_price', close_col='close_price', volume_col='volume', periods=[14]):
+    for period in periods:
+        # Typical Price
+        typical_price = (df[high_col] + df[low_col] + df[close_col]) / 3
+        
+        # Raw Money Flow
+        raw_money_flow = typical_price * df[volume_col]
+        
+        # Money Flow Ratio
+        money_flow_positive = 0
+        money_flow_negative = 0
+        
+        # Shift the typical price to compare with previous day
+        shifted_typical_price = typical_price.shift(1)
+        for i in range(1, len(df)):
+            if typical_price[i] > shifted_typical_price[i]:
+                money_flow_positive += raw_money_flow[i]
+            elif typical_price[i] < shifted_typical_price[i]:
+                money_flow_negative += raw_money_flow[i]
+        
+        money_flow_ratio = money_flow_positive / money_flow_negative if money_flow_negative != 0 else 0
+        
+        # Money Flow Index
+        mfi = 100 - (100 / (1 + money_flow_ratio))
+        df_label = f"MFI_{period}"
+        df[df_label] = mfi.rolling(window=period).mean()
+
+# Example usage:
+periods = [14]
+calculate_mfi(dataset, periods=periods)
+"""
+
+MINUS_DI = """
+def calculate_minus_di(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[14]):
+    for period in periods:
+        high = df[high_col]
+        low = df[low_col]
+        close_prev = df[close_col].shift(1)
+        
+        high_diff = high - high.shift(1)
+        low_diff = low.shift(1) - low
+        tr_high = high - close_prev
+        tr_low = close_prev - low
+        
+        true_range = pd.concat([high_diff, low_diff, tr_high, tr_low], axis=1).max(axis=1)
+        
+        high_low_diff = high.diff(periods=1)
+        high_low_diff[high_low_diff < 0] = 0
+        
+        high_low_sum = high_low_diff.rolling(window=period).sum()
+        
+        tr_sum = true_range.rolling(window=period).sum()
+        
+        minus_di = (high_low_sum / tr_sum) * 100
+        
+        df_label = f"MINUS_DI_{period}"
+        df[df_label] = minus_di
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+periods = [14, 28, 50]
+calculate_minus_di(dataset, high_col=high_col, low_col=low_col, close_col=close_col, periods=periods)
+"""
+
+
+MINUS_DM = """
+import pandas as pd
+
+def calculate_minus_dm(df, high_col='high_price', low_col='low_price', periods=[14]):
+    for period in periods:
+        previous_high = df[high_col].shift()
+        previous_low = df[low_col].shift()
+
+        minus_dm = (previous_high - df[high_col]).where((previous_high - df[high_col]) > (df[low_col] - previous_low), 0)
+        minus_dm = minus_dm.where(minus_dm > 0, 0)
+
+        minus_dm_label = f"Minus_DM_{period}"
+        df[minus_dm_label] = minus_dm.rolling(window=period).sum()
+
+high_col = "high_price"
+low_col = "low_price"
+periods = [14, 28]
+calculate_minus_dm(dataset, high_col=high_col, low_col=low_col, periods=periods)
+"""
+
+MOM = """
+import pandas as pd
+
+def calculate_momentum(df, column='close_price', periods=[10]):
+    for period in periods:
+        mom_label = f"MOM_{period}_{column}"
+        df[mom_label] = df[column].diff(period)
+
+# Usage example:
+column = "close_price"
+periods = [10, 15, 30]
+calculate_momentum(dataset, column=column, periods=periods)
+"""
+
+PLUS_DI = """
+import pandas as pd
+
+def calculate_plus_di(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[14]):
+    for period in periods:
+        # Calculate the Plus Directional Movement (+DM)
+        delta_high = df[high_col].diff()
+        delta_low = df[low_col].diff()
+
+        plus_dm = (delta_high > delta_low) & (delta_high > 0) * delta_high
+        plus_dm.fillna(0, inplace=True)
+
+        # Calculate the True Range (TR)
+        high_low = df[high_col] - df[low_col]
+        high_close = (df[high_col] - df[close_col].shift()).abs()
+        low_close = (df[low_col] - df[close_col].shift()).abs()
+
+        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+        tr_smooth = tr.rolling(window=period).sum()
+
+        # Calculate the smoothed Plus Directional Indicator (+DI)
+        plus_dm_smooth = plus_dm.rolling(window=period).sum()
+        plus_di = 100 * (plus_dm_smooth / tr_smooth)
+        
+        # Store the result in the dataframe
+        df[f'PLUS_DI_{period}'] = plus_di
+
+periods = [14, 28]
+calculate_plus_di(dataset, periods=periods)
+"""
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -261,6 +986,174 @@ DEFAULT_CODE_PRESETS = [
         name="DEMA",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Double Exponential Moving Average (DEMA) for a given period to provide a smoother and more responsive moving average.",
+    ),
+    CodePreset(
+        code=GEN_EMA,
+        name="EMA",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Exponential Moving Average (EMA) which gives more weight to recent prices and reacts more quickly to price changes compared to a simple moving average. This is particularly useful for tracking trends in fast-moving markets.",
+    ),
+    CodePreset(
+        code=HT_TRENDLINE,
+        name="HT_TRENDLINE",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Hilbert Transform - Instantaneous Trendline, which is a leading indicator used to generate signals reflecting the cyclical nature of price movements. This method is aimed to provide a smoothed version of the price data, focusing on the dominant market cycle component.",
+    ),
+    CodePreset(
+        code=KAMA,
+        name="KAMA",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Kaufman Adaptive Moving Average (KAMA) which adapts to price volatility dynamically by using an efficiency ratio and smoothing constants to produce a more responsive moving average tailored to historical and current price movements.",
+    ),
+    CodePreset(
+        code=MAVP,
+        name="MAVP",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Moving Average with Variable Periods (MAVP), allowing for different averaging periods at each data point, making it useful for datasets where the optimal averaging window changes over time.",
+    ),
+    CodePreset(
+        code=MIDPOINT,
+        name="MIDPOINT",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the midpoint between the highest and lowest values of a given column over specified periods, representing a simple measure of the average of extreme values within the period.",
+    ),
+    CodePreset(
+        code=MIDPRICE,
+        name="MIDPRICE",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Midpoint Price over a specified period. It averages the highest high and the lowest low for the given period, typically used to identify levels of support and resistance.",
+    ),
+    CodePreset(
+        code=PARABOLIC_SAR,
+        name="PARABOLIC_SAR",
+        category=CodePresetCategories.INDICATOR,
+        description="The Parabolic SAR (Stop and Reverse) is used to determine potential reversals in the market price direction of traded assets like stocks or commodities. This indicator is particularly useful for setting trailing stops and identifying entry and exit points. It is plotted as a series of points above or below the price bars, signifying a potential reversal or continuation of the current trend.",
+    ),
+    CodePreset(
+        code=SAREXT,
+        name="SAREXT",
+        category=CodePresetCategories.INDICATOR,
+        description="The Extended Parabolic SAR is an enhanced version of the standard Parabolic SAR. It is used to determine potential reversals in the market price direction of an asset, by accounting for volatility and acceleration. This version allows fine-tuning of the start, increment, and maximum acceleration factors, making it adaptable to different trading environments and volatility levels.",
+    ),
+    CodePreset(
+        code=T3_INDICATOR,
+        name="T3",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Triple Exponential Moving Average (T3), which provides a smoother and more responsive moving average by applying multiple levels of exponential smoothing. This indicator is particularly useful for identifying the trend direction and strength.",
+    ),
+    CodePreset(
+        code=TEMA_INDICATOR,
+        name="TEMA",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Triple Exponential Moving Average (TEMA), which uses triple smoothing to minimize the lag created by using multiple Exponential Moving Averages (EMAs), providing a more responsive moving average ideal for shorter trading periods or volatile markets.",
+    ),
+    CodePreset(
+        code=TRIMA,
+        name="TRIMA",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Triangular Moving Average (TRIMA) over a specified period. This moving average is centered and smoothed to reduce lag, providing a clearer indication of the underlying trend.",
+    ),
+    CodePreset(
+        code=WMA,
+        name="WMA",
+        category=CodePresetCategories.INDICATOR,
+        description="WMA (Weighted Moving Average): This indicator calculates the Weighted Moving Average, which gives more importance to recent data points than earlier ones. It's commonly used to identify trends more quickly than a simple moving average can.",
+    ),
+    CodePreset(
+        code=ADX,
+        name="ADX",
+        category=CodePresetCategories.INDICATOR,
+        description="The Average Directional Movement Index (ADX) quantifies trend strength by calculating a moving average of the price range expansion over a given period. A rising ADX indicates a strong trend, while a falling ADX suggests a weakening trend. The ADX is non-directional; it registers trend strength whether the price is trending upwards or downwards.",
+    ),
+    CodePreset(
+        code=ADXR,
+        name="ADXR",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Average Directional Movement Index Rating (ADXR) which is an average of the current ADX and the ADX from half the selected period ago. This helps in smoothing the ADX values and provides a clearer indication of trend strength and direction over time.",
+    ),
+    CodePreset(
+        code=APO,
+        name="APO",
+        category=CodePresetCategories.INDICATOR,
+        description="The Absolute Price Oscillator (APO) is based on the difference between two exponential moving averages (EMAs) of a security's price, typically a fast and a slow EMA. The APO is used to identify momentum or trend strength by measuring the divergence between these EMAs.",
+    ),
+    CodePreset(
+        code=AROON,
+        name="AROON",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Aroon indicator, which measures the time between highs and the time between lows over a given period. The indicator consists of two lines: Aroon Up (which measures the time since the last high) and Aroon Down (which measures the time since the last low). Both are expressed as a percentage of the total period. This indicator is useful for identifying trend changes and strength.",
+    ),
+    CodePreset(
+        code=AROONOSC,
+        name="AROONOSC",
+        category=CodePresetCategories.INDICATOR,
+        description="Computes the Aroon Oscillator to determine the trend strength and the likelihood of trend reversal. The oscillator fluctuates between -100 and +100, where high positive values indicate a strong uptrend, and high negative values suggest a strong downtrend.",
+    ),
+    CodePreset(
+        code=BOP,
+        name="BOP",
+        category=CodePresetCategories.INDICATOR,
+        description="BOP (Balance of Power): This indicator is used to assess the strength of buyers and sellers by determining whether the price is being driven by buyers (closing near the high) or by sellers (closing near the low). It's particularly useful for identifying price divergences and market sentiment within trading periods.",
+    ),
+    CodePreset(
+        code=CCI,
+        name="CCI",
+        category=CodePresetCategories.INDICATOR,
+        description="Commodity Channel Index (CCI): Calculates the CCI to identify cyclical trends within a dataset. The CCI compares the current price to an average price level over a specific time period with the normal deviations from that average. It helps in identifying overbought or oversold levels in price.",
+    ),
+    CodePreset(
+        code=CMO,
+        name="CMO",
+        category=CodePresetCategories.INDICATOR,
+        description="Chande Momentum Oscillator (CMO): Measures the momentum of a security by comparing the sum of its recent gains to the sum of its recent losses. It is used to identify overbought and oversold conditions and potential reversals. The CMO ranges from -100 to +100, indicating overbought conditions at high positive values and oversold conditions at low negative values.",
+    ),
+    CodePreset(
+        code=DMI,
+        name="DMI",
+        category=CodePresetCategories.INDICATOR,
+        description="Directional Movement Index (DMI): This indicator is designed to identify the directionality of the price movement. It includes the Positive Directional Indicator (+DI) and Negative Directional Indicator (-DI) to help determine the direction of the trend and the Average Directional Index (ADX) which measures the strength of the trend regardless of its direction.",
+    ),
+    CodePreset(
+        code=MACD,
+        name="MACD",
+        category=CodePresetCategories.INDICATOR,
+        description="MACD: Calculates the Moving Average Convergence/Divergence which consists of the MACD line (difference between two exponential moving averages), the signal line (an exponential moving average of the MACD line), and the MACD histogram (the difference between MACD and its signal line), used to expose changes in strength, direction, momentum, and duration of a trend in a stock's price. This function creates separate DataFrame columns with detailed labels for each element of the MACD to clearly indicate the parameters used in their computation.",
+    ),
+    CodePreset(
+        code=MACDFIX,
+        name="MACDFIX",
+        category=CodePresetCategories.INDICATOR,
+        description="MACDFIX: This customized version of the Moving Average Convergence Divergence (MACD) indicator includes detailed labels that reflect the calculation periods (12-day EMA and 26-day EMA for the MACD, and a 9-day EMA for the signal line) as well as the specific column name used for the calculation (e.g., 'close_price'). This makes the indicator outputs easily identifiable, especially when working with multiple data columns or various configurations of MACD in the same analysis. This version is highly useful for comparing performance across different datasets or within a dataset that includes multiple types of financial data.",
+    ),
+    CodePreset(
+        code=MFI,
+        name="MFI",
+        category=CodePresetCategories.INDICATOR,
+        description="Money Flow Index (MFI): Calculates the Money Flow Index over specified periods, which combines both price and volume data to measure trading pressure. A rising MFI indicates increased buying pressure, while a falling MFI suggests increased selling pressure.",
+    ),
+    CodePreset(
+        code=MINUS_DI,
+        name="MINUS_DI",
+        category=CodePresetCategories.INDICATOR,
+        description="Minus Directional Indicator (MINUS_DI): The Minus Directional Indicator measures the strength of downward price movement or trend. It is part of the Average Directional Index (ADX) system and is calculated by dividing the sum of downward price movement over a specified period by the total true range over the same period, then multiplying by 100.",
+    ),
+    CodePreset(
+        code=MINUS_DM,
+        name="MINUS_DM",
+        category=CodePresetCategories.INDICATOR,
+        description="Minus Directional Movement (Minus DM): This indicator is part of the Directional Movement System and is used to measure the downward price movement between periods. It focuses on the difference between the lows of two consecutive bars when the current low is lower than the previous low, and only if this difference is greater than the difference between the two highs. This indicator is typically used to assess the strength of a downtrend.",
+    ),
+    CodePreset(
+        code=MOM,
+        name="MOM",
+        category=CodePresetCategories.INDICATOR,
+        description="Momentum (MOM): This indicator measures the rate of rise or fall in stock prices. It compares the current price to the price n periods ago and is used to identify the speed or strength of a price movement.",
+    ),
+    CodePreset(
+        code=PLUS_DI,
+        name="PLUS_DI",
+        category=CodePresetCategories.INDICATOR,
+        description="Plus Directional Indicator (PLUS_DI): This indicator forms part of the Average Directional Movement Index system (ADX) and measures the presence of upward price movement. It is computed by comparing the current high with the previous high and is typically used to confirm trend direction. Higher values indicate a stronger upward trend.",
     ),
 ]
 
