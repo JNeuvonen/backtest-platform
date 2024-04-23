@@ -69,19 +69,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   );
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetch(LOCAL_API_URI + "/")
-        .then((response) => {
-          if (response.status === 200) {
-            setServerLaunched(true);
-            clearInterval(interval);
-          }
-          return response.json();
-        })
-        .catch();
-    }, 100); // 100 milliseconds
-
-    return () => clearInterval(interval);
+    fetch(LOCAL_API_URI + "/")
+      .then((response) => {
+        if (response.status === 200) {
+          setServerLaunched(true);
+        }
+        return response.json();
+      })
+      .catch();
   }, []);
 
   useEffect(() => {
