@@ -53,3 +53,17 @@ class DataTransformationQuery:
                     .order_by(DataTransformation.id)
                     .all()
                 )
+
+    @staticmethod
+    def add_many(fields_list):
+        with LogExceptionContext():
+            try:
+                with Session() as session:
+                    transformations = [
+                        DataTransformation(**fields) for fields in fields_list
+                    ]
+                    session.add_all(transformations)
+                    session.commit()
+                    return [transformation.id for transformation in transformations]
+            except Exception as e:
+                return str(e)

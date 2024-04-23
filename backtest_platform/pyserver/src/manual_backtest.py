@@ -64,7 +64,7 @@ async def run_rule_based_mass_backtest(
                 exec_python(python_program)
                 DataTransformationQuery.create_entry(
                     {
-                        "transformation_code": transformation,
+                        "transformation_code": transformation.transformation_code,
                         "dataset_id": symbol_dataset.id,
                     }
                 )
