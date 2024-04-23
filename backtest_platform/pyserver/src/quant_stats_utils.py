@@ -54,7 +54,7 @@ def enhance_report_with_details(soup, backtest_info, symbols=[]):
 
     if len(symbols) > 0:
         trading_criteria_div.append(
-            append_custom_div(soup, PRE_STYLE_BASE, f"{', '.join(symbols)} strategy")
+            append_custom_div(soup, PRE_STYLE_BASE, f"{', '.join(symbols)}")
         )
 
     strategy_type = "Short" if backtest_info.is_short_selling_strategy else "Long"
