@@ -12,8 +12,8 @@ transformed_data = make_data_transformations(fetched_data)
 {ENTER_TRADE_FUNC}
 {EXIT_TRADE_FUNC}
 
-should_enter_trade = get_enter_trade_decision(transformed_data)
-should_exit_trade = get_exit_trade_decision(transformed_data)
+should_enter_trade = get_enter_trade_decision(transformed_data.iloc[-1]) 
+should_exit_trade = get_exit_trade_decision(transformed_data.iloc[-1])
 """
 
 
