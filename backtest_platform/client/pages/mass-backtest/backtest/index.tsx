@@ -71,10 +71,11 @@ export interface DisplayPairsItem {
 
 const SelectDatasetsPopoverBody = ({
   datasets,
+  forceUpdateParent,
 }: {
   datasets: DisplayPairsItem[];
+  forceUpdateParent: () => void;
 }) => {
-  const forceUpdate = useForceUpdate();
   return (
     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
       <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
@@ -85,8 +86,7 @@ const SelectDatasetsPopoverBody = ({
             datasets.map((item) => {
               item.display = true;
             });
-
-            forceUpdate();
+            forceUpdateParent();
           }}
         >
           Select all
@@ -98,7 +98,7 @@ const SelectDatasetsPopoverBody = ({
             datasets.map((item) => {
               item.display = false;
             });
-            forceUpdate();
+            forceUpdateParent();
           }}
         >
           Unselect all
@@ -123,7 +123,7 @@ const SelectDatasetsPopoverBody = ({
                       datasetItem.display = !datasetItem.display;
                     }
                   });
-                  forceUpdate();
+                  forceUpdateParent();
                 }}
               />
               <div>{item.datasetSymbol}</div>
@@ -191,6 +191,7 @@ export const InvidualMassbacktestDetailsPage = () => {
   const [currentlyDisplayedPairs, setCurrentlyDisplayedPairs] = useState<
     DisplayPairsItem[]
   >([]);
+  const forceUpdate = useForceUpdate();
 
   useMessageListener({
     messageName: DOM_EVENT_CHANNELS.refetch_component,
@@ -221,9 +222,15 @@ export const InvidualMassbacktestDetailsPage = () => {
         selectedYearFilter,
         sinceYearFilter,
         FILTER_NOT_SELECTED_VALUE,
+        displayPairsArr: [...currentlyDisplayedPairs],
       }
     );
-  }, [useManyBacktestsQuery.data, selectedYearFilter, sinceYearFilter]);
+  }, [
+    useManyBacktestsQuery.data,
+    selectedYearFilter,
+    sinceYearFilter,
+    JSON.stringify(currentlyDisplayedPairs),
+  ]);
 
   if (
     massBacktestQuery.isLoading ||
@@ -252,7 +259,10 @@ export const InvidualMassbacktestDetailsPage = () => {
               {...selectPairsPopover}
               setOpen={selectPairsPopover.onOpen}
               body={
-                <SelectDatasetsPopoverBody datasets={currentlyDisplayedPairs} />
+                <SelectDatasetsPopoverBody
+                  datasets={currentlyDisplayedPairs}
+                  forceUpdateParent={forceUpdate}
+                />
               }
               headerText="Selected pairs"
             >
