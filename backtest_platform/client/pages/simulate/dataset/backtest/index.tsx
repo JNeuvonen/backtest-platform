@@ -134,7 +134,7 @@ const getTradesData = (
 };
 
 export const DatasetBacktestPage = () => {
-  const { backtestId } = usePathParams<PathParams>();
+  const { backtestId, datasetName } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(backtestId));
   const deployStrategyDrawer = useDisclosure();
   const backtestContext = useBacktestContext();
@@ -166,7 +166,9 @@ export const DatasetBacktestPage = () => {
             justifyContent: "space-between",
           }}
         >
-          <Heading size={"lg"}>Backtest {backtestQuery.data.data.name}</Heading>
+          <Heading size={"lg"}>
+            {datasetName} {!backtestQuery.data.data.name}
+          </Heading>
           <div style={{ display: "flex", gap: "8px" }}>
             <Button
               variant={BUTTON_VARIANTS.grey2}
