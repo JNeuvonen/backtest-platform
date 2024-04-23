@@ -1145,6 +1145,312 @@ periods = [7, 14, 28]
 calculate_ultosc(dataset, high_col=high_col, low_col=low_col, close_col=close_col, periods=periods)
 """
 
+WILLR = """
+import pandas as pd
+
+def calculate_williams_r(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[14]):
+    for period in periods:
+        high = df[high_col].rolling(window=period).max()
+        low = df[low_col].rolling(window=period).min()
+        williams_r_label = f"WILLR_{period}"
+        df[williams_r_label] = -100 * ((high - df[close_col]) / (high - low))
+
+# Usage example:
+periods = [14, 28, 56]  # Different periods for flexibility
+calculate_williams_r(dataset, periods=periods)
+"""
+
+AD_LINE = """
+import pandas as pd
+
+def calculate_ad_line(df, close_col='close_price', high_col='high_price', low_col='low_price', volume_col='volume'):
+    mfm = ((df[close_col] - df[low_col]) - (df[high_col] - df[close_col])) / (df[high_col] - df[low_col])
+    mfv = mfm * df[volume_col]
+    df['AD_Line'] = mfv.cumsum()
+
+# Usage example:
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+volume_col = 'volume'
+calculate_ad_line(dataset, close_col=close_col, high_col=high_col, low_col=low_col, volume_col=volume_col)
+"""
+
+ADOSC = """
+import pandas as pd
+
+def calculate_adosc(df, high_col='high_price', low_col='low_price', close_col='close_price', volume_col='volume', short_period=3, long_period=10):
+    # Calculate the Money Flow Multiplier
+    mfm = ((df[close_col] - df[low_col]) - (df[high_col] - df[close_col])) / (df[high_col] - df[low_col])
+    mfm.fillna(0, inplace=True)  # Handling division by zero
+
+    # Calculate the Money Flow Volume
+    mfv = mfm * df[volume_col]
+
+    # Calculate the Chaikin A/D Line as a cumulative sum of Money Flow Volume
+    ad = mfv.cumsum()
+
+    # Calculate the short and long period Exponential Moving Averages of the A/D Line
+    ad_ema_short = ad.ewm(span=short_period, adjust=False).mean()
+    ad_ema_long = ad.ewm(span=long_period, adjust=False).mean()
+
+    # The Chaikin Oscillator is the difference between the two EMAs
+    oscillator_label = f'ADOSC_{short_period}_{long_period}'
+    df[oscillator_label] = ad_ema_short - ad_ema_long
+
+# Usage example
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+volume_col = 'volume'
+short_period = 3
+long_period = 10
+calculate_adosc(dataset, high_col=high_col, low_col=low_col, close_col=close_col, volume_col=volume_col, short_period=short_period, long_period=long_period)
+"""
+
+HT_DCPERIOD = """
+import pandas as pd
+import numpy as np
+
+def calculate_ht_dcperiod(df, price_col='close_price'):
+    smooth_price = (4 * df[price_col] + 3 * df[price_col].shift(1) + 2 * df[price_col].shift(2) + df[price_col].shift(3)) / 10
+    
+    dpo = smooth_price - smooth_price.shift(int(0.5 * 20 + 1))  # Approximation for a cycle of period 20
+
+    in_phase = 0.75 * (dpo.shift(2) - dpo.shift(3)) + 0.25 * (dpo.shift(1) - dpo.shift(4))
+    quadrature = 0.5 * (dpo.shift(1) + dpo.shift(3)) - dpo
+
+    ip = np.where(quadrature != 0, np.arctan(in_phase / quadrature) / (2 * np.pi), 0)
+    dcperiod = 1 / np.abs(ip)
+
+    df['HT_DCPERIOD'] = dcperiod
+
+# Usage example:
+price_col = "close_price"
+calculate_ht_dcperiod(dataset, price_col=price_col)
+"""
+
+HT_DCPHASE = """
+import numpy as np
+import pandas as pd
+
+def calculate_ht_dcphase(df, column='close_price'):
+    # Calculate the Hilbert Transform - Dominant Cycle Phase
+    period = 32
+    cycle_period = np.zeros(len(df))
+    inst_period = np.zeros(len(df))
+    dc_phase = np.zeros(len(df))
+    count = 0
+
+    for i in range(period, len(df)):
+        # Hilbert Transform
+        real_part = np.sin(2 * np.pi / period)
+        imag_part = np.cos(2 * np.pi / period)
+        Q1 = df[column].iloc[i - period] * imag_part
+        I1 = df[column].iloc[i - period] * real_part
+
+        # Compute InPhase and Quadrature components
+        jI = np.zeros((period,))
+        jQ = np.zeros((period,))
+
+        for j in range(1, period):
+            jI[j] = jI[j - 1] + real_part * df[column].iloc[i - j] - I1
+            jQ[j] = jQ[j - 1] + imag_part * df[column].iloc[i - j] - Q1
+
+        Q2 = jQ[period - 1]
+        I2 = jI[period - 1]
+
+        # Dominant cycle phase
+        dc_phase[i] = np.arctan2(Q2, I2) * (180 / np.pi)
+
+    df_label = f'HT_DCPHASE_{column}'
+    df[df_label] = dc_phase
+
+# Usage example:
+column = "close_price"
+calculate_ht_dcphase(dataset, column=column)
+"""
+
+HT_PHASOR = """
+import pandas as pd
+import numpy as np
+from scipy.signal import hilbert
+
+def calculate_ht_phasor(df, column='close_price'):
+    signal = df[column]
+    analytic_signal = hilbert(signal)
+    instantaneous_phase = np.unwrap(np.angle(analytic_signal))
+    instantaneous_amplitude = np.abs(analytic_signal)
+    
+    df[f'HT_Phasor_Phase_{column}'] = instantaneous_phase
+    df[f'HT_Phasor_Amplitude_{column}'] = instantaneous_amplitude
+
+# Usage example:
+column = "close_price"
+calculate_ht_phasor(dataset, column=column)
+"""
+
+HT_SINE = """
+import pandas as pd
+import ta
+
+def calculate_ht_sine(df, column='close_price'):
+    sine, leadsine = ta.trend.ht_sine(df[column])
+    df[f'HT_SINE_{column}'] = sine
+    df[f'HT_LEADSINE_{column}'] = leadsine
+
+# Usage example:
+column = "close_price"
+calculate_ht_sine(dataset, column=column)
+"""
+
+HT_TRENDMODE = """
+import numpy as np
+import pandas as pd
+
+def calculate_ht_trendmode(df, column='close_price'):
+    from scipy.signal import hilbert
+    
+    # Applying the Hilbert Transform to the price data to get the analytic signal
+    analytic_signal = hilbert(df[column])
+    # Calculating the instantaneous phase
+    instantaneous_phase = np.unwrap(np.angle(analytic_signal))
+    # Determining the sine of the difference in phase
+    sin_instantaneous_phase = np.sin(instantaneous_phase[1:] - instantaneous_phase[:-1])
+    
+    # Trend mode is where the sine of the phase difference is positive
+    trend_mode = (sin_instantaneous_phase > 0).astype(int)
+    # Append the initial value as np.nan because the difference calculation reduces the array size by 1
+    trend_mode = np.insert(trend_mode, 0, np.nan)
+    
+    df[f'HT_TRENDMODE_{column}'] = trend_mode
+
+# Example usage:
+column = 'close_price'
+calculate_ht_trendmode(dataset, column=column)
+"""
+
+AVGPRICE = """
+import pandas as pd
+
+def calculate_avgprice(df, high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['AVGPRICE'] = (df[high_col] + df[low_col] + df[close_col]) / 3
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_avgprice(dataset, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+MEDPRICE = """
+import pandas as pd
+
+def calculate_medprice(df, high_col='high_price', low_col='low_price'):
+    df['MEDPRICE'] = (df[high_col] + df[low_col]) / 2
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+calculate_medprice(dataset, high_col=high_col, low_col=low_col)
+"""
+
+TYPPRICE = """
+import pandas as pd
+
+def calculate_typ_price(df, high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['TYPPRICE'] = (df[high_col] + df[low_col] + df[close_col]) / 3
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_typ_price(dataset, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+WCLPRICE = """
+import pandas as pd
+
+def calculate_wclprice(df, high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['WCLPRICE'] = (df[high_col] + df[low_col] + 2 * df[close_col]) / 4
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_wclprice(dataset, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+NATR = """
+import pandas as pd
+
+def calculate_natr(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[14]):
+    for period in periods:
+        high_low = df[high_col] - df[low_col]
+        high_close = (df[high_col] - df[close_col].shift()).abs()
+        low_close = (df[low_col] - df[close_col].shift()).abs()
+
+        ranges = pd.concat([high_low, high_close, low_close], axis=1)
+        true_range = ranges.max(axis=1)
+        atr = true_range.rolling(window=period).mean()
+
+        natr = (atr / df[close_col]) * 100  # Normalization
+        df_label = f"NATR_{period}"
+        df[df_label] = natr
+
+# Usage example:
+periods = [14, 20, 50]
+calculate_natr(dataset, periods=periods)
+"""
+
+TRANGE = """
+import pandas as pd
+
+def calculate_trange(df, high_col='high_price', low_col='low_price', close_col='close_price'):
+    high_low = df[high_col] - df[low_col]
+    high_close = (df[high_col] - df[close_col].shift()).abs()
+    low_close = (df[low_col] - df[close_col].shift()).abs()
+
+    ranges = pd.concat([high_low, high_close, low_close], axis=1)
+    df['TRange'] = ranges.max(axis=1)
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_trange(dataset, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDL2CROWS = """
+import pandas as pd
+
+def calculate_cdl2crows(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    # Check for the conditions specific to the Two Crows pattern
+    cdl2crows = []
+    for i in range(2, len(df)):
+        # First candle: bullish
+        first_bullish = df[close_col][i-2] > df[open_col][i-2]
+        # Second candle: gap up opening, closing within the range of the first candle but below its close
+        second_gap_up = (df[open_col][i-1] > df[close_col][i-2]) and (df[close_col][i-1] < df[close_col][i-2]) and (df[close_col][i-1] > df[open_col][i-1])
+        # Third candle: gap up opening, closing below the second candle's open
+        third_bearish = (df[open_col][i] > df[open_col][i-1]) and (df[close_col][i] < df[open_col][i-1])
+
+        if first_bullish and second_gap_up and third_bearish:
+            cdl2crows.append(1)
+        else:
+            cdl2crows.append(0)
+    
+    df['CDL2CROWS'] = cdl2crows
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+calculate_cdl2crows(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+
 DEFAULT_CODE_PRESETS = [
     CodePreset(
         code=GEN_RSI_CODE,
@@ -1445,6 +1751,102 @@ DEFAULT_CODE_PRESETS = [
         name="ULTOSC",
         category=CodePresetCategories.INDICATOR,
         description="Ultimate Oscillator (ULTOSC): This indicator combines buying pressure with true range over multiple time frames (short, intermediate, and long) to produce a value that reflects price momentum. The oscillator is typically used to identify bullish and bearish divergences which might indicate potential reversal points.",
+    ),
+    CodePreset(
+        code=WILLR,
+        name="WILLR",
+        category=CodePresetCategories.INDICATOR,
+        description="Williams' %R: Calculates Williams' %R to determine overbought and oversold levels. Values range from -100 to 0, where readings near -100 typically indicate oversold conditions, and readings near 0 suggest overbought conditions. This can help identify potential reversal points in the price of an asset.",
+    ),
+    CodePreset(
+        code=AD_LINE,
+        name="AD_LINE",
+        category=CodePresetCategories.INDICATOR,
+        description="Chaikin A/D Line: The Chaikin Accumulation/Distribution Line helps track the volume flow in and out of stocks. A rising A/D line suggests accumulation (buying), indicating strong demand, while a falling A/D line indicates distribution (selling) and thus weaker demand. This indicator is often used to confirm trends or warn of potential reversals.",
+    ),
+    CodePreset(
+        code=ADOSC,
+        name="ADOSC",
+        category=CodePresetCategories.INDICATOR,
+        description="Chaikin A/D Oscillator (ADOSC): Measures the momentum of the Accumulation/Distribution line by calculating the difference between a fast and slow exponential moving average of the line. This indicator helps identify major changes in market sentiment and can signal potential reversals.",
+    ),
+    CodePreset(
+        code=HT_DCPERIOD,
+        name="HT_DCPERIOD",
+        category=CodePresetCategories.INDICATOR,
+        description="HT_DCPERIOD: This indicator calculates the Dominant Cycle Period using the Hilbert Transform, aiming to identify cycles in the price data by transforming the real price into a complex plane to detect cyclical components.",
+    ),
+    CodePreset(
+        code=HT_DCPHASE,
+        name="HT_DCPHASE",
+        category=CodePresetCategories.INDICATOR,
+        description="HT_DCPHASE: The Hilbert Transform - Dominant Cycle Phase (HT_DCPHASE) calculates the phase of the cycle within market data. This can help identify turning points in the market cycle, offering insights into potential shifts in momentum or trend changes.",
+    ),
+    CodePreset(
+        code=HT_PHASOR,
+        name="HT_PHASOR",
+        category=CodePresetCategories.INDICATOR,
+        description="HT_PHASOR: This indicator calculates the Hilbert Transform Phasor Components of a given data series. It provides the instantaneous phase and amplitude, which are useful for identifying cycles and the amplitude modulation of price movements within the financial market.",
+    ),
+    CodePreset(
+        code=HT_SINE,
+        name="HT_SINE",
+        category=CodePresetCategories.INDICATOR,
+        description="HT_SINE (Hilbert Transform - SineWave): This indicator is part of the Hilbert Transform suite used to generate an in-phase and quadrature component of the price cycle, typically helping to identify cycles and turning points in the market with sine and lead sine waves.",
+    ),
+    CodePreset(
+        code=HT_TRENDMODE,
+        name="HT_TRENDMODE",
+        category=CodePresetCategories.INDICATOR,
+        description="HT_TRENDMODE: This indicator is calculated using the Hilbert Transform to identify the dominant cycle phase of the price action, helping to distinguish between trend and cycle modes. A positive value suggests a trend mode, while a zero or negative value could suggest a cyclical or non-trending mode.",
+    ),
+    CodePreset(
+        code=AVGPRICE,
+        name="AVGPRICE",
+        category=CodePresetCategories.INDICATOR,
+        description="AVGPRICE: Calculates the Average Price (AVGPRICE) indicator by taking the mean of the high, low, and close prices for each period, providing a simple reflection of a typical trading price within a given timeframe.",
+    ),
+    CodePreset(
+        code=MEDPRICE,
+        name="MEDPRICE",
+        category=CodePresetCategories.INDICATOR,
+        description="MEDPRICE: Calculates the Median Price, which is the average of the high and low prices for each period. It provides a simple measure of the midpoint of a security's trading range for the day and can be used as a foundation for other technical indicators.",
+    ),
+    CodePreset(
+        code=MEDPRICE,
+        name="MEDPRICE",
+        category=CodePresetCategories.INDICATOR,
+        description="MEDPRICE: Calculates the Median Price, which is the average of the high and low prices for each period. It provides a simple measure of the midpoint of a security's trading range for the day and can be used as a foundation for other technical indicators.",
+    ),
+    CodePreset(
+        code=TYPPRICE,
+        name="TYPPRICE",
+        category=CodePresetCategories.INDICATOR,
+        description="TYPPRICE: Calculates the Typical Price for each period, which is the average of the high, low, and close prices. This indicator is often used as a simplified representation of the price action and can be utilized as a reference for other calculations, such as moving averages or pivot points.",
+    ),
+    CodePreset(
+        code=WCLPRICE,
+        name="WCLPRICE",
+        category=CodePresetCategories.INDICATOR,
+        description="WCLPRICE: Calculates the Weighted Close Price by taking the average of the high, low, and twice the closing price. This indicator emphasizes the closing price more than the high and low prices during the period, typically used to confirm trends or reversals.",
+    ),
+    CodePreset(
+        code=NATR,
+        name="NATR",
+        category=CodePresetCategories.INDICATOR,
+        description="NATR: Calculates the Normalized Average True Range (NATR) to measure market volatility relative to the price. It expresses the ATR as a percentage of the closing price, helping to compare volatility across different price levels.",
+    ),
+    CodePreset(
+        code=TRANGE,
+        name="TRANGE",
+        category=CodePresetCategories.INDICATOR,
+        description="TRange: Calculates the True Range to assess the volatility. True Range is the greatest of the following: current high minus current low, the absolute value of the current high minus the previous close, and the absolute value of the current low minus the previous close.",
+    ),
+    CodePreset(
+        code=CDL2CROWS,
+        name="CDL2CROWS",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Two Crows candlestick pattern, a bearish reversal pattern that appears in an uptrend. It consists of three candles: a long bullish candle, followed by a gap-up open candle that closes within the body of the first but does not surpass its high, and a third candle that opens higher than the second but closes below its open, signaling a potential reversal.",
     ),
 ]
 
