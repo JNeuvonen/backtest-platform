@@ -8,6 +8,8 @@ import {
   Button,
   Checkbox,
   Heading,
+  MenuButton,
+  MenuItem,
   Spinner,
   Stat,
   StatLabel,
@@ -43,7 +45,9 @@ import {
   getDatasetBacktestPath,
   getDatasetInfoPagePath,
 } from "../../../utils/navigate";
-import { round } from "lodash";
+import { ChakraMenu } from "../../../components/chakra/Menu";
+import { FaFileImport } from "react-icons/fa6";
+import { saveMassBacktestReport } from "../../../clients/requests";
 
 interface PathParams {
   massBacktestId: number;
@@ -215,6 +219,10 @@ export const InvidualMassbacktestDetailsPage = () => {
     }
   }, [useManyBacktestsQuery.data]);
 
+  const downloadCombinedSummary = async () => {
+    saveMassBacktestReport(massBacktestQuery.data?.backtest_ids || []);
+  };
+
   const bulkBacktestDetails = useMemo(() => {
     return getBulkBacktestDetails(
       useManyBacktestsQuery.data as FetchBulkBacktests,
@@ -251,7 +259,13 @@ export const InvidualMassbacktestDetailsPage = () => {
           alignItems: "center",
         }}
       >
-        <div></div>
+        <div>
+          <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
+            <MenuItem icon={<FaFileImport />} onClick={downloadCombinedSummary}>
+              Download combined equity summary
+            </MenuItem>
+          </ChakraMenu>
+        </div>
 
         <div style={{ gap: "16px", display: "flex", alignItems: "center" }}>
           <div>

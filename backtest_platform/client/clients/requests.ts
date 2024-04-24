@@ -286,6 +286,27 @@ export async function saveBacktestReport(
   }
 }
 
+export async function saveMassBacktestReport(backtestIds: number[]) {
+  const response = await fetch(
+    LOCAL_API_URL.downloadMassBacktestSummaryFile(backtestIds)
+  );
+
+  if (!response.ok) throw new Error("Network response was not ok.");
+
+  const blob = await response.blob();
+
+  if (window.__TAURI__) {
+    const arrayBuffer = await blob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const filePath = await save({ defaultPath: "mass_backtest_summary.html" });
+    if (filePath) {
+      await writeBinaryFile({ path: filePath, contents: uint8Array });
+    }
+  } else {
+    saveAs(blob, "bulk_backtest_summary.html");
+  }
+}
+
 export async function removeDatasets(datasets: string[]) {
   const res = await buildRequest({
     method: "DELETE",
