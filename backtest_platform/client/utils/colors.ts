@@ -97,3 +97,4 @@ export const COLOR_DARK_COLOR_LIGHTEST = "#ffffff";
 export const COLOR_DARK_COLOR_LIGHTEST_SHADE_ONE = "#f5f5f5";
 export const COLOR_DARK_COLOR_LIGHTEST_SHADE_TWO = "#ebebeb";
 export const COLOR_DARK_COLOR_LIGHTEST_SHADE_THREE = "#d9d9d9";
+export const COLOR_LINK_DEFAULT = "#097bed";
