@@ -7,7 +7,32 @@ const genOptiontype = (pair: string) => {
 
 export const BULK_SIM_PAIR_PRESETS = [
   {
-    label: "Speculative coins",
+    label: "Speculative - weak altcoins",
+    pairs: [
+      genOptiontype("FARMUSDT"),
+      genOptiontype("ENSUSDT"),
+      genOptiontype("IOTAUSDT"),
+      genOptiontype("FISUSDT"),
+      genOptiontype("GNSUSDT"),
+      genOptiontype("HARDUSDT"),
+      genOptiontype("HOOKUSDT"),
+      genOptiontype("HIGHUSDT"),
+      genOptiontype("ICPUSDT"),
+      genOptiontype("ICXUSDT"),
+      genOptiontype("IDEXUSDT"),
+      genOptiontype("IRISUSDT"),
+      genOptiontype("JUVUSDT"),
+      genOptiontype("KDAUSDT"),
+      genOptiontype("KLAYUSDT"),
+      genOptiontype("LAZIOUSDT"),
+      genOptiontype("LITUSDT"),
+      genOptiontype("LOKAUSDT"),
+      genOptiontype("MBOXUSDT"),
+      genOptiontype("MINAUSDT"),
+    ],
+  },
+  {
+    label: "Speculative - solid altcoins",
     pairs: [
       genOptiontype("ALGOUSDT"),
       genOptiontype("GALAUSDT"),
