@@ -616,13 +616,13 @@ import numpy as np
 import pandas as pd
 
 def calculate_aroon(df, column='close_price', periods=25):
-    aroon_up = 100 * df[column].rolling(window=periods, min_periods=0).apply(
+    aroon_up = df[column].rolling(window=periods, min_periods=0).apply(
         lambda x: float(np.argmax(x) + 1) / periods * 100, raw=True)
-    aroon_down = 100 * df[column].rolling(window=periods, min_periods=0).apply(
+    aroon_down = df[column].rolling(window=periods, min_periods=0).apply(
         lambda x: float(np.argmin(x) + 1) / periods * 100, raw=True)
 
-    df[f'Aroon_Up_{periods}_{column}'] = aroon_up
-    df[f'Aroon_Down_{periods}_{column}'] = aroon_down
+    df[f'AROON_UP_{periods}_{column}'] = aroon_up
+    df[f'AROON_DOWN_{periods}_{column}'] = aroon_down
 
 # Usage example:
 periods = 25
@@ -637,7 +637,7 @@ def calculate_aroon_oscillator(df, high_col='high_price', low_col='low_price', p
     aroon_up = 100 * df[high_col].rolling(window=period, min_periods=0).apply(lambda x: x[::-1].idxmax()) / (period - 1)
     aroon_down = 100 * df[low_col].rolling(window=period, min_periods=0).apply(lambda x: x[::-1].idxmin()) / (period - 1)
     aroon_osc = aroon_up - aroon_down
-    df_label = f"Aroon_Oscillator_{period}"
+    df_label = f"AROON_OSCILLATOR_{period}"
     df[df_label] = aroon_osc
 
 # Usage example:
