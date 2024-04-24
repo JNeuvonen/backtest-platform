@@ -29,6 +29,11 @@ import {
   setTargetColumn,
 } from "../../../clients/requests";
 import { getParenthesisSize } from "../../../utils/content";
+import { Link } from "react-router-dom";
+import { getDatasetInfoPagePath } from "../../../utils/navigate";
+import { FaExternalLinkAlt } from "react-icons/fa";
+import { COLOR_LINK_DEFAULT } from "../../../utils/colors";
+import ExternalLink from "../../../components/ExternalLink";
 
 export const SimulateDatasetIndex = () => {
   const {
@@ -56,7 +61,21 @@ export const SimulateDatasetIndex = () => {
 
   return (
     <div>
-      <Heading size={"lg"}>Backtest {datasetName}</Heading>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "space-between",
+        }}
+      >
+        <div>
+          <Heading size={"lg"}>Backtest {datasetName}</Heading>
+        </div>
+        <ExternalLink
+          to={getDatasetInfoPagePath(datasetName)}
+          linkText={"Dataset"}
+        />
+      </div>
 
       <div style={{ marginTop: "16px", display: "flex", gap: "16px" }}>
         <div>

@@ -19,7 +19,11 @@ import { useBacktestContext } from "../../../../context/backtest";
 import { IoIosDownload } from "react-icons/io";
 import { saveBacktestReport } from "../../../../clients/requests";
 import { useNavigate } from "react-router-dom";
-import { getMassbacktestTablesPath } from "../../../../utils/navigate";
+import {
+  getDatasetInfoPagePath,
+  getMassbacktestTablesPath,
+} from "../../../../utils/navigate";
+import ExternalLink from "../../../../components/ExternalLink";
 
 interface PathParams {
   datasetName: string;
@@ -170,6 +174,10 @@ export const DatasetBacktestPage = () => {
             {datasetName} {!backtestQuery.data.data.name}
           </Heading>
           <div style={{ display: "flex", gap: "8px" }}>
+            <ExternalLink
+              to={getDatasetInfoPagePath(datasetName)}
+              linkText={"Dataset"}
+            />
             <Button
               variant={BUTTON_VARIANTS.grey2}
               onClick={() => navigate(getMassbacktestTablesPath(backtestId))}
