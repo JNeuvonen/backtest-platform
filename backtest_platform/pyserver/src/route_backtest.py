@@ -40,6 +40,7 @@ class RoutePaths:
     DETAILED_SUMMARY = "/{backtest_id}/detailed-summary"
     MASS_BACKTEST_BY_BACKTEST_ID = "/mass-backtest/by-backtest/{backtest_id}"
     COMBINED_STRATEGY_SUMMARY = "/mass-backtest/combined/summary"
+    LONG_SHORT_BACKTEST = "/long-short-backtest"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -251,3 +252,9 @@ async def route_combined_strat_summary(
             filename="backtest_report_test.html",
             media_type="text/html",
         )
+
+
+@router.post(RoutePaths.LONG_SHORT_BACKTEST)
+async def route_long_short_backtest(body: BodyCreateManualBacktest):
+    with HttpResponseContext():
+        pass

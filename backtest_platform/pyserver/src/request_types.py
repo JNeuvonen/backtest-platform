@@ -76,6 +76,14 @@ class BodyCreateManualBacktest(BaseModel):
     klines_until_close: Optional[int] = None
 
 
+BodyCreateManualBacktestOmitShort = BodyCreateManualBacktest.__annotations__.copy()
+BodyCreateManualBacktestOmitShort.pop("is_short_selling_strategy")
+
+
+class BodyCreateLongShortBacktest(BaseModel):
+    __annotations__ = BodyCreateManualBacktestOmitShort
+
+
 class BodyDeleteManyBacktestsById:
     list_of_ids: List[int]
 

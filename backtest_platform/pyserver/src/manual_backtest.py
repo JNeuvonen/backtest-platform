@@ -23,7 +23,11 @@ from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
-from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
+from request_types import (
+    BodyCreateLongShortBacktest,
+    BodyCreateManualBacktest,
+    BodyCreateMassBacktest,
+)
 from utils import PythonCode, get_binance_dataset_tablename
 
 
@@ -412,3 +416,8 @@ class ManualBacktest:
             if self.positions.cash > 0 and should_open_trade:
                 self.positions.go_long(price, 0, kline_open_time)
                 self.post_trade_cleanup()
+
+
+def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
+    with LogExceptionContext():
+        pass
