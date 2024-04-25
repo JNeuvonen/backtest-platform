@@ -9,6 +9,24 @@ export const ENTER_TRADE_DEFAULT = () => {
   return code.get();
 };
 
+export const LONG_SHORT_BUY_COND_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_long_short_buy_cond(bar):");
+  code.addIndent();
+  code.appendLine("return True");
+  return code.get();
+};
+
+export const LONG_SHORT_SELL_COND_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_long_short_sell_cond(bar):");
+  code.addIndent();
+  code.appendLine("return True");
+  return code.get();
+};
+
 export const EXIT_LONG_TRADE_DEFAULT = () => {
   const code = new CodeHelper();
 
