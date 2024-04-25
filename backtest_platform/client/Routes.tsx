@@ -7,13 +7,15 @@ import { DatasetIndex } from "./pages/data/dataset/index";
 import { DatasetModelIndex } from "./pages/data/model";
 import { ModelInfoPage } from "./pages/data/model/info";
 import { TrainJobIndex } from "./pages/data/model/trainjob";
-import { SimulateIndex } from "./pages/simulate";
 import { SimulateDatasetIndex } from "./pages/simulate/dataset";
 import { BacktestProvider } from "./context/backtest";
 import { DatasetBacktestPage } from "./pages/simulate/dataset/backtest";
 import { SettingsPage } from "./pages/settings";
 import { AllMassBacktests } from "./pages/mass-backtest/all-backtests";
 import { InvidualMassbacktestDetailsPage } from "./pages/mass-backtest/backtest";
+import { SimulateSelectDataset } from "./pages/simulate/select-dataset-page";
+import { SimulateSelectMode } from "./pages/simulate";
+import { BulkLongShortSimPage } from "./pages/simulate/bulk/long-short";
 
 export const AppRoutes = () => {
   return (
@@ -31,8 +33,13 @@ export const AppRoutes = () => {
         path={PATHS.data.dataset.column}
         element={<DatasetColumnInfoPage />}
       />
+
       <Route path={PATHS.train} element={<TrainJobIndex />} />
-      <Route path={PATHS.simulate.path} element={<SimulateIndex />} />
+      <Route path={PATHS.simulate.path} element={<SimulateSelectMode />} />
+      <Route
+        path={PATHS.simulate.select_dataset}
+        element={<SimulateSelectDataset />}
+      />
       <Route
         path={PATHS.simulate.dataset}
         element={
@@ -48,6 +55,10 @@ export const AppRoutes = () => {
             <DatasetBacktestPage />
           </BacktestProvider>
         }
+      />
+      <Route
+        path={PATHS.simulate.bulk_long_short}
+        element={<BulkLongShortSimPage />}
       />
       <Route path={PATHS.mass_backtest.root} element={<AllMassBacktests />} />
       <Route
