@@ -5,13 +5,15 @@ import { GenericTable } from "../../components/tables/GenericTable";
 import { Link } from "react-router-dom";
 import { PATHS, PATH_KEYS } from "../../utils/constants";
 import { ChakraInput } from "../../components/chakra/input";
+import useQueryParams from "../../hooks/useQueryParams";
 
 const COLUMNS = ["Dataset name"];
 
-export const SimulateIndex = () => {
+export const SimulateSelectDataset = () => {
   const { data } = useDatasetsQuery();
 
   const [textFilter, setTextFilter] = useState("");
+  const queryParams = useQueryParams();
 
   return (
     <div>

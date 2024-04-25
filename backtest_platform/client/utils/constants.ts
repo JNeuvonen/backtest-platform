@@ -30,8 +30,10 @@ export const PATHS = {
   },
   simulate: {
     path: "/simulate",
+    select_dataset: "/simulate/select-dataset",
     dataset: `/simulate/${PATH_KEYS.dataset}`,
     backtest: `/simulate/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
+    bulk_long_short: "/simulate/bulk-sim/long-short",
   },
   mass_backtest: {
     root: `/simulate/mass-backtests/${PATH_KEYS.backtest}`,

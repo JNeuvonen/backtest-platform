@@ -29,10 +29,7 @@ import {
   setTargetColumn,
 } from "../../../clients/requests";
 import { getParenthesisSize } from "../../../utils/content";
-import { Link } from "react-router-dom";
 import { getDatasetInfoPagePath } from "../../../utils/navigate";
-import { FaExternalLinkAlt } from "react-icons/fa";
-import { COLOR_LINK_DEFAULT } from "../../../utils/colors";
 import ExternalLink from "../../../components/ExternalLink";
 
 export const SimulateDatasetIndex = () => {
