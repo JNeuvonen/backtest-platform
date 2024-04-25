@@ -15,9 +15,11 @@ import { RunPythonModal } from "./run-python";
 import { FilterBacktestDrawer } from "./filter-backtests";
 import { ConfirmDeleteSelectedModal } from "./confirm-delete";
 import { BacktestOnManyPairs } from "./run-on-many-pairs";
+import { LongShortBacktestForm } from "./long-short-backtest-form";
 
 interface BacktestContextType {
   createNewDrawer: UseDisclosureReturn;
+  longShortFormDrawer: UseDisclosureReturn;
   filterDrawer: UseDisclosureReturn;
   showColumnsModal: UseDisclosureReturn;
   priceColumnPopover: UseDisclosureReturn;
@@ -57,6 +59,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
     datasetQuery.data?.id || undefined
   );
   const createNewDrawer = useDisclosure();
+  const longShortFormDrawer = useDisclosure();
   const showColumnsModal = useDisclosure();
   const targetColumnPopover = useDisclosure();
   const priceColumnPopover = useDisclosure();
@@ -87,6 +90,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
   return (
     <BacktestContext.Provider
       value={{
+        longShortFormDrawer,
         createNewDrawer,
         datasetBacktestsQuery,
         datasetQuery,
@@ -112,6 +116,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
       <FilterBacktestDrawer />
       <ConfirmDeleteSelectedModal />
       <BacktestOnManyPairs />
+      <LongShortBacktestForm />
       {children}
     </BacktestContext.Provider>
   );

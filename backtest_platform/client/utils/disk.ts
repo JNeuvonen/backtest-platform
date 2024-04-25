@@ -1,5 +1,6 @@
 export const DISK_KEYS = {
   backtest_form: "BACKTEST_FORM",
+  long_short_form: "LONG_SHORT_FORM",
   deploy_strategy_form: "DEPLOY_STRATEGY_FORM",
   app_settings: "APP_SETTINGS",
 };

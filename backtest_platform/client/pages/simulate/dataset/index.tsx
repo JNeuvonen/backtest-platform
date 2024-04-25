@@ -51,6 +51,7 @@ export const SimulateDatasetIndex = () => {
     selectedBacktests,
     resetSelection,
     confirmDeleteSelectedModal,
+    longShortFormDrawer,
   } = useBacktestContext();
 
   const toast = useToast();
@@ -95,6 +96,12 @@ export const SimulateDatasetIndex = () => {
         <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
           <MenuItem icon={<FaFileImport />} onClick={createNewDrawer.onOpen}>
             New backtest
+          </MenuItem>
+          <MenuItem
+            icon={<FaFileImport />}
+            onClick={longShortFormDrawer.onOpen}
+          >
+            New long/short backtest
           </MenuItem>
           <MenuItem icon={<CiViewColumn />} onClick={showColumnsModal.onOpen}>
             Show columns
