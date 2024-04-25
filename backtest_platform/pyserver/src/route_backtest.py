@@ -237,7 +237,7 @@ async def route_combined_strat_summary(
         generate_combined_report(
             returns_dict,
             datasets_map,
-            get_periods_per_year(backtest_info.candle_interval),
+            365,
             backtest_info,
         )
 
