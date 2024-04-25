@@ -397,3 +397,54 @@ export const getMedianTotalReturn = (totalReturnsDict: object) => {
   totalReturns.sort((a, b) => a - b);
   return (totalReturns[Math.floor(totalReturns.length / 2)] - 1) * 100;
 };
+
+export const getBacktestFormDefaults = () => {
+  return {
+    backtestName: "",
+    useTimeBasedClose: false,
+    useProfitBasedClose: false,
+    useStopLossBasedClose: false,
+    klinesUntilClose: 0,
+    tradingFees: 0.1,
+    slippage: 0.001,
+    shortFeeHourly: 0.00165888 / 100,
+    takeProfitThresholdPerc: 0,
+    stopLossThresholdPerc: 0,
+    backtestDataRange: [0, 100],
+  };
+};
+
+export const getBacktestFormDefaultKeys = () => {
+  return {
+    backtestName: "backtestName",
+    useTimeBasedClose: "useTimeBasedClose",
+    useStopLossBasedClose: "useStopLossBasedClose",
+    klinesUntilClose: "klinesUntilClose",
+    slippage: "slippage",
+    useProfitBasedClose: "useProfitBasedClose",
+    shortFeeHourly: "shortFeeHourly",
+    takeProfitThresholdPerc: "takeProfitThresholdPerc",
+    stopLossThresholdPerc: "stopLossThresholdPerc",
+    backtestDataRange: "backtestDataRange",
+    tradingFees: "tradingFees",
+  };
+};
+
+export const BACKTEST_FORM_LABELS = {
+  name: "Name (optional)",
+  long_condition: "Long condition",
+  long_short_buy_condition: "Buy condition",
+  long_short_sell_condition: "Sell condition",
+  close_condition: "Close condition",
+  is_short_selling_strategy: "Is short selling strategy",
+  use_time_based_close: "Use time based closing strategy",
+  use_profit_based_close: "Use profit based close",
+  klines_until_close: "Klines until close",
+  take_profit_threshold: "Take profit threshold (%)",
+  use_stop_loss_based_close: "Use stop loss based close",
+  stop_loss_threshold: "Stop loss threshold (%)",
+  trading_fees: "Trading fees (%)",
+  slippage: "Slippage (%)",
+  shorting_fees_hourly: "Shorting fees (%) hourly",
+  backtest_data_range: "Backtest data range (%)",
+};
