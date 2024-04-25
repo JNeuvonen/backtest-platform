@@ -43,28 +43,21 @@ import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 import { DISK_KEYS, DiskManager } from "../../utils/disk";
 import { BacktestFormControls } from "./backtest-form-controls";
 import { ShowColumnModal } from "./show-columns-modal";
-import { useForceUpdate } from "../../hooks/useForceUpdate";
+import {
+  getBacktestFormDefaults,
+  getBacktestFormDefaultKeys,
+  BACKTEST_FORM_LABELS,
+} from "../../utils/backtest";
 
 type PathParams = {
   datasetName: string;
 };
 
 const formKeys = {
-  backtestName: "backtestName",
   openTradeCode: "openTradeCode",
   closeTradeCode: "closeTradeCode",
   useShorts: "useShorts",
-  openShortTradeCode: "openShortTradeCode",
-  useTimeBasedClose: "useTimeBasedClose",
-  klinesUntilClose: "klinesUntilClose",
-  useProfitBasedClose: "useProfitBasedClose",
-  takeProfitThresholdPerc: "takeProfitThresholdPerc",
-  useStopLossBasedClose: "useStopLossBasedClose",
-  stopLossThresholdPerc: "stopLossThresholdPerc",
-  tradingFees: "tradingFees",
-  slippage: "slippage",
-  shortFeeHourly: "shortFeeHourly",
-  backtestDataRange: "backtestDataRange",
+  ...getBacktestFormDefaultKeys(),
 };
 
 export interface BacktestFormValues {
@@ -90,20 +83,10 @@ const getFormInitialValues = () => {
   const prevForm = backtestDiskManager.read();
   if (prevForm === null) {
     return {
-      backtestName: "",
       openTradeCode: ENTER_TRADE_DEFAULT(),
       closeTradeCode: EXIT_LONG_TRADE_DEFAULT(),
       useShorts: false,
-      useTimeBasedClose: false,
-      useProfitBasedClose: false,
-      useStopLossBasedClose: false,
-      klinesUntilClose: 0,
-      tradingFees: 0.1,
-      slippage: 0.001,
-      shortFeeHourly: 0.00165888 / 100,
-      takeProfitThresholdPerc: 0,
-      stopLossThresholdPerc: 0,
-      backtestDataRange: [0, 100],
+      ...getBacktestFormDefaults(),
     };
   }
   return {
@@ -257,6 +240,7 @@ export const BacktestForm = () => {
             formikRef={formikRef}
             backtestDiskManager={backtestDiskManager}
             forceUpdate={forceUpdate}
+            runPythonModal={runPythonModal}
           />
 
           <Formik
@@ -274,7 +258,7 @@ export const BacktestForm = () => {
                     return (
                       <WithLabel>
                         <ChakraInput
-                          label="Name (optional)"
+                          label={BACKTEST_FORM_LABELS.name}
                           onChange={(value: string) =>
                             form.setFieldValue(formKeys.backtestName, value)
                           }
@@ -294,7 +278,7 @@ export const BacktestForm = () => {
                           }
                           style={{ marginTop: "16px" }}
                           fontSize={13}
-                          label={"Long condition"}
+                          label={BACKTEST_FORM_LABELS.long_condition}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
@@ -320,7 +304,7 @@ export const BacktestForm = () => {
                           }
                           style={{ marginTop: "16px" }}
                           fontSize={13}
-                          label={formKeys.closeTradeCode}
+                          label={BACKTEST_FORM_LABELS.close_condition}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
@@ -336,7 +320,9 @@ export const BacktestForm = () => {
                   <Field name={formKeys.useShorts}>
                     {({ field, form }) => {
                       return (
-                        <WithLabel label={"Is short selling strategy"}>
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.is_short_selling_strategy}
+                        >
                           <Switch
                             isChecked={field.value}
                             onChange={() =>
@@ -356,7 +342,9 @@ export const BacktestForm = () => {
                   <Field name={formKeys.useTimeBasedClose}>
                     {({ field, form }) => {
                       return (
-                        <WithLabel label={"Use time based closing strategy"}>
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.use_time_based_close}
+                        >
                           <Switch
                             isChecked={field.value}
                             onChange={() =>
@@ -377,7 +365,7 @@ export const BacktestForm = () => {
                     {({ field, form }) => {
                       return (
                         <WithLabel
-                          label={"Klines until close"}
+                          label={BACKTEST_FORM_LABELS.klines_until_close}
                           containerStyles={{
                             maxWidth: "200px",
                             marginTop: "16px",
@@ -406,7 +394,9 @@ export const BacktestForm = () => {
                   <Field name={formKeys.useProfitBasedClose}>
                     {({ field, form }) => {
                       return (
-                        <WithLabel label={"Use profit based close"}>
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.use_profit_based_close}
+                        >
                           <Switch
                             isChecked={field.value}
                             onChange={() =>
@@ -427,7 +417,7 @@ export const BacktestForm = () => {
                     {({ field, form }) => {
                       return (
                         <WithLabel
-                          label={"Take profit threshold (%)"}
+                          label={BACKTEST_FORM_LABELS.take_profit_threshold}
                           containerStyles={{
                             maxWidth: "200px",
                             marginTop: "16px",
@@ -456,7 +446,9 @@ export const BacktestForm = () => {
                   <Field name={formKeys.useStopLossBasedClose}>
                     {({ field, form }) => {
                       return (
-                        <WithLabel label={"Use stop loss based close"}>
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.use_stop_loss_based_close}
+                        >
                           <Switch
                             isChecked={field.value}
                             onChange={() =>
@@ -477,7 +469,7 @@ export const BacktestForm = () => {
                     {({ field, form }) => {
                       return (
                         <WithLabel
-                          label={"Stop loss threshold (%)"}
+                          label={BACKTEST_FORM_LABELS.stop_loss_threshold}
                           containerStyles={{
                             maxWidth: "200px",
                             marginTop: "16px",
@@ -509,7 +501,7 @@ export const BacktestForm = () => {
                     {({ field, form }) => {
                       return (
                         <WithLabel
-                          label={"Trading fees (%)"}
+                          label={BACKTEST_FORM_LABELS.trading_fees}
                           containerStyles={{
                             maxWidth: "200px",
                             marginTop: "16px",
@@ -542,7 +534,7 @@ export const BacktestForm = () => {
                     {({ field, form }) => {
                       return (
                         <WithLabel
-                          label={"Slippage (%)"}
+                          label={BACKTEST_FORM_LABELS.slippage}
                           containerStyles={{
                             maxWidth: "200px",
                             marginTop: "16px",
@@ -576,7 +568,7 @@ export const BacktestForm = () => {
                       {({ field, form }) => {
                         return (
                           <WithLabel
-                            label={"Shorting fees (%) hourly"}
+                            label={BACKTEST_FORM_LABELS.shorting_fees_hourly}
                             containerStyles={{
                               maxWidth: "200px",
                               marginTop: "16px",
@@ -613,7 +605,9 @@ export const BacktestForm = () => {
                         return (
                           <ValidationSplitSlider
                             sliderValue={field.value}
-                            formLabelText="Backtest data range (%)"
+                            formLabelText={
+                              BACKTEST_FORM_LABELS.backtest_data_range
+                            }
                             setSliderValue={(newVal: number[]) =>
                               form.setFieldValue(
                                 formKeys.backtestDataRange,
