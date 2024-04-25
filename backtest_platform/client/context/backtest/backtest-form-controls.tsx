@@ -8,6 +8,7 @@ interface Props {
   backtestDiskManager: DiskManager;
   formikRef: React.RefObject<FormikProps<any>>;
   columnsModal: UseDisclosureReturn;
+  runPythonModal: UseDisclosureReturn;
   forceUpdate: () => void;
 }
 
@@ -16,11 +17,15 @@ export const BacktestFormControls = ({
   formikRef,
   backtestDiskManager,
   forceUpdate,
+  runPythonModal,
 }: Props) => {
   return (
     <div style={{ display: "flex", gap: "16px" }}>
       <Text variant={TEXT_VARIANTS.clickable} onClick={columnsModal.onOpen}>
         Show columns
+      </Text>
+      <Text variant={TEXT_VARIANTS.clickable} onClick={runPythonModal.onOpen}>
+        Run python
       </Text>
       <Text
         variant={TEXT_VARIANTS.clickable}
