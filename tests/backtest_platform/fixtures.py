@@ -158,10 +158,6 @@ def close_short_trade_cond_basic():
 
 
 backtest_time_based_close_is_not_working = {
-    "open_long_trade_cond": "def open_long_trade(tick):\n    return False",
-    "close_long_trade_cond": "def close_long_trade(tick):\n    return False",
-    "open_short_trade_cond": 'def open_short_trade(tick):\n    return tick["RSI_160_MA_200_close_price"] < 2 and tick["RSI_100_MA_720_OBV"] < 10',
-    "close_short_trade_cond": "def close_short_trade(tick):\n    return False\n",
     "use_short_selling": True,
     "dataset_id": 5,
     "name": "",

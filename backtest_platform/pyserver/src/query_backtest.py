@@ -75,11 +75,19 @@ class BacktestQuery:
         with LogExceptionContext():
             with Session() as session:
                 backtests = (
-                    session.query(Backtest)
+                    session.query(Backtest, BacktestStatistics)
+                    .join(
+                        BacktestStatistics,
+                        Backtest.id == BacktestStatistics.backtest_id,
+                    )
                     .filter(Backtest.train_job_id == train_job_id)
                     .all()
                 )
-                return backtests
+                combined_backtests = [
+                    combine_dicts([backtest.__dict__, stats.__dict__])
+                    for backtest, stats in backtests
+                ]
+                return combined_backtests
 
     @staticmethod
     def fetch_backtests_by_dataset_id(dataset_id: int):

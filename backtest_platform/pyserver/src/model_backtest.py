@@ -6,6 +6,8 @@ from sqlalchemy import text
 
 
 from log import LogExceptionContext
+from query_backtest_history import BacktestHistoryQuery
+from query_backtest_statistics import BacktestStatisticsQuery
 from query_trade import TradeQuery
 from query_weights import ModelWeights
 from query_trainjob import TrainJob, TrainJobQuery
@@ -53,17 +55,24 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
 
         backtest_id = BacktestQuery.create_entry(
             {
-                "open_long_trade_cond": backtestInfo.enter_trade_cond,
-                "open_short_trade_cond": backtestInfo.exit_trade_cond,
-                "data": json.dumps(backtest_v2.positions.balance_history),
+                "open_trade_cond": backtestInfo.enter_trade_cond,
+                "close_trade_cond": backtestInfo.exit_trade_cond,
                 "model_weights_id": epochs[backtestInfo.epoch_nr]["id"],
                 "train_job_id": train_job.id,
-                "start_balance": START_BALANCE,
-                "end_balance": end_balance,
             }
         )
 
-        TradeQuery.create_many_trade_entry(backtest_id, backtest_v2.positions.trades)
+        backtest_stats_dict = {
+            "start_balance": START_BALANCE,
+            "end_balance": end_balance,
+            "backtest_id": backtest_id,
+        }
+
+        TradeQuery.create_many(backtest_id, backtest_v2.positions.trades)
+        BacktestStatisticsQuery.create_entry(backtest_stats_dict)
+        BacktestHistoryQuery.create_many(
+            backtest_id, backtest_v2.positions.balance_history
+        )
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
         return backtest_from_db
