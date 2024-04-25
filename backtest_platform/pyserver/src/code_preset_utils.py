@@ -611,7 +611,7 @@ calculate_apo(dataset, column=column, fast_period=fast_period, slow_period=slow_
 """
 
 
-AROON = """
+AROON_CUSTOM = """
 import numpy as np
 import pandas as pd
 
@@ -621,10 +621,34 @@ def calculate_aroon(df, column='close_price', periods=25):
     aroon_down = df[column].rolling(window=periods, min_periods=0).apply(
         lambda x: float(np.argmin(x) + 1) / periods * 100, raw=True)
 
-    df[f'AROON_UP_{periods}_{column}'] = aroon_up
-    df[f'AROON_DOWN_{periods}_{column}'] = aroon_down
+    df[f'AROON_UP_CUST_{periods}_{column}'] = aroon_up
+    df[f'AROON_DOWN_CUST_{periods}_{column}'] = aroon_down
 
 # Usage example:
+periods = 25
+column = "close_price"
+calculate_aroon(dataset, column=column, periods=periods)
+"""
+
+AROON_CONVENTIONAL = """
+import numpy as np
+import pandas as pd
+def calculate_aroon(df, column='close_price', periods=25):
+    # Calculate the rolling max and min for the given periods
+    rolling_max = df[column].rolling(window=periods, min_periods=0).apply(lambda x: x.max())
+    rolling_min = df[column].rolling(window=periods, min_periods=0).apply(lambda x: x.min())
+
+    # Identify the time since the last high and low within the window
+    aroon_up = 100 * (periods - df[column].rolling(window=periods, min_periods=0).apply(
+        lambda x: np.where(x[::-1] == x.max())[0][0] + 1)) / periods
+    aroon_down = 100 * (periods - df[column].rolling(window=periods, min_periods=0).apply(
+        lambda x: np.where(x[::-1] == x.min())[0][0] + 1)) / periods
+
+    # Store the results in the dataframe
+    df[f'AROON_UP_CONV_{periods}_{column}'] = aroon_up
+    df[f'AROON_DOWN_CONV{periods}_{column}'] = aroon_down
+
+    return df
 periods = 25
 column = "close_price"
 calculate_aroon(dataset, column=column, periods=periods)
@@ -1609,8 +1633,14 @@ DEFAULT_CODE_PRESETS = [
         description="The Absolute Price Oscillator (APO) is based on the difference between two exponential moving averages (EMAs) of a security's price, typically a fast and a slow EMA. The APO is used to identify momentum or trend strength by measuring the divergence between these EMAs.",
     ),
     CodePreset(
-        code=AROON,
-        name="AROON",
+        code=AROON_CUSTOM,
+        name="AROON_CUSTOM",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Aroon indicator, which measures the time between highs and the time between lows over a given period. The indicator consists of two lines: Aroon Up (which measures the time since the last high) and Aroon Down (which measures the time since the last low). Both are expressed as a percentage of the total period. This indicator is useful for identifying trend changes and strength.",
+    ),
+    CodePreset(
+        code=AROON_CONVENTIONAL,
+        name="AROON_CONVENTIONAL",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Aroon indicator, which measures the time between highs and the time between lows over a given period. The indicator consists of two lines: Aroon Up (which measures the time since the last high) and Aroon Down (which measures the time since the last low). Both are expressed as a percentage of the total period. This indicator is useful for identifying trend changes and strength.",
     ),
