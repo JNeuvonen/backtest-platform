@@ -19,7 +19,7 @@ from quant_stats_utils import (
     generate_quant_stats_report_html,
     get_df_returns,
 )
-from query_backtest import Backtest, BacktestQuery
+from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
@@ -52,11 +52,15 @@ async def route_get_backtest_by_id(backtest_id):
                 detail=f"No backtest found for {backtest_id}", status_code=400
             )
 
-        trades = TradeQuery.fetch_trades_by_backtest_id(backtest.id)
+        trades = TradeQuery.fetch_trades_by_backtest_id(backtest["id"])
         balance_history = BacktestHistoryQuery.get_entries_by_backtest_id_sorted(
-            backtest.id
+            backtest["id"]
         )
-        return {"data": backtest, "trades": trades, "balance_history": balance_history}
+        return {
+            "data": backtest,
+            "trades": trades,
+            "balance_history": balance_history,
+        }
 
 
 @router.post(RoutePaths.BACKTEST)
@@ -79,7 +83,7 @@ async def route_mass_backtest(body: BodyCreateMassBacktest):
                 status_code=400,
             )
 
-        candle_size = original_backtest.candle_interval
+        candle_size = original_backtest["candle_interval"]
 
         mass_backtest_id = MassBacktestQuery.create_entry(
             {"original_backtest_id": body.original_backtest_id}
@@ -118,36 +122,37 @@ async def route_delete_many(list_of_ids: str = Query(...)):
 async def route_detailed_summary(backtest_id):
     with HttpResponseContext():
         backtest = BacktestQuery.fetch_backtest_by_id(backtest_id)
+
         backtest_info = BodyCreateManualBacktest(
             backtest_data_range=[
-                backtest.backtest_range_start,
-                backtest.backtest_range_end,
+                backtest["backtest_range_start"],
+                backtest["backtest_range_end"],
             ],
-            open_trade_cond=backtest.open_trade_cond,
-            close_trade_cond=backtest.close_trade_cond,
-            is_short_selling_strategy=backtest.is_short_selling_strategy,
-            use_stop_loss_based_close=backtest.use_stop_loss_based_close,
-            use_time_based_close=backtest.use_time_based_close,
-            use_profit_based_close=backtest.use_profit_based_close,
-            dataset_id=backtest.dataset_id,
-            trading_fees_perc=backtest.trading_fees_perc,
-            slippage_perc=backtest.slippage_perc,
-            short_fee_hourly=backtest.short_fee_hourly,
-            take_profit_threshold_perc=backtest.take_profit_threshold_perc,
-            stop_loss_threshold_perc=backtest.stop_loss_threshold_perc,
-            name=backtest.name,
-            klines_until_close=backtest.klines_until_close,
+            open_trade_cond=backtest["open_trade_cond"],
+            close_trade_cond=backtest["close_trade_cond"],
+            is_short_selling_strategy=backtest["is_short_selling_strategy"],
+            use_stop_loss_based_close=backtest["use_stop_loss_based_close"],
+            use_time_based_close=backtest["use_time_based_close"],
+            use_profit_based_close=backtest["use_profit_based_close"],
+            dataset_id=backtest["dataset_id"],
+            trading_fees_perc=backtest["trading_fees_perc"],
+            slippage_perc=backtest["slippage_perc"],
+            short_fee_hourly=backtest["short_fee_hourly"],
+            take_profit_threshold_perc=backtest["take_profit_threshold_perc"],
+            stop_loss_threshold_perc=backtest["stop_loss_threshold_perc"],
+            name=backtest["name"],
+            klines_until_close=backtest["klines_until_close"],
         )
 
         balance_history = BacktestHistoryQuery.get_entries_by_backtest_id_sorted(
-            backtest.id
+            backtest["id"]
         )
         balance_history = [base_model_to_dict(entry) for entry in balance_history]
 
         generate_quant_stats_report_html(
             balance_history,
             backtest_info,
-            get_periods_per_year(backtest.candle_interval),
+            get_periods_per_year(backtest["candle_interval"]),
         )
         return FileResponse(
             path=BACKTEST_REPORT_HTML_PATH,
@@ -187,7 +192,7 @@ async def route_fetch_many_backtests(
     with HttpResponseContext():
         list_of_ids_arr: List[int] = json.loads(list_of_ids)
         backtests = BacktestQuery.fetch_many_backtests(list_of_ids_arr)
-        candle_interval = backtests[0].candle_interval
+        candle_interval = backtests[0]["candle_interval"]
 
         equity_curves = []
         datasets_map = {}
@@ -212,7 +217,7 @@ async def route_combined_strat_summary(
     with HttpResponseContext():
         list_of_ids_arr: List[int] = json.loads(list_of_ids)
         backtests = BacktestQuery.fetch_many_backtests(list_of_ids_arr)
-        candle_interval = backtests[0].candle_interval
+        candle_interval = backtests[0]["candle_interval"]
 
         equity_curves = get_mass_sim_backtests_equity_curves(
             list_of_ids_arr, candle_interval

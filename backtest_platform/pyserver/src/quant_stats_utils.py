@@ -2,6 +2,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from constants import BACKTEST_REPORT_HTML_PATH
 import quantstats_lumi as qs
+from request_types import BodyCreateManualBacktest
 
 from utils import binary_search_on_pd_timeseries, read_file_to_string
 
@@ -47,7 +48,7 @@ def enhance_report_with_details(soup, backtest_info, symbols=[]):
     header_tag = soup.new_tag("h1")
 
     if len(symbols) == 0:
-        header_tag.string = f"{backtest_info.dataset_name} strategy"
+        header_tag.string = f"{backtest_info.name} strategy"
     else:
         header_tag.string = f"Trading rules are applied to {len(symbols)} pairs"
     trading_criteria_div.append(header_tag)
@@ -108,6 +109,7 @@ def enhance_report_with_details(soup, backtest_info, symbols=[]):
 
 def update_backtest_report_html(backtest_info, symbols=[]):
     report_html_str = read_file_to_string(BACKTEST_REPORT_HTML_PATH)
+
     soup = BeautifulSoup(report_html_str, "html.parser")
 
     enhance_report_with_details(soup, backtest_info, symbols)
@@ -170,4 +172,26 @@ def generate_combined_report(
         cagr_periods_per_year=365,
     )
 
-    update_backtest_report_html(backtestInfo, symbols)
+    update_backtest_report_html(
+        BodyCreateManualBacktest(
+            backtest_data_range=[
+                backtestInfo["backtest_range_start"],
+                backtestInfo["backtest_range_end"],
+            ],
+            open_trade_cond=backtestInfo["open_trade_cond"],
+            close_trade_cond=backtestInfo["close_trade_cond"],
+            is_short_selling_strategy=backtestInfo["is_short_selling_strategy"],
+            use_stop_loss_based_close=backtestInfo["use_stop_loss_based_close"],
+            use_time_based_close=backtestInfo["use_time_based_close"],
+            use_profit_based_close=backtestInfo["use_profit_based_close"],
+            dataset_id=backtestInfo["dataset_id"],
+            trading_fees_perc=backtestInfo["trading_fees_perc"],
+            slippage_perc=backtestInfo["slippage_perc"],
+            short_fee_hourly=backtestInfo["short_fee_hourly"],
+            take_profit_threshold_perc=backtestInfo["take_profit_threshold_perc"],
+            stop_loss_threshold_perc=backtestInfo["stop_loss_threshold_perc"],
+            name=backtestInfo["name"],
+            klines_until_close=backtestInfo["klines_until_close"],
+        ),
+        symbols,
+    )

@@ -1,10 +1,11 @@
 import json
 from typing import Dict, List
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import defer
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 from log import LogExceptionContext
 from orm import Base, Session
+from query_backtest_statistics import BacktestStatistics, BacktestStatisticsQuery
+from utils import combine_dicts
 
 
 class Backtest(Base):
@@ -18,10 +19,6 @@ class Backtest(Base):
 
     name = Column(String)
     candle_interval = Column(String)
-    open_long_trade_cond = Column(String)
-    open_short_trade_cond = Column(String)
-    close_long_trade_cond = Column(String)
-    close_short_trade_cond = Column(String)
 
     open_trade_cond = Column(String)
     close_trade_cond = Column(String)
@@ -34,35 +31,8 @@ class Backtest(Base):
     use_short_selling = Column(Boolean)
 
     klines_until_close = Column(Integer)
-    trade_count = Column(Integer)
-
     backtest_range_start = Column(Integer)
     backtest_range_end = Column(Integer)
-
-    profit_factor = Column(Float)
-    gross_profit = Column(Float)
-    gross_loss = Column(Float)
-    start_balance = Column(Float)
-    end_balance = Column(Float)
-    result_perc = Column(Float)
-    take_profit_threshold_perc = Column(Float)
-    stop_loss_threshold_perc = Column(Float)
-    best_trade_result_perc = Column(Float)
-    worst_trade_result_perc = Column(Float)
-    buy_and_hold_result_net = Column(Float)
-    buy_and_hold_result_perc = Column(Float)
-    sharpe_ratio = Column(Float)
-    probabilistic_sharpe_ratio = Column(Float)
-    share_of_winning_trades_perc = Column(Float)
-    share_of_losing_trades_perc = Column(Float)
-    max_drawdown_perc = Column(Float)
-    cagr = Column(Float)
-    market_exposure_time = Column(Float)
-    risk_adjusted_return = Column(Float)
-    buy_and_hold_cagr = Column(Float)
-    slippage_perc = Column(Float)
-    short_fee_hourly = Column(Float)
-    trading_fees_perc = Column(Float)
 
 
 class BacktestQuery:
@@ -82,7 +52,12 @@ class BacktestQuery:
                 backtest_data = (
                     session.query(Backtest).filter(Backtest.id == backtest_id).first()
                 )
-                return backtest_data
+                backtest_statistics = BacktestStatisticsQuery.fetch_backtest_by_id(
+                    backtest_id
+                )
+                return combine_dicts(
+                    [backtest_data.__dict__, backtest_statistics.__dict__]
+                )
 
     @staticmethod
     def update_backtest_data(backtest_id: int, new_data: dict):
@@ -109,11 +84,19 @@ class BacktestQuery:
         with LogExceptionContext():
             with Session() as session:
                 backtests = (
-                    session.query(Backtest)
+                    session.query(Backtest, BacktestStatistics)
+                    .join(
+                        BacktestStatistics,
+                        Backtest.id == BacktestStatistics.backtest_id,
+                    )
                     .filter(Backtest.dataset_id == dataset_id)
                     .all()
                 )
-                return backtests
+                combined_backtests = [
+                    combine_dicts([backtest.__dict__, stats.__dict__])
+                    for backtest, stats in backtests
+                ]
+                return combined_backtests
 
     @staticmethod
     def delete_backtests_by_ids(ids: List[int]):
@@ -129,9 +112,19 @@ class BacktestQuery:
         with LogExceptionContext():
             with Session() as session:
                 backtests = (
-                    session.query(Backtest).filter(Backtest.id.in_(backtest_ids)).all()
+                    session.query(Backtest, BacktestStatistics)
+                    .join(
+                        BacktestStatistics,
+                        Backtest.id == BacktestStatistics.backtest_id,
+                    )
+                    .filter(Backtest.id.in_(backtest_ids))
+                    .all()
                 )
-                return backtests
+                combined_backtests = [
+                    combine_dicts([backtest.__dict__, stats.__dict__])
+                    for backtest, stats in backtests
+                ]
+                return combined_backtests
 
     @staticmethod
     def fetch_dataset_name_by_id(dataset_id: int):

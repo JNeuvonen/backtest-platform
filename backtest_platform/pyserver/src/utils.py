@@ -241,3 +241,10 @@ def binary_search_on_pd_timeseries(series, target_date):
         return series.iloc[pos]
     else:
         return None
+
+
+def combine_dicts(dict_list):
+    combined = {}
+    for d in dict_list:
+        combined.update({k: v for k, v in d.items() if not k.startswith("_")})
+    return combined

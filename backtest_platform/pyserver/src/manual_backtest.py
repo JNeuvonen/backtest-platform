@@ -17,7 +17,8 @@ from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext, get_logger
 from math_utils import calculate_avg_trade_hold_time_ms, calculate_psr, calculate_sr
 from model_backtest import Positions
-from query_backtest import Backtest, BacktestQuery
+from query_backtest import BacktestQuery
+from query_backtest_statistics import BacktestStatisticsQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from query_mass_backtest import MassBacktestQuery
@@ -33,7 +34,7 @@ async def run_rule_based_mass_backtest(
     mass_backtest_id: int,
     body: BodyCreateMassBacktest,
     interval,
-    original_backtest: Backtest,
+    original_backtest: Dict,
 ):
     with LogExceptionContext():
         logger = get_logger()
@@ -41,7 +42,7 @@ async def run_rule_based_mass_backtest(
         curr_iter = 1
 
         original_dataset = DatasetQuery.fetch_dataset_by_id(
-            original_backtest.dataset_id
+            original_backtest["dataset_id"]
         )
         data_transformations = DataTransformationQuery.get_transformations_by_dataset(
             original_dataset.id
@@ -71,27 +72,35 @@ async def run_rule_based_mass_backtest(
 
             backtest_body = {
                 "backtest_data_range": [
-                    original_backtest.backtest_range_start,
-                    original_backtest.backtest_range_end,
+                    original_backtest["backtest_range_start"],
+                    original_backtest["backtest_range_end"],
                 ],
-                "open_trade_cond": original_backtest.open_trade_cond,
-                "close_trade_cond": original_backtest.close_trade_cond,
-                "is_short_selling_strategy": original_backtest.is_short_selling_strategy,
-                "use_time_based_close": original_backtest.use_time_based_close,
-                "use_profit_based_close": original_backtest.use_profit_based_close,
-                "use_stop_loss_based_close": original_backtest.use_stop_loss_based_close,
+                "open_trade_cond": original_backtest["open_trade_cond"],
+                "close_trade_cond": original_backtest["close_trade_cond"],
+                "is_short_selling_strategy": original_backtest[
+                    "is_short_selling_strategy"
+                ],
+                "use_time_based_close": original_backtest["use_time_based_close"],
+                "use_profit_based_close": original_backtest["use_profit_based_close"],
+                "use_stop_loss_based_close": original_backtest[
+                    "use_stop_loss_based_close"
+                ],
                 "dataset_id": symbol_dataset.id,
-                "trading_fees_perc": original_backtest.trading_fees_perc,
-                "slippage_perc": original_backtest.slippage_perc,
-                "short_fee_hourly": original_backtest.short_fee_hourly,
-                "take_profit_threshold_perc": original_backtest.take_profit_threshold_perc,
-                "stop_loss_threshold_perc": original_backtest.stop_loss_threshold_perc,
-                "name": original_backtest.name,
-                "klines_until_close": original_backtest.klines_until_close,
+                "trading_fees_perc": original_backtest["trading_fees_perc"],
+                "slippage_perc": original_backtest["slippage_perc"],
+                "short_fee_hourly": original_backtest["short_fee_hourly"],
+                "take_profit_threshold_perc": original_backtest[
+                    "take_profit_threshold_perc"
+                ],
+                "stop_loss_threshold_perc": original_backtest[
+                    "stop_loss_threshold_perc"
+                ],
+                "name": original_backtest["name"],
+                "klines_until_close": original_backtest["klines_until_close"],
             }
 
             backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
-            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest.id)
+            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
 
             logger.log(
                 f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
@@ -199,77 +208,83 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
             ms_to_years(backtest.cumulative_time),
         )
 
+        backtest_stats_dict = {
+            "profit_factor": profit_factor,
+            "gross_profit": gross_profit,
+            "gross_loss": gross_loss,
+            "start_balance": START_BALANCE,
+            "end_balance": end_balance,
+            "result_perc": (end_balance / START_BALANCE - 1) * 100,
+            "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
+            "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
+            "best_trade_result_perc": best_trade_result_perc,
+            "worst_trade_result_perc": worst_trade_result_perc,
+            "buy_and_hold_result_net": (
+                (asset_closing_price / asset_starting_price * START_BALANCE)
+                - START_BALANCE
+            )
+            if asset_starting_price is not None and asset_closing_price is not None
+            else None,
+            "buy_and_hold_result_perc": (
+                (asset_closing_price / asset_starting_price - 1) * 100
+            )
+            if asset_starting_price is not None and asset_closing_price is not None
+            else None,
+            "sharpe_ratio": calculate_sr(
+                [x["percent_result"] / 100 for x in backtest.positions.trades],
+                rf=0,
+                periods_per_year=round(
+                    YEAR_IN_MS
+                    / calculate_avg_trade_hold_time_ms(backtest.positions.trades)
+                )
+                if len(backtest.positions.trades) != 0
+                else 0,
+            ),
+            "probabilistic_sharpe_ratio": calculate_psr(
+                [x["percent_result"] / 100 for x in backtest.positions.trades],
+                sr_star=0,
+                periods_per_year=round(
+                    YEAR_IN_MS
+                    / calculate_avg_trade_hold_time_ms(backtest.positions.trades)
+                )
+                if len(backtest.positions.trades) != 0
+                else 0,
+            ),
+            "share_of_winning_trades_perc": share_of_winning_trades_perc,
+            "share_of_losing_trades_perc": share_of_losing_trades_perc,
+            "max_drawdown_perc": max_drawdown_perc,
+            "cagr": cagr,
+            "market_exposure_time": market_exposure_time,
+            "risk_adjusted_return": cagr / market_exposure_time
+            if market_exposure_time != 0
+            else 0,
+            "buy_and_hold_cagr": buy_and_hold_cagr,
+            "slippage_perc": backtestInfo.slippage_perc,
+            "short_fee_hourly": backtestInfo.short_fee_hourly,
+            "trading_fees_perc": backtestInfo.trading_fees_perc,
+            "trade_count": len(backtest.positions.trades),
+        }
+
         backtest_id = BacktestQuery.create_entry(
             {
                 "open_trade_cond": backtestInfo.open_trade_cond,
                 "close_trade_cond": backtestInfo.close_trade_cond,
                 "dataset_id": dataset.id,
                 "dataset_name": dataset.dataset_name,
-                "start_balance": START_BALANCE,
-                "end_balance": end_balance,
-                "profit_factor": profit_factor,
-                "gross_profit": gross_profit,
-                "gross_loss": gross_loss,
-                "trade_count": len(backtest.positions.trades),
                 "name": backtestInfo.name,
                 "klines_until_close": backtestInfo.klines_until_close,
-                "result_perc": (end_balance / START_BALANCE - 1) * 100,
-                "share_of_winning_trades_perc": share_of_winning_trades_perc,
-                "share_of_losing_trades_perc": share_of_losing_trades_perc,
-                "best_trade_result_perc": best_trade_result_perc,
-                "worst_trade_result_perc": worst_trade_result_perc,
                 "backtest_range_start": backtestInfo.backtest_data_range[0],
                 "candle_interval": candle_interval,
                 "backtest_range_end": backtestInfo.backtest_data_range[1],
-                "buy_and_hold_result_net": (
-                    (asset_closing_price / asset_starting_price * START_BALANCE)
-                    - START_BALANCE
-                )
-                if asset_starting_price is not None and asset_closing_price is not None
-                else None,
-                "buy_and_hold_result_perc": (
-                    (asset_closing_price / asset_starting_price - 1) * 100
-                )
-                if asset_starting_price is not None and asset_closing_price is not None
-                else None,
-                "max_drawdown_perc": max_drawdown_perc,
-                "cagr": cagr,
-                "market_exposure_time": market_exposure_time,
-                "risk_adjusted_return": cagr / market_exposure_time
-                if market_exposure_time != 0
-                else 0,
-                "buy_and_hold_cagr": buy_and_hold_cagr,
                 "use_time_based_close": backtestInfo.use_time_based_close,
                 "use_profit_based_close": backtestInfo.use_profit_based_close,
                 "use_stop_loss_based_close": backtestInfo.use_stop_loss_based_close,
-                "stop_loss_threshold_perc": backtestInfo.stop_loss_threshold_perc,
-                "take_profit_threshold_perc": backtestInfo.take_profit_threshold_perc,
                 "is_short_selling_strategy": backtestInfo.is_short_selling_strategy,
-                "slippage_perc": backtestInfo.slippage_perc,
-                "probabilistic_sharpe_ratio": calculate_psr(
-                    [x["percent_result"] / 100 for x in backtest.positions.trades],
-                    sr_star=0,
-                    periods_per_year=round(
-                        YEAR_IN_MS
-                        / calculate_avg_trade_hold_time_ms(backtest.positions.trades)
-                    )
-                    if len(backtest.positions.trades) != 0
-                    else 0,
-                ),
-                "sharpe_ratio": calculate_sr(
-                    [x["percent_result"] / 100 for x in backtest.positions.trades],
-                    rf=0,
-                    periods_per_year=round(
-                        YEAR_IN_MS
-                        / calculate_avg_trade_hold_time_ms(backtest.positions.trades)
-                    )
-                    if len(backtest.positions.trades) != 0
-                    else 0,
-                ),
-                "short_fee_hourly": backtestInfo.short_fee_hourly,
-                "trading_fees_perc": backtestInfo.trading_fees_perc,
             }
         )
+
+        backtest_stats_dict["backtest_id"] = backtest_id
+        BacktestStatisticsQuery.create_entry(backtest_stats_dict)
 
         backtest_from_db = BacktestQuery.fetch_backtest_by_id(backtest_id)
         TradeQuery.create_many(backtest_id, backtest.positions.trades)
