@@ -41,6 +41,9 @@ import { ChakraInput } from "../../components/chakra/input";
 import { Field, Formik, Form, FormikProps } from "formik";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 import { DISK_KEYS, DiskManager } from "../../utils/disk";
+import { BacktestFormControls } from "./backtest-form-controls";
+import { ShowColumnModal } from "./show-columns-modal";
+import { useForceUpdate } from "../../hooks/useForceUpdate";
 
 type PathParams = {
   datasetName: string;
@@ -123,8 +126,6 @@ export const BacktestForm = () => {
 
   const columnsModal = useDisclosure();
   const runPythonModal = useDisclosure();
-  const columnDetailsModal = useDisclosure();
-  const [selectedColumnName, setSelectedColumnName] = useState("");
   const formikRef = useRef<FormikProps<BacktestFormValues>>(null);
 
   const { data, refetch: refetchDataset } = useDatasetQuery(datasetName);
@@ -132,8 +133,6 @@ export const BacktestForm = () => {
 
   const submitNewBacktest = async (values: BacktestFormValues) => {
     if (!dataset) return;
-
-    console.log(values);
 
     const res = await createManualBacktest({
       open_trade_cond: values.openTradeCode,
@@ -200,39 +199,11 @@ export const BacktestForm = () => {
         {...createNewDrawer}
       >
         <div>
-          <ChakraModal {...columnsModal} title="Columns">
-            <div id={"COLUMN_MODAL"}>
-              {data.columns.map((item, idx) => {
-                return (
-                  <div
-                    key={idx}
-                    className="link-default"
-                    onClick={() => {
-                      setSelectedColumnName(item);
-                      columnDetailsModal.onOpen();
-                    }}
-                  >
-                    <OverflopTooltip text={item} containerId="COLUMN_MODAL">
-                      <div>{item}</div>
-                    </OverflopTooltip>
-                  </div>
-                );
-              })}
-            </div>
-            {selectedColumnName && (
-              <ChakraModal
-                {...columnDetailsModal}
-                title={`Column ${selectedColumnName}`}
-                modalContentStyle={{ maxWidth: "80%", marginTop: "5%" }}
-              >
-                <ColumnInfoModal
-                  datasetName={datasetName}
-                  columnName={selectedColumnName}
-                />
-              </ChakraModal>
-            )}
-          </ChakraModal>
-
+          <ShowColumnModal
+            datasetName={datasetName}
+            columns={data.columns}
+            columnsModal={columnsModal}
+          />
           <ChakraPopover
             isOpen={backtestPriceColumnPopover.isOpen}
             setOpen={backtestPriceColumnPopover.onOpen}
@@ -258,7 +229,6 @@ export const BacktestForm = () => {
               />
             }
           />
-
           <ChakraModal
             {...runPythonModal}
             title="Run python"
@@ -282,23 +252,12 @@ export const BacktestForm = () => {
             />
           </ChakraModal>
 
-          <div style={{ display: "flex", gap: "16px" }}>
-            <Text
-              variant={TEXT_VARIANTS.clickable}
-              onClick={columnsModal.onOpen}
-            >
-              Show columns
-            </Text>
-            <Text
-              variant={TEXT_VARIANTS.clickable}
-              onClick={() => {
-                backtestDiskManager.reset();
-                formikRef.current?.resetForm();
-              }}
-            >
-              Reset form
-            </Text>
-          </div>
+          <BacktestFormControls
+            columnsModal={columnsModal}
+            formikRef={formikRef}
+            backtestDiskManager={backtestDiskManager}
+            forceUpdate={forceUpdate}
+          />
 
           <Formik
             onSubmit={(values) => {
