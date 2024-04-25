@@ -24,6 +24,8 @@ class Backtest(Base):
     close_trade_cond = Column(String)
 
     is_short_selling_strategy = Column(Boolean)
+    is_long_short_strategy = Column(Boolean)
+    is_ml_based_strategy = Column(Boolean)
 
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)
