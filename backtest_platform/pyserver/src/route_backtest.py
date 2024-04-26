@@ -9,6 +9,7 @@ from backtest_utils import (
     get_mass_sim_backtests_equity_curves,
 )
 from fastapi_utils import convert_to_bool
+from long_short_backtest import run_long_short_backtest
 from query_backtest_history import BacktestHistoryQuery
 from constants import BACKTEST_REPORT_HTML_PATH
 
@@ -261,6 +262,7 @@ async def route_combined_strat_summary(
 @router.post(RoutePaths.LONG_SHORT_BACKTEST)
 async def route_long_short_backtest(body: BodyCreateLongShortBacktest):
     with HttpResponseContext():
+        asyncio.create_task(run_long_short_backtest(body))
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
