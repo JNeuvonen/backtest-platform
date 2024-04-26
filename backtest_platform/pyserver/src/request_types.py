@@ -79,6 +79,7 @@ class BodyCreateManualBacktest(BaseModel):
 class BodyCreateLongShortBacktest(BaseModel):
     __annotations__ = {**BodyCreateManualBacktest.__annotations__}
     __annotations__.pop("is_short_selling_strategy")
+    __annotations__.pop("dataset_id")
     __annotations__.update({"datasets": List[int], "data_transformations": List[int]})
 
 

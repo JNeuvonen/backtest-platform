@@ -22,7 +22,11 @@ from quant_stats_utils import (
 from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
-from request_types import BodyCreateManualBacktest, BodyCreateMassBacktest
+from request_types import (
+    BodyCreateLongShortBacktest,
+    BodyCreateManualBacktest,
+    BodyCreateMassBacktest,
+)
 from utils import base_model_to_dict, get_periods_per_year
 
 
@@ -255,6 +259,8 @@ async def route_combined_strat_summary(
 
 
 @router.post(RoutePaths.LONG_SHORT_BACKTEST)
-async def route_long_short_backtest(body: BodyCreateManualBacktest):
+async def route_long_short_backtest(body: BodyCreateLongShortBacktest):
     with HttpResponseContext():
-        pass
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
