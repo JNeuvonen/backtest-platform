@@ -99,11 +99,13 @@ async def route_exec_python_on_dataset(
         python_program = PythonCode.on_dataset(dataset_name, body.code)
         exec_python(python_program)
 
-        DataTransformationQuery.create_entry(
+        id = DataTransformationQuery.create_entry(
             {"transformation_code": body.code, "dataset_id": dataset.id}
         )
         df_fill_nulls_on_all_cols(dataset_name, null_fill_strat)
-        return {"message": "OK"}
+        return Response(
+            content=str(id), status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
 
 
 @router.get(RoutePaths.TABLES)
