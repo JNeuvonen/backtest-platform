@@ -117,11 +117,13 @@ def create_train_job_body(
 
 
 def gen_data_transformations(dataset_name: str):
-    data_transformation_ids = [
-        Post.exec_python_on_dataset(
-            dataset_name,
-            body={
-                "code": """
+    transformation_results = []
+
+    # Execute and store the result of the Aroon calculation
+    aroon_result = Post.exec_python_on_dataset(
+        dataset_name,
+        body={
+            "code": """
 import numpy as np
 import pandas as pd
 
@@ -134,18 +136,19 @@ def calculate_aroon(df, column='close_price', periods=25):
     df[f'Aroon_Up_{periods}_{column}'] = aroon_up
     df[f'Aroon_Down_{periods}_{column}'] = aroon_down
 
-# Usage example:
 periods = 25
 column = "close_price"
 calculate_aroon(dataset, column=column, periods=periods)
+    """
+        },
+    )
+    transformation_results.append(aroon_result)
 
-            """,
-            },
-        ),
-        Post.exec_python_on_dataset(
-            dataset_name,
-            body={
-                "code": """
+    # Execute and store the result of the Moving Average calculation
+    ma_result = Post.exec_python_on_dataset(
+        dataset_name,
+        body={
+            "code": """
 def calculate_ma(df, column='close_price', periods=[50]):
     for period in periods:
         ma_label = f"MA_{period}_{column}"
@@ -154,13 +157,16 @@ def calculate_ma(df, column='close_price', periods=[50]):
 periods = [5]
 column = "close_price"
 calculate_ma(dataset, column=column, periods=periods)
-"""
-            },
-        ),
-        Post.exec_python_on_dataset(
-            dataset_name,
-            body={
-                "code": """
+    """
+        },
+    )
+    transformation_results.append(ma_result)
+
+    # Execute and store the result of the RSI calculation
+    rsi_result = Post.exec_python_on_dataset(
+        dataset_name,
+        body={
+            "code": """
 def calculate_rsi(df, column='open_price', periods=[14]):
     for period in periods:
         delta = df[column].diff()
@@ -174,11 +180,12 @@ def calculate_rsi(df, column='open_price', periods=[14]):
 periods = [2]
 column = "MA_5_close_price"
 calculate_rsi(dataset, column=column, periods=periods)
-            """
-            },
-        ),
-    ]
-    return data_transformation_ids
+    """
+        },
+    )
+    transformation_results.append(rsi_result)
+
+    return transformation_results
 
 
 def create_backtest_body(
