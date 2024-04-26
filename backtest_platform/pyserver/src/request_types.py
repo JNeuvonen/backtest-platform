@@ -76,11 +76,27 @@ class BodyCreateManualBacktest(BaseModel):
     klines_until_close: Optional[int] = None
 
 
-class BodyCreateLongShortBacktest(BaseModel):
-    __annotations__ = {**BodyCreateManualBacktest.__annotations__}
-    __annotations__.pop("is_short_selling_strategy")
-    __annotations__.pop("dataset_id")
-    __annotations__.update({"datasets": List[int], "data_transformations": List[int]})
+class BodyCreateLongShortBacktest(BodyCreateManualBacktest):
+    datasets: List[int]
+    data_transformations: List[int]
+    sell_cond: str
+    buy_cond: str
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    @classmethod
+    def update_forward_refs(cls, **localns):
+        super().update_forward_refs(**localns)
+        exclude_fields = {"is_short_selling_strategy", "dataset_id"}
+        cls.__annotations__ = {
+            k: v for k, v in cls.__annotations__.items() if k not in exclude_fields
+        }
+        cls.__fields__.pop("is_short_selling_strategy", None)
+        cls.__fields__.pop("dataset_id", None)
+
+
+BodyCreateLongShortBacktest.update_forward_refs()
 
 
 class BodyDeleteManyBacktestsById:
