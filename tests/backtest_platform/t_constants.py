@@ -161,6 +161,10 @@ class URL:
         )
 
     @classmethod
+    def create_long_short_backtest(cls):
+        return cls._backtest_route() + BacktestRoutePaths.LONG_SHORT_BACKTEST
+
+    @classmethod
     def get_all_metadata_by_model_name(cls, model_name):
         return cls._models_route() + ModelRoutePaths.ALL_METADATA_BY_MODEL_NAME.format(
             model_name=model_name

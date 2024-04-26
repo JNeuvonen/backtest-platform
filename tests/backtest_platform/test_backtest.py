@@ -1,17 +1,14 @@
 import pytest
+import time
+from tests.backtest_platform.t_utils import gen_data_transformations
 
 from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
-    close_short_trade_cond_basic,
     create_manual_backtest,
     open_long_trade_cond_basic,
-    open_short_trade_cond_basic,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
 from tests.backtest_platform.fixtures import (
-    backtest_time_based_close_is_not_working,
-    backtest_psr_debug,
-    backtest_div_by_zero_bug,
     backtest_rule_based_v2,
 )
 
@@ -62,3 +59,23 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
     body = backtest_rule_based_v2
     body["dataset_id"] = dataset["id"]
     Post.create_manual_backtest(body)
+
+
+@pytest.mark.dev
+def test_long_short_backtest(cleanup_db, fixt_add_many_datasets):
+    body = backtest_rule_based_v2
+    dataset_ids = []
+    time.sleep(3)
+
+    first_dataset = fixt_add_many_datasets[0]
+    data_transformation_ids = gen_data_transformations(first_dataset.name)
+
+    for item in fixt_add_many_datasets:
+        dataset = Fetch.get_dataset_by_name(item.name)
+        dataset_ids.append(dataset["id"])
+
+    body["datasets"] = dataset_ids
+    body["data_transformations"] = data_transformation_ids
+
+    Post.create_long_short_backtest(body)
+    print("test")
