@@ -416,8 +416,3 @@ class ManualBacktest:
             if self.positions.cash > 0 and should_open_trade:
                 self.positions.go_long(price, 0, kline_open_time)
                 self.post_trade_cleanup()
-
-
-def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
-    with LogExceptionContext():
-        pass

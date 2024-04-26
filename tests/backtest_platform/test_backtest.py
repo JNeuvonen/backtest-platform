@@ -62,7 +62,7 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
 
 
 @pytest.mark.dev
-def test_long_short_backtest(cleanup_db, fixt_add_many_datasets):
+def test_long_short_backtest(fixt_add_many_datasets):
     body = backtest_rule_based_v2
     dataset_ids = []
     time.sleep(3)
@@ -76,6 +76,7 @@ def test_long_short_backtest(cleanup_db, fixt_add_many_datasets):
 
     body["datasets"] = dataset_ids
     body["data_transformations"] = data_transformation_ids
+    body["buy_cond"] = "print('hello world')"
+    body["sell_cond"] = "print('hello world')"
 
     Post.create_long_short_backtest(body)
-    print("test")
