@@ -235,3 +235,10 @@ def read_all_cols_matching_kline_open_times(
             query, conn, params=[str(time) for time in kline_open_times]
         )
         return df
+
+
+def get_row_count(dataset_name: str) -> int:
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+        query = f"SELECT COUNT(*) FROM {dataset_name}"
+        result = conn.execute(query).fetchone()
+        return result[0]
