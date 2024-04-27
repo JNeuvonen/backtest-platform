@@ -5,6 +5,8 @@ from tests.backtest_platform.t_utils import gen_data_transformations
 from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
     create_manual_backtest,
+    long_short_buy_cond_basic,
+    long_short_sell_cond_basic,
     open_long_trade_cond_basic,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
@@ -76,7 +78,7 @@ def test_long_short_backtest(fixt_add_many_datasets):
 
     body["datasets"] = dataset_ids
     body["data_transformations"] = data_transformation_ids
-    body["buy_cond"] = "print('hello world')"
-    body["sell_cond"] = "print('hello world')"
+    body["buy_cond"] = long_short_buy_cond_basic()
+    body["sell_cond"] = long_short_sell_cond_basic()
 
     Post.create_long_short_backtest(body)

@@ -157,6 +157,22 @@ def close_short_trade_cond_basic():
     return enter_trade_cond.get()
 
 
+def long_short_buy_cond_basic():
+    buy_cond = PyCode()
+    buy_cond.append_line("def get_is_valid_buy(bar):")
+    buy_cond.add_indent()
+    buy_cond.append_line("return True")
+    return buy_cond.get()
+
+
+def long_short_sell_cond_basic():
+    buy_cond = PyCode()
+    buy_cond.append_line("def get_is_valid_sell(bar):")
+    buy_cond.add_indent()
+    buy_cond.append_line("return True")
+    return buy_cond.get()
+
+
 backtest_time_based_close_is_not_working = {
     "use_short_selling": True,
     "dataset_id": 5,
