@@ -173,6 +173,14 @@ def long_short_sell_cond_basic():
     return buy_cond.get()
 
 
+def long_short_pair_exit_code_basic():
+    exit_cond = PyCode()
+    exit_cond.append_line("def get_exit_trade_decision(buy_df, sell_df):")
+    exit_cond.add_indent()
+    exit_cond.append_line("return True")
+    return exit_cond.get()
+
+
 backtest_time_based_close_is_not_working = {
     "use_short_selling": True,
     "dataset_id": 5,

@@ -6,6 +6,7 @@ from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
     create_manual_backtest,
     long_short_buy_cond_basic,
+    long_short_pair_exit_code_basic,
     long_short_sell_cond_basic,
     open_long_trade_cond_basic,
 )
@@ -80,5 +81,6 @@ def test_long_short_backtest(fixt_add_many_datasets):
     body["data_transformations"] = data_transformation_ids
     body["buy_cond"] = long_short_buy_cond_basic()
     body["sell_cond"] = long_short_sell_cond_basic()
+    body["exit_cond"] = long_short_pair_exit_code_basic()
 
     Post.create_long_short_backtest(body)
