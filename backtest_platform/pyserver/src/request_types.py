@@ -82,6 +82,8 @@ class BodyCreateLongShortBacktest(BodyCreateManualBacktest):
     sell_cond: str
     buy_cond: str
     exit_cond: str
+    max_simultaneous_positions: int
+    max_leverage_ratio: float
 
     class Config:
         arbitrary_types_allowed = True
