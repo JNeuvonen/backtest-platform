@@ -162,3 +162,18 @@ BACKTEST_MANUAL_TEMPLATE = """
 should_open_trade = get_enter_trade_decision(df_row) 
 should_close_trade = get_exit_trade_decision(df_row)
 """
+
+
+BACKTEST_LONG_SHORT_BUYS_AND_SELLS = """
+{BUY_COND_FUNC}
+{SELL_COND_FUNC}
+
+is_valid_buy = get_is_valid_buy(df_row) 
+is_valid_sell = get_is_valid_sell(df_row)
+"""
+
+BACKTEST_LONG_SHORT_CLOSE_TEMPLATE = """
+{EXIT_PAIR_TRADE_FUNC}
+
+should_close_trade = get_exit_trade_decision(df_row)
+"""
