@@ -96,6 +96,7 @@ def turn_short_fee_perc_to_coeff(short_fee_hourly_perc: float, candles_time_delt
     elif candles_time_delta < ONE_HOUR_IN_MS:
         exponent = ONE_HOUR_IN_MS / candles_time_delta
         return (1 + (short_fee_hourly_perc / 100)) ** (1 / exponent)
+    return 0
 
 
 def get_mass_sim_backtests_equity_curves(list_of_ids: List[int], candle_interval: str):
