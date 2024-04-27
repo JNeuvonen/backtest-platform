@@ -81,6 +81,7 @@ class BodyCreateLongShortBacktest(BodyCreateManualBacktest):
     data_transformations: List[int]
     sell_cond: str
     buy_cond: str
+    exit_cond: str
 
     class Config:
         arbitrary_types_allowed = True
