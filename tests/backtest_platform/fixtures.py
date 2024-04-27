@@ -248,7 +248,7 @@ backtest_rule_based_v2 = {
     "klines_until_close": 24,
     "trading_fees_perc": 0.1,
     "slippage_perc": 0.001,
-    "short_fee_hourly": 0.0000165888,
+    "short_fee_hourly": 0.000165888,
     "use_stop_loss_based_close": False,
     "use_profit_based_close": False,
     "stop_loss_threshold_perc": 0,

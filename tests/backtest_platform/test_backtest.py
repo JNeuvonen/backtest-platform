@@ -82,5 +82,7 @@ def test_long_short_backtest(fixt_add_many_datasets):
     body["buy_cond"] = long_short_buy_cond_basic()
     body["sell_cond"] = long_short_sell_cond_basic()
     body["exit_cond"] = long_short_pair_exit_code_basic()
+    body["max_simultaneous_positions"] = 15
+    body["max_leverage_ratio"] = 2.5
 
     Post.create_long_short_backtest(body)
