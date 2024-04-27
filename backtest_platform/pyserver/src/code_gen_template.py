@@ -175,5 +175,5 @@ is_valid_sell = get_is_valid_sell(df_row)
 BACKTEST_LONG_SHORT_CLOSE_TEMPLATE = """
 {EXIT_PAIR_TRADE_FUNC}
 
-should_close_trade = get_exit_trade_decision(df_row)
+should_close_trade = get_exit_trade_decision(buy_df, sell_df)
 """
