@@ -2,6 +2,7 @@ import math
 from os import times
 from time import time
 from typing import Dict, List, Set
+from backtest_utils import turn_short_fee_perc_to_coeff
 from code_gen_template import (
     BACKTEST_LONG_SHORT_BUYS_AND_SELLS,
     BACKTEST_LONG_SHORT_CLOSE_TEMPLATE,
@@ -160,7 +161,9 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
 
 
 class BacktestRules:
-    def __init__(self, backtest_details: BodyCreateLongShortBacktest):
+    def __init__(
+        self, backtest_details: BodyCreateLongShortBacktest, candles_time_delta
+    ):
         self.buy_cond = backtest_details.buy_cond
         self.sell_cond = backtest_details.sell_cond
         self.exit_cond = backtest_details.exit_cond
@@ -174,7 +177,12 @@ class BacktestRules:
         self.stop_loss_threshold_perc = backtest_details.stop_loss_threshold_perc
 
         self.trading_fees = (backtest_details.trading_fees_perc) / 100
-        self.short_fee_hourly = backtest_details.short_fee_hourly
+        self.short_fee_coeff = turn_short_fee_perc_to_coeff(
+            backtest_details.short_fee_hourly, candles_time_delta
+        )
+
+        self.max_simultaneous_positions = backtest_details.max_simultaneous_positions
+        self.max_leverage_ratio = backtest_details.max_leverage_ratio
 
 
 class BacktestStats:
@@ -183,33 +191,46 @@ class BacktestStats:
         self.candles_time_delta = candles_time_delta
 
 
-class USDTPosition:
-    def __init__(self, balance: float):
-        self.balance = balance
-        self.debt = 0
+class PositionManager:
+    def __init__(self, usdt_start_balance: float):
+        self.usdt_balance = usdt_start_balance
+        self.net_value = usdt_start_balance
+        self.usdt_debt = 0
+
+        self.open_positions_total_debt = 0
+        self.open_positions_total_long = 0
+        self.debt_to_net_value_ratio = 0.0
 
     def close_long(self, proceedings: float):
-        self.balance += proceedings
+        self.usdt_balance += proceedings
 
     def close_short(self, proceedings: float):
-        self.balance -= proceedings
+        self.usdt_balance -= proceedings
+
+    def update(self, positions_debt, positions_long):
+        self.net_value = self.usdt_balance + positions_long - positions_debt
+        self.open_positions_total_long = positions_long
+        self.open_positions_total_debt = positions_debt
+        self.debt_to_net_value_ratio = positions_debt / self.net_value
 
 
 class PairTrade:
     def __init__(
         self,
         buy_id: int,
-        sell_id: int,
-        sell_amount: float,
         buy_amount: float,
+        sell_id: int,
+        sell_proceedings: float,
+        debt_amount: float,
         trade_open_time,
         sell_price: float,
         buy_price: float,
     ):
         self.buy_id = buy_id
         self.sell_id = sell_id
-        self.sell_amount = sell_amount
         self.buy_amount = buy_amount
+        self.sell_proceedings = sell_proceedings
+        self.debt_amount = debt_amount
         self.trade_open_time = trade_open_time
         self.on_open_sell_price = sell_price
         self.on_open_buy_price = buy_price
@@ -221,10 +242,8 @@ class CompletedTrade:
         self,
         buy_id: int,
         sell_id: int,
-        long_amount: float,
         long_open_price: float,
         long_close_price: float,
-        short_amount: float,
         short_open_price: float,
         short_close_price: float,
         balance_history: List[float],
@@ -249,9 +268,9 @@ class LongShortOnUniverseBacktest:
         dataset_id_to_name_map: Dict,
         dataset_id_to_timeseries_col_map: Dict,
     ):
-        self.rules = BacktestRules(backtest_details)
+        self.rules = BacktestRules(backtest_details, candles_time_delta)
         self.stats = BacktestStats(candles_time_delta)
-        self.usdt_position = USDTPosition(START_BALANCE)
+        self.positions = PositionManager(START_BALANCE)
         self.dataset_id_to_name_map = dataset_id_to_name_map
         self.dataset_id_to_timeseries_col_map = dataset_id_to_timeseries_col_map
 
@@ -276,6 +295,21 @@ class LongShortOnUniverseBacktest:
 
         return ret
 
+    def get_available_new_pos_size(self):
+        current_debt_ratio = self.positions.debt_to_net_value_ratio
+        max_total_allocation = self.rules.max_leverage_ratio
+        max_invidual_allocation = (
+            max_total_allocation / self.rules.max_simultaneous_positions
+        )
+
+        if max_total_allocation - current_debt_ratio < 0.0:
+            return 0
+
+        new_allocation_size = min(
+            max_invidual_allocation, max_total_allocation - current_debt_ratio
+        )
+        return new_allocation_size * self.positions.net_value
+
     def remove_pairs_already_in_trade(self, available_pairs):
         active_trade_ids = {trade.buy_id for trade in self.active_pairs} | {
             trade.sell_id for trade in self.active_pairs
@@ -298,8 +332,8 @@ class LongShortOnUniverseBacktest:
             code = code.replace(key, str(value))
 
         results_dict = {
-            "buy_df": kline_state[pair.buy_id],
-            "sell_df": kline_state[pair.sell_id],
+            "buy_df": kline_state["id_to_row_map"][str(pair.buy_id)],
+            "sell_df": kline_state["id_to_row_map"][str(pair.sell_id)],
         }
         exec(code, globals(), results_dict)
 
@@ -310,25 +344,35 @@ class LongShortOnUniverseBacktest:
         close_long_amount = (
             buy_df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
             * pair.buy_amount
-            * self.rules.trading_fees
+            * self.trading_fees_coeff_reduce_amount()
         )
         return close_long_amount
+
+    def trading_fees_coeff_reduce_amount(self):
+        return 1 - self.rules.trading_fees
+
+    def trading_fees_coeff_increase_amount(self):
+        return self.rules.trading_fees + 1
 
     def get_close_short_amount(self, sell_df, pair: PairTrade):
         close_short_amount = (
             sell_df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-            * pair.sell_amount
-            * (abs((self.rules.trading_fees - 1)) + 1)
+            * pair.debt_amount
+            * self.trading_fees_coeff_increase_amount()
         )
         return close_short_amount
+
+    def get_trade_enter_long_amount(self, usdt_size: float, price: float):
+        amount = usdt_size / price
+        return amount * self.trading_fees_coeff_reduce_amount()
 
     def get_bar_curr_price(self, df):
         price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
         return price
 
     def close_pair_trade(self, kline_state: Dict, pair: PairTrade):
-        buy_df = kline_state[pair.buy_id]
-        sell_df = kline_state[pair.sell_id]
+        buy_df = kline_state["id_to_row_map"][str(pair.buy_id)]
+        sell_df = kline_state["id_to_row_map"][str(pair.sell_id)]
 
         long_close_price = self.get_bar_curr_price(buy_df)
         short_close_price = self.get_bar_curr_price(sell_df)
@@ -339,17 +383,15 @@ class LongShortOnUniverseBacktest:
         completed_trade = CompletedTrade(
             buy_id=pair.buy_id,
             sell_id=pair.sell_id,
-            long_amount=pair.buy_amount,
             long_open_price=pair.on_open_buy_price,
             long_close_price=long_close_price,
-            short_amount=pair.sell_amount,
             short_open_price=pair.on_open_sell_price,
             short_close_price=short_close_price,
             balance_history=pair.balance_history,
         )
 
-        self.usdt_position.close_long(sell_long_proceedings)
-        self.usdt_position.close_short(required_for_close_short)
+        self.positions.close_long(sell_long_proceedings)
+        self.positions.close_short(required_for_close_short)
         self.completed_trades.append(completed_trade)
 
     def check_for_pair_trade_close(self, kline_state):
@@ -362,11 +404,61 @@ class LongShortOnUniverseBacktest:
                 active_pairs.append(item)
         self.active_pairs = active_pairs
 
+    def enter_pair_trade(self, kline_open_time, kline_state, pair):
+        buy_id = pair["buy"]
+        sell_id = pair["sell"]
+
+        buy_df = kline_state["id_to_row_map"][str(buy_id)]
+        sell_df = kline_state["id_to_row_map"][str(sell_id)]
+
+        buy_price = self.get_bar_curr_price(buy_df)
+        sell_price = self.get_bar_curr_price(sell_df)
+
+        usdt_size = self.get_available_new_pos_size()
+
+        debt_amount = usdt_size / sell_price
+        sell_proceedings = (
+            debt_amount * sell_price * self.trading_fees_coeff_reduce_amount()
+        )
+        buy_amount = self.get_trade_enter_long_amount(sell_proceedings, buy_price)
+
+        new_pair_trade = PairTrade(
+            buy_id=buy_id,
+            sell_id=sell_id,
+            debt_amount=debt_amount,
+            buy_amount=buy_amount,
+            sell_proceedings=sell_proceedings,
+            trade_open_time=kline_open_time,
+            sell_price=sell_price,
+            buy_price=buy_price,
+        )
+        self.active_pairs.append(new_pair_trade)
+
     def enter_trades(self, kline_open_time, kline_state, enter_trade_pairs):
         for pair in enter_trade_pairs:
-            pass
+            self.enter_pair_trade(kline_open_time, kline_state, pair)
+
+    def update_acc_state(self, kline_open_time: int, kline_state: Dict):
+        total_debt = 0.0
+        total_longs = 0.0
+
+        for item in self.active_pairs:
+            item.debt_amount *= self.rules.short_fee_coeff
+
+        for item in self.active_pairs:
+            buy_df = kline_state["id_to_row_map"][str(item.buy_id)]
+            sell_df = kline_state["id_to_row_map"][str(item.sell_id)]
+
+            buy_side_price = self.get_bar_curr_price(buy_df)
+            sell_side_price = self.get_bar_curr_price(sell_df)
+
+            total_longs += buy_side_price * item.buy_amount
+            total_debt += sell_side_price * item.debt_amount
+
+        self.positions.update(positions_debt=total_debt, positions_long=total_longs)
 
     def process_bar(self, kline_open_time: int, kline_state: Dict):
+        self.update_acc_state(kline_open_time, kline_state)
         self.check_for_pair_trade_close(kline_state)
 
         pairs_available = self.remove_pairs_already_in_trade(
