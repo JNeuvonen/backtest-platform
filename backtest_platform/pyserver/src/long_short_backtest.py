@@ -1,6 +1,14 @@
-from typing import List
+from os import times
+from time import time
+from typing import Dict, List, Set
+from code_gen_template import BACKTEST_LONG_SHORT_BUYS_AND_SELLS
 from constants import BINANCE_BACKTEST_PRICE_COL, AppConstants
-from dataset import get_row_count, read_columns_to_mem, read_dataset_to_mem
+from dataset import (
+    get_row_count,
+    read_all_cols_matching_kline_open_times,
+    read_columns_to_mem,
+    read_dataset_to_mem,
+)
 from db import exec_python, get_df_candle_size
 from log import LogExceptionContext
 from query_data_transformation import DataTransformationQuery
@@ -24,20 +32,71 @@ def get_longest_dataset_id(backtest_info: BodyCreateLongShortBacktest):
     return longest_id
 
 
+def get_symbol_buy_and_sell_decision(df_row, replacements: Dict):
+    code = BACKTEST_LONG_SHORT_BUYS_AND_SELLS
+
+    for key, value in replacements.items():
+        code = code.replace(key, str(value))
+
+    results_dict = {"df_row": df_row}
+    exec(code, globals(), results_dict)
+
+    ret = {
+        "is_valid_buy": results_dict["is_valid_buy"],
+        "is_valid_sell": results_dict["is_valid_sell"],
+    }
+    return ret
+
+
 def find_pair_candidates(
-    kline_open_time: int, backtest_info: BodyCreateLongShortBacktest
+    kline_open_time: int,
+    backtest_info: BodyCreateLongShortBacktest,
+    dataset_id_to_name_map: Dict,
+    dataset_id_to_ts_col: Dict,
 ):
+    sell_candidates: Set = set()
+    buy_candidates: Set = set()
+
+    exec_py_replacements = {
+        "{BUY_COND_FUNC}": backtest_info.buy_cond,
+        "{SELL_COND_FUNC}": backtest_info.sell_cond,
+    }
+
     with LogExceptionContext():
-        pass
+        for item in backtest_info.datasets:
+            dataset_name = dataset_id_to_name_map[str(item)]
+            timeseries_col = dataset_id_to_ts_col[str(item)]
+            df = read_all_cols_matching_kline_open_times(
+                dataset_name, timeseries_col, [kline_open_time]
+            )
+            df_row = df.iloc[0]
+            buy_and_sell_decisions = get_symbol_buy_and_sell_decision(
+                df_row, exec_py_replacements
+            )
+
+            is_valid_buy = buy_and_sell_decisions["is_valid_buy"]
+            is_valid_sell = buy_and_sell_decisions["is_valid_sell"]
+
+            if is_valid_buy is True:
+                buy_candidates.add(item)
+
+            if is_valid_sell is True:
+                sell_candidates.add(item)
+
+    return {"sell_candidates": sell_candidates, "buy_candidates": buy_candidates}
 
 
 async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
     with LogExceptionContext():
         longest_dataset_id = get_longest_dataset_id(backtest_info)
+        dataset_id_to_name_map = {}
+        dataset_id_to_timeseries_col_map = {}
         for item in backtest_info.datasets:
             dataset = DatasetQuery.fetch_dataset_by_id(item)
 
             dataset_name = dataset.dataset_name
+            dataset_id_to_name_map[str(item)] = dataset_name
+            dataset_id_to_timeseries_col_map[str(item)] = dataset.timeseries_column
             DatasetQuery.update_price_column(dataset_name, BINANCE_BACKTEST_PRICE_COL)
 
             for data_transform_id in backtest_info.data_transformations:
@@ -53,15 +112,16 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             raise Exception("Longest dataset_id was none.")
 
         longest_dataset = DatasetQuery.fetch_dataset_by_id(longest_dataset_id)
+        timeseries_col = longest_dataset.timeseries_column
 
         kline_open_times = read_columns_to_mem(
             AppConstants.DB_DATASETS,
             longest_dataset.dataset_name,
-            [longest_dataset.timeseries_column],
+            [timeseries_col],
         )
 
         candles_time_delta = get_df_candle_size(
-            kline_open_times, dataset.timeseries_column, formatted=False
+            kline_open_times, timeseries_col, formatted=False
         )
 
         long_short_backtest = LongShortOnUniverseBacktest(
@@ -72,7 +132,17 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             raise Exception("Kline_open_times df was none.")
 
         for _, row in kline_open_times.iterrows():
-            print(row)
+            pair_candidates = find_pair_candidates(
+                row[timeseries_col],
+                backtest_info,
+                dataset_id_to_name_map,
+                dataset_id_to_timeseries_col_map,
+            )
+
+            kline_open_time = row[timeseries_col]
+            long_short_backtest.process_bar(
+                kline_open_time=kline_open_time, buy_and_sell_candidates=pair_candidates
+            )
 
 
 class BacktestRules:
@@ -131,3 +201,7 @@ class LongShortOnUniverseBacktest:
         self.history: List = []
         self.active_pairs: List[PairTrade] = []
         self.completed_trades: List = []
+
+    def process_bar(self, kline_open_time: int, buy_and_sell_candidates: Dict):
+        print("helo world")
+        pass
