@@ -26,7 +26,8 @@ func UpdatePredServerOnTradeClose(
 			NewFmtError(
 				errors.New(
 					fmt.Sprintf(
-						"%s: res *binance_connector.MarginAccountNewOrderResponseFULL was unexpectedly nil",
+						"%s\n%s: res *binance_connector.MarginAccountNewOrderResponseFULL was unexpectedly nil",
+						strat.Symbol,
 						GetCurrentFunctionName(),
 					),
 				),
@@ -34,6 +35,7 @@ func UpdatePredServerOnTradeClose(
 			).Error(),
 			LOG_EXCEPTION,
 		)
+		return
 	}
 
 	execPrice := SafeDivide(
