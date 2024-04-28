@@ -27,6 +27,12 @@ def calculate_sr(returns, rf=0, periods_per_year=365):
     return SR if np.isfinite(SR) else None
 
 
+def safe_divide(num, denom, fallback=None):
+    if denom == 0.0 or denom == 0:
+        return fallback
+    return num / denom
+
+
 def calculate_avg_trade_hold_time_ms(trades):
     if len(trades) == 0:
         return 0
