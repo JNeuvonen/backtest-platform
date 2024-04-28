@@ -77,6 +77,10 @@ def get_datasets_kline_state(
                 dataset_name, timeseries_col, [kline_open_time]
             )
             id_to_df_map[str(item)] = df
+
+            if df.empty is True:
+                continue
+
             df_row = df.iloc[0]
             buy_and_sell_decisions = get_symbol_buy_and_sell_decision(
                 df_row, exec_py_replacements
@@ -332,8 +336,8 @@ class LongShortOnUniverseBacktest:
             code = code.replace(key, str(value))
 
         results_dict = {
-            "buy_df": kline_state["id_to_row_map"][str(pair.buy_id)],
-            "sell_df": kline_state["id_to_row_map"][str(pair.sell_id)],
+            "buy_df": kline_state["id_to_row_map"][str(pair.buy_id)].iloc[0],
+            "sell_df": kline_state["id_to_row_map"][str(pair.sell_id)].iloc[0],
         }
         exec(code, globals(), results_dict)
 
