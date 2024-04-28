@@ -161,7 +161,17 @@ def long_short_buy_cond_basic():
     buy_cond = PyCode()
     buy_cond.append_line("def get_is_valid_buy(bar):")
     buy_cond.add_indent()
+    buy_cond.append_line("if bar['RSI_30_MA_50_close_price'] == None:")
+    buy_cond.add_indent()
+    buy_cond.append_line("return False")
+    buy_cond.reduce_indent()
+    buy_cond.append_line(
+        "if bar['Aroon_Up_25_close_price'] > 8000 and bar['RSI_30_MA_50_close_price'] > 45:"
+    )
+    buy_cond.add_indent()
     buy_cond.append_line("return True")
+    buy_cond.reduce_indent()
+    buy_cond.append_line("return False")
     return buy_cond.get()
 
 
@@ -169,7 +179,15 @@ def long_short_sell_cond_basic():
     buy_cond = PyCode()
     buy_cond.append_line("def get_is_valid_sell(bar):")
     buy_cond.add_indent()
+    buy_cond.append_line("if bar['RSI_30_MA_50_close_price'] == None:")
+    buy_cond.add_indent()
+    buy_cond.append_line("return False")
+    buy_cond.reduce_indent()
+    buy_cond.append_line("if bar['RSI_30_MA_50_close_price'] < 30:")
+    buy_cond.add_indent()
     buy_cond.append_line("return True")
+    buy_cond.reduce_indent()
+    buy_cond.append_line("return False")
     return buy_cond.get()
 
 
@@ -177,7 +195,13 @@ def long_short_pair_exit_code_basic():
     exit_cond = PyCode()
     exit_cond.append_line("def get_exit_trade_decision(buy_df, sell_df):")
     exit_cond.add_indent()
+    exit_cond.append_line(
+        "if buy_df['Aroon_Up_25_close_price'] < 6000 and sell_df['RSI_30_MA_50_close_price'] > 50:"
+    )
+    exit_cond.add_indent()
     exit_cond.append_line("return True")
+    exit_cond.reduce_indent()
+    exit_cond.append_line("return False")
     return exit_cond.get()
 
 
