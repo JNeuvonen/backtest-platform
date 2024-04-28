@@ -19,6 +19,10 @@ class BacktestHistoryTick(Base):
     cash = Column(Float)
     price = Column(Float)
 
+    debt_to_net_value_ratio = Column(Float)
+    total_debt = Column(Float)
+    total_long = Column(Float)
+
 
 class BacktestHistoryQuery:
     @staticmethod
