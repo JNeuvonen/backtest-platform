@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import math
 from typing import List
+from math_utils import safe_divide
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
 from constants import ONE_HOUR_IN_MS, CandleSize
@@ -155,3 +156,39 @@ def get_backtest_id_to_dataset_name_map(list_of_ids: List[int]):
         ret[str(item)] = dataset_name
 
     return ret
+
+
+def calc_long_short_profit_factor(trades):
+    longs_gross_wins = 0.0
+    longs_gross_losses = 0.0
+    shorts_gross_wins = 0.0
+    shorts_gross_losses = 0.0
+
+    overall_gross_wins = 0.0
+    overall_gross_losses = 0.0
+
+    for trade in trades:
+        if trade.long_side_gross_result >= 0.0:
+            longs_gross_wins += trade.long_side_gross_result
+        else:
+            longs_gross_losses += trade.long_side_gross_result
+
+        if trade.short_side_gross_result >= 0.0:
+            shorts_gross_wins += trade.short_side_gross_result
+        else:
+            shorts_gross_losses += trade.short_side_gross_result
+
+        if trade.trade_gross_result >= 0.0:
+            overall_gross_wins += trade.trade_gross_result
+        else:
+            overall_gross_losses += trade.trade_gross_result
+
+    return {
+        "strategy_profit_factor": safe_divide(
+            overall_gross_wins, overall_gross_losses, None
+        ),
+        "long_profit_factor": safe_divide(longs_gross_wins, longs_gross_losses, None),
+        "short_profit_factor": safe_divide(
+            shorts_gross_wins, shorts_gross_losses, None
+        ),
+    }
