@@ -1,8 +1,5 @@
-import math
-from os import times
-from time import time
 from typing import Dict, List, Set
-from backtest_utils import turn_short_fee_perc_to_coeff
+from backtest_utils import calc_long_short_profit_factor, turn_short_fee_perc_to_coeff
 from code_gen_template import (
     BACKTEST_LONG_SHORT_BUYS_AND_SELLS,
     BACKTEST_LONG_SHORT_CLOSE_TEMPLATE,
@@ -12,10 +9,10 @@ from dataset import (
     get_row_count,
     read_all_cols_matching_kline_open_times,
     read_columns_to_mem,
-    read_dataset_to_mem,
 )
 from db import exec_python, get_df_candle_size
 from log import LogExceptionContext
+from math_utils import safe_divide
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from request_types import BodyCreateLongShortBacktest
@@ -51,6 +48,11 @@ def get_symbol_buy_and_sell_decision(df_row, replacements: Dict):
         "is_valid_sell": results_dict["is_valid_sell"],
     }
     return ret
+
+
+def get_benchmark_initial_state(datasets: List):
+    for item in datasets:
+        dataset = DatasetQuery.fetch_dataset_by_id(item)
 
 
 def get_datasets_kline_state(
@@ -140,6 +142,8 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             kline_open_times, timeseries_col, formatted=False
         )
 
+        benchmark_initial_state = get_benchmark_initial_state(backtest_info.datasets)
+
         long_short_backtest = LongShortOnUniverseBacktest(
             backtest_info,
             candles_time_delta,
@@ -162,6 +166,10 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.process_bar(
                 kline_open_time=kline_open_time, kline_state=kline_state
             )
+
+        profit_factor_dict = calc_long_short_profit_factor(
+            long_short_backtest.completed_trades
+        )
 
 
 class BacktestRules:
@@ -192,6 +200,7 @@ class BacktestRules:
 class BacktestStats:
     def __init__(self, candles_time_delta: int):
         self.cumulative_time = 0
+        self.position_held_time = 0.0
         self.candles_time_delta = candles_time_delta
 
 
@@ -205,39 +214,55 @@ class PositionManager:
         self.open_positions_total_long = 0
         self.debt_to_net_value_ratio = 0.0
 
+        self.position_history: List = []
+
     def close_long(self, proceedings: float):
         self.usdt_balance += proceedings
 
     def close_short(self, proceedings: float):
         self.usdt_balance -= proceedings
 
-    def update(self, positions_debt, positions_long):
+    def update(self, positions_debt, positions_long, kline_open_time):
         self.net_value = self.usdt_balance + positions_long - positions_debt
         self.open_positions_total_long = positions_long
         self.open_positions_total_debt = positions_debt
         self.debt_to_net_value_ratio = positions_debt / self.net_value
+
+        tick = {
+            "total_debt": positions_debt,
+            "total_long": positions_long,
+            "kline_open_time": kline_open_time,
+            "debt_to_net_value_ratio": self.debt_to_net_value_ratio,
+            "net_value": self.net_value,
+            "benchmark_price": 0,
+        }
+        self.position_history.append(tick)
 
 
 class PairTrade:
     def __init__(
         self,
         buy_id: int,
-        buy_amount: float,
+        buy_amount_base: float,
+        buy_amount_quote: float,
         sell_id: int,
-        sell_proceedings: float,
-        debt_amount: float,
+        sell_proceedings_quote: float,
+        debt_amount_base: float,
         trade_open_time,
         sell_price: float,
         buy_price: float,
+        on_trade_open_acc_net_value: float,
     ):
         self.buy_id = buy_id
         self.sell_id = sell_id
-        self.buy_amount = buy_amount
-        self.sell_proceedings = sell_proceedings
-        self.debt_amount = debt_amount
+        self.buy_amount_base = buy_amount_base
+        self.buy_amount_quote = buy_amount_quote
+        self.sell_proceedings_quote = sell_proceedings_quote
+        self.debt_amount_base = debt_amount_base
         self.trade_open_time = trade_open_time
         self.on_open_sell_price = sell_price
         self.on_open_buy_price = buy_price
+        self.on_trade_open_acc_net_value = on_trade_open_acc_net_value
         self.balance_history: List[float] = []
 
 
@@ -250,6 +275,11 @@ class CompletedTrade:
         long_close_price: float,
         short_open_price: float,
         short_close_price: float,
+        on_open_long_side_amount_quote: float,
+        on_close_long_side_amount_quote: float,
+        on_open_short_side_amount_quote: float,
+        on_close_short_side_amount_quote: float,
+        on_trade_open_acc_net_value: float,
         balance_history: List[float],
     ):
         self.buy_id = buy_id
@@ -262,6 +292,36 @@ class CompletedTrade:
         self.short_close_price = short_close_price
 
         self.balance_history = balance_history
+
+        self.long_side_gross_result = (
+            on_close_long_side_amount_quote - on_open_long_side_amount_quote
+        )
+        self.long_side_perc_result = (
+            safe_divide(
+                on_close_long_side_amount_quote,
+                on_open_long_side_amount_quote,
+                fallback=0,
+            )
+            * 100
+        )
+        self.short_side_gross_result = (
+            on_open_short_side_amount_quote - on_close_short_side_amount_quote
+        )
+        self.short_side_perc_result = (
+            safe_divide(
+                (on_open_short_side_amount_quote - on_close_short_side_amount_quote),
+                on_open_short_side_amount_quote,
+                fallback=0,
+            )
+            * 100
+        )
+        self.trade_gross_result = (
+            self.long_side_gross_result + self.short_side_gross_result
+        )
+
+        self.perc_result = (
+            safe_divide(self.trade_gross_result, on_trade_open_acc_net_value, 0) * 100
+        )
 
 
 class LongShortOnUniverseBacktest:
@@ -347,7 +407,7 @@ class LongShortOnUniverseBacktest:
     def get_close_long_proceedings(self, buy_df, pair: PairTrade):
         close_long_amount = (
             buy_df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-            * pair.buy_amount
+            * pair.buy_amount_base
             * self.trading_fees_coeff_reduce_amount()
         )
         return close_long_amount
@@ -361,7 +421,7 @@ class LongShortOnUniverseBacktest:
     def get_close_short_amount(self, sell_df, pair: PairTrade):
         close_short_amount = (
             sell_df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-            * pair.debt_amount
+            * pair.debt_amount_base
             * self.trading_fees_coeff_increase_amount()
         )
         return close_short_amount
@@ -392,6 +452,11 @@ class LongShortOnUniverseBacktest:
             short_open_price=pair.on_open_sell_price,
             short_close_price=short_close_price,
             balance_history=pair.balance_history,
+            on_open_long_side_amount_quote=pair.buy_amount_quote,
+            on_open_short_side_amount_quote=pair.sell_proceedings_quote,
+            on_close_long_side_amount_quote=sell_long_proceedings,
+            on_close_short_side_amount_quote=required_for_close_short,
+            on_trade_open_acc_net_value=pair.on_trade_open_acc_net_value,
         )
 
         self.positions.close_long(sell_long_proceedings)
@@ -420,21 +485,25 @@ class LongShortOnUniverseBacktest:
 
         usdt_size = self.get_available_new_pos_size()
 
-        debt_amount = usdt_size / sell_price
-        sell_proceedings = (
-            debt_amount * sell_price * self.trading_fees_coeff_reduce_amount()
+        debt_amount_base = usdt_size / sell_price
+        sell_proceedings_quote = (
+            debt_amount_base * sell_price * self.trading_fees_coeff_reduce_amount()
         )
-        buy_amount = self.get_trade_enter_long_amount(sell_proceedings, buy_price)
+        buy_amount_base = self.get_trade_enter_long_amount(
+            sell_proceedings_quote, buy_price
+        )
 
         new_pair_trade = PairTrade(
             buy_id=buy_id,
             sell_id=sell_id,
-            debt_amount=debt_amount,
-            buy_amount=buy_amount,
-            sell_proceedings=sell_proceedings,
+            debt_amount_base=debt_amount_base,
+            buy_amount_base=buy_amount_base,
+            buy_amount_quote=buy_amount_base * buy_price,
+            sell_proceedings_quote=sell_proceedings_quote,
             trade_open_time=kline_open_time,
             sell_price=sell_price,
             buy_price=buy_price,
+            on_trade_open_acc_net_value=self.positions.net_value,
         )
         self.active_pairs.append(new_pair_trade)
 
@@ -442,12 +511,21 @@ class LongShortOnUniverseBacktest:
         for pair in enter_trade_pairs:
             self.enter_pair_trade(kline_open_time, kline_state, pair)
 
+    def update_pos_held_time(self):
+        capital_usage_coeff = safe_divide(
+            len(self.active_pairs), self.rules.max_simultaneous_positions, 0
+        )
+        bar_pos_held_time = capital_usage_coeff * self.stats.candles_time_delta
+
+        self.stats.position_held_time += bar_pos_held_time
+        self.stats.cumulative_time += self.stats.candles_time_delta
+
     def update_acc_state(self, kline_open_time: int, kline_state: Dict):
         total_debt = 0.0
         total_longs = 0.0
 
         for item in self.active_pairs:
-            item.debt_amount *= self.rules.short_fee_coeff
+            item.debt_amount_base *= self.rules.short_fee_coeff
 
         for item in self.active_pairs:
             buy_df = kline_state["id_to_row_map"][str(item.buy_id)]
@@ -456,10 +534,15 @@ class LongShortOnUniverseBacktest:
             buy_side_price = self.get_bar_curr_price(buy_df)
             sell_side_price = self.get_bar_curr_price(sell_df)
 
-            total_longs += buy_side_price * item.buy_amount
-            total_debt += sell_side_price * item.debt_amount
+            total_longs += buy_side_price * item.buy_amount_base
+            total_debt += sell_side_price * item.debt_amount_base
 
-        self.positions.update(positions_debt=total_debt, positions_long=total_longs)
+        self.positions.update(
+            positions_debt=total_debt,
+            positions_long=total_longs,
+            kline_open_time=kline_open_time,
+        )
+        self.update_pos_held_time()
 
     def process_bar(self, kline_open_time: int, kline_state: Dict):
         self.update_acc_state(kline_open_time, kline_state)
