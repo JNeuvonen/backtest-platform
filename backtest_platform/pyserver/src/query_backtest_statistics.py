@@ -11,6 +11,8 @@ class BacktestStatistics(Base):
     backtest_id = Column(Integer, ForeignKey("backtest.id"))
 
     profit_factor = Column(Float)
+    long_side_profit_factor = Column(Float)
+    short_side_profit_factor = Column(Float)
     gross_profit = Column(Float)
     gross_loss = Column(Float)
     start_balance = Column(Float)
