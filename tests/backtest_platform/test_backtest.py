@@ -1,5 +1,6 @@
 import pytest
 import time
+from tests.backtest_platform.conftest import fixt_add_many_datasets
 from tests.backtest_platform.t_utils import gen_data_transformations
 
 from tests.backtest_platform.fixtures import (
@@ -65,15 +66,16 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
 
 
 @pytest.mark.dev
-def test_long_short_backtest(fixt_add_many_datasets):
+def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
+    datasets = fixt_add_blue_chip_1d_datasets
     body = backtest_rule_based_v2
     dataset_ids = []
     time.sleep(3)
 
-    first_dataset = fixt_add_many_datasets[0]
+    first_dataset = datasets[0]
     data_transformation_ids = gen_data_transformations(first_dataset.name)
 
-    for item in fixt_add_many_datasets:
+    for item in datasets:
         dataset = Fetch.get_dataset_by_name(item.name)
         dataset_ids.append(dataset["id"])
 

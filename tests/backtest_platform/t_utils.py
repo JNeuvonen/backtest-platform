@@ -154,7 +154,7 @@ def calculate_ma(df, column='close_price', periods=[50]):
         ma_label = f"MA_{period}_{column}"
         df[ma_label] = df[column].rolling(window=period).mean()
 
-periods = [5]
+periods = [50]
 column = "close_price"
 calculate_ma(dataset, column=column, periods=periods)
     """
@@ -177,8 +177,8 @@ def calculate_rsi(df, column='open_price', periods=[14]):
         df_label = f"RSI_{period}_{column}"
         df[df_label] = 100 - (100 / (1 + rs))
 
-periods = [2]
-column = "MA_5_close_price"
+periods = [30]
+column = "MA_50_close_price"
 calculate_rsi(dataset, column=column, periods=periods)
     """
         },

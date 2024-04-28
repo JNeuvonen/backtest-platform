@@ -123,6 +123,33 @@ class DatasetDumps:
         "BTCUSDT",
     )
 
+    BTCUSDT_FULL_1D = DatasetMetadata(
+        FixturePaths.BINANCE.format("btcusdt_1d.csv"),
+        "btcusdt_1d",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
+        "BTCUSDT_1D",
+    )
+
+    BNBUSDT_FULL_1D = DatasetMetadata(
+        FixturePaths.BINANCE.format("bnbusdt_1d.csv"),
+        "bnbusdt_1d",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
+        "BNBUSDT_1D",
+    )
+
+    SOLUSDT_FULL_1D = DatasetMetadata(
+        FixturePaths.BINANCE.format("solusdt_1d.csv"),
+        "solusdt_1d",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.OPEN_PRICE,
+        BinanceCols.OPEN_PRICE,
+        "SOLUSDT_1D",
+    )
+
 
 class EnvTestSpeed:
     FAST = "FAST"
