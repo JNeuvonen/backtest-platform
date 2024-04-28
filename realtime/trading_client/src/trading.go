@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"time"
 
 	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
@@ -51,7 +52,7 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 	currTimeMs := int64(GetTimeInMs())
 	riskManagementParams := GetRiskManagementParams()
 
-	if currTimeMs-currTimeMs-riskManagementParams.TradingCooldownStartedTs < UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS {
+	if currTimeMs-riskManagementParams.TradingCooldownStartedTs < UNABLE_TO_REACH_BE_TRADE_COOLDOWN_MS {
 		return false
 	}
 
@@ -164,9 +165,18 @@ func closeLongTrade(
 	marginBalancesRes := bc.FetchMarginBalances()
 
 	freeBaseAsset := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.BaseAsset)
-	closeQuantity := math.Min(strat.RemainingPositionOnTrade, freeBaseAsset)
+	closeQuantity := RoundToPrecision(
+		math.Min(strat.RemainingPositionOnTrade, freeBaseAsset),
+		int32(strat.TradeQuantityPrecision),
+	)
 
-	res := bc.NewMarginOrder(strat.Symbol, closeQuantity, ORDER_SELL, MARKET_ORDER, strat)
+	res := bc.NewMarginOrder(
+		strat.Symbol,
+		closeQuantity,
+		ORDER_SELL,
+		MARKET_ORDER,
+		strat,
+	)
 	UpdatePredServerOnTradeClose(strat, res)
 
 	return res
@@ -501,10 +511,13 @@ func TradingLoop() {
 				account,
 				0,
 			)
-			strategies = predServClient.FetchStrategies()
 		}
 
 		for _, strat := range strategies {
+			if strat.IsOnPredServErr {
+				continue
+			}
+
 			if strat.IsInPosition && ShouldCloseTrade(binanceClient, strat) {
 				CloseStrategyTrade(binanceClient, strat)
 			} else if !strat.IsInPosition && ShouldEnterTrade(strat) {
@@ -512,5 +525,6 @@ func TradingLoop() {
 			}
 		}
 		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
+		time.Sleep(time.Minute)
 	}
 }
