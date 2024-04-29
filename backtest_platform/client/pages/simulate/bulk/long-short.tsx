@@ -1,4 +1,4 @@
-import { Heading, MenuButton, MenuItem } from "@chakra-ui/react";
+import { Heading, MenuButton, MenuItem, useDisclosure } from "@chakra-ui/react";
 import React from "react";
 import { ChakraMenu } from "../../../components/chakra/Menu";
 import { FaFileImport } from "react-icons/fa6";
@@ -15,12 +15,15 @@ export const BulkLongShortSimPage = () => {
 
       <div style={{ display: "flex", gap: "16px" }}>
         <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
-          <MenuItem icon={<FaFileImport />} onClick={() => {}}>
+          <MenuItem
+            icon={<FaFileImport />}
+            onClick={() => massPairTradeContext.createNewDrawer.onOpen()}
+          >
             New
           </MenuItem>
         </ChakraMenu>
       </div>
-      <div>
+      <div style={{ marginTop: "8px" }}>
         <BacktestDatagrid
           backtests={[]}
           onDeleteMode={massPairTradeContext.onDeleteMode}

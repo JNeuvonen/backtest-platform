@@ -1,5 +1,6 @@
 import { UseDisclosureReturn, useDisclosure } from "@chakra-ui/react";
 import React, { ReactNode, createContext, useContext, useState } from "react";
+import { BulkLongShortCreateNew } from "./CreateNewDrawer";
 
 interface MassPairTradeProviderProps {
   children: ReactNode;
@@ -46,6 +47,7 @@ export const MassPairTradeProvider: React.FC<MassPairTradeProviderProps> = ({
         resetSelection,
       }}
     >
+      <BulkLongShortCreateNew />
       {children}
     </MassPairTradeContext.Provider>
   );
