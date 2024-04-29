@@ -134,6 +134,7 @@ export const DOM_IDS = {
 export const CODE_PRESET_CATEGORY = {
   backtest_long_cond: "backtest_long_condition",
   backtest_close_long_ccond: "backtest_close_long_condition",
+  backtest_pair_trade_exit_cond: "backtest_pair_trade_exit_cond",
   backtest_create_columns: "backtest_create_columns",
   strategy_deploy_enter_trade: "strategy_enter_trade_code",
   strategy_deploy_exit_trade: "strategy_enter_trade_code",
