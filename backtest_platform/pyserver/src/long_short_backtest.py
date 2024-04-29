@@ -3,6 +3,8 @@ from typing import Dict, List, Set
 from backtest_utils import (
     calc_long_short_profit_factor,
     calc_max_drawdown,
+    get_backtest_data_range_indexes,
+    get_balance_history_entries,
     get_cagr,
     get_long_short_trade_details,
     turn_short_fee_perc_to_coeff,
@@ -21,6 +23,8 @@ from dataset import (
 from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext
 from math_utils import safe_divide
+from query_backtest import BacktestQuery
+from query_backtest_statistics import BacktestStatisticsQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from request_types import BodyCreateLongShortBacktest
@@ -150,6 +154,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             raise Exception("Longest dataset_id was none.")
 
         longest_dataset = DatasetQuery.fetch_dataset_by_id(longest_dataset_id)
+
         timeseries_col = longest_dataset.timeseries_column
 
         kline_open_times = read_columns_to_mem(
@@ -177,7 +182,15 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         if kline_open_times is None:
             raise Exception("Kline_open_times df was none.")
 
+        idx_data_range_start, idx_data_range_end = get_backtest_data_range_indexes(
+            kline_open_times, backtest_info
+        )
+        idx = 1
+
         for _, row in kline_open_times.iterrows():
+            if idx <= idx_data_range_start or idx > idx_data_range_end:
+                continue
+
             kline_state = get_datasets_kline_state(
                 row[timeseries_col],
                 backtest_info,
@@ -189,6 +202,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.process_bar(
                 kline_open_time=kline_open_time, kline_state=kline_state
             )
+            idx += 1
 
         profit_factor_dict = calc_long_short_profit_factor(
             long_short_backtest.completed_trades
@@ -225,7 +239,27 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.completed_trades
         )
 
+        backtest_dict = {
+            "name": backtest_info.name,
+            "candle_interval": get_df_candle_size(
+                kline_open_times, timeseries_col, formatted=True
+            ),
+            "long_short_buy_cond": backtest_info.buy_cond,
+            "long_short_sell_cond": backtest_info.sell_cond,
+            "long_short_exit_cond": backtest_info.exit_cond,
+            "is_long_short_strategy": True,
+            "use_time_based_close": backtest_info.use_time_based_close,
+            "use_profit_based_close": backtest_info.use_profit_based_close,
+            "use_stop_loss_based_close": backtest_info.use_stop_loss_based_close,
+            "klines_until_close": backtest_info.klines_until_close,
+            "backtest_range_start": backtest_info.backtest_data_range[0],
+            "backtest_range_end": backtest_info.backtest_data_range[1],
+        }
+
+        backtest_id = BacktestQuery.create_entry(backtest_dict)
+
         backtest_statistics_dict = {
+            "backtest_id": backtest_id,
             "profit_factor": profit_factor_dict["strategy_profit_factor"],
             "long_side_profit_factor": profit_factor_dict["long_profit_factor"],
             "short_side_profit_factor": profit_factor_dict["short_profit_factor"],
@@ -271,7 +305,10 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             ],
         }
 
-        print(backtest_statistics_dict)
+        BacktestStatisticsQuery.create_entry(backtest_statistics_dict)
+        backtest_history_entries = get_balance_history_entries(
+            long_short_backtest.completed_trades
+        )
 
 
 class BacktestRules:
