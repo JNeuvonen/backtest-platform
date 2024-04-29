@@ -567,7 +567,6 @@ class LongShortOnUniverseBacktest:
         self.stats.cumulative_time += self.stats.candles_time_delta
 
     def update_acc_state(self, kline_open_time: int, kline_state: Dict):
-        self.benchmark.update(kline_state)
         total_debt = 0.0
         total_longs = 0.0
 
@@ -584,6 +583,7 @@ class LongShortOnUniverseBacktest:
             total_longs += buy_side_price * item.buy_amount_base
             total_debt += sell_side_price * item.debt_amount_base
 
+        self.benchmark.update(kline_state)
         self.positions.update(
             positions_debt=total_debt,
             positions_long=total_longs,
