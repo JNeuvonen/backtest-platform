@@ -3,6 +3,7 @@ export const DISK_KEYS = {
   long_short_form: "LONG_SHORT_FORM",
   deploy_strategy_form: "DEPLOY_STRATEGY_FORM",
   app_settings: "APP_SETTINGS",
+  mass_long_short_form: "MASS_LONG_SHORT_FORM",
 };
 
 export class DiskManager {
