@@ -13,6 +13,7 @@ class BacktestHistoryTick(Base):
     kline_open_time = Column(BigInteger)
     portfolio_worth = Column(Float)
     buy_and_hold_worth = Column(Float)
+    benchmark_price = Column(Float)
     prediction = Column(Float)
     position = Column(Float)
     short_debt = Column(Float)
