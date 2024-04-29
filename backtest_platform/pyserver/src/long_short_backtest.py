@@ -1,19 +1,20 @@
+import logging
 import math
 from typing import Dict, List, Set
 from backtest_utils import (
     calc_long_short_profit_factor,
     calc_max_drawdown,
     get_backtest_data_range_indexes,
-    get_balance_history_entries,
     get_cagr,
     get_long_short_trade_details,
     turn_short_fee_perc_to_coeff,
+    create_long_short_trades,
 )
 from code_gen_template import (
     BACKTEST_LONG_SHORT_BUYS_AND_SELLS,
     BACKTEST_LONG_SHORT_CLOSE_TEMPLATE,
 )
-from constants import BINANCE_BACKTEST_PRICE_COL, AppConstants
+from constants import BINANCE_BACKTEST_PRICE_COL, AppConstants, DomEventChannels
 from dataset import (
     get_row_count,
     read_all_cols_matching_kline_open_times,
@@ -21,9 +22,10 @@ from dataset import (
     read_dataset_first_row_asc,
 )
 from db import exec_python, get_df_candle_size, ms_to_years
-from log import LogExceptionContext
+from log import LogExceptionContext, get_logger
 from math_utils import safe_divide
 from query_backtest import BacktestQuery
+from query_backtest_history import BacktestHistoryQuery
 from query_backtest_statistics import BacktestStatisticsQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
@@ -306,8 +308,20 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         }
 
         BacktestStatisticsQuery.create_entry(backtest_statistics_dict)
-        backtest_history_entries = get_balance_history_entries(
-            long_short_backtest.completed_trades
+        BacktestHistoryQuery.create_many(
+            backtest_id, long_short_backtest.positions.position_history
+        )
+        create_long_short_trades(
+            backtest_id, long_short_backtest.completed_trades, dataset_id_to_name_map
+        )
+
+        logger = get_logger()
+        logger.log(
+            "Finished mass pair-trade backtest.",
+            logging.INFO,
+            True,
+            True,
+            DomEventChannels.REFETCH_COMPONENT.value,
         )
 
 
@@ -374,7 +388,7 @@ class PositionManager:
             "total_long": positions_long,
             "kline_open_time": kline_open_time,
             "debt_to_net_value_ratio": self.debt_to_net_value_ratio,
-            "net_value": self.net_value,
+            "portfolio_worth": self.net_value,
             "benchmark_price": benchmark_eq_value,
         }
         self.position_history.append(tick)
@@ -449,6 +463,8 @@ class CompletedTrade:
         on_close_short_side_amount_quote: float,
         on_trade_open_acc_net_value: float,
         balance_history: List[float],
+        open_time: int,
+        close_time: int,
     ):
         self.buy_id = buy_id
         self.sell_id = sell_id
@@ -470,8 +486,8 @@ class CompletedTrade:
                 on_open_long_side_amount_quote,
                 fallback=0,
             )
-            * 100
-        )
+            - 1
+        ) * 100
         self.short_side_gross_result = (
             on_open_short_side_amount_quote - on_close_short_side_amount_quote
         )
@@ -481,8 +497,8 @@ class CompletedTrade:
                 on_open_short_side_amount_quote,
                 fallback=0,
             )
-            * 100
-        )
+            - 1
+        ) * 100
         self.trade_gross_result = (
             self.long_side_gross_result + self.short_side_gross_result
         )
@@ -490,6 +506,8 @@ class CompletedTrade:
         self.perc_result = (
             safe_divide(self.trade_gross_result, on_trade_open_acc_net_value, 0) * 100
         )
+        self.open_time = open_time
+        self.close_time = close_time
 
 
 class LongShortOnUniverseBacktest:
@@ -599,7 +617,9 @@ class LongShortOnUniverseBacktest:
         amount = usdt_size / price
         return amount * self.trading_fees_coeff_reduce_amount()
 
-    def close_pair_trade(self, kline_state: Dict, pair: PairTrade):
+    def close_pair_trade(
+        self, kline_state: Dict, pair: PairTrade, kline_open_time: int
+    ):
         buy_df = kline_state["id_to_row_map"][str(pair.buy_id)]
         sell_df = kline_state["id_to_row_map"][str(pair.sell_id)]
 
@@ -622,18 +642,20 @@ class LongShortOnUniverseBacktest:
             on_close_long_side_amount_quote=sell_long_proceedings,
             on_close_short_side_amount_quote=required_for_close_short,
             on_trade_open_acc_net_value=pair.on_trade_open_acc_net_value,
+            close_time=kline_open_time,
+            open_time=pair.trade_open_time,
         )
 
         self.positions.close_long(sell_long_proceedings)
         self.positions.close_short(required_for_close_short)
         self.completed_trades.append(completed_trade)
 
-    def check_for_pair_trade_close(self, kline_state):
+    def check_for_pair_trade_close(self, kline_state, kline_open_time):
         active_pairs = []
         for item in self.active_pairs:
             should_exit = self.get_exit_pair_trade_decision(kline_state, item)
             if should_exit is True:
-                self.close_pair_trade(kline_state, item)
+                self.close_pair_trade(kline_state, item, kline_open_time)
             else:
                 active_pairs.append(item)
         self.active_pairs = active_pairs
@@ -715,7 +737,7 @@ class LongShortOnUniverseBacktest:
 
     def process_bar(self, kline_open_time: int, kline_state: Dict):
         self.update_acc_state(kline_open_time, kline_state)
-        self.check_for_pair_trade_close(kline_state)
+        self.check_for_pair_trade_close(kline_state, kline_open_time)
 
         pairs_available = self.remove_pairs_already_in_trade(
             self.form_trading_pairs(kline_state)
