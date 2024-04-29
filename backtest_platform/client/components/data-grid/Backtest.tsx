@@ -11,11 +11,14 @@ import { usePathParams } from "../../hooks/usePathParams";
 import { getDatasetBacktestPath } from "../../utils/navigate";
 import { Link } from "react-router-dom";
 import { roundNumberDropRemaining } from "../../utils/number";
-import { Checkbox } from "@chakra-ui/react";
+import { Checkbox, UseDisclosureReturn } from "@chakra-ui/react";
 import { useBacktestContext } from "../../context/backtest";
+import { useMassBacktestContext } from "../../context/masspairtrade";
+import { PATHS } from "../../utils/constants";
 
 interface Props {
   backtests: BacktestObject[];
+  onDeleteMode: UseDisclosureReturn;
 }
 
 type PathParams = {
@@ -24,6 +27,7 @@ type PathParams = {
 
 const checkboxCellRenderer = (params: ICellRendererParams) => {
   const { selectBacktest } = useBacktestContext();
+  const { selectLongShortBacktest } = useMassBacktestContext();
   return (
     <div
       style={{
@@ -35,7 +39,13 @@ const checkboxCellRenderer = (params: ICellRendererParams) => {
       <Checkbox
         isChecked={params.value}
         onChange={() => {
-          selectBacktest(params.data.id);
+          if (
+            window.location.pathname.includes(PATHS.simulate.bulk_long_short)
+          ) {
+            selectLongShortBacktest(params.data.id);
+          } else {
+            selectBacktest(params.data.id);
+          }
         }}
       />
     </div>
@@ -203,8 +213,7 @@ const createDatarowItems = (backtestObjects: BacktestObject[]) => {
 };
 
 export const BacktestDatagrid = (props: Props) => {
-  const { backtests } = props;
-  const { onDeleteMode } = useBacktestContext();
+  const { backtests, onDeleteMode } = props;
 
   const [rowData, setRowData] = useState(createDatarowItems(backtests));
 
