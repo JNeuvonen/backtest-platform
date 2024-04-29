@@ -1,3 +1,4 @@
+import math
 from typing import Dict, List, Set
 from backtest_utils import calc_long_short_profit_factor, turn_short_fee_perc_to_coeff
 from code_gen_template import (
@@ -9,6 +10,7 @@ from dataset import (
     get_row_count,
     read_all_cols_matching_kline_open_times,
     read_columns_to_mem,
+    read_dataset_first_row_asc,
 )
 from db import exec_python, get_df_candle_size
 from log import LogExceptionContext
@@ -50,9 +52,21 @@ def get_symbol_buy_and_sell_decision(df_row, replacements: Dict):
     return ret
 
 
-def get_benchmark_initial_state(datasets: List):
+def get_benchmark_initial_state(datasets: List, dataset_id_to_ts_col: Dict):
+    ret = {}
     for item in datasets:
         dataset = DatasetQuery.fetch_dataset_by_id(item)
+        timeseries_col = dataset_id_to_ts_col[str(item)]
+        first_row = read_dataset_first_row_asc(dataset.dataset_name, timeseries_col)
+        price = first_row.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+        ret[str(item)] = price
+
+    return ret
+
+
+def get_bar_curr_price(df):
+    price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+    return price
 
 
 def get_datasets_kline_state(
@@ -142,13 +156,16 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             kline_open_times, timeseries_col, formatted=False
         )
 
-        benchmark_initial_state = get_benchmark_initial_state(backtest_info.datasets)
+        benchmark_initial_state = get_benchmark_initial_state(
+            backtest_info.datasets, dataset_id_to_timeseries_col_map
+        )
 
         long_short_backtest = LongShortOnUniverseBacktest(
             backtest_info,
             candles_time_delta,
             dataset_id_to_name_map,
             dataset_id_to_timeseries_col_map,
+            benchmark_initial_state,
         )
 
         if kline_open_times is None:
@@ -200,7 +217,7 @@ class BacktestRules:
 class BacktestStats:
     def __init__(self, candles_time_delta: int):
         self.cumulative_time = 0
-        self.position_held_time = 0.0
+        self.position_held_time = 0
         self.candles_time_delta = candles_time_delta
 
 
@@ -222,7 +239,9 @@ class PositionManager:
     def close_short(self, proceedings: float):
         self.usdt_balance -= proceedings
 
-    def update(self, positions_debt, positions_long, kline_open_time):
+    def update(
+        self, positions_debt, positions_long, kline_open_time, benchmark_eq_value
+    ):
         self.net_value = self.usdt_balance + positions_long - positions_debt
         self.open_positions_total_long = positions_long
         self.open_positions_total_debt = positions_debt
@@ -234,9 +253,36 @@ class PositionManager:
             "kline_open_time": kline_open_time,
             "debt_to_net_value_ratio": self.debt_to_net_value_ratio,
             "net_value": self.net_value,
-            "benchmark_price": 0,
+            "benchmark_price": benchmark_eq_value,
         }
         self.position_history.append(tick)
+
+
+class BenchmarkManager:
+    def __init__(self, start_balance, benchmark_initial_state: Dict):
+        num_pairs = len(benchmark_initial_state)
+        allocation_per_pair = start_balance / num_pairs
+        positions = {}
+        for key, value in benchmark_initial_state.items():
+            positions[key] = allocation_per_pair / value
+
+        self.positions = positions
+        self.equity_value = start_balance
+        self.prices = benchmark_initial_state
+
+    def update(self, kline_state_dict):
+        curr_equity = 0.0
+        for key, value in kline_state_dict["id_to_row_map"].items():
+            if value.empty:
+                continue
+            price = get_bar_curr_price(value)
+            self.prices[str(key)] = price
+
+        for key, value in self.positions.items():
+            pos_eq_value = value * self.prices[key]
+            curr_equity += pos_eq_value
+
+        self.equity_value
 
 
 class PairTrade:
@@ -331,10 +377,12 @@ class LongShortOnUniverseBacktest:
         candles_time_delta: int,
         dataset_id_to_name_map: Dict,
         dataset_id_to_timeseries_col_map: Dict,
+        benchmark_initial_state: Dict,
     ):
         self.rules = BacktestRules(backtest_details, candles_time_delta)
         self.stats = BacktestStats(candles_time_delta)
         self.positions = PositionManager(START_BALANCE)
+        self.benchmark = BenchmarkManager(START_BALANCE, benchmark_initial_state)
         self.dataset_id_to_name_map = dataset_id_to_name_map
         self.dataset_id_to_timeseries_col_map = dataset_id_to_timeseries_col_map
 
@@ -430,16 +478,12 @@ class LongShortOnUniverseBacktest:
         amount = usdt_size / price
         return amount * self.trading_fees_coeff_reduce_amount()
 
-    def get_bar_curr_price(self, df):
-        price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-        return price
-
     def close_pair_trade(self, kline_state: Dict, pair: PairTrade):
         buy_df = kline_state["id_to_row_map"][str(pair.buy_id)]
         sell_df = kline_state["id_to_row_map"][str(pair.sell_id)]
 
-        long_close_price = self.get_bar_curr_price(buy_df)
-        short_close_price = self.get_bar_curr_price(sell_df)
+        long_close_price = get_bar_curr_price(buy_df)
+        short_close_price = get_bar_curr_price(sell_df)
 
         sell_long_proceedings = self.get_close_long_proceedings(buy_df, pair)
         required_for_close_short = self.get_close_short_amount(sell_df, pair)
@@ -480,8 +524,8 @@ class LongShortOnUniverseBacktest:
         buy_df = kline_state["id_to_row_map"][str(buy_id)]
         sell_df = kline_state["id_to_row_map"][str(sell_id)]
 
-        buy_price = self.get_bar_curr_price(buy_df)
-        sell_price = self.get_bar_curr_price(sell_df)
+        buy_price = get_bar_curr_price(buy_df)
+        sell_price = get_bar_curr_price(sell_df)
 
         usdt_size = self.get_available_new_pos_size()
 
@@ -515,12 +559,15 @@ class LongShortOnUniverseBacktest:
         capital_usage_coeff = safe_divide(
             len(self.active_pairs), self.rules.max_simultaneous_positions, 0
         )
-        bar_pos_held_time = capital_usage_coeff * self.stats.candles_time_delta
+        bar_pos_held_time = math.floor(
+            capital_usage_coeff * self.stats.candles_time_delta
+        )
 
         self.stats.position_held_time += bar_pos_held_time
         self.stats.cumulative_time += self.stats.candles_time_delta
 
     def update_acc_state(self, kline_open_time: int, kline_state: Dict):
+        self.benchmark.update(kline_state)
         total_debt = 0.0
         total_longs = 0.0
 
@@ -531,8 +578,8 @@ class LongShortOnUniverseBacktest:
             buy_df = kline_state["id_to_row_map"][str(item.buy_id)]
             sell_df = kline_state["id_to_row_map"][str(item.sell_id)]
 
-            buy_side_price = self.get_bar_curr_price(buy_df)
-            sell_side_price = self.get_bar_curr_price(sell_df)
+            buy_side_price = get_bar_curr_price(buy_df)
+            sell_side_price = get_bar_curr_price(sell_df)
 
             total_longs += buy_side_price * item.buy_amount_base
             total_debt += sell_side_price * item.debt_amount_base
@@ -541,6 +588,7 @@ class LongShortOnUniverseBacktest:
             positions_debt=total_debt,
             positions_long=total_longs,
             kline_open_time=kline_open_time,
+            benchmark_eq_value=self.benchmark.equity_value,
         )
         self.update_pos_held_time()
 
