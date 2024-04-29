@@ -237,6 +237,13 @@ def read_all_cols_matching_kline_open_times(
         return df
 
 
+def read_dataset_first_row_asc(table_name: str, timeseries_col: str):
+    with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
+        query = f"SELECT * FROM {table_name} ORDER BY {timeseries_col} ASC LIMIT 1"
+        df = pd.read_sql_query(query, conn)
+        return df
+
+
 def get_row_count(dataset_name: str) -> int:
     with sqlite3.connect(AppConstants.DB_DATASETS) as conn:
         query = f"SELECT COUNT(*) FROM {dataset_name}"
