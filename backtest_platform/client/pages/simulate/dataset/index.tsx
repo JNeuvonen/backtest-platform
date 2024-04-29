@@ -44,11 +44,11 @@ export const SimulateDatasetIndex = () => {
     klineOpenTimePopover,
     runPythonModal,
     filterDrawer,
-    onDeleteMode,
     selectedBacktests,
     resetSelection,
     confirmDeleteSelectedModal,
     longShortFormDrawer,
+    onDeleteMode,
   } = useBacktestContext();
 
   const toast = useToast();
@@ -228,7 +228,10 @@ export const SimulateDatasetIndex = () => {
       </div>
       <div>
         {datasetBacktestsQuery.data ? (
-          <BacktestDatagrid backtests={datasetBacktestsQuery.data} />
+          <BacktestDatagrid
+            backtests={datasetBacktestsQuery.data}
+            onDeleteMode={onDeleteMode}
+          />
         ) : (
           <Spinner />
         )}
