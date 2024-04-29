@@ -1,5 +1,31 @@
+import { Heading, MenuButton, MenuItem } from "@chakra-ui/react";
 import React from "react";
+import { ChakraMenu } from "../../../components/chakra/Menu";
+import { FaFileImport } from "react-icons/fa6";
+import { BacktestDatagrid } from "../../../components/data-grid/Backtest";
+import { useMassBacktestContext } from "../../../context/masspairtrade";
 
 export const BulkLongShortSimPage = () => {
-  return <div>Bulk long short sim page is currently being developed.</div>;
+  const massPairTradeContext = useMassBacktestContext();
+  return (
+    <div>
+      <div>
+        <Heading size={"lg"}>Mass pair-trade</Heading>
+      </div>
+
+      <div style={{ display: "flex", gap: "16px" }}>
+        <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
+          <MenuItem icon={<FaFileImport />} onClick={() => {}}>
+            New
+          </MenuItem>
+        </ChakraMenu>
+      </div>
+      <div>
+        <BacktestDatagrid
+          backtests={[]}
+          onDeleteMode={massPairTradeContext.onDeleteMode}
+        />
+      </div>
+    </div>
+  );
 };
