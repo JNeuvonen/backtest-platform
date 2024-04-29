@@ -310,3 +310,27 @@ def calc_max_drawdown(balances):
         "drawdown_benchmark_perc": abs(max_drawdown_benchmark - 1) * 100,
         "drawdown_strategy_perc": abs(max_drawdown_strategy - 1) * 100,
     }
+
+
+def calculate_index_from_percentage(data_length, percentage):
+    return math.floor(data_length * (percentage / 100))
+
+
+def get_backtest_data_range_indexes(dataset_df, backtest_info):
+    start_percentage, end_percentage = backtest_info.backtest_data_range[:2]
+
+    assert start_percentage is not None, "Backtest data range start is missing"
+    assert end_percentage is not None, "Backtest data range end is missing"
+
+    backtest_data_range_start = calculate_index_from_percentage(
+        len(dataset_df), start_percentage
+    )
+    backtest_data_range_end = calculate_index_from_percentage(
+        len(dataset_df), end_percentage
+    )
+
+    return backtest_data_range_start, backtest_data_range_end
+
+
+def get_balance_history_entries(completed_trades):
+    pass
