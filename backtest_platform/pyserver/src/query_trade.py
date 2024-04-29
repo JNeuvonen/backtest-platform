@@ -1,6 +1,6 @@
 import json
-from typing import List
-from sqlalchemy import Column, Float, ForeignKey, Integer, String
+from typing import Dict, List
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from log import LogExceptionContext
 
 from orm import Base, Session
@@ -19,6 +19,8 @@ class Trade(Base):
     backtest_id = Column(Integer, ForeignKey("backtest.id"))
     predictions = Column(String)
     prices = Column(String)
+    is_short_trade = Column(Boolean)
+    dataset_name = Column(String)
 
     def serialize(self, prices, predictions):
         self.prices = json.dumps(prices)
@@ -31,6 +33,15 @@ class Trade(Base):
 
 
 class TradeQuery:
+    @staticmethod
+    def create_entry(fields: Dict):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = Trade(**fields)
+                session.add(entry)
+                session.commit()
+                return entry.id
+
     @staticmethod
     def create_many(backtest_id: int, trade_data: List[dict]):
         if len(trade_data) == 0:
