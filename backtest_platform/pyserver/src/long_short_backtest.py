@@ -1,6 +1,12 @@
 import math
 from typing import Dict, List, Set
-from backtest_utils import calc_long_short_profit_factor, turn_short_fee_perc_to_coeff
+from backtest_utils import (
+    calc_long_short_profit_factor,
+    calc_max_drawdown,
+    get_cagr,
+    get_long_short_trade_details,
+    turn_short_fee_perc_to_coeff,
+)
 from code_gen_template import (
     BACKTEST_LONG_SHORT_BUYS_AND_SELLS,
     BACKTEST_LONG_SHORT_CLOSE_TEMPLATE,
@@ -12,7 +18,7 @@ from dataset import (
     read_columns_to_mem,
     read_dataset_first_row_asc,
 )
-from db import exec_python, get_df_candle_size
+from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext
 from math_utils import safe_divide
 from query_data_transformation import DataTransformationQuery
@@ -187,6 +193,85 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         profit_factor_dict = calc_long_short_profit_factor(
             long_short_backtest.completed_trades
         )
+        max_drawdown_dict = calc_max_drawdown(
+            long_short_backtest.positions.position_history
+        )
+        end_balance = long_short_backtest.positions.net_value
+
+        num_bars = len(long_short_backtest.positions.position_history)
+        benchmark_end_balance = long_short_backtest.positions.position_history[
+            num_bars - 1
+        ]["benchmark_price"]
+
+        strategy_cagr = get_cagr(
+            end_balance,
+            START_BALANCE,
+            ms_to_years(long_short_backtest.stats.cumulative_time),
+        )
+        benchmark_cagr = get_cagr(
+            benchmark_end_balance,
+            START_BALANCE,
+            ms_to_years(long_short_backtest.stats.cumulative_time),
+        )
+        strat_weighted_time_exp = (
+            long_short_backtest.stats.position_held_time
+            / long_short_backtest.stats.cumulative_time
+        )
+        strategy_risk_adjusted_cagr = safe_divide(
+            strategy_cagr, strat_weighted_time_exp, 0
+        )
+        trade_count = len(long_short_backtest.completed_trades)
+        trade_details_dict = get_long_short_trade_details(
+            long_short_backtest.completed_trades
+        )
+
+        backtest_statistics_dict = {
+            "profit_factor": profit_factor_dict["strategy_profit_factor"],
+            "long_side_profit_factor": profit_factor_dict["long_profit_factor"],
+            "short_side_profit_factor": profit_factor_dict["short_profit_factor"],
+            "gross_profit": profit_factor_dict["total_gross_wins"],
+            "gross_loss": profit_factor_dict["total_gross_losses"],
+            "start_balance": START_BALANCE,
+            "end_balance": end_balance,
+            "result_perc": (end_balance / START_BALANCE - 1) * 100,
+            "take_profit_threshold_perc": backtest_info.take_profit_threshold_perc,
+            "stop_loss_threshold_perc": backtest_info.stop_loss_threshold_perc,
+            "best_trade_result_perc": trade_details_dict["best_trade_result_perc"],
+            "worst_trade_result_perc": trade_details_dict["worst_trade_result_perc"],
+            "buy_and_hold_result_net": benchmark_end_balance - START_BALANCE,
+            "buy_and_hold_result_perc": (benchmark_end_balance / START_BALANCE - 1)
+            * 100,
+            "share_of_winning_trades_perc": trade_details_dict[
+                "share_of_winning_trades_perc"
+            ],
+            "share_of_losing_trades_perc": trade_details_dict[
+                "share_of_losing_trades_perc"
+            ],
+            "max_drawdown_perc": max_drawdown_dict["drawdown_strategy_perc"],
+            "benchmark_drawdown_perc": max_drawdown_dict["drawdown_benchmark_perc"],
+            "cagr": strategy_cagr,
+            "market_exposure_time": strat_weighted_time_exp,
+            "risk_adjusted_return": strategy_risk_adjusted_cagr,
+            "buy_and_hold_cagr": benchmark_cagr,
+            "trade_count": trade_count,
+            "slippage_perc": backtest_info.slippage_perc,
+            "short_fee_hourly": backtest_info.short_fee_hourly,
+            "trading_fees_perc": backtest_info.trading_fees_perc,
+            "best_long_side_trade_result_perc": trade_details_dict[
+                "best_long_trade_perc"
+            ],
+            "worst_long_side_trade_result_perc": trade_details_dict[
+                "worst_long_trade_perc"
+            ],
+            "best_short_side_trade_result_perc": trade_details_dict[
+                "best_short_trade_perc"
+            ],
+            "worst_short_side_trade_result_perc": trade_details_dict[
+                "worst_short_trade_perc"
+            ],
+        }
+
+        print(backtest_statistics_dict)
 
 
 class BacktestRules:
@@ -282,7 +367,7 @@ class BenchmarkManager:
             pos_eq_value = value * self.prices[key]
             curr_equity += pos_eq_value
 
-        self.equity_value
+        self.equity_value = curr_equity
 
 
 class PairTrade:
@@ -386,7 +471,6 @@ class LongShortOnUniverseBacktest:
         self.dataset_id_to_name_map = dataset_id_to_name_map
         self.dataset_id_to_timeseries_col_map = dataset_id_to_timeseries_col_map
 
-        self.history: List = []
         self.active_pairs: List[PairTrade] = []
         self.completed_trades: List = []
 
