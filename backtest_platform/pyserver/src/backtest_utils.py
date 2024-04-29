@@ -100,6 +100,93 @@ def turn_short_fee_perc_to_coeff(short_fee_hourly_perc: float, candles_time_delt
     return 0
 
 
+def calc_long_side_trade_res_perc(open_price, close_price):
+    if open_price == 0:
+        return 0
+
+    return (close_price / open_price - 1) * 100
+
+
+def calc_short_side_trade_res_perc(open_price, close_price):
+    if open_price == 0:
+        return 0
+    return (close_price / open_price - 1) * -1 * 100
+
+
+def get_long_short_trade_details(trades):
+    num_winning_trades = 0
+    num_losing_trades = 0
+
+    worst_trade_result_perc = float("inf")
+    best_trade_result_perc = float("-inf")
+
+    best_long_trade_perc = float("-inf")
+    worst_long_trade_perc = float("inf")
+
+    best_short_trade_perc = float("-inf")
+    worst_short_trade_perc = float("inf")
+
+    for item in trades:
+        if item.trade_gross_result > 0:
+            num_winning_trades += 1
+        if item.trade_gross_result < 0:
+            num_losing_trades += 1
+
+        long_side_res_perc = calc_long_side_trade_res_perc(
+            item.long_open_price, item.long_close_price
+        )
+        short_side_res_perc = calc_short_side_trade_res_perc(
+            item.short_open_price, item.short_close_price
+        )
+
+        best_trade_result_perc = max(best_trade_result_perc, item.perc_result)
+        worst_trade_result_perc = min(worst_trade_result_perc, item.perc_result)
+
+        best_long_trade_perc = max(best_long_trade_perc, long_side_res_perc)
+        worst_long_trade_perc = min(worst_long_trade_perc, long_side_res_perc)
+
+        best_short_trade_perc = max(best_short_trade_perc, short_side_res_perc)
+        worst_short_trade_perc = min(worst_short_trade_perc, short_side_res_perc)
+
+    best_trade_result_perc = (
+        None if best_trade_result_perc == float("-inf") else best_trade_result_perc
+    )
+    worst_trade_result_perc = (
+        None if worst_trade_result_perc == float("inf") else worst_trade_result_perc
+    )
+    best_long_trade_perc = (
+        None if best_long_trade_perc == float("-inf") else best_long_trade_perc
+    )
+    worst_long_trade_perc = (
+        None if worst_long_trade_perc == float("inf") else worst_long_trade_perc
+    )
+    best_short_trade_perc = (
+        None if best_short_trade_perc == float("-inf") else best_short_trade_perc
+    )
+    worst_short_trade_perc = (
+        None if worst_short_trade_perc == float("inf") else worst_short_trade_perc
+    )
+
+    num_total_trades = num_winning_trades + num_losing_trades
+
+    return {
+        "best_trade_result_perc": best_trade_result_perc,
+        "worst_trade_result_perc": worst_trade_result_perc,
+        "best_long_trade_perc": best_long_trade_perc,
+        "worst_long_trade_perc": worst_long_trade_perc,
+        "best_short_trade_perc": best_short_trade_perc,
+        "worst_short_trade_perc": worst_short_trade_perc,
+        "share_of_winning_trades_perc": safe_divide(
+            num_winning_trades, num_total_trades, 0
+        )
+        * 100,
+        "share_of_losing_trades_perc": safe_divide(
+            num_losing_trades, num_total_trades, 0
+        )
+        * 100,
+    }
+
+
 def get_mass_sim_backtests_equity_curves(list_of_ids: List[int], candle_interval: str):
     ret = []
     first_kline_open_time_ms = math.inf
@@ -185,10 +272,41 @@ def calc_long_short_profit_factor(trades):
 
     return {
         "strategy_profit_factor": safe_divide(
-            overall_gross_wins, overall_gross_losses, None
+            overall_gross_wins, abs(overall_gross_losses), None
         ),
-        "long_profit_factor": safe_divide(longs_gross_wins, longs_gross_losses, None),
+        "long_profit_factor": safe_divide(
+            longs_gross_wins, abs(longs_gross_losses), None
+        ),
         "short_profit_factor": safe_divide(
-            shorts_gross_wins, shorts_gross_losses, None
+            shorts_gross_wins, abs(shorts_gross_losses), None
         ),
+        "total_gross_losses": abs(overall_gross_losses),
+        "total_gross_wins": abs(overall_gross_wins),
+    }
+
+
+def calc_max_drawdown(balances):
+    max_drawdown_strategy = 1000
+    max_drawdown_benchmark = 1000
+
+    strategy_peak_balance = balances[0]["net_value"]
+    benchmark_peak_balance = balances[0]["benchmark_price"]
+
+    for item in balances:
+        strat_net_value = item["net_value"]
+        benchmark_net_value = item["benchmark_price"]
+
+        strategy_peak_balance = max(strat_net_value, strategy_peak_balance)
+        benchmark_peak_balance = max(benchmark_net_value, benchmark_peak_balance)
+
+        max_drawdown_strategy = min(
+            strat_net_value / strategy_peak_balance, max_drawdown_strategy
+        )
+        max_drawdown_benchmark = min(
+            benchmark_net_value / benchmark_peak_balance, max_drawdown_benchmark
+        )
+
+    return {
+        "drawdown_benchmark_perc": abs(max_drawdown_benchmark - 1) * 100,
+        "drawdown_strategy_perc": abs(max_drawdown_strategy - 1) * 100,
     }
