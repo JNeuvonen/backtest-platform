@@ -5,6 +5,8 @@ from math_utils import safe_divide
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
 from constants import ONE_HOUR_IN_MS, CandleSize
+from query_pair_trade import PairTradeQuery
+from query_trade import TradeQuery
 
 
 def get_backtest_profit_factor_comp(trades):
@@ -289,11 +291,11 @@ def calc_max_drawdown(balances):
     max_drawdown_strategy = 1000
     max_drawdown_benchmark = 1000
 
-    strategy_peak_balance = balances[0]["net_value"]
+    strategy_peak_balance = balances[0]["portfolio_worth"]
     benchmark_peak_balance = balances[0]["benchmark_price"]
 
     for item in balances:
-        strat_net_value = item["net_value"]
+        strat_net_value = item["portfolio_worth"]
         benchmark_net_value = item["benchmark_price"]
 
         strategy_peak_balance = max(strat_net_value, strategy_peak_balance)
@@ -332,5 +334,64 @@ def get_backtest_data_range_indexes(dataset_df, backtest_info):
     return backtest_data_range_start, backtest_data_range_end
 
 
-def get_balance_history_entries(completed_trades):
-    pass
+def get_long_trade_from_completed_pair_trade(
+    pair_trade, id_to_dataset_name_map, backtest_id
+):
+    return {
+        "is_short_trade": False,
+        "open_price": pair_trade.long_open_price,
+        "close_price": pair_trade.long_close_price,
+        "open_time": pair_trade.open_time,
+        "close_time": pair_trade.close_time,
+        "net_result": pair_trade.long_side_gross_result,
+        "percent_result": pair_trade.long_side_perc_result,
+        "dataset_name": id_to_dataset_name_map[str(pair_trade.buy_id)],
+        "backtest_id": backtest_id,
+    }
+
+
+def get_short_trade_from_completed_pair_trade(
+    pair_trade, id_to_dataset_name_map, backtest_id
+):
+    return {
+        "is_short_trade": True,
+        "open_price": pair_trade.short_open_price,
+        "close_price": pair_trade.short_close_price,
+        "open_time": pair_trade.open_time,
+        "close_time": pair_trade.close_time,
+        "net_result": pair_trade.short_side_gross_result,
+        "percent_result": pair_trade.short_side_perc_result,
+        "dataset_name": id_to_dataset_name_map[str(pair_trade.buy_id)],
+        "backtest_id": backtest_id,
+    }
+
+
+def get_pair_trade_entry(pair_trade, backtest_id, long_trade_id, short_trade_id):
+    return {
+        "backtest_id": backtest_id,
+        "buy_trade_id": long_trade_id,
+        "sell_trade_id": short_trade_id,
+        "gross_result": pair_trade.trade_gross_result,
+        "percent_result": pair_trade.perc_result,
+        "open_time": pair_trade.open_time,
+        "close_time": pair_trade.close_time,
+    }
+
+
+def create_long_short_trades(backtest_id, completed_trades, id_to_dataset_name_map):
+    for item in completed_trades:
+        long_trade = get_long_trade_from_completed_pair_trade(
+            item, id_to_dataset_name_map, backtest_id
+        )
+        long_trade_id = TradeQuery.create_entry(long_trade)
+
+        short_trade = get_short_trade_from_completed_pair_trade(
+            item, id_to_dataset_name_map, backtest_id
+        )
+        short_trade_id = TradeQuery.create_entry(short_trade)
+
+        pair_trade = get_pair_trade_entry(
+            item, backtest_id, long_trade_id, short_trade_id
+        )
+
+        PairTradeQuery.create_entry(pair_trade)
