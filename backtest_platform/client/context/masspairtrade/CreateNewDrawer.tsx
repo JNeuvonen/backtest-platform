@@ -5,6 +5,7 @@ import { Field, Form, Formik, FormikProps } from "formik";
 import {
   BACKTEST_FORM_LABELS,
   getBacktestFormDefaultKeys,
+  getBacktestFormDefaults,
 } from "../../utils/backtest";
 import { DISK_KEYS, DiskManager } from "../../utils/disk";
 import { WithLabel } from "../../components/form/WithLabel";
@@ -25,7 +26,9 @@ import {
   NumberInputField,
   NumberInputStepper,
   Spinner,
+  Switch,
 } from "@chakra-ui/react";
+import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 
 const backtestDiskManager = new DiskManager(DISK_KEYS.mass_long_short_form);
 
@@ -37,6 +40,7 @@ const getFormInitialValues = () => {
     pairs: [],
     max_simultaneous_positions: 15,
     max_leverage_ratio: 2.5,
+    ...getBacktestFormDefaults(),
   };
 };
 
@@ -255,6 +259,279 @@ export const BulkLongShortCreateNew = () => {
                       );
                     }}
                   </Field>
+                </div>
+                <div style={{ marginTop: "16px" }}>
+                  <Field name={formKeys.useTimeBasedClose}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.use_time_based_close}
+                        >
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                formKeys.useTimeBasedClose,
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+                {values.useTimeBasedClose && (
+                  <Field name={formKeys.klinesUntilClose}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.klines_until_close}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={5}
+                            min={0}
+                            value={field.value}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.klinesUntilClose,
+                                parseInt(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                )}
+                <div style={{ marginTop: "16px" }}>
+                  <Field name={formKeys.useProfitBasedClose}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.use_profit_based_close}
+                        >
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                formKeys.useProfitBasedClose,
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+                {values.useProfitBasedClose && (
+                  <Field name={formKeys.takeProfitThresholdPerc}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.take_profit_threshold}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={5}
+                            min={0}
+                            value={field.value}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.takeProfitThresholdPerc,
+                                parseInt(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                )}
+                <div style={{ marginTop: "16px" }}>
+                  <Field name={formKeys.useStopLossBasedClose}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.use_stop_loss_based_close}
+                        >
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                formKeys.useStopLossBasedClose,
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+                {values.useStopLossBasedClose && (
+                  <Field name={formKeys.stopLossThresholdPerc}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.stop_loss_threshold}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={5}
+                            min={0}
+                            value={field.value}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.stopLossThresholdPerc,
+                                parseInt(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                )}
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "16px" }}
+                >
+                  <Field name={formKeys.tradingFees}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.trading_fees}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={0.005}
+                            min={0}
+                            value={field.value}
+                            precision={3}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.tradingFees,
+                                parseFloat(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+
+                  <Field name={formKeys.slippage}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.slippage}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={0.001}
+                            min={0}
+                            value={field.value}
+                            precision={4}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.slippage,
+                                parseFloat(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper color={"white"} />
+                              <NumberDecrementStepper color={"white"} />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                  <Field name={formKeys.shortFeeHourly}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.shorting_fees_hourly}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={0.0000005}
+                            min={0}
+                            value={field.value}
+                            precision={6}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.shortFeeHourly,
+                                parseFloat(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+                <div style={{ marginTop: "16px" }}>
+                  <div style={{ width: "400px" }}>
+                    <Field name={formKeys.backtestDataRange}>
+                      {({ field, form }) => {
+                        return (
+                          <ValidationSplitSlider
+                            sliderValue={field.value}
+                            formLabelText={
+                              BACKTEST_FORM_LABELS.backtest_data_range
+                            }
+                            setSliderValue={(newVal: number[]) =>
+                              form.setFieldValue(
+                                formKeys.backtestDataRange,
+                                newVal
+                              )
+                            }
+                          />
+                        );
+                      }}
+                    </Field>
+                  </div>
                 </div>
               </Form>
             )}
