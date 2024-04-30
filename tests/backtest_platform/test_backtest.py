@@ -69,22 +69,23 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
 def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
     datasets = fixt_add_blue_chip_1d_datasets
     body = backtest_rule_based_v2
-    dataset_ids = []
+    dataset_names = []
     time.sleep(3)
 
     first_dataset = datasets[0]
     data_transformation_ids = gen_data_transformations(first_dataset.name)
 
     for item in datasets:
-        dataset = Fetch.get_dataset_by_name(item.name)
-        dataset_ids.append(dataset["id"])
+        dataset_names.append(item.name)
 
-    body["datasets"] = dataset_ids
+    body["datasets"] = dataset_names
     body["data_transformations"] = data_transformation_ids
     body["buy_cond"] = long_short_buy_cond_basic()
     body["sell_cond"] = long_short_sell_cond_basic()
     body["exit_cond"] = long_short_pair_exit_code_basic()
     body["max_simultaneous_positions"] = 15
     body["max_leverage_ratio"] = 2.5
+    body["candle_interval"] = "1DAY"
+    body["fetch_latest_data"] = False
 
     Post.create_long_short_backtest(body)
