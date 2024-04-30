@@ -8,7 +8,10 @@ import "ag-grid-community/styles/ag-theme-balham.css";
 import { ICellRendererParams } from "ag-grid-community";
 import { ColDef } from "ag-grid-community";
 import { usePathParams } from "../../hooks/usePathParams";
-import { getDatasetBacktestPath } from "../../utils/navigate";
+import {
+  getDatasetBacktestPath,
+  getPairTradeBacktestPath,
+} from "../../utils/navigate";
 import { Link } from "react-router-dom";
 import { roundNumberDropRemaining } from "../../utils/number";
 import { Checkbox, UseDisclosureReturn } from "@chakra-ui/react";
@@ -56,7 +59,11 @@ const idCellRenderer = (params: ICellRendererParams) => {
   const { datasetName } = usePathParams<PathParams>();
   return (
     <Link
-      to={getDatasetBacktestPath(datasetName, params.value)}
+      to={
+        window.location.pathname.includes(PATHS.simulate.bulk_long_short)
+          ? getPairTradeBacktestPath(params.value)
+          : getDatasetBacktestPath(datasetName, params.value)
+      }
       className="link-default"
     >
       {params.value}
