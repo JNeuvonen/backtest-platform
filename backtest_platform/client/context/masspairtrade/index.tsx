@@ -4,6 +4,8 @@ import { BulkLongShortCreateNew } from "./CreateNewDrawer";
 import { useLongShortBacktests } from "../../clients/queries/queries";
 import { UseQueryResult } from "@tanstack/react-query";
 import { BacktestObject } from "../../clients/queries/response-types";
+import { useMessageListener } from "../../hooks/useMessageListener";
+import { DOM_EVENT_CHANNELS } from "../../utils/constants";
 
 interface MassPairTradeProviderProps {
   children: ReactNode;
@@ -28,6 +30,11 @@ export const MassPairTradeProvider: React.FC<MassPairTradeProviderProps> = ({
   const [selectedBacktests, setSelectedBacktests] = useState<number[]>([]);
   const onDeleteMode = useDisclosure();
   const longShortBacktestsQuery = useLongShortBacktests();
+
+  useMessageListener({
+    messageName: DOM_EVENT_CHANNELS.refetch_component,
+    messageCallback: longShortBacktestsQuery.refetch,
+  });
 
   const selectLongShortBacktest = (backtestId: number) => {
     setSelectedBacktests((prevSelectedBacktests) => {
