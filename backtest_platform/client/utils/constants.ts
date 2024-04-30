@@ -5,6 +5,7 @@ export const PATH_KEYS = {
   train: ":trainJobId",
   backtest: ":backtestId",
   mass_backtest: ":massBacktestId",
+  mass_pair_trade_backtest: ":massPairTradeBacktestId",
 };
 
 export const CODE = {
@@ -37,6 +38,7 @@ export const PATHS = {
   },
   mass_backtest: {
     root: `/simulate/mass-backtests/${PATH_KEYS.backtest}`,
+    pairtrade: `/simulate/mass-backtests/long-short/${PATH_KEYS.mass_pair_trade_backtest}`,
     backtest: `/simulate/mass-backtests/result/${PATH_KEYS.mass_backtest}`,
   },
   train: `/data/train-job/${PATH_KEYS.train}`,

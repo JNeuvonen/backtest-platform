@@ -59,6 +59,13 @@ export const getDatasetBacktestPath = (dataset: string, backtestId: number) => {
     .replace(PATH_KEYS.backtest, String(backtestId));
 };
 
+export const getPairTradeBacktestPath = (backtestId: number) => {
+  return PATHS.mass_backtest.pairtrade.replace(
+    PATH_KEYS.mass_pair_trade_backtest,
+    String(backtestId)
+  );
+};
+
 export const getTrainJobFromToolbar = (trainJobId: string) => {
   return PATHS.train.replace(PATH_KEYS.train, trainJobId);
 };
