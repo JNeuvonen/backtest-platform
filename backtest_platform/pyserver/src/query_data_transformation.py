@@ -13,6 +13,7 @@ class DataTransformation(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     transformation_code = Column(String, nullable=False)
+    name = Column(String)
 
 
 class DataTransformationQuery:
@@ -77,3 +78,17 @@ class DataTransformationQuery:
                     return [transformation.id for transformation in transformations]
             except Exception as e:
                 return str(e)
+
+    @staticmethod
+    def fetch_all_data_transformations_without_dataset():
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(DataTransformation)
+                    .filter(
+                        DataTransformation.dataset_id is None,
+                        DataTransformation.name is not None,
+                        DataTransformation.name != "",
+                    )
+                    .all()
+                )
