@@ -86,9 +86,7 @@ class DataTransformationQuery:
                 return (
                     session.query(DataTransformation)
                     .filter(
-                        DataTransformation.dataset_id is None,
                         DataTransformation.name is not None,
-                        DataTransformation.name != "",
                     )
                     .all()
                 )
