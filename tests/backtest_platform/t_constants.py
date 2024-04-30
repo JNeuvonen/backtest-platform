@@ -129,7 +129,7 @@ class DatasetDumps:
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
-        "BTCUSDT_1D",
+        "BTCUSDT",
     )
 
     BNBUSDT_FULL_1D = DatasetMetadata(
@@ -138,7 +138,7 @@ class DatasetDumps:
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
-        "BNBUSDT_1D",
+        "BNBUSDT",
     )
 
     SOLUSDT_FULL_1D = DatasetMetadata(
@@ -147,7 +147,7 @@ class DatasetDumps:
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
-        "SOLUSDT_1D",
+        "SOLUSDT",
     )
 
 

@@ -76,7 +76,7 @@ def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
     data_transformation_ids = gen_data_transformations(first_dataset.name)
 
     for item in datasets:
-        dataset_names.append(item.name)
+        dataset_names.append(item.pair_name)
 
     body["datasets"] = dataset_names
     body["data_transformations"] = data_transformation_ids
@@ -85,7 +85,7 @@ def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
     body["exit_cond"] = long_short_pair_exit_code_basic()
     body["max_simultaneous_positions"] = 15
     body["max_leverage_ratio"] = 2.5
-    body["candle_interval"] = "1DAY"
+    body["candle_interval"] = "1d"
     body["fetch_latest_data"] = False
 
     Post.create_long_short_backtest(body)
