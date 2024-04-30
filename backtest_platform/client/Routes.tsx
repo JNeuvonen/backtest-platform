@@ -17,6 +17,7 @@ import { SimulateSelectDataset } from "./pages/simulate/select-dataset-page";
 import { SimulateSelectMode } from "./pages/simulate";
 import { BulkLongShortSimPage } from "./pages/simulate/bulk/long-short";
 import { MassPairTradeProvider } from "./context/masspairtrade";
+import { LongShortBacktestsDetailsView } from "./pages/simulate/bulk/backtest-details-view";
 
 export const AppRoutes = () => {
   return (
@@ -64,6 +65,11 @@ export const AppRoutes = () => {
             <BulkLongShortSimPage />
           </MassPairTradeProvider>
         }
+      />
+
+      <Route
+        path={PATHS.mass_backtest.pairtrade}
+        element={<LongShortBacktestsDetailsView />}
       />
       <Route path={PATHS.mass_backtest.root} element={<AllMassBacktests />} />
       <Route
