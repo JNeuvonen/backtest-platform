@@ -266,3 +266,10 @@ async def route_long_short_backtest(body: BodyCreateLongShortBacktest):
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
+
+
+@router.get(RoutePaths.LONG_SHORT_BACKTEST)
+async def route_get_long_short_backtests():
+    with HttpResponseContext():
+        backtests = BacktestQuery.fetch_all_long_short_backtests()
+        return {"data": backtests}

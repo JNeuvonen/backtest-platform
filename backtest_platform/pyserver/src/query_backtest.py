@@ -150,3 +150,22 @@ class BacktestQuery:
                     .scalar()
                 )
                 return dataset_name
+
+    @staticmethod
+    def fetch_all_long_short_backtests():
+        with LogExceptionContext():
+            with Session() as session:
+                backtests = (
+                    session.query(Backtest, BacktestStatistics)
+                    .join(
+                        BacktestStatistics,
+                        Backtest.id == BacktestStatistics.backtest_id,
+                    )
+                    .filter(Backtest.is_long_short_strategy is True)
+                    .all()
+                )
+                combined_backtests = [
+                    combine_dicts([backtest.__dict__, stats.__dict__])
+                    for backtest, stats in backtests
+                ]
+                return combined_backtests
