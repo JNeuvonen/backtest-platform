@@ -1,6 +1,7 @@
 import logging
 import math
 from typing import Dict, List, Set
+from api_binance import save_historical_klines
 from backtest_utils import (
     calc_long_short_profit_factor,
     calc_max_drawdown,
@@ -39,7 +40,7 @@ def get_longest_dataset_id(backtest_info: BodyCreateLongShortBacktest):
     longest_id = None
     longest_row_count = -1000
     for item in backtest_info.datasets:
-        dataset = DatasetQuery.fetch_dataset_by_id(item)
+        dataset = DatasetQuery.fetch_dataset_by_name(item)
         row_count = get_row_count(dataset.dataset_name)
 
         if longest_row_count < row_count:
@@ -67,7 +68,7 @@ def get_symbol_buy_and_sell_decision(df_row, replacements: Dict):
 def get_benchmark_initial_state(datasets: List, dataset_id_to_ts_col: Dict):
     ret = {}
     for item in datasets:
-        dataset = DatasetQuery.fetch_dataset_by_id(item)
+        dataset = DatasetQuery.fetch_dataset_by_name(item)
         timeseries_col = dataset_id_to_ts_col[str(item)]
         first_row = read_dataset_first_row_asc(dataset.dataset_name, timeseries_col)
         price = first_row.iloc[0][BINANCE_BACKTEST_PRICE_COL]
@@ -132,11 +133,14 @@ def get_datasets_kline_state(
 
 async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
     with LogExceptionContext():
-        longest_dataset_id = get_longest_dataset_id(backtest_info)
         dataset_id_to_name_map = {}
         dataset_id_to_timeseries_col_map = {}
         for item in backtest_info.datasets:
-            dataset = DatasetQuery.fetch_dataset_by_id(item)
+            dataset = DatasetQuery.fetch_dataset_by_name(item)
+
+            if dataset is None or backtest_info.fetch_latest_data:
+                await save_historical_klines(item, backtest_info.candle_interval, True)
+                dataset = DatasetQuery.fetch_dataset_by_name(item)
 
             dataset_name = dataset.dataset_name
             dataset_id_to_name_map[str(item)] = dataset_name
@@ -152,6 +156,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
                 )
                 exec_python(python_program)
 
+        longest_dataset_id = get_longest_dataset_id(backtest_info)
         if longest_dataset_id is None:
             raise Exception("Longest dataset_id was none.")
 
