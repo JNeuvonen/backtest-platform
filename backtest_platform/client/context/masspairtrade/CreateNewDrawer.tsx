@@ -20,6 +20,7 @@ import { binanceTickSelectOptions } from "../../pages/Datasets";
 import { useBinanceTickersQuery } from "../../clients/queries/queries";
 import { MultiValue } from "react-select";
 import {
+  Button,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -27,8 +28,12 @@ import {
   NumberInputStepper,
   Spinner,
   Switch,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
+import { ChakraPopover } from "../../components/chakra/popover";
+import { BUTTON_VARIANTS } from "../../theme";
+import { SelectBulkSimPairsBody } from "../backtest/run-on-many-pairs";
 
 const backtestDiskManager = new DiskManager(DISK_KEYS.mass_long_short_form);
 
@@ -58,6 +63,7 @@ export const BulkLongShortCreateNew = () => {
   const { createNewDrawer } = useMassBacktestContext();
   const binanceTickersQuery = useBinanceTickersQuery();
   const formikRef = useRef<FormikProps<any>>(null);
+  const presetsPopover = useDisclosure();
 
   if (!binanceTickersQuery.data) {
     return (
@@ -111,7 +117,38 @@ export const BulkLongShortCreateNew = () => {
                     </Field>
                   </div>
                   <div style={{ marginTop: "16px", width: "600px" }}>
-                    <WithLabel label={"Select pairs"}>
+                    <WithLabel
+                      label={
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div>Select pairs</div>
+
+                          <div>
+                            <ChakraPopover
+                              {...presetsPopover}
+                              setOpen={presetsPopover.onOpen}
+                              body={
+                                <SelectBulkSimPairsBody
+                                  onSelect={(values) =>
+                                    setFieldValue(formKeys.pairs, values)
+                                  }
+                                />
+                              }
+                              headerText="Select pairs from a preset"
+                            >
+                              <Button variant={BUTTON_VARIANTS.nofill}>
+                                Presets
+                              </Button>
+                            </ChakraPopover>
+                          </div>
+                        </div>
+                      }
+                    >
                       <Field
                         name={formKeys.pairs}
                         as={SelectWithTextFilter}
