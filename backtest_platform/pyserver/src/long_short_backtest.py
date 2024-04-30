@@ -31,7 +31,7 @@ from query_backtest_statistics import BacktestStatisticsQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from request_types import BodyCreateLongShortBacktest
-from utils import PythonCode
+from utils import PythonCode, get_binance_dataset_tablename
 
 START_BALANCE = 10000
 
@@ -40,7 +40,8 @@ def get_longest_dataset_id(backtest_info: BodyCreateLongShortBacktest):
     longest_id = None
     longest_row_count = -1000
     for item in backtest_info.datasets:
-        dataset = DatasetQuery.fetch_dataset_by_name(item)
+        table_name = get_binance_dataset_tablename(item, backtest_info.candle_interval)
+        dataset = DatasetQuery.fetch_dataset_by_name(table_name)
         row_count = get_row_count(dataset.dataset_name)
 
         if longest_row_count < row_count:
@@ -65,14 +66,15 @@ def get_symbol_buy_and_sell_decision(df_row, replacements: Dict):
     return ret
 
 
-def get_benchmark_initial_state(datasets: List, dataset_id_to_ts_col: Dict):
+def get_benchmark_initial_state(
+    datasets: List, dataset_table_name_to_timeseries_col_map: Dict
+):
     ret = {}
     for item in datasets:
-        dataset = DatasetQuery.fetch_dataset_by_name(item)
-        timeseries_col = dataset_id_to_ts_col[str(item)]
-        first_row = read_dataset_first_row_asc(dataset.dataset_name, timeseries_col)
+        timseries_column = dataset_table_name_to_timeseries_col_map[item]
+        first_row = read_dataset_first_row_asc(item, timseries_column)
         price = first_row.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-        ret[str(item)] = price
+        ret[item] = price
 
     return ret
 
@@ -85,8 +87,8 @@ def get_bar_curr_price(df):
 def get_datasets_kline_state(
     kline_open_time: int,
     backtest_info: BodyCreateLongShortBacktest,
-    dataset_id_to_name_map: Dict,
-    dataset_id_to_ts_col: Dict,
+    dataset_table_name_to_timeseries_col_map: Dict,
+    table_names: List[str],
 ):
     sell_candidates: Set = set()
     buy_candidates: Set = set()
@@ -96,16 +98,15 @@ def get_datasets_kline_state(
         "{SELL_COND_FUNC}": backtest_info.sell_cond,
     }
 
-    id_to_df_map = {}
+    table_name_to_df_map = {}
 
     with LogExceptionContext():
-        for item in backtest_info.datasets:
-            dataset_name = dataset_id_to_name_map[str(item)]
-            timeseries_col = dataset_id_to_ts_col[str(item)]
+        for item in table_names:
+            timeseries_col = dataset_table_name_to_timeseries_col_map[str(item)]
             df = read_all_cols_matching_kline_open_times(
-                dataset_name, timeseries_col, [kline_open_time]
+                item, timeseries_col, [kline_open_time]
             )
-            id_to_df_map[str(item)] = df
+            table_name_to_df_map[item] = df
 
             if df.empty is True:
                 continue
@@ -127,25 +128,34 @@ def get_datasets_kline_state(
     return {
         "sell_candidates": sell_candidates,
         "buy_candidates": buy_candidates,
-        "id_to_row_map": id_to_df_map,
+        "table_name_to_df_map": table_name_to_df_map,
     }
 
 
 async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
+    dataset_table_names = []
     with LogExceptionContext():
-        dataset_id_to_name_map = {}
-        dataset_id_to_timeseries_col_map = {}
+        dataset_table_name_to_id_map = {}
+        dataset_id_to_table_name_map = {}
+        dataset_table_name_to_timeseries_col_map = {}
         for item in backtest_info.datasets:
-            dataset = DatasetQuery.fetch_dataset_by_name(item)
+            table_name = get_binance_dataset_tablename(
+                item, backtest_info.candle_interval
+            )
+            dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             if dataset is None or backtest_info.fetch_latest_data:
                 await save_historical_klines(item, backtest_info.candle_interval, True)
-                dataset = DatasetQuery.fetch_dataset_by_name(item)
+                dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             dataset_name = dataset.dataset_name
-            dataset_id_to_name_map[str(item)] = dataset_name
-            dataset_id_to_timeseries_col_map[str(item)] = dataset.timeseries_column
+            dataset_table_name_to_id_map[dataset_name] = dataset.id
+            dataset_table_name_to_timeseries_col_map[
+                dataset_name
+            ] = dataset.timeseries_column
+            dataset_id_to_table_name_map[str(dataset.id)] = dataset.dataset_name
             DatasetQuery.update_price_column(dataset_name, BINANCE_BACKTEST_PRICE_COL)
+            dataset_table_names.append(dataset_name)
 
             for data_transform_id in backtest_info.data_transformations:
                 transformation = DataTransformationQuery.get_transformation_by_id(
@@ -175,14 +185,13 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         )
 
         benchmark_initial_state = get_benchmark_initial_state(
-            backtest_info.datasets, dataset_id_to_timeseries_col_map
+            dataset_table_names, dataset_table_name_to_timeseries_col_map
         )
 
         long_short_backtest = LongShortOnUniverseBacktest(
             backtest_info,
             candles_time_delta,
-            dataset_id_to_name_map,
-            dataset_id_to_timeseries_col_map,
+            dataset_table_name_to_timeseries_col_map,
             benchmark_initial_state,
         )
 
@@ -201,8 +210,8 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             kline_state = get_datasets_kline_state(
                 row[timeseries_col],
                 backtest_info,
-                dataset_id_to_name_map,
-                dataset_id_to_timeseries_col_map,
+                dataset_table_name_to_timeseries_col_map,
+                dataset_table_names,
             )
 
             kline_open_time = row[timeseries_col]
@@ -317,7 +326,8 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             backtest_id, long_short_backtest.positions.position_history
         )
         create_long_short_trades(
-            backtest_id, long_short_backtest.completed_trades, dataset_id_to_name_map
+            backtest_id,
+            long_short_backtest.completed_trades,
         )
 
         logger = get_logger()
@@ -413,11 +423,11 @@ class BenchmarkManager:
 
     def update(self, kline_state_dict):
         curr_equity = 0.0
-        for key, value in kline_state_dict["id_to_row_map"].items():
+        for key, value in kline_state_dict["table_name_to_df_map"].items():
             if value.empty:
                 continue
             price = get_bar_curr_price(value)
-            self.prices[str(key)] = price
+            self.prices[key] = price
 
         for key, value in self.positions.items():
             pos_eq_value = value * self.prices[key]
@@ -520,16 +530,16 @@ class LongShortOnUniverseBacktest:
         self,
         backtest_details: BodyCreateLongShortBacktest,
         candles_time_delta: int,
-        dataset_id_to_name_map: Dict,
-        dataset_id_to_timeseries_col_map: Dict,
+        dataset_table_name_to_timeseries_col_map: Dict,
         benchmark_initial_state: Dict,
     ):
         self.rules = BacktestRules(backtest_details, candles_time_delta)
         self.stats = BacktestStats(candles_time_delta)
         self.positions = PositionManager(START_BALANCE)
         self.benchmark = BenchmarkManager(START_BALANCE, benchmark_initial_state)
-        self.dataset_id_to_name_map = dataset_id_to_name_map
-        self.dataset_id_to_timeseries_col_map = dataset_id_to_timeseries_col_map
+        self.dataset_table_name_to_timeseries_col_map = (
+            dataset_table_name_to_timeseries_col_map
+        )
 
         self.active_pairs: List[PairTrade] = []
         self.completed_trades: List = []
@@ -588,8 +598,8 @@ class LongShortOnUniverseBacktest:
             code = code.replace(key, str(value))
 
         results_dict = {
-            "buy_df": kline_state["id_to_row_map"][str(pair.buy_id)].iloc[0],
-            "sell_df": kline_state["id_to_row_map"][str(pair.sell_id)].iloc[0],
+            "buy_df": kline_state["table_name_to_df_map"][pair.buy_id].iloc[0],
+            "sell_df": kline_state["table_name_to_df_map"][pair.sell_id].iloc[0],
         }
         exec(code, globals(), results_dict)
 
@@ -625,8 +635,8 @@ class LongShortOnUniverseBacktest:
     def close_pair_trade(
         self, kline_state: Dict, pair: PairTrade, kline_open_time: int
     ):
-        buy_df = kline_state["id_to_row_map"][str(pair.buy_id)]
-        sell_df = kline_state["id_to_row_map"][str(pair.sell_id)]
+        buy_df = kline_state["table_name_to_df_map"][pair.buy_id]
+        sell_df = kline_state["table_name_to_df_map"][pair.sell_id]
 
         long_close_price = get_bar_curr_price(buy_df)
         short_close_price = get_bar_curr_price(sell_df)
@@ -669,8 +679,8 @@ class LongShortOnUniverseBacktest:
         buy_id = pair["buy"]
         sell_id = pair["sell"]
 
-        buy_df = kline_state["id_to_row_map"][str(buy_id)]
-        sell_df = kline_state["id_to_row_map"][str(sell_id)]
+        buy_df = kline_state["table_name_to_df_map"][buy_id]
+        sell_df = kline_state["table_name_to_df_map"][sell_id]
 
         buy_price = get_bar_curr_price(buy_df)
         sell_price = get_bar_curr_price(sell_df)
@@ -722,8 +732,8 @@ class LongShortOnUniverseBacktest:
             item.debt_amount_base *= self.rules.short_fee_coeff
 
         for item in self.active_pairs:
-            buy_df = kline_state["id_to_row_map"][str(item.buy_id)]
-            sell_df = kline_state["id_to_row_map"][str(item.sell_id)]
+            buy_df = kline_state["table_name_to_df_map"][item.buy_id]
+            sell_df = kline_state["table_name_to_df_map"][item.sell_id]
 
             buy_side_price = get_bar_curr_price(buy_df)
             sell_side_price = get_bar_curr_price(sell_df)

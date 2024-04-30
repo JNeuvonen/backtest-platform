@@ -76,7 +76,8 @@ class BodyCreateManualBacktest(BaseModel):
     klines_until_close: Optional[int] = None
 
 
-class BodyCreateLongShortBacktest(BodyCreateManualBacktest):
+class BodyCreateLongShortBacktest(BaseModel):
+    backtest_data_range: List[int]
     datasets: List[str]
     data_transformations: List[int]
     sell_cond: str
@@ -86,22 +87,16 @@ class BodyCreateLongShortBacktest(BodyCreateManualBacktest):
     max_leverage_ratio: float
     candle_interval: str
     fetch_latest_data: bool
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    @classmethod
-    def update_forward_refs(cls, **localns):
-        super().update_forward_refs(**localns)
-        exclude_fields = {"is_short_selling_strategy", "dataset_id"}
-        cls.__annotations__ = {
-            k: v for k, v in cls.__annotations__.items() if k not in exclude_fields
-        }
-        cls.__fields__.pop("is_short_selling_strategy", None)
-        cls.__fields__.pop("dataset_id", None)
-
-
-BodyCreateLongShortBacktest.update_forward_refs()
+    use_time_based_close: bool
+    use_profit_based_close: bool
+    use_stop_loss_based_close: bool
+    trading_fees_perc: float
+    slippage_perc: float
+    short_fee_hourly: float
+    take_profit_threshold_perc: float
+    stop_loss_threshold_perc: float
+    name: Optional[str] = None
+    klines_until_close: Optional[int] = None
 
 
 class BodyDeleteManyBacktestsById:

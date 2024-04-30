@@ -334,9 +334,7 @@ def get_backtest_data_range_indexes(dataset_df, backtest_info):
     return backtest_data_range_start, backtest_data_range_end
 
 
-def get_long_trade_from_completed_pair_trade(
-    pair_trade, id_to_dataset_name_map, backtest_id
-):
+def get_long_trade_from_completed_pair_trade(pair_trade, backtest_id):
     return {
         "is_short_trade": False,
         "open_price": pair_trade.long_open_price,
@@ -345,14 +343,12 @@ def get_long_trade_from_completed_pair_trade(
         "close_time": pair_trade.close_time,
         "net_result": pair_trade.long_side_gross_result,
         "percent_result": pair_trade.long_side_perc_result,
-        "dataset_name": id_to_dataset_name_map[str(pair_trade.buy_id)],
+        "dataset_name": pair_trade.buy_id,
         "backtest_id": backtest_id,
     }
 
 
-def get_short_trade_from_completed_pair_trade(
-    pair_trade, id_to_dataset_name_map, backtest_id
-):
+def get_short_trade_from_completed_pair_trade(pair_trade, backtest_id):
     return {
         "is_short_trade": True,
         "open_price": pair_trade.short_open_price,
@@ -361,7 +357,7 @@ def get_short_trade_from_completed_pair_trade(
         "close_time": pair_trade.close_time,
         "net_result": pair_trade.short_side_gross_result,
         "percent_result": pair_trade.short_side_perc_result,
-        "dataset_name": id_to_dataset_name_map[str(pair_trade.buy_id)],
+        "dataset_name": pair_trade.buy_id,
         "backtest_id": backtest_id,
     }
 
@@ -378,16 +374,12 @@ def get_pair_trade_entry(pair_trade, backtest_id, long_trade_id, short_trade_id)
     }
 
 
-def create_long_short_trades(backtest_id, completed_trades, id_to_dataset_name_map):
+def create_long_short_trades(backtest_id, completed_trades):
     for item in completed_trades:
-        long_trade = get_long_trade_from_completed_pair_trade(
-            item, id_to_dataset_name_map, backtest_id
-        )
+        long_trade = get_long_trade_from_completed_pair_trade(item, backtest_id)
         long_trade_id = TradeQuery.create_entry(long_trade)
 
-        short_trade = get_short_trade_from_completed_pair_trade(
-            item, id_to_dataset_name_map, backtest_id
-        )
+        short_trade = get_short_trade_from_completed_pair_trade(item, backtest_id)
         short_trade_id = TradeQuery.create_entry(short_trade)
 
         pair_trade = get_pair_trade_entry(
