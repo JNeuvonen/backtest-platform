@@ -12,6 +12,7 @@ from route_datasets import router as datasets_router
 from route_model import router as model_router
 from route_backtest import router as backtest_router
 from route_code_preset import router as code_preset_router
+from route_data_transformation import router as data_transformation_router
 from streams import router as streams_router
 from orm import create_tables
 
@@ -35,6 +36,7 @@ class Routers:
     MODEL = "/model"
     BACKTEST = "/backtest"
     CODE_PRESET = "/code-preset"
+    DATA_TRANSFORMATION = "/data-transformation"
 
 
 app = FastAPI(lifespan=lifespan)
@@ -44,6 +46,7 @@ app.include_router(datasets_router, prefix=Routers.DATASET)
 app.include_router(model_router, prefix=Routers.MODEL)
 app.include_router(backtest_router, prefix=Routers.BACKTEST)
 app.include_router(code_preset_router, prefix=Routers.CODE_PRESET)
+app.include_router(data_transformation_router, prefix=Routers.DATA_TRANSFORMATION)
 
 app.add_middleware(
     CORSMiddleware,
