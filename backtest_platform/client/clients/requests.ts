@@ -20,6 +20,7 @@ import { save } from "@tauri-apps/api/dialog";
 import { CodePresetBody } from "../components/SaveCodePresetPopover";
 import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrategyForm";
 import { predServerHeaders } from "./headers-utils";
+import { CreateDataTransformationBody } from "../components/DataTransformationsControls";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -530,5 +531,28 @@ export const fetchManyBacktestsById = async (
   if (res.status === 200) {
     return res.res;
   }
+  return res;
+};
+
+export const fetchDataTransformations = async () => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchDataTransformations(),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+};
+
+export const createDataTransformation = async (
+  body: CreateDataTransformationBody
+) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.createDataTransformation(),
+    payload: body,
+  });
   return res;
 };

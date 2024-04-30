@@ -27,6 +27,9 @@ const LOCAL_API = {
   code_preset: {
     root: "/code-preset",
   },
+  data_transformation: {
+    root: "/data-transformation",
+  },
 };
 
 export const PRED_SERV_API = {
@@ -160,6 +163,10 @@ export const LOCAL_API_URL = {
     LOCAL_API.backtest.root +
     "/mass-backtest/combined/summary?list_of_ids=" +
     `${JSON.stringify(listOfBacktestIds)}`,
+  fetchDataTransformations: () =>
+    LOCAL_API_URI + LOCAL_API.data_transformation.root,
+  createDataTransformation: () =>
+    LOCAL_API_URI + LOCAL_API.data_transformation.root,
 };
 
 export const PRED_SERVER_URLS = {

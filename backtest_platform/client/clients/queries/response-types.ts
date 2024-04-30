@@ -259,6 +259,7 @@ export interface DataTransformation {
   created_at: Date;
   updated_at: Date;
   transformation_code: string;
+  name: string;
 }
 
 export interface MassBacktest {

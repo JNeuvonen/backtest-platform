@@ -9,6 +9,7 @@ import {
   fetchBacktestsByDataset,
   fetchCodePresets,
   fetchColumn,
+  fetchDataTransformations,
   fetchDataset,
   fetchDatasetModels,
   fetchDatasets,
@@ -24,6 +25,7 @@ import {
   BinanceTickersResponse,
   CodePreset,
   ColumnResponse,
+  DataTransformation,
   Dataset,
   DatasetMetadata,
   DatasetModel,
@@ -175,5 +177,15 @@ export function useManyBacktests(
         includeEquityCurve
       ),
     enabled: listOfBacktestIds.length > 0,
+  });
+}
+
+export function useDataTransformations(): UseQueryResult<
+  DataTransformation[] | null,
+  unknown
+> {
+  return useQuery<DataTransformation[] | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_many_backtests_by_id],
+    queryFn: () => fetchDataTransformations(),
   });
 }
