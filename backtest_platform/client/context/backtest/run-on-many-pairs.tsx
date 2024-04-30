@@ -55,7 +55,9 @@ interface PropsSelectBulkSimPairs {
   onSelect: (values: MultiValue<OptionType>) => void;
 }
 
-const SelectBulkSimPairsBody = ({ onSelect }: PropsSelectBulkSimPairs) => {
+export const SelectBulkSimPairsBody = ({
+  onSelect,
+}: PropsSelectBulkSimPairs) => {
   return (
     <div>
       {BULK_SIM_PAIR_PRESETS.map((preset) => {
