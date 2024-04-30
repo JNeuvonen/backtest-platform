@@ -339,8 +339,8 @@ def get_long_trade_from_completed_pair_trade(pair_trade, backtest_id):
         "is_short_trade": False,
         "open_price": pair_trade.long_open_price,
         "close_price": pair_trade.long_close_price,
-        "open_time": pair_trade.open_time,
-        "close_time": pair_trade.close_time,
+        "open_time": int(pair_trade.open_time / 1000),
+        "close_time": int(pair_trade.close_time / 1000),
         "net_result": pair_trade.long_side_gross_result,
         "percent_result": pair_trade.long_side_perc_result,
         "dataset_name": pair_trade.buy_id,
@@ -353,8 +353,8 @@ def get_short_trade_from_completed_pair_trade(pair_trade, backtest_id):
         "is_short_trade": True,
         "open_price": pair_trade.short_open_price,
         "close_price": pair_trade.short_close_price,
-        "open_time": pair_trade.open_time,
-        "close_time": pair_trade.close_time,
+        "open_time": int(pair_trade.open_time / 1000),
+        "close_time": int(pair_trade.close_time / 1000),
         "net_result": pair_trade.short_side_gross_result,
         "percent_result": pair_trade.short_side_perc_result,
         "dataset_name": pair_trade.buy_id,
@@ -369,8 +369,8 @@ def get_pair_trade_entry(pair_trade, backtest_id, long_trade_id, short_trade_id)
         "sell_trade_id": short_trade_id,
         "gross_result": pair_trade.trade_gross_result,
         "percent_result": pair_trade.perc_result,
-        "open_time": pair_trade.open_time,
-        "close_time": pair_trade.close_time,
+        "open_time": int(pair_trade.open_time / 1000),
+        "close_time": int(pair_trade.close_time / 1000),
     }
 
 

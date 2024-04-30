@@ -1,6 +1,6 @@
 import json
 from typing import Dict, List
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import BigInteger, Boolean, Column, Float, ForeignKey, Integer, String
 from log import LogExceptionContext
 
 from orm import Base, Session
@@ -11,8 +11,8 @@ class Trade(Base):
     id = Column(Integer, primary_key=True)
     open_price = Column(Float)
     close_price = Column(Float)
-    open_time = Column(Integer)
-    close_time = Column(Integer)
+    open_time = Column(BigInteger)
+    close_time = Column(BigInteger)
     direction = Column(String)
     net_result = Column(Float)
     percent_result = Column(Float)
@@ -27,8 +27,10 @@ class Trade(Base):
         self.predictions = json.dumps(predictions)
 
     def deserialize(self):
-        self.prices = json.loads(self.prices)
-        self.predictions = json.loads(self.predictions)
+        if self.prices:
+            self.prices = json.loads(self.prices)
+        if self.predictions:
+            self.predictions = json.loads(self.predictions)
         return self
 
 

@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 import math
 from typing import Dict, List, Set
 from api_binance import save_historical_klines
@@ -322,6 +323,10 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         }
 
         BacktestStatisticsQuery.create_entry(backtest_statistics_dict)
+
+        for item in long_short_backtest.positions.position_history:
+            item["kline_open_time"] = int(item["kline_open_time"] / 1000)
+
         BacktestHistoryQuery.create_many(
             backtest_id, long_short_backtest.positions.position_history
         )
