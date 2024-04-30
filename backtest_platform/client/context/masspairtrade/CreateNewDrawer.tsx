@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useMassBacktestContext } from ".";
 import { ChakraDrawer } from "../../components/chakra/Drawer";
 import { Field, Form, Formik, FormikProps } from "formik";
@@ -11,7 +11,7 @@ import { DISK_KEYS, DiskManager } from "../../utils/disk";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
 import { CodeEditor } from "../../components/CodeEditor";
-import { CODE_PRESET_CATEGORY } from "../../utils/constants";
+import { CODE_PRESET_CATEGORY, GET_KLINE_OPTIONS } from "../../utils/constants";
 import {
   OptionType,
   SelectWithTextFilter,
@@ -21,30 +21,92 @@ import { useBinanceTickersQuery } from "../../clients/queries/queries";
 import { MultiValue } from "react-select";
 import {
   Button,
+  FormControl,
+  FormLabel,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Select,
   Spinner,
   Switch,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 import { ChakraPopover } from "../../components/chakra/popover";
 import { BUTTON_VARIANTS } from "../../theme";
 import { SelectBulkSimPairsBody } from "../backtest/run-on-many-pairs";
+import { DataTransformationControls } from "../../components/DataTransformationsControls";
+import { createMassPairTradeSim } from "../../clients/requests";
+import {
+  PAIR_TRADE_BUY_DEFAULT,
+  PAIR_TRADE_EXIT_DEFAULT,
+  PAIR_TRADE_SELL_DEFAULT,
+} from "../../utils/code";
 
 const backtestDiskManager = new DiskManager(DISK_KEYS.mass_long_short_form);
 
+export interface BodyMassPairTradeSim {
+  datasets: string[];
+  name: string;
+  use_time_based_close: boolean;
+  use_profit_based_close: boolean;
+  use_stop_loss_based_close: boolean;
+  trading_fees_perc: number;
+  slippage_perc: number;
+  short_fee_hourly: number;
+  take_profit_threshold_perc: number;
+  stop_loss_threshold_perc: number;
+  klinesUntilClose: number;
+  data_transformations: number[];
+  sell_cond: string;
+  buy_cond: string;
+  exit_cond: string;
+  max_simultaneous_positions: number;
+  max_leverage_ratio: number;
+  candle_interval: string;
+  fetch_latest_data: boolean;
+}
+
+export interface BacktestFormDefaults {
+  backtestName: string;
+  useTimeBasedClose: boolean;
+  useProfitBasedClose: boolean;
+  useStopLossBasedClose: boolean;
+  klinesUntilClose: number;
+  tradingFees: number;
+  slippage: number;
+  shortFeeHourly: number;
+  takeProfitThresholdPerc: number;
+  stopLossThresholdPerc: number;
+  backtestDataRange: [number, number];
+}
+
+interface FormValues extends BacktestFormDefaults {
+  buy_criteria: string;
+  short_criteria: string;
+  exit_cond: string;
+  pairs: MultiValue<OptionType>;
+  max_simultaneous_positions: number;
+  max_leverage_ratio: number;
+  data_transformations: number[];
+  use_latest_data: boolean;
+  candle_interval: string;
+}
+
 const getFormInitialValues = () => {
   return {
-    buy_criteria: "",
-    short_criteria: "",
-    exit_cond: "",
+    buy_criteria: PAIR_TRADE_BUY_DEFAULT(),
+    short_criteria: PAIR_TRADE_SELL_DEFAULT(),
+    exit_cond: PAIR_TRADE_EXIT_DEFAULT(),
     pairs: [],
     max_simultaneous_positions: 15,
     max_leverage_ratio: 2.5,
+    data_transformations: [],
+    use_latest_data: false,
+    candle_interval: "",
     ...getBacktestFormDefaults(),
   };
 };
@@ -56,6 +118,9 @@ const formKeys = {
   pairs: "pairs",
   max_simultaneous_positions: "max_simultaneous_positions",
   max_leverage_ratio: "max_leverage_ratio",
+  data_transformations: "data_transformations",
+  useLatestData: "use_latest_data",
+  candleInterval: "candle_interval",
   ...getBacktestFormDefaultKeys(),
 };
 
@@ -64,6 +129,7 @@ export const BulkLongShortCreateNew = () => {
   const binanceTickersQuery = useBinanceTickersQuery();
   const formikRef = useRef<FormikProps<any>>(null);
   const presetsPopover = useDisclosure();
+  const toast = useToast();
 
   if (!binanceTickersQuery.data) {
     return (
@@ -77,6 +143,42 @@ export const BulkLongShortCreateNew = () => {
     );
   }
 
+  const onSubmit = async (values: FormValues) => {
+    const body = {
+      datasets: values.pairs.map((item) => item.value),
+      name: values.backtestName,
+      use_time_based_close: values.useTimeBasedClose,
+      use_profit_based_close: values.useProfitBasedClose,
+      use_stop_loss_based_close: values.useStopLossBasedClose,
+      trading_fees_perc: values.tradingFees,
+      slippage_perc: values.slippage,
+      short_fee_hourly: values.shortFeeHourly,
+      take_profit_threshold_perc: values.takeProfitThresholdPerc,
+      stop_loss_threshold: values.stopLossThresholdPerc,
+      klinesUntilClose: values.klinesUntilClose,
+      data_transformations: values.data_transformations,
+      sell_cond: values.short_criteria,
+      buy_cond: values.buy_criteria,
+      exit_cond: values.exit_cond,
+      max_simultaneous_positions: values.max_simultaneous_positions,
+      max_leverage_ratio: values.max_leverage_ratio,
+      candle_interval: values.candle_interval,
+      stop_loss_threshold_perc: values.stopLossThresholdPerc,
+      fetch_latest_data: values.use_latest_data,
+      backtest_data_range: values.backtestDataRange,
+    };
+
+    const res = await createMassPairTradeSim(body);
+    if (res.status === 200) {
+      toast({
+        title: "Started mass pair trade simulation",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <div>
       <ChakraDrawer
@@ -86,7 +188,9 @@ export const BulkLongShortCreateNew = () => {
       >
         <div>
           <Formik
-            onSubmit={(values) => {}}
+            onSubmit={(values) => {
+              onSubmit(values);
+            }}
             initialValues={getFormInitialValues()}
             innerRef={formikRef}
             enableReinitialize
@@ -165,6 +269,59 @@ export const BulkLongShortCreateNew = () => {
                     </WithLabel>
                   </div>
                 </div>
+
+                <div
+                  style={{ marginTop: "16px", display: "flex", gap: "16px" }}
+                >
+                  <Field name={formKeys.useLatestData}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel label={"Download latest data"}>
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                formKeys.useLatestData,
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
+                </div>
+
+                <div style={{ marginTop: "16px", maxWidth: "250px" }}>
+                  <FormControl>
+                    <FormLabel fontSize={"x-large"}>Candle interval</FormLabel>
+                    <Field name={formKeys.candleInterval} as={Select}>
+                      {GET_KLINE_OPTIONS().map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </Field>
+                  </FormControl>
+                </div>
+
+                <Field name={formKeys.data_transformations}>
+                  {({ field, form }) => {
+                    return (
+                      <div style={{ marginTop: "16px" }}>
+                        <DataTransformationControls
+                          selectedTransformations={field.value}
+                          onSelect={(newState) => {
+                            form.setFieldValue(
+                              formKeys.data_transformations,
+                              newState
+                            );
+                          }}
+                        />
+                      </div>
+                    );
+                  }}
+                </Field>
 
                 <div>
                   <Field name={formKeys.buy_criteria}>
@@ -250,7 +407,7 @@ export const BulkLongShortCreateNew = () => {
                             value={field.value}
                             onChange={(valueString) =>
                               form.setFieldValue(
-                                formKeys.klinesUntilClose,
+                                formKeys.max_simultaneous_positions,
                                 parseInt(valueString)
                               )
                             }
@@ -262,6 +419,7 @@ export const BulkLongShortCreateNew = () => {
                     }}
                   </Field>
                 </div>
+
                 <div>
                   <Field name={formKeys.max_leverage_ratio}>
                     {({ field, form }) => {
@@ -386,7 +544,7 @@ export const BulkLongShortCreateNew = () => {
                             onChange={(valueString) =>
                               form.setFieldValue(
                                 formKeys.takeProfitThresholdPerc,
-                                parseInt(valueString)
+                                parseFloat(valueString)
                               )
                             }
                           >
@@ -569,6 +727,24 @@ export const BulkLongShortCreateNew = () => {
                       }}
                     </Field>
                   </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginTop: "16px",
+                  }}
+                >
+                  <Button
+                    variant={BUTTON_VARIANTS.nofill}
+                    onClick={createNewDrawer.onClose}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" marginTop={"16px"}>
+                    Run backtest
+                  </Button>
                 </div>
               </Form>
             )}

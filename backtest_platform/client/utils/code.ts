@@ -9,6 +9,33 @@ export const ENTER_TRADE_DEFAULT = () => {
   return code.get();
 };
 
+export const PAIR_TRADE_BUY_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_is_valid_buy(bar):");
+  code.addIndent();
+  code.appendLine("return False");
+  return code.get();
+};
+
+export const PAIR_TRADE_SELL_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_is_valid_sell(bar):");
+  code.addIndent();
+  code.appendLine("return False");
+  return code.get();
+};
+
+export const PAIR_TRADE_EXIT_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_exit_trade_decision(buy_df, sell_df):");
+  code.addIndent();
+  code.appendLine("return False");
+  return code.get();
+};
+
 export const LONG_SHORT_BUY_COND_DEFAULT = () => {
   const code = new CodeHelper();
 

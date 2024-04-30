@@ -23,19 +23,16 @@ import {
   NumberInputStepper,
   Spinner,
   Switch,
-  Text,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { ChakraModal } from "../../components/chakra/modal";
-import { OverflopTooltip } from "../../components/OverflowTooltip";
-import { ColumnInfoModal } from "../../components/ColumnInfoModal";
 import { ChakraPopover } from "../../components/chakra/popover";
 import { SelectColumnPopover } from "../../components/SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../../utils/dataset";
 import { CodeEditor } from "../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../utils/constants";
-import { BUTTON_VARIANTS, TEXT_VARIANTS } from "../../theme";
+import { BUTTON_VARIANTS } from "../../theme";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
 import { Field, Formik, Form, FormikProps } from "formik";

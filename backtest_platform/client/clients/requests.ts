@@ -21,6 +21,7 @@ import { CodePresetBody } from "../components/SaveCodePresetPopover";
 import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrategyForm";
 import { predServerHeaders } from "./headers-utils";
 import { CreateDataTransformationBody } from "../components/DataTransformationsControls";
+import { BodyMassPairTradeSim } from "../context/masspairtrade/CreateNewDrawer";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -552,6 +553,15 @@ export const createDataTransformation = async (
   const res = await buildRequest({
     method: "POST",
     url: LOCAL_API_URL.createDataTransformation(),
+    payload: body,
+  });
+  return res;
+};
+
+export const createMassPairTradeSim = async (body: BodyMassPairTradeSim) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.createMassPairTradeSim(),
     payload: body,
   });
   return res;

@@ -167,6 +167,8 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.data_transformation.root,
   createDataTransformation: () =>
     LOCAL_API_URI + LOCAL_API.data_transformation.root,
+  createMassPairTradeSim: () =>
+    LOCAL_API_URI + LOCAL_API.backtest.root + "/long-short-backtest",
 };
 
 export const PRED_SERVER_URLS = {
