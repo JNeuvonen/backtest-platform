@@ -46,6 +46,7 @@ class RoutePaths:
     MASS_BACKTEST_BY_BACKTEST_ID = "/mass-backtest/by-backtest/{backtest_id}"
     COMBINED_STRATEGY_SUMMARY = "/mass-backtest/combined/summary"
     LONG_SHORT_BACKTEST = "/long-short-backtest"
+    FETCH_LONG_SHORT_BACKTEST = "/mass-backtest/long-short/fetch"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -268,7 +269,7 @@ async def route_long_short_backtest(body: BodyCreateLongShortBacktest):
         )
 
 
-@router.get(RoutePaths.LONG_SHORT_BACKTEST)
+@router.get(RoutePaths.FETCH_LONG_SHORT_BACKTEST)
 async def route_get_long_short_backtests():
     with HttpResponseContext():
         backtests = BacktestQuery.fetch_all_long_short_backtests()

@@ -161,9 +161,10 @@ class BacktestQuery:
                         BacktestStatistics,
                         Backtest.id == BacktestStatistics.backtest_id,
                     )
-                    .filter(Backtest.is_long_short_strategy is True)
+                    .filter(Backtest.is_long_short_strategy == True)
                     .all()
                 )
+                print(backtests)
                 combined_backtests = [
                     combine_dicts([backtest.__dict__, stats.__dict__])
                     for backtest, stats in backtests
