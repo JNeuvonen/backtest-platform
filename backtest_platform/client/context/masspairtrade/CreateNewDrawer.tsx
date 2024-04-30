@@ -97,17 +97,24 @@ interface FormValues extends BacktestFormDefaults {
 }
 
 const getFormInitialValues = () => {
+  const prevForm = backtestDiskManager.read();
+  if (prevForm === null) {
+    return {
+      buy_criteria: PAIR_TRADE_BUY_DEFAULT(),
+      short_criteria: PAIR_TRADE_SELL_DEFAULT(),
+      exit_cond: PAIR_TRADE_EXIT_DEFAULT(),
+      pairs: [],
+      max_simultaneous_positions: 15,
+      max_leverage_ratio: 2.5,
+      data_transformations: [],
+      use_latest_data: false,
+      candle_interval: "",
+      ...getBacktestFormDefaults(),
+    };
+  }
   return {
-    buy_criteria: PAIR_TRADE_BUY_DEFAULT(),
-    short_criteria: PAIR_TRADE_SELL_DEFAULT(),
-    exit_cond: PAIR_TRADE_EXIT_DEFAULT(),
-    pairs: [],
-    max_simultaneous_positions: 15,
-    max_leverage_ratio: 2.5,
-    data_transformations: [],
-    use_latest_data: false,
-    candle_interval: "",
-    ...getBacktestFormDefaults(),
+    ...prevForm,
+    backtestName: "",
   };
 };
 
@@ -176,6 +183,7 @@ export const BulkLongShortCreateNew = () => {
         duration: 5000,
         isClosable: true,
       });
+      backtestDiskManager.save(values);
     }
   };
 
