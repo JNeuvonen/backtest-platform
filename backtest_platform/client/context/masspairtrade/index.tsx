@@ -1,6 +1,9 @@
 import { UseDisclosureReturn, useDisclosure } from "@chakra-ui/react";
 import React, { ReactNode, createContext, useContext, useState } from "react";
 import { BulkLongShortCreateNew } from "./CreateNewDrawer";
+import { useLongShortBacktests } from "../../clients/queries/queries";
+import { UseQueryResult } from "@tanstack/react-query";
+import { BacktestObject } from "../../clients/queries/response-types";
 
 interface MassPairTradeProviderProps {
   children: ReactNode;
@@ -11,6 +14,7 @@ interface MassPairTradeContextType {
   onDeleteMode: UseDisclosureReturn;
   selectLongShortBacktest: (backtestId: number) => void;
   resetSelection: () => void;
+  longShortBacktestsQuery: UseQueryResult<BacktestObject[] | null, unknown>;
 }
 
 export const MassPairTradeContext = createContext<MassPairTradeContextType>(
@@ -23,6 +27,7 @@ export const MassPairTradeProvider: React.FC<MassPairTradeProviderProps> = ({
   const createNewDrawer = useDisclosure();
   const [selectedBacktests, setSelectedBacktests] = useState<number[]>([]);
   const onDeleteMode = useDisclosure();
+  const longShortBacktestsQuery = useLongShortBacktests();
 
   const selectLongShortBacktest = (backtestId: number) => {
     setSelectedBacktests((prevSelectedBacktests) => {
@@ -45,6 +50,7 @@ export const MassPairTradeProvider: React.FC<MassPairTradeProviderProps> = ({
         selectLongShortBacktest,
         onDeleteMode,
         resetSelection,
+        longShortBacktestsQuery,
       }}
     >
       <BulkLongShortCreateNew />

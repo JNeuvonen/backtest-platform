@@ -15,4 +15,5 @@ export const QUERY_KEYS = {
   fetch_mass_backtest: "fetch_mass_backtest",
   fetch_many_backtests_by_id: "fetch_many_backtests_by_id",
   fetch_data_transformations: "fetch_data_transformations",
+  fetch_long_short_backtests: "fetch_long_short_backtests",
 };

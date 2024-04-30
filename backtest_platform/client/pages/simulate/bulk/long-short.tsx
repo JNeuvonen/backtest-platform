@@ -25,7 +25,7 @@ export const BulkLongShortSimPage = () => {
       </div>
       <div style={{ marginTop: "8px" }}>
         <BacktestDatagrid
-          backtests={[]}
+          backtests={massPairTradeContext.longShortBacktestsQuery.data || []}
           onDeleteMode={massPairTradeContext.onDeleteMode}
         />
       </div>

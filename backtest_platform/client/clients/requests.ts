@@ -566,3 +566,14 @@ export const createMassPairTradeSim = async (body: BodyMassPairTradeSim) => {
   });
   return res;
 };
+
+export const fetchLongShortBacktests = async () => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchLongShortBacktests(),
+  });
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return res;
+};

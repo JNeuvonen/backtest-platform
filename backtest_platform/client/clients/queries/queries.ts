@@ -13,6 +13,7 @@ import {
   fetchDataset,
   fetchDatasetModels,
   fetchDatasets,
+  fetchLongShortBacktests,
   fetchManyBacktestsById,
   fetchMassBacktestById,
   fetchMassbacktestsById,
@@ -187,5 +188,15 @@ export function useDataTransformations(): UseQueryResult<
   return useQuery<DataTransformation[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_many_backtests_by_id],
     queryFn: () => fetchDataTransformations(),
+  });
+}
+
+export function useLongShortBacktests(): UseQueryResult<
+  BacktestObject[] | null,
+  unknown
+> {
+  return useQuery<BacktestObject[] | null, unknown>({
+    queryKey: [QUERY_KEYS.fetch_long_short_backtests],
+    queryFn: () => fetchLongShortBacktests(),
   });
 }
