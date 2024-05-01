@@ -22,6 +22,7 @@ from quant_stats_utils import (
 )
 from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
+from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from request_types import (
     BodyCreateLongShortBacktest,
@@ -63,10 +64,16 @@ async def route_get_backtest_by_id(backtest_id):
         balance_history = BacktestHistoryQuery.get_entries_by_backtest_id_sorted(
             backtest["id"]
         )
+        pair_trades = []
+
+        if backtest["is_long_short_strategy"] is True:
+            pair_trades = PairTradeQuery.fetch_all_by_backtest_id(backtest_id)
+
         return {
             "data": backtest,
             "trades": trades,
             "balance_history": balance_history,
+            "pair_trades": pair_trades,
         }
 
 

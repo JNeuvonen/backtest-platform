@@ -29,3 +29,12 @@ class PairTradeQuery:
                 session.add(entry)
                 session.commit()
                 return entry.id
+
+    @staticmethod
+    def fetch_all_by_backtest_id(backtest_id: int):
+        with Session() as session:
+            return (
+                session.query(PairTrade)
+                .filter(PairTrade.backtest_id == backtest_id)
+                .all()
+            )
