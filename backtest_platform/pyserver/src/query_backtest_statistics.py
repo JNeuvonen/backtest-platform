@@ -10,6 +10,10 @@ class BacktestStatistics(Base):
     id = Column(Integer, primary_key=True)
     backtest_id = Column(Integer, ForeignKey("backtest.id"))
 
+    trade_count = Column(Integer)
+    asset_universe_size = Column(Integer)
+    mean_hold_time_sec = Column(Integer)
+
     profit_factor = Column(Float)
     long_side_profit_factor = Column(Float)
     short_side_profit_factor = Column(Float)
@@ -41,9 +45,6 @@ class BacktestStatistics(Base):
     slippage_perc = Column(Float)
     short_fee_hourly = Column(Float)
     trading_fees_perc = Column(Float)
-
-    trade_count = Column(Integer)
-    mean_hold_time_sec = Column(Integer)
     mean_return_perc = Column(Float)
 
 

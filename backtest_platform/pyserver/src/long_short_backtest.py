@@ -277,6 +277,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
 
         backtest_statistics_dict = {
             "backtest_id": backtest_id,
+            "asset_universe_size": len(dataset_table_names),
             "profit_factor": profit_factor_dict["strategy_profit_factor"],
             "long_side_profit_factor": profit_factor_dict["long_profit_factor"],
             "short_side_profit_factor": profit_factor_dict["short_profit_factor"],
