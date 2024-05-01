@@ -148,6 +148,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             if dataset is None or backtest_info.fetch_latest_data:
+                print(item)
                 await save_historical_klines(item, backtest_info.candle_interval, True)
                 dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
@@ -470,7 +471,7 @@ class PairTrade:
         self.on_open_sell_price = sell_price
         self.on_open_buy_price = buy_price
         self.on_trade_open_acc_net_value = on_trade_open_acc_net_value
-        self.balance_history: List[float] = []
+        self.balance_history: List[Dict] = []
         self.candles_held = 0
 
 
@@ -693,17 +694,47 @@ class LongShortOnUniverseBacktest:
             and sell_id in kline_state["sell_candidates"]
         )
 
+    def should_trading_stop_loss_close(self, pair_trade):
+        if self.rules.use_stop_loss_based_close is False:
+            return False
+
+        if len(pair_trade.balance_history) == 0:
+            return False
+
+        profit_ath = pair_trade.balance_history[0]["net_profit_in_quote"]
+        size = pair_trade.sell_proceedings_quote
+        peak_result_perc = (profit_ath / size) * 100
+
+        for balance_history in pair_trade.balance_history:
+            curr_profit_perc = (balance_history["net_profit_in_quote"] / size) * 100
+
+            if (
+                curr_profit_perc < -1 * self.rules.stop_loss_threshold_perc
+                or peak_result_perc - self.rules.stop_loss_threshold_perc
+                > curr_profit_perc
+            ):
+                return True
+
+            profit_ath = max(curr_profit_perc, peak_result_perc)
+
+        return False
+
     def check_for_pair_trade_close(self, kline_state, kline_open_time):
         active_pairs = []
         for item in self.active_pairs:
             should_exit_by_cond = self.should_exit_by_condition(kline_state, item)
             should_exit_by_time_based = self.is_pos_held_for_max_time(item)
+            should_trading_stop_loss = self.should_trading_stop_loss_close(item)
+
+            is_pair_going_to_reenter = self.is_pair_going_to_reenter(item, kline_state)
+
             if should_exit_by_cond is True:
                 self.close_pair_trade(kline_state, item, kline_open_time)
             elif (
-                should_exit_by_time_based is True
-                and self.is_pair_going_to_reenter(item, kline_state) is False
+                should_exit_by_time_based is True and is_pair_going_to_reenter is False
             ):
+                self.close_pair_trade(kline_state, item, kline_open_time)
+            elif should_trading_stop_loss is True and is_pair_going_to_reenter is False:
                 self.close_pair_trade(kline_state, item, kline_open_time)
             else:
                 active_pairs.append(item)
@@ -758,9 +789,29 @@ class LongShortOnUniverseBacktest:
         self.stats.position_held_time += bar_pos_held_time
         self.stats.cumulative_time += self.stats.candles_time_delta
 
-    def update_active_pairs(self):
+    def update_active_pairs(self, kline_open_time: int, kline_state: Dict):
         for item in self.active_pairs:
             item.candles_held += 1
+
+            buy_df = kline_state["table_name_to_df_map"][item.buy_id]
+            sell_df = kline_state["table_name_to_df_map"][item.sell_id]
+
+            buy_side_price = get_bar_curr_price(buy_df)
+            sell_side_price = get_bar_curr_price(sell_df)
+
+            total_long = buy_side_price * item.buy_amount_base
+            total_debt = sell_side_price * item.debt_amount_base
+
+            pos_net_value = total_long - total_debt
+
+            item.balance_history.append(
+                {
+                    "kline_open_time": kline_open_time / 1000,
+                    "net_profit_in_quote": pos_net_value,
+                    "long_value_in_quote": total_long,
+                    "short_debt_in_quote": total_debt,
+                }
+            )
 
     def update_acc_state(self, kline_open_time: int, kline_state: Dict):
         total_debt = 0.0
@@ -786,7 +837,7 @@ class LongShortOnUniverseBacktest:
             kline_open_time=kline_open_time,
             benchmark_eq_value=self.benchmark.equity_value,
         )
-        self.update_active_pairs()
+        self.update_active_pairs(kline_open_time, kline_state)
         self.update_pos_held_time()
 
     def process_bar(self, kline_open_time: int, kline_state: Dict):
