@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { useBacktestById } from "../../../clients/queries/queries";
-import { Heading, Spinner } from "@chakra-ui/react";
+import { Heading, Spinner, Switch } from "@chakra-ui/react";
 import { BacktestSummaryCard } from "../dataset/backtest/SummaryCard";
 import { ShareYAxisTwoLineChart } from "../../../components/charts/ShareYAxisLineChart";
 import { FetchBacktestByIdRes } from "../../../clients/queries/response-types";
+import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
+import { Line } from "recharts";
+import {
+  COLOR_BRAND_PRIMARY,
+  COLOR_BRAND_SECONDARY,
+} from "../../../utils/colors";
+import { WithLabel } from "../../../components/form/WithLabel";
 
 interface PathParams {
   massPairTradeBacktestId: number;
@@ -53,6 +60,7 @@ const getDateRange = (portfolioTicks: ChartTick[]): string => {
 export const LongShortBacktestsDetailsView = () => {
   const { massPairTradeBacktestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(massPairTradeBacktestId));
+  const [hideBenchmark, setHideBenchmark] = useState(false);
 
   if (backtestQuery.isLoading || !backtestQuery.data) {
     return (
@@ -75,21 +83,42 @@ export const LongShortBacktestsDetailsView = () => {
         dateRange={getDateRange(portfolioTicks)}
       />
 
-      <ShareYAxisTwoLineChart
-        data={portfolioTicks}
-        xKey="kline_open_time"
-        line1Key="strategy"
-        line2Key="benchmark"
-        height={500}
-        containerStyles={{ marginTop: "16px" }}
-        showDots={false}
-        xAxisTickFormatter={(tick: number) => {
-          return new Date(tick).toLocaleDateString("default", {
-            year: "numeric",
-            month: "short",
-          });
-        }}
-      />
+      <div>
+        <WithLabel label={"Hide benchmark"}>
+          <Switch
+            isChecked={hideBenchmark}
+            onChange={() => setHideBenchmark(!hideBenchmark)}
+          />
+        </WithLabel>
+        <div style={{ marginTop: "16px" }}>
+          <ShareYAxisMultilineChart
+            height={500}
+            data={portfolioTicks}
+            xAxisKey={"kline_open_time"}
+            xAxisTickFormatter={(tick: number) => {
+              return new Date(tick).toLocaleDateString("default", {
+                year: "numeric",
+                month: "short",
+              });
+            }}
+          >
+            {!hideBenchmark && (
+              <Line
+                type="monotone"
+                dataKey={"benchmark"}
+                stroke={COLOR_BRAND_SECONDARY}
+                dot={false}
+              />
+            )}
+            <Line
+              type="monotone"
+              dataKey={"strategy"}
+              stroke={COLOR_BRAND_PRIMARY}
+              dot={false}
+            />
+          </ShareYAxisMultilineChart>
+        </div>
+      </div>
     </div>
   );
 };
