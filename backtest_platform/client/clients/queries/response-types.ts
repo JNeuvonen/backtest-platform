@@ -232,10 +232,23 @@ export interface Trade {
   prices: number[];
 }
 
+export interface PairTrade {
+  id: number;
+  buy_trade_id: number;
+  sell_trade_id: number;
+  backtest_id: number;
+  gross_result: number;
+  percent_result: number;
+  open_time: number;
+  close_time: number;
+  history: string;
+}
+
 export interface FetchBacktestByIdRes {
   data: BacktestObject;
   trades: Trade[];
   balance_history: BacktestBalance[];
+  pair_trades: PairTrade[];
 }
 
 export interface BacktestsResponse {
