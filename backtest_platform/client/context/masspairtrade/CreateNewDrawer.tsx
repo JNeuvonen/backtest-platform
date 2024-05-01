@@ -173,6 +173,7 @@ export const BulkLongShortCreateNew = () => {
       stop_loss_threshold_perc: values.stopLossThresholdPerc,
       fetch_latest_data: values.use_latest_data,
       backtest_data_range: values.backtestDataRange,
+      klines_until_close: values.klinesUntilClose,
     };
 
     const res = await createMassPairTradeSim(body);
