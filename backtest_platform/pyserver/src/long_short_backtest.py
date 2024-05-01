@@ -337,7 +337,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
 
         logger = get_logger()
         logger.log(
-            "Finished mass pair-trade backtest.",
+            f"Finished mass pair-trade backtest. Result: {(end_balance/START_BALANCE - 1) * 100}.",
             logging.INFO,
             True,
             True,
