@@ -277,5 +277,5 @@ backtest_rule_based_v2 = {
     "use_profit_based_close": False,
     "stop_loss_threshold_perc": 0,
     "take_profit_threshold_perc": 0,
-    "backtest_data_range": [0, 100],
+    "backtest_data_range": [70, 100],
 }
