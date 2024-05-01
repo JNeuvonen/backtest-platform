@@ -146,6 +146,14 @@ export const getNormalDistributionItems = (
   return ret;
 };
 
+export function safeDivide(
+  numerator: number,
+  denominator: number,
+  fallback: number
+): number {
+  return denominator === 0 ? fallback : numerator / denominator;
+}
+
 export const removeDuplicates = (numbers: number[]) => {
   return [...new Set(numbers)];
 };
