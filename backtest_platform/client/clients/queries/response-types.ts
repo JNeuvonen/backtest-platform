@@ -182,7 +182,10 @@ export interface BacktestObject {
   use_profit_based_close: boolean;
   use_stop_loss_based_close: boolean;
   is_short_selling_strategy: boolean;
+  is_long_short_strategy: boolean;
   klines_until_close: number;
+  long_side_profit_factor: number;
+  short_side_profit_factor: number;
   name: string;
   data: BacktestBalance[];
   trade_count: number;
@@ -195,6 +198,8 @@ export interface BacktestObject {
   start_balance: number;
   end_balance: number;
   result_perc: number;
+  mean_return_perc: number;
+  mean_hold_time_sec: number;
   take_profit_threshold_perc: number;
   stop_loss_threshold_perc: number;
   backtest_range_start: number;

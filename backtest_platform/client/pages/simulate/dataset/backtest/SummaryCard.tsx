@@ -4,6 +4,7 @@ import { Heading, Stat, StatLabel, StatNumber } from "@chakra-ui/react";
 import { COLOR_CONTENT_PRIMARY } from "../../../../utils/colors";
 import { roundNumberDropRemaining } from "../../../../utils/number";
 import { BacktestObject } from "../../../../clients/queries/response-types";
+import { formatSecondsIntoTime } from "../../../../utils/date";
 
 interface Props {
   backtest: BacktestObject;
@@ -105,6 +106,96 @@ export const BacktestSummaryCard = (props: Props) => {
               </StatNumber>
             </Stat>
           </div>
+
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Winning trades</StatLabel>
+              <StatNumber>
+                {backtest.share_of_winning_trades_perc
+                  ? String(
+                      roundNumberDropRemaining(
+                        backtest.share_of_winning_trades_perc,
+                        2
+                      )
+                    ) + "%"
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Losing trades</StatLabel>
+              <StatNumber>
+                {backtest.share_of_losing_trades_perc
+                  ? String(
+                      roundNumberDropRemaining(
+                        backtest.share_of_losing_trades_perc,
+                        2
+                      )
+                    ) + "%"
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
+
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Trade mean return</StatLabel>
+              <StatNumber>
+                {backtest.mean_return_perc
+                  ? String(
+                      roundNumberDropRemaining(backtest.mean_return_perc, 2)
+                    ) + "%"
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
+
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Mean pos. time</StatLabel>
+              <StatNumber>
+                {backtest.mean_hold_time_sec
+                  ? String(formatSecondsIntoTime(backtest.mean_hold_time_sec))
+                  : "N/A"}
+              </StatNumber>
+            </Stat>
+          </div>
+
+          {backtest.is_long_short_strategy && (
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Long profit factor</StatLabel>
+                <StatNumber>
+                  {backtest.long_side_profit_factor
+                    ? String(
+                        roundNumberDropRemaining(
+                          backtest.long_side_profit_factor,
+                          2
+                        )
+                      )
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+          )}
+          {backtest.is_long_short_strategy && (
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Short profit factor</StatLabel>
+                <StatNumber>
+                  {backtest.short_side_profit_factor
+                    ? String(
+                        roundNumberDropRemaining(
+                          backtest.short_side_profit_factor,
+                          2
+                        )
+                      )
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+          )}
         </div>
       </ChakraCard>
     </div>
