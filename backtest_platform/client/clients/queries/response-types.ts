@@ -165,6 +165,7 @@ export interface Column {
 export interface BacktestBalance {
   cash: number;
   kline_open_time: number;
+  benchmark_price: number;
   portfolio_worth: number;
   position: number;
   prediction: number;
