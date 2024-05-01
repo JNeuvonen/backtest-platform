@@ -205,7 +205,6 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         idx = 0
 
         for _, row in kline_open_times.iterrows():
-
             idx += 1
             if idx <= idx_data_range_start or idx > idx_data_range_end:
                 continue
@@ -290,6 +289,8 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             "stop_loss_threshold_perc": backtest_info.stop_loss_threshold_perc,
             "best_trade_result_perc": trade_details_dict["best_trade_result_perc"],
             "worst_trade_result_perc": trade_details_dict["worst_trade_result_perc"],
+            "mean_hold_time_sec": trade_details_dict["mean_hold_time_sec"],
+            "mean_return_perc": trade_details_dict["mean_return_perc"],
             "buy_and_hold_result_net": benchmark_end_balance - START_BALANCE,
             "buy_and_hold_result_perc": (benchmark_end_balance / START_BALANCE - 1)
             * 100,

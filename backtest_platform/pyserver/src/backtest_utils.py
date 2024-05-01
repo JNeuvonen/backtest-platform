@@ -116,6 +116,8 @@ def calc_short_side_trade_res_perc(open_price, close_price):
 
 
 def get_long_short_trade_details(trades):
+    cumulative_hold_time = 0
+    cumulative_returns = 0.0
     num_winning_trades = 0
     num_losing_trades = 0
 
@@ -140,6 +142,9 @@ def get_long_short_trade_details(trades):
         short_side_res_perc = calc_short_side_trade_res_perc(
             item.short_open_price, item.short_close_price
         )
+
+        cumulative_returns += item.perc_result
+        cumulative_hold_time += item.close_time - item.open_time
 
         best_trade_result_perc = max(best_trade_result_perc, item.perc_result)
         worst_trade_result_perc = min(worst_trade_result_perc, item.perc_result)
@@ -186,6 +191,9 @@ def get_long_short_trade_details(trades):
             num_losing_trades, num_total_trades, 0
         )
         * 100,
+        "mean_return_perc": safe_divide(cumulative_returns, num_total_trades, 0),
+        "mean_hold_time_sec": safe_divide(cumulative_hold_time, num_total_trades, 0)
+        / 1000,
     }
 
 

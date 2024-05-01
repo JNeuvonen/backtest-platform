@@ -1,5 +1,5 @@
 from typing import Dict
-from sqlalchemy import Column, Float, ForeignKey, Integer
+from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer
 from log import LogExceptionContext
 from orm import Base, Session
 
@@ -43,6 +43,8 @@ class BacktestStatistics(Base):
     trading_fees_perc = Column(Float)
 
     trade_count = Column(Integer)
+    mean_hold_time_sec = Column(Integer)
+    mean_return_perc = Column(Float)
 
 
 class BacktestStatisticsQuery:
