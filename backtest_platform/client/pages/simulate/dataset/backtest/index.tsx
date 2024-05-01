@@ -38,7 +38,7 @@ interface PortfolioGrowthData {
   exit_trade: null | boolean;
 }
 
-interface TradesBarChartData {
+export interface TradesBarChartData {
   perc_result: number;
   kline_open_time: number;
 }

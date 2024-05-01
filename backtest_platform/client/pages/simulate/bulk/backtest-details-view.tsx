@@ -1,17 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
 import { useBacktestById } from "../../../clients/queries/queries";
-import { Heading, Spinner, Switch } from "@chakra-ui/react";
+import {
+  Heading,
+  Spinner,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Switch,
+} from "@chakra-ui/react";
 import { BacktestSummaryCard } from "../dataset/backtest/SummaryCard";
-import { ShareYAxisTwoLineChart } from "../../../components/charts/ShareYAxisLineChart";
 import { FetchBacktestByIdRes } from "../../../clients/queries/response-types";
 import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
 import { Line } from "recharts";
 import {
   COLOR_BRAND_PRIMARY,
   COLOR_BRAND_SECONDARY,
+  COLOR_CONTENT_PRIMARY,
 } from "../../../utils/colors";
 import { WithLabel } from "../../../components/form/WithLabel";
+import { GenericBarChart } from "../../../components/charts/BarChart";
+import { TradesBarChartData } from "../dataset/backtest";
+import { roundNumberDropRemaining, safeDivide } from "../../../utils/number";
+import { GenericRangeSlider } from "../../../components/chakra/RangeSlider";
+import { ChakraCard } from "../../../components/chakra/Card";
 
 interface PathParams {
   massPairTradeBacktestId: number;
@@ -41,6 +53,66 @@ const getPortfolioChartData = (backtestData: FetchBacktestByIdRes) => {
   return ret;
 };
 
+const getTradesData = (
+  backtestData: FetchBacktestByIdRes,
+  filterTradesRange: number[]
+) => {
+  const ret = [] as TradesBarChartData[];
+  let cumulativeResults = 0;
+  let numWinningTrades = 0;
+  let numLosingTrades = 0;
+
+  const trades = backtestData.pair_trades.sort(
+    (a, b) => a.percent_result - b.percent_result
+  );
+
+  for (let i = 0; i < trades.length; ++i) {
+    if (
+      trades[i].percent_result < filterTradesRange[0] ||
+      trades[i].percent_result > filterTradesRange[1]
+    ) {
+      continue;
+    }
+    ret.push({
+      perc_result: trades[i].percent_result,
+      kline_open_time: trades[i].open_time,
+    });
+    cumulativeResults += trades[i].percent_result;
+
+    if (trades[i].percent_result < 0) {
+      numLosingTrades += 1;
+    } else if (trades[i].percent_result > 0) {
+      numWinningTrades += 1;
+    }
+  }
+
+  const worstTrade = trades[0];
+  const bestTrade = trades[trades.length - 1];
+  const totalTrades = numLosingTrades + numWinningTrades;
+
+  return {
+    chartData: ret,
+    mean: roundNumberDropRemaining(
+      safeDivide(cumulativeResults, ret.length, 0),
+      2
+    ),
+    worstTradePerc: worstTrade.percent_result,
+    bestTradePerc: bestTrade.percent_result,
+    shareOfAllTrades: roundNumberDropRemaining(
+      safeDivide(totalTrades, trades.length, 0) * 100,
+      2
+    ),
+    winningTradesRatio: roundNumberDropRemaining(
+      safeDivide(numWinningTrades, totalTrades, 0) * 100,
+      2
+    ),
+    losingTradesRatio: roundNumberDropRemaining(
+      safeDivide(numLosingTrades, totalTrades, 0) * 100,
+      2
+    ),
+  };
+};
+
 const getDateRange = (portfolioTicks: ChartTick[]): string => {
   const firstItem = portfolioTicks[0].kline_open_time;
   const lastItem = portfolioTicks[portfolioTicks.length - 1].kline_open_time;
@@ -61,6 +133,22 @@ export const LongShortBacktestsDetailsView = () => {
   const { massPairTradeBacktestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(massPairTradeBacktestId));
   const [hideBenchmark, setHideBenchmark] = useState(false);
+  const [tradeFilterPerc, setTradeFilterPerc] = useState(0);
+  const [filterTradesRange, setFilterTradesRange] = useState([-500, 500]);
+
+  useEffect(() => {
+    if (backtestQuery.data) {
+      const trades = backtestQuery.data.pair_trades.sort(
+        (a, b) => a.percent_result - b.percent_result
+      );
+      const worstTrade = trades[0];
+      const bestTrade = trades[trades.length - 1];
+      setFilterTradesRange([
+        worstTrade.percent_result,
+        bestTrade.percent_result,
+      ]);
+    }
+  }, [backtestQuery.data]);
 
   if (backtestQuery.isLoading || !backtestQuery.data) {
     return (
@@ -71,7 +159,20 @@ export const LongShortBacktestsDetailsView = () => {
   }
 
   const backtest = backtestQuery.data.data;
-  const portfolioTicks = getPortfolioChartData(backtestQuery.data);
+
+  const portfolioTicks = useMemo(
+    () => getPortfolioChartData(backtestQuery.data as FetchBacktestByIdRes),
+    [backtestQuery.data]
+  );
+
+  const tradeDetailsData = useMemo(
+    () =>
+      getTradesData(
+        backtestQuery.data as FetchBacktestByIdRes,
+        filterTradesRange
+      ),
+    [backtestQuery.data, JSON.stringify(filterTradesRange)]
+  );
 
   return (
     <div>
@@ -117,6 +218,78 @@ export const LongShortBacktestsDetailsView = () => {
               dot={false}
             />
           </ShareYAxisMultilineChart>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "16px" }}>
+        <div></div>
+        <div style={{ marginTop: "16px" }}>
+          <ChakraCard heading={<Heading size={"md"}>Trade results</Heading>}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div>
+                <Stat color={COLOR_CONTENT_PRIMARY}>
+                  <StatLabel>Result mean</StatLabel>
+                  <StatNumber>{tradeDetailsData["mean"]}%</StatNumber>
+                </Stat>
+              </div>
+              <div>
+                <Stat color={COLOR_CONTENT_PRIMARY}>
+                  <StatLabel>Winning trades</StatLabel>
+                  <StatNumber>
+                    {tradeDetailsData["winningTradesRatio"]}%
+                  </StatNumber>
+                </Stat>
+              </div>
+              <div>
+                <Stat color={COLOR_CONTENT_PRIMARY}>
+                  <StatLabel>Losing trades</StatLabel>
+                  <StatNumber>
+                    {tradeDetailsData["losingTradesRatio"]}%
+                  </StatNumber>
+                </Stat>
+              </div>
+              <div>
+                <Stat color={COLOR_CONTENT_PRIMARY}>
+                  <StatLabel>Share of all trades</StatLabel>
+                  <StatNumber>
+                    {tradeDetailsData["shareOfAllTrades"]}%
+                  </StatNumber>
+                </Stat>
+              </div>
+              <div>
+                <Stat color={COLOR_CONTENT_PRIMARY}>
+                  <StatLabel>Num trades</StatLabel>
+                  <StatNumber>
+                    {tradeDetailsData["chartData"].length}
+                  </StatNumber>
+                </Stat>
+              </div>
+            </div>
+          </ChakraCard>
+        </div>
+        <div style={{ width: "500px", marginTop: "16px" }}>
+          <GenericRangeSlider
+            minValue={tradeDetailsData["worstTradePerc"]}
+            maxValue={tradeDetailsData["bestTradePerc"]}
+            values={filterTradesRange}
+            onChange={(newValues: number[]) => {
+              setFilterTradesRange(newValues);
+            }}
+            formatLabelCallback={(values) =>
+              `Trades from ${roundNumberDropRemaining(
+                values[0],
+                2
+              )}% to ${roundNumberDropRemaining(values[1], 2)}%`
+            }
+          />
+        </div>
+        <div>
+          <GenericBarChart
+            data={tradeDetailsData["chartData"]}
+            yAxisKey="perc_result"
+            xAxisKey=""
+            containerStyles={{ marginTop: "16px" }}
+          />
         </div>
       </div>
     </div>
