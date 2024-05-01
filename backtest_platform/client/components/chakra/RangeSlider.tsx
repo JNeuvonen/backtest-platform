@@ -16,6 +16,7 @@ interface GenericRangeSliderProps {
   isDisabled?: boolean;
   label?: string;
   containerStyle?: CSSProperties;
+  formatLabelCallback: (values: number[]) => string;
 }
 
 export const GenericRangeSlider: React.FC<GenericRangeSliderProps> = ({
@@ -26,12 +27,11 @@ export const GenericRangeSlider: React.FC<GenericRangeSliderProps> = ({
   isDisabled = false,
   label = "Range Slider",
   containerStyle,
+  formatLabelCallback,
 }) => {
   return (
     <FormControl style={containerStyle}>
-      <FormLabel>
-        {label}: [{values[0]}-{values[1]}]
-      </FormLabel>
+      <FormLabel>{formatLabelCallback(values)}</FormLabel>
       <RangeSlider
         min={minValue}
         max={maxValue}
