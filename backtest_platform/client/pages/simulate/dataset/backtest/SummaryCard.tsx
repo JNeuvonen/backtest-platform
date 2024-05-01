@@ -7,13 +7,14 @@ import { BacktestObject } from "../../../../clients/queries/response-types";
 
 interface Props {
   backtest: BacktestObject;
+  dateRange: string;
 }
 
 export const BacktestSummaryCard = (props: Props) => {
-  const { backtest } = props;
+  const { backtest, dateRange } = props;
   return (
     <div style={{ marginTop: "16px" }}>
-      <ChakraCard heading={<Heading size="md">Summary</Heading>}>
+      <ChakraCard heading={<Heading size="md">Summary: {dateRange}</Heading>}>
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
           <div>
             <Stat color={COLOR_CONTENT_PRIMARY}>
