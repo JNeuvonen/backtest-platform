@@ -269,7 +269,7 @@ backtest_rule_based_v2 = {
     "dataset_id": 23,
     "name": "",
     "use_time_based_close": True,
-    "klines_until_close": 24,
+    "klines_until_close": 1,
     "trading_fees_perc": 0.1,
     "slippage_perc": 0.001,
     "short_fee_hourly": 0.000165888,

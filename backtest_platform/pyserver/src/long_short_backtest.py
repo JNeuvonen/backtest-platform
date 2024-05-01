@@ -2,6 +2,8 @@ import logging
 import numpy as np
 import math
 from typing import Dict, List, Set
+
+from pandas.core.tools.datetimes import should_cache
 from api_binance import save_historical_klines
 from backtest_utils import (
     calc_long_short_profit_factor,
@@ -469,6 +471,7 @@ class PairTrade:
         self.on_open_buy_price = buy_price
         self.on_trade_open_acc_net_value = on_trade_open_acc_net_value
         self.balance_history: List[float] = []
+        self.candles_held = 0
 
 
 class CompletedTrade:
@@ -598,7 +601,7 @@ class LongShortOnUniverseBacktest:
 
         return filtered_pairs
 
-    def get_exit_pair_trade_decision(self, kline_state: Dict, pair: PairTrade):
+    def should_exit_by_condition(self, kline_state: Dict, pair: PairTrade):
         code = BACKTEST_LONG_SHORT_CLOSE_TEMPLATE
         replacements = {"{EXIT_PAIR_TRADE_FUNC}": self.rules.exit_cond}
 
@@ -673,11 +676,34 @@ class LongShortOnUniverseBacktest:
         self.positions.close_short(required_for_close_short)
         self.completed_trades.append(completed_trade)
 
+    def is_pos_held_for_max_time(self, pair_trade):
+        if (
+            self.rules.use_time_based_close
+            and self.rules.max_klines_until_close <= pair_trade.candles_held
+        ):
+            return True
+        return False
+
+    def is_pair_going_to_reenter(self, pair_trade, kline_state):
+        buy_id = pair_trade.buy_id
+        sell_id = pair_trade.sell_id
+
+        return (
+            buy_id in kline_state["buy_candidates"]
+            and sell_id in kline_state["sell_candidates"]
+        )
+
     def check_for_pair_trade_close(self, kline_state, kline_open_time):
         active_pairs = []
         for item in self.active_pairs:
-            should_exit = self.get_exit_pair_trade_decision(kline_state, item)
-            if should_exit is True:
+            should_exit_by_cond = self.should_exit_by_condition(kline_state, item)
+            should_exit_by_time_based = self.is_pos_held_for_max_time(item)
+            if should_exit_by_cond is True:
+                self.close_pair_trade(kline_state, item, kline_open_time)
+            elif (
+                should_exit_by_time_based is True
+                and self.is_pair_going_to_reenter(item, kline_state) is False
+            ):
                 self.close_pair_trade(kline_state, item, kline_open_time)
             else:
                 active_pairs.append(item)
@@ -732,6 +758,10 @@ class LongShortOnUniverseBacktest:
         self.stats.position_held_time += bar_pos_held_time
         self.stats.cumulative_time += self.stats.candles_time_delta
 
+    def update_active_pairs(self):
+        for item in self.active_pairs:
+            item.candles_held += 1
+
     def update_acc_state(self, kline_open_time: int, kline_state: Dict):
         total_debt = 0.0
         total_longs = 0.0
@@ -756,6 +786,7 @@ class LongShortOnUniverseBacktest:
             kline_open_time=kline_open_time,
             benchmark_eq_value=self.benchmark.equity_value,
         )
+        self.update_active_pairs()
         self.update_pos_held_time()
 
     def process_bar(self, kline_open_time: int, kline_state: Dict):
