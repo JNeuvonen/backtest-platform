@@ -165,6 +165,19 @@ export const BacktestSummaryCard = (props: Props) => {
           {backtest.is_long_short_strategy && (
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Asset universe size</StatLabel>
+                <StatNumber>
+                  {backtest.asset_universe_size
+                    ? String(backtest.asset_universe_size)
+                    : "N/A"}
+                </StatNumber>
+              </Stat>
+            </div>
+          )}
+
+          {backtest.is_long_short_strategy && (
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Long profit factor</StatLabel>
                 <StatNumber>
                   {backtest.long_side_profit_factor

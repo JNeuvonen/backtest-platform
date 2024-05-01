@@ -191,6 +191,7 @@ export interface BacktestObject {
   trade_count: number;
   profit_factor: number;
   gross_profit: number;
+  asset_universe_size: number;
   gross_loss: number;
   model_weights_id: number;
   train_job_id: number;

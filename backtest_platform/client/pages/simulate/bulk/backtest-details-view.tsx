@@ -36,6 +36,8 @@ interface ChartTick {
 }
 
 const getPortfolioChartData = (backtestData: FetchBacktestByIdRes) => {
+  if (backtestData === undefined) return [];
+
   const ret = [] as ChartTick[];
 
   const portfolioData = backtestData.balance_history;
@@ -57,6 +59,8 @@ const getTradesData = (
   backtestData: FetchBacktestByIdRes,
   filterTradesRange: number[]
 ) => {
+  if (backtestData === undefined) return {};
+
   const ret = [] as TradesBarChartData[];
   let cumulativeResults = 0;
   let numWinningTrades = 0;
@@ -133,8 +137,21 @@ export const LongShortBacktestsDetailsView = () => {
   const { massPairTradeBacktestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(massPairTradeBacktestId));
   const [hideBenchmark, setHideBenchmark] = useState(false);
-  const [tradeFilterPerc, setTradeFilterPerc] = useState(0);
   const [filterTradesRange, setFilterTradesRange] = useState([-500, 500]);
+
+  const portfolioTicks = useMemo(
+    () => getPortfolioChartData(backtestQuery.data as FetchBacktestByIdRes),
+    [backtestQuery.data]
+  );
+
+  const tradeDetailsData = useMemo(
+    () =>
+      getTradesData(
+        backtestQuery.data as FetchBacktestByIdRes,
+        filterTradesRange
+      ),
+    [backtestQuery.data, JSON.stringify(filterTradesRange)]
+  );
 
   useEffect(() => {
     if (backtestQuery.data) {
@@ -159,20 +176,6 @@ export const LongShortBacktestsDetailsView = () => {
   }
 
   const backtest = backtestQuery.data.data;
-
-  const portfolioTicks = useMemo(
-    () => getPortfolioChartData(backtestQuery.data as FetchBacktestByIdRes),
-    [backtestQuery.data]
-  );
-
-  const tradeDetailsData = useMemo(
-    () =>
-      getTradesData(
-        backtestQuery.data as FetchBacktestByIdRes,
-        filterTradesRange
-      ),
-    [backtestQuery.data, JSON.stringify(filterTradesRange)]
-  );
 
   return (
     <div>
