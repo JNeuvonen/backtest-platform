@@ -22,6 +22,8 @@ interface TwoLineChartProps {
   containerStyles?: CSSProperties;
   showDots?: boolean;
   displayTradeEntersAndExits?: boolean;
+  xAxisTickFormatter?: any;
+  yAxisTickFormatter?: any;
 }
 
 export const ShareYAxisTwoLineChart = ({
@@ -33,12 +35,14 @@ export const ShareYAxisTwoLineChart = ({
   containerStyles,
   showDots = true,
   displayTradeEntersAndExits = false,
+  yAxisTickFormatter,
+  xAxisTickFormatter,
 }: TwoLineChartProps) => (
   <ResponsiveContainer width={"100%"} height={height} style={containerStyles}>
     <ComposedChart data={data}>
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey={xKey} />
-      <YAxis />
+      <XAxis dataKey={xKey} tickFormatter={xAxisTickFormatter} />
+      <YAxis tickFormatter={yAxisTickFormatter} />
       <Tooltip />
       <Legend />
       <Line
