@@ -269,8 +269,10 @@ export interface BacktestsByDataset {
 export interface CodePreset {
   id: number;
   code: string;
+  label?: string;
   category: string;
   name: string;
+  description?: string;
 }
 
 export interface DataTransformation {
