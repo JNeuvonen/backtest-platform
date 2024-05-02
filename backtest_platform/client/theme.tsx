@@ -13,6 +13,8 @@ export const BUTTON_VARIANTS = {
   grey: "grey",
   nofill: "noFill",
   grey2: "grey2",
+  dangerFill: "dangerFill",
+  dangerNoFill: "dangerNoFill",
 };
 
 export const CARD_VARIANTS = {

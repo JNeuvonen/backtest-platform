@@ -1,4 +1,6 @@
 import {
+  COLOR_ACCENT_ERROR_SHADE_ONE,
+  COLOR_ACCENT_ERROR_SHADE_TWO,
   COLOR_BG_PRIMARY,
   COLOR_BG_PRIMARY_SHADE_THREE,
   COLOR_BG_TERTIARY,
@@ -41,6 +43,24 @@ const buttonNoFillVariant = () => ({
   },
 });
 
+const buttonVariantDangerNoFill = () => ({
+  color: COLOR_ACCENT_ERROR_SHADE_ONE,
+  bg: "transparent",
+  padding: "0px !important",
+  _hover: {
+    bg: "transparent",
+    color: COLOR_ACCENT_ERROR_SHADE_TWO,
+  },
+});
+
+const buttonVariantDangerFill = () => ({
+  bg: COLOR_ACCENT_ERROR_SHADE_ONE,
+  color: COLOR_CONTENT_PRIMARY,
+  _hover: {
+    bg: COLOR_ACCENT_ERROR_SHADE_TWO,
+  },
+});
+
 export const buttonTheme = {
   Button: {
     baseStyle: {
@@ -51,6 +71,8 @@ export const buttonTheme = {
       grey: () => buttonGreyVariant(),
       noFill: () => buttonNoFillVariant(),
       grey2: () => buttonGrey2Variant(),
+      dangerNoFill: () => buttonVariantDangerNoFill(),
+      dangerFill: () => buttonVariantDangerFill(),
     },
     defaultProps: {
       variant: "cta",
