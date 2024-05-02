@@ -127,6 +127,7 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/download`,
   backtest: LOCAL_API_URI + LOCAL_API.backtest.root,
   createCodePreset: () => LOCAL_API_URI + LOCAL_API.code_preset.root,
+  putCodePreset: () => LOCAL_API_URI + LOCAL_API.code_preset.root,
   fetchCodePresets: () => LOCAL_API_URI + LOCAL_API.code_preset.root + "/all",
   deleteManyBacktest: (listOfIds: number[]) =>
     LOCAL_API_URI +
