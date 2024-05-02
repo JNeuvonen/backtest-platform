@@ -1,4 +1,19 @@
+import json
 from query_code_preset import CodePresetQuery
+
+
+class CodePresetLabels:
+    CANDLE_PATTERN = "candle_pattern"
+    VOLATILITY = "volatility"
+    PRICE_TRANSFORM = "price_transform"
+    CYCLE = "cycle"
+    VOLUME = "volume"
+    MOMENTUM = "momentum"
+    SMOOTHING = "smoothing"
+    OVERLAP = "overlap"
+    CROSSING = "crossing"
+    SEASONAL = "seasonal"
+    TARGET = "target"
 
 
 class CodePresetCategories:
@@ -11,11 +26,12 @@ class CodePreset:
     category: str
     description: str
 
-    def __init__(self, code, name, category, description) -> None:
+    def __init__(self, code, name, category, description, labels: str) -> None:
         self.code = code
         self.name = name
         self.category = category
         self.description = description
+        self.label = labels
 
     def to_dict(self) -> dict:
         return {
@@ -23,6 +39,7 @@ class CodePreset:
             "name": self.name,
             "category": self.category,
             "description": self.description,
+            "label": self.label,
         }
 
 
@@ -1055,11 +1072,14 @@ def calculate_stochastic(df, high_col='high_price', low_col='low_price', close_c
     high_max = df[high_col].rolling(window=k_period).max()
     
     # Calculate %K line
-    df['%K'] = ((df[close_col] - low_min) / (high_max - low_min)) * 100
+    k_label = f'STOCHASTIC_K_{k_period}'
+    df[k_label] = ((df[close_col] - low_min) / (high_max - low_min)) * 100
     
     # Calculate %D line as the moving average of %K
-    df['%D'] = df['%K'].rolling(window=d_period).mean()
+    d_label = f'STOCHASTIC_D_{k_period}_{d_period}'
+    df[d_label] = df[k_label].rolling(window=d_period).mean()
 
+# Configuration
 high_col = 'high_price'
 low_col = 'low_price'
 close_col = 'close_price'
@@ -1075,14 +1095,18 @@ def calculate_stochf(df, high_col='high_price', low_col='low_price', close_col='
     # Calculate the raw Stochastic value (%K)
     lowest_low = df[low_col].rolling(window=k_period).min()
     highest_high = df[high_col].rolling(window=k_period).max()
-    df['%K_raw'] = 100 * ((df[close_col] - lowest_low) / (highest_high - lowest_low))
+    k_raw_label = f'StochF_raw_%K_{k_period}'
+    df[k_raw_label] = 100 * ((df[close_col] - lowest_low) / (highest_high - lowest_low))
 
     # Smooth the %K value if required
-    df['%K'] = df['%K_raw'].rolling(window=k_smooth).mean()
-    # Calculate %D as moving average of %K
-    df['%D'] = df['%K'].rolling(window=k_smooth).mean()
+    k_smooth_label = f'STOCHF_K_{k_period}_{k_smooth}'
+    df[k_smooth_label] = df[k_raw_label].rolling(window=k_smooth).mean()
 
-# Usage example:
+    # Calculate %D as moving average of %K
+    d_label = f'STOCHF_D_{k_period}_{k_smooth}'
+    df[d_label] = df[k_smooth_label].rolling(window=k_smooth).mean()
+
+# Configuration
 high_col = 'high_price'
 low_col = 'low_price'
 close_col = 'close_price'
@@ -1114,8 +1138,8 @@ def calculate_stochrsi(df, column='close_price', periods=14, k_period=3, d_perio
     stochrsi_d = stochrsi_k.rolling(window=d_period).mean()
 
     # Including period and column name in the labels
-    df[f'StochRSI_K_{periods}_{k_period}_{column}'] = stochrsi_k
-    df[f'StochRSI_D_{periods}_{d_period}_{column}'] = stochrsi_d
+    df[f'STOCHRSI_K_{periods}_{k_period}_{column}'] = stochrsi_k
+    df[f'STOCHRSI_D_{periods}_{d_period}_{column}'] = stochrsi_d
 
 # Example of usage:
 column = "close_price"
@@ -1481,402 +1505,462 @@ DEFAULT_CODE_PRESETS = [
         name="RSI",
         category=CodePresetCategories.INDICATOR,
         description="Generates RSI indicator on the selected column with the specified look-back periods.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=GEN_MA_CODE,
         name="SMA",
         category=CodePresetCategories.INDICATOR,
         description="Generates SMA indicator on the selected column with the specified look-back periods.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=GEN_TARGETS,
         name="TARGET",
         category=CodePresetCategories.INDICATOR,
         description="Generates forward looking target on the selected target column with the specified forward looking periods. This is useful for gauging correlations to future prices.",
+        labels=CodePresetLabels.TARGET,
     ),
     CodePreset(
         code=GEN_ATR,
         name="ATR",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Average True Range (ATR) to measure market volatility over specified periods.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=IS_FRIDAY_8_UTC,
         name="IS_FRIDAY_8_UTC",
         category=CodePresetCategories.INDICATOR,
         description="Marks periods on Fridays between 8 and 10 UTC to help identify time-specific market behavior.",
+        labels=CodePresetLabels.SEASONAL,
     ),
     CodePreset(
         code=GEN_OBV,
         name="OBV",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the On-Balance Volume (OBV) to track cumulative trading volume by adding or subtracting each period's volume based on the direction of the price movement.",
+        labels=CodePresetLabels.VOLUME,
     ),
     CodePreset(
         code=GEN_HOURLY_FLAGS,
         name="HOURLY_FLAGS",
         category=CodePresetCategories.INDICATOR,
         description="Generates flags for each hour of the week, indicating if a particular record falls within that hour. Useful for time-series analysis.",
+        labels=CodePresetLabels.SEASONAL,
     ),
     CodePreset(
         code=GEN_SIMPLE_CROSSING,
         name="SIMPLE_CROSSING",
         category=CodePresetCategories.INDICATOR,
         description="Detects when a value crosses above or below a specified threshold, marking the event for further analysis.",
+        labels=CodePresetLabels.CROSSING,
     ),
     CodePreset(
         code=GEN_PERSISTENT_CROSSING,
         name="PERISTENT_CROSSING",
         category=CodePresetCategories.INDICATOR,
         description="Identifies persistent crossing events over a look-back period, enhancing reliability in trend identification.",
+        labels=CodePresetLabels.CROSSING,
     ),
     CodePreset(
         code=GEN_BBANDS_CROSSING,
         name="BBANDS_CROSSING",
         category=CodePresetCategories.INDICATOR,
         description="Determines when prices cross above or below Bollinger Bands, which can signal significant market moves based on volatility and price levels.",
+        labels=CodePresetLabels.OVERLAP,
     ),
     CodePreset(
         code=GEN_DEMA,
         name="DEMA",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Double Exponential Moving Average (DEMA) for a given period to provide a smoother and more responsive moving average.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=GEN_EMA,
         name="EMA",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Exponential Moving Average (EMA) which gives more weight to recent prices and reacts more quickly to price changes compared to a simple moving average. This is particularly useful for tracking trends in fast-moving markets.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=HT_TRENDLINE,
         name="HT_TRENDLINE",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Hilbert Transform - Instantaneous Trendline, which is a leading indicator used to generate signals reflecting the cyclical nature of price movements. This method is aimed to provide a smoothed version of the price data, focusing on the dominant market cycle component.",
+        labels=CodePresetLabels.OVERLAP,
     ),
     CodePreset(
         code=KAMA,
         name="KAMA",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Kaufman Adaptive Moving Average (KAMA) which adapts to price volatility dynamically by using an efficiency ratio and smoothing constants to produce a more responsive moving average tailored to historical and current price movements.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=MAVP,
         name="MAVP",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Moving Average with Variable Periods (MAVP), allowing for different averaging periods at each data point, making it useful for datasets where the optimal averaging window changes over time.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=MIDPOINT,
         name="MIDPOINT",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the midpoint between the highest and lowest values of a given column over specified periods, representing a simple measure of the average of extreme values within the period.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=MIDPRICE,
         name="MIDPRICE",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Midpoint Price over a specified period. It averages the highest high and the lowest low for the given period, typically used to identify levels of support and resistance.",
+        labels=CodePresetLabels.OVERLAP,
     ),
     CodePreset(
         code=PARABOLIC_SAR,
         name="PARABOLIC_SAR",
         category=CodePresetCategories.INDICATOR,
         description="The Parabolic SAR (Stop and Reverse) is used to determine potential reversals in the market price direction of traded assets like stocks or commodities. This indicator is particularly useful for setting trailing stops and identifying entry and exit points. It is plotted as a series of points above or below the price bars, signifying a potential reversal or continuation of the current trend.",
+        labels=CodePresetLabels.OVERLAP,
     ),
     CodePreset(
         code=SAREXT,
         name="SAREXT",
         category=CodePresetCategories.INDICATOR,
         description="The Extended Parabolic SAR is an enhanced version of the standard Parabolic SAR. It is used to determine potential reversals in the market price direction of an asset, by accounting for volatility and acceleration. This version allows fine-tuning of the start, increment, and maximum acceleration factors, making it adaptable to different trading environments and volatility levels.",
+        labels=CodePresetLabels.OVERLAP,
     ),
     CodePreset(
         code=T3_INDICATOR,
         name="T3",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Triple Exponential Moving Average (T3), which provides a smoother and more responsive moving average by applying multiple levels of exponential smoothing. This indicator is particularly useful for identifying the trend direction and strength.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=TEMA_INDICATOR,
         name="TEMA",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Triple Exponential Moving Average (TEMA), which uses triple smoothing to minimize the lag created by using multiple Exponential Moving Averages (EMAs), providing a more responsive moving average ideal for shorter trading periods or volatile markets.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=TRIMA,
         name="TRIMA",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Triangular Moving Average (TRIMA) over a specified period. This moving average is centered and smoothed to reduce lag, providing a clearer indication of the underlying trend.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=WMA,
         name="WMA",
         category=CodePresetCategories.INDICATOR,
         description="WMA (Weighted Moving Average): This indicator calculates the Weighted Moving Average, which gives more importance to recent data points than earlier ones. It's commonly used to identify trends more quickly than a simple moving average can.",
+        labels=CodePresetLabels.SMOOTHING,
     ),
     CodePreset(
         code=ADX,
         name="ADX",
         category=CodePresetCategories.INDICATOR,
         description="The Average Directional Movement Index (ADX) quantifies trend strength by calculating a moving average of the price range expansion over a given period. A rising ADX indicates a strong trend, while a falling ADX suggests a weakening trend. The ADX is non-directional; it registers trend strength whether the price is trending upwards or downwards.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=ADXR,
         name="ADXR",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Average Directional Movement Index Rating (ADXR) which is an average of the current ADX and the ADX from half the selected period ago. This helps in smoothing the ADX values and provides a clearer indication of trend strength and direction over time.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=APO,
         name="APO",
         category=CodePresetCategories.INDICATOR,
         description="The Absolute Price Oscillator (APO) is based on the difference between two exponential moving averages (EMAs) of a security's price, typically a fast and a slow EMA. The APO is used to identify momentum or trend strength by measuring the divergence between these EMAs.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=AROON_CUSTOM,
         name="AROON_CUSTOM",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Aroon indicator, which measures the time between highs and the time between lows over a given period. The indicator consists of two lines: Aroon Up (which measures the time since the last high) and Aroon Down (which measures the time since the last low). Both are expressed as a percentage of the total period. This indicator is useful for identifying trend changes and strength.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=AROON_CONVENTIONAL,
         name="AROON_CONVENTIONAL",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Aroon indicator, which measures the time between highs and the time between lows over a given period. The indicator consists of two lines: Aroon Up (which measures the time since the last high) and Aroon Down (which measures the time since the last low). Both are expressed as a percentage of the total period. This indicator is useful for identifying trend changes and strength.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=AROONOSC,
         name="AROONOSC",
         category=CodePresetCategories.INDICATOR,
         description="Computes the Aroon Oscillator to determine the trend strength and the likelihood of trend reversal. The oscillator fluctuates between -100 and +100, where high positive values indicate a strong uptrend, and high negative values suggest a strong downtrend.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=BOP,
         name="BOP",
         category=CodePresetCategories.INDICATOR,
         description="BOP (Balance of Power): This indicator is used to assess the strength of buyers and sellers by determining whether the price is being driven by buyers (closing near the high) or by sellers (closing near the low). It's particularly useful for identifying price divergences and market sentiment within trading periods.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=CCI,
         name="CCI",
         category=CodePresetCategories.INDICATOR,
         description="Commodity Channel Index (CCI): Calculates the CCI to identify cyclical trends within a dataset. The CCI compares the current price to an average price level over a specific time period with the normal deviations from that average. It helps in identifying overbought or oversold levels in price.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=CMO,
         name="CMO",
         category=CodePresetCategories.INDICATOR,
         description="Chande Momentum Oscillator (CMO): Measures the momentum of a security by comparing the sum of its recent gains to the sum of its recent losses. It is used to identify overbought and oversold conditions and potential reversals. The CMO ranges from -100 to +100, indicating overbought conditions at high positive values and oversold conditions at low negative values.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=DMI,
         name="DMI",
         category=CodePresetCategories.INDICATOR,
         description="Directional Movement Index (DMI): This indicator is designed to identify the directionality of the price movement. It includes the Positive Directional Indicator (+DI) and Negative Directional Indicator (-DI) to help determine the direction of the trend and the Average Directional Index (ADX) which measures the strength of the trend regardless of its direction.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=MACD,
         name="MACD",
         category=CodePresetCategories.INDICATOR,
         description="MACD: Calculates the Moving Average Convergence/Divergence which consists of the MACD line (difference between two exponential moving averages), the signal line (an exponential moving average of the MACD line), and the MACD histogram (the difference between MACD and its signal line), used to expose changes in strength, direction, momentum, and duration of a trend in a stock's price. This function creates separate DataFrame columns with detailed labels for each element of the MACD to clearly indicate the parameters used in their computation.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=MACDFIX,
         name="MACDFIX",
         category=CodePresetCategories.INDICATOR,
         description="MACDFIX: This customized version of the Moving Average Convergence Divergence (MACD) indicator includes detailed labels that reflect the calculation periods (12-day EMA and 26-day EMA for the MACD, and a 9-day EMA for the signal line) as well as the specific column name used for the calculation (e.g., 'close_price'). This makes the indicator outputs easily identifiable, especially when working with multiple data columns or various configurations of MACD in the same analysis. This version is highly useful for comparing performance across different datasets or within a dataset that includes multiple types of financial data.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=MFI,
         name="MFI",
         category=CodePresetCategories.INDICATOR,
         description="Money Flow Index (MFI): Calculates the Money Flow Index over specified periods, which combines both price and volume data to measure trading pressure. A rising MFI indicates increased buying pressure, while a falling MFI suggests increased selling pressure.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=MINUS_DI,
         name="MINUS_DI",
         category=CodePresetCategories.INDICATOR,
         description="Minus Directional Indicator (MINUS_DI): The Minus Directional Indicator measures the strength of downward price movement or trend. It is part of the Average Directional Index (ADX) system and is calculated by dividing the sum of downward price movement over a specified period by the total true range over the same period, then multiplying by 100.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=MINUS_DM,
         name="MINUS_DM",
         category=CodePresetCategories.INDICATOR,
         description="Minus Directional Movement (Minus DM): This indicator is part of the Directional Movement System and is used to measure the downward price movement between periods. It focuses on the difference between the lows of two consecutive bars when the current low is lower than the previous low, and only if this difference is greater than the difference between the two highs. This indicator is typically used to assess the strength of a downtrend.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=MOM,
         name="MOM",
         category=CodePresetCategories.INDICATOR,
         description="Momentum (MOM): This indicator measures the rate of rise or fall in stock prices. It compares the current price to the price n periods ago and is used to identify the speed or strength of a price movement.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=PLUS_DI,
         name="PLUS_DI",
         category=CodePresetCategories.INDICATOR,
         description="Plus Directional Indicator (PLUS_DI): This indicator forms part of the Average Directional Movement Index system (ADX) and measures the presence of upward price movement. It is computed by comparing the current high with the previous high and is typically used to confirm trend direction. Higher values indicate a stronger upward trend.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=PLUS_DM,
         name="PLUS_DM",
         category=CodePresetCategories.INDICATOR,
         description="Plus Directional Movement (PLUS_DM): Helps to quantify the increase in the high price compared to the previous high, indicating the presence of upward price momentum when it outpaces the decreases in the low price. This indicator is used especially in combination with the ADX to measure trend strength.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=PPO,
         name="PPO",
         category=CodePresetCategories.INDICATOR,
         description="PPO (Percentage Price Oscillator): Calculates the Percentage Price Oscillator, which is used to show the difference between two exponential moving averages as a percentage of the larger moving average. This indicator is useful for identifying potential momentum shifts and trend reversals.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=ROC,
         name="ROC",
         category=CodePresetCategories.INDICATOR,
         description="ROC (Rate of Change): Calculates the percentage change between the current price and the price a certain number of periods ago. It reflects the velocity of price changes and can be used to identify the strength of a trend.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=ROCP,
         name="ROCP",
         category=CodePresetCategories.INDICATOR,
         description="ROCP: Calculates the Rate of Change Percentage, which measures the percentage change in price from one period to the next over specified periods to help identify momentum or speed of price changes.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=ROCR,
         name="ROCR",
         category=CodePresetCategories.INDICATOR,
         description="ROCR: Calculates the Rate of Change Ratio which is the ratio of the current price to the price from a specified number of periods ago. This indicator helps to understand the magnitude of price changes and can be used to detect trends.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=ROCR100,
         name="ROCR100",
         category=CodePresetCategories.INDICATOR,
         description="ROCR100: Calculates the Rate of Change Ratio 100, which compares the current price to the price from a previous period, scaled to 100. This indicator is used to show the percentage change in price relative to the prior period, assisting in identifying momentum in price movements.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=STOCH,
         name="STOCH",
         category=CodePresetCategories.INDICATOR,
         description="Stochastic Oscillator (STOCH): Compares the current closing price with its price range over a given period. The calculation results in two lines, %K and %D, which can help identify potential reversal points in the market as the price moves within this range.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=STOCHF,
         name="STOCHF",
         category=CodePresetCategories.INDICATOR,
         description="Stochastic Fast (STOCHF): This indicator helps to identify oversold and overbought conditions. The %K line is calculated from the current close minus the lowest low divided by the highest high minus the lowest low over the period. The %D line is the simple moving average of the %K line, serving as a signal line to interpret buy or sell signals.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=STOCHRSI,
         name="STOCHRSI",
         category=CodePresetCategories.INDICATOR,
         description="Stochastic RSI: The Stochastic Relative Strength Index (Stochastic RSI) is an oscillator used to identify overbought and oversold conditions by measuring the level of the RSI relative to its high-low range over a set period of time. It provides more sensitivity than the traditional RSI, offering quicker signals for entering and exiting trades. The StochRSI_K line is the Stochastic RSI itself, while the StochRSI_D line is a moving average of the StochRSI_K, typically used to generate signals when the two lines cross.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=TRIX,
         name="TRIX",
         category=CodePresetCategories.INDICATOR,
         description="TRIX: This indicator calculates the 1-day Rate-Of-Change (ROC) of a Triple Smooth Exponential Moving Average (EMA) of the specified column over a given period. TRIX helps to filter out insignificant price movements and identify underlying trends.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=ULTOSC,
         name="ULTOSC",
         category=CodePresetCategories.INDICATOR,
         description="Ultimate Oscillator (ULTOSC): This indicator combines buying pressure with true range over multiple time frames (short, intermediate, and long) to produce a value that reflects price momentum. The oscillator is typically used to identify bullish and bearish divergences which might indicate potential reversal points.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=WILLR,
         name="WILLR",
         category=CodePresetCategories.INDICATOR,
         description="Williams' %R: Calculates Williams' %R to determine overbought and oversold levels. Values range from -100 to 0, where readings near -100 typically indicate oversold conditions, and readings near 0 suggest overbought conditions. This can help identify potential reversal points in the price of an asset.",
+        labels=CodePresetLabels.MOMENTUM,
     ),
     CodePreset(
         code=AD_LINE,
         name="AD_LINE",
         category=CodePresetCategories.INDICATOR,
         description="Chaikin A/D Line: The Chaikin Accumulation/Distribution Line helps track the volume flow in and out of stocks. A rising A/D line suggests accumulation (buying), indicating strong demand, while a falling A/D line indicates distribution (selling) and thus weaker demand. This indicator is often used to confirm trends or warn of potential reversals.",
+        labels=CodePresetLabels.VOLUME,
     ),
     CodePreset(
         code=ADOSC,
         name="ADOSC",
         category=CodePresetCategories.INDICATOR,
         description="Chaikin A/D Oscillator (ADOSC): Measures the momentum of the Accumulation/Distribution line by calculating the difference between a fast and slow exponential moving average of the line. This indicator helps identify major changes in market sentiment and can signal potential reversals.",
+        labels=CodePresetLabels.VOLUME,
     ),
     CodePreset(
         code=HT_DCPERIOD,
         name="HT_DCPERIOD",
         category=CodePresetCategories.INDICATOR,
         description="HT_DCPERIOD: This indicator calculates the Dominant Cycle Period using the Hilbert Transform, aiming to identify cycles in the price data by transforming the real price into a complex plane to detect cyclical components.",
+        labels=CodePresetLabels.CYCLE,
     ),
     CodePreset(
         code=HT_DCPHASE,
         name="HT_DCPHASE",
         category=CodePresetCategories.INDICATOR,
         description="HT_DCPHASE: The Hilbert Transform - Dominant Cycle Phase (HT_DCPHASE) calculates the phase of the cycle within market data. This can help identify turning points in the market cycle, offering insights into potential shifts in momentum or trend changes.",
+        labels=CodePresetLabels.CYCLE,
     ),
     CodePreset(
         code=HT_PHASOR,
         name="HT_PHASOR",
         category=CodePresetCategories.INDICATOR,
         description="HT_PHASOR: This indicator calculates the Hilbert Transform Phasor Components of a given data series. It provides the instantaneous phase and amplitude, which are useful for identifying cycles and the amplitude modulation of price movements within the financial market.",
+        labels=CodePresetLabels.CYCLE,
     ),
     CodePreset(
         code=HT_SINE,
         name="HT_SINE",
         category=CodePresetCategories.INDICATOR,
         description="HT_SINE (Hilbert Transform - SineWave): This indicator is part of the Hilbert Transform suite used to generate an in-phase and quadrature component of the price cycle, typically helping to identify cycles and turning points in the market with sine and lead sine waves.",
+        labels=CodePresetLabels.CYCLE,
     ),
     CodePreset(
         code=HT_TRENDMODE,
         name="HT_TRENDMODE",
         category=CodePresetCategories.INDICATOR,
         description="HT_TRENDMODE: This indicator is calculated using the Hilbert Transform to identify the dominant cycle phase of the price action, helping to distinguish between trend and cycle modes. A positive value suggests a trend mode, while a zero or negative value could suggest a cyclical or non-trending mode.",
+        labels=CodePresetLabels.CYCLE,
     ),
     CodePreset(
         code=AVGPRICE,
         name="AVGPRICE",
         category=CodePresetCategories.INDICATOR,
         description="AVGPRICE: Calculates the Average Price (AVGPRICE) indicator by taking the mean of the high, low, and close prices for each period, providing a simple reflection of a typical trading price within a given timeframe.",
+        labels=CodePresetLabels.PRICE_TRANSFORM,
     ),
     CodePreset(
         code=MEDPRICE,
         name="MEDPRICE",
         category=CodePresetCategories.INDICATOR,
         description="MEDPRICE: Calculates the Median Price, which is the average of the high and low prices for each period. It provides a simple measure of the midpoint of a security's trading range for the day and can be used as a foundation for other technical indicators.",
-    ),
-    CodePreset(
-        code=MEDPRICE,
-        name="MEDPRICE",
-        category=CodePresetCategories.INDICATOR,
-        description="MEDPRICE: Calculates the Median Price, which is the average of the high and low prices for each period. It provides a simple measure of the midpoint of a security's trading range for the day and can be used as a foundation for other technical indicators.",
+        labels=CodePresetLabels.PRICE_TRANSFORM,
     ),
     CodePreset(
         code=TYPPRICE,
         name="TYPPRICE",
         category=CodePresetCategories.INDICATOR,
         description="TYPPRICE: Calculates the Typical Price for each period, which is the average of the high, low, and close prices. This indicator is often used as a simplified representation of the price action and can be utilized as a reference for other calculations, such as moving averages or pivot points.",
+        labels=CodePresetLabels.PRICE_TRANSFORM,
     ),
     CodePreset(
         code=WCLPRICE,
         name="WCLPRICE",
         category=CodePresetCategories.INDICATOR,
         description="WCLPRICE: Calculates the Weighted Close Price by taking the average of the high, low, and twice the closing price. This indicator emphasizes the closing price more than the high and low prices during the period, typically used to confirm trends or reversals.",
+        labels=CodePresetLabels.PRICE_TRANSFORM,
     ),
     CodePreset(
         code=NATR,
         name="NATR",
         category=CodePresetCategories.INDICATOR,
         description="NATR: Calculates the Normalized Average True Range (NATR) to measure market volatility relative to the price. It expresses the ATR as a percentage of the closing price, helping to compare volatility across different price levels.",
+        labels=CodePresetLabels.VOLATILITY,
     ),
     CodePreset(
         code=TRANGE,
         name="TRANGE",
         category=CodePresetCategories.INDICATOR,
         description="TRange: Calculates the True Range to assess the volatility. True Range is the greatest of the following: current high minus current low, the absolute value of the current high minus the previous close, and the absolute value of the current low minus the previous close.",
+        labels=CodePresetLabels.VOLATILITY,
     ),
     CodePreset(
         code=CDL2CROWS,
         name="CDL2CROWS",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Two Crows candlestick pattern, a bearish reversal pattern that appears in an uptrend. It consists of three candles: a long bullish candle, followed by a gap-up open candle that closes within the body of the first but does not surpass its high, and a third candle that opens higher than the second but closes below its open, signaling a potential reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
     ),
 ]
 

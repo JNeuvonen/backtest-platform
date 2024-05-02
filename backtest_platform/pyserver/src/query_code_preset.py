@@ -11,6 +11,7 @@ class CodePreset(Base):
     category = Column(String)
     name = Column(String)
     description = Column(String)
+    label = Column(String)
     __table_args__ = (UniqueConstraint("category", "name", name="_category_name_uc"),)
 
 
