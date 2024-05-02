@@ -83,8 +83,10 @@ def get_benchmark_initial_state(
 
 
 def get_bar_curr_price(df):
-    price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-    return price
+    if not df.empty:
+        price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+        return price
+    return None
 
 
 def get_datasets_kline_state(
@@ -148,7 +150,6 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             if dataset is None or backtest_info.fetch_latest_data:
-                print(item)
                 await save_historical_klines(item, backtest_info.candle_interval, True)
                 dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
@@ -223,6 +224,7 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.process_bar(
                 kline_open_time=kline_open_time, kline_state=kline_state
             )
+            print(idx)
 
         profit_factor_dict = calc_long_short_profit_factor(
             long_short_backtest.completed_trades
@@ -473,6 +475,50 @@ class PairTrade:
         self.on_trade_open_acc_net_value = on_trade_open_acc_net_value
         self.balance_history: List[Dict] = []
         self.candles_held = 0
+        self.prev_buy_side_price = 0
+        self.prev_sell_side_price = 0
+        self.prev_buy_side_df = None
+        self.prev_sell_side_df = None
+
+    def get_buy_side_price(self, price):
+        if price is not None:
+            self.prev_buy_side_price = price
+        if price is None:
+            return self.prev_buy_side_price
+        return price
+
+    def get_sell_side_price(self, price):
+        if price is not None:
+            self.prev_sell_side_price = price
+        if price is None:
+            return self.prev_sell_side_price
+        return price
+
+    def get_buy_side_price_from_df(self, df):
+        if df.empty:
+            return self.prev_buy_side_price
+        return df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+
+    def get_sell_side_price_from_df(self, df):
+        if df.empty:
+            return self.prev_sell_side_price
+        return df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+
+    def get_results_dict(self, kline_state: Dict):
+        buy_df = kline_state["table_name_to_df_map"][self.buy_id]
+        sell_df = kline_state["table_name_to_df_map"][self.sell_id]
+
+        if buy_df.empty:
+            buy_df = self.prev_buy_side_df
+        else:
+            self.prev_buy_side_df = buy_df
+
+        if sell_df.empty:
+            sell_df = self.prev_sell_side_df
+        else:
+            self.prev_sell_side_df = sell_df
+
+        return {"buy_df": buy_df.iloc[0], "sell_df": sell_df.iloc[0]}
 
 
 class CompletedTrade:
@@ -609,10 +655,7 @@ class LongShortOnUniverseBacktest:
         for key, value in replacements.items():
             code = code.replace(key, str(value))
 
-        results_dict = {
-            "buy_df": kline_state["table_name_to_df_map"][pair.buy_id].iloc[0],
-            "sell_df": kline_state["table_name_to_df_map"][pair.sell_id].iloc[0],
-        }
+        results_dict = pair.get_results_dict(kline_state)
         exec(code, globals(), results_dict)
 
         should_close_trade = results_dict["should_close_trade"]
@@ -620,7 +663,7 @@ class LongShortOnUniverseBacktest:
 
     def get_close_long_proceedings(self, buy_df, pair: PairTrade):
         close_long_amount = (
-            buy_df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+            pair.get_buy_side_price_from_df(buy_df)
             * pair.buy_amount_base
             * self.trading_fees_coeff_reduce_amount()
         )
@@ -634,7 +677,7 @@ class LongShortOnUniverseBacktest:
 
     def get_close_short_amount(self, sell_df, pair: PairTrade):
         close_short_amount = (
-            sell_df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+            pair.get_sell_side_price_from_df(sell_df)
             * pair.debt_amount_base
             * self.trading_fees_coeff_increase_amount()
         )
@@ -650,8 +693,8 @@ class LongShortOnUniverseBacktest:
         buy_df = kline_state["table_name_to_df_map"][pair.buy_id]
         sell_df = kline_state["table_name_to_df_map"][pair.sell_id]
 
-        long_close_price = get_bar_curr_price(buy_df)
-        short_close_price = get_bar_curr_price(sell_df)
+        long_close_price = pair.get_buy_side_price(get_bar_curr_price(buy_df))
+        short_close_price = pair.get_sell_side_price(get_bar_curr_price(sell_df))
 
         sell_long_proceedings = self.get_close_long_proceedings(buy_df, pair)
         required_for_close_short = self.get_close_short_amount(sell_df, pair)
@@ -796,8 +839,8 @@ class LongShortOnUniverseBacktest:
             buy_df = kline_state["table_name_to_df_map"][item.buy_id]
             sell_df = kline_state["table_name_to_df_map"][item.sell_id]
 
-            buy_side_price = get_bar_curr_price(buy_df)
-            sell_side_price = get_bar_curr_price(sell_df)
+            buy_side_price = item.get_buy_side_price(get_bar_curr_price(buy_df))
+            sell_side_price = item.get_sell_side_price(get_bar_curr_price(sell_df))
 
             total_long = buy_side_price * item.buy_amount_base
             total_debt = sell_side_price * item.debt_amount_base
@@ -824,8 +867,8 @@ class LongShortOnUniverseBacktest:
             buy_df = kline_state["table_name_to_df_map"][item.buy_id]
             sell_df = kline_state["table_name_to_df_map"][item.sell_id]
 
-            buy_side_price = get_bar_curr_price(buy_df)
-            sell_side_price = get_bar_curr_price(sell_df)
+            buy_side_price = item.get_buy_side_price(get_bar_curr_price(buy_df))
+            sell_side_price = item.get_sell_side_price(get_bar_curr_price(sell_df))
 
             total_longs += buy_side_price * item.buy_amount_base
             total_debt += sell_side_price * item.debt_amount_base
