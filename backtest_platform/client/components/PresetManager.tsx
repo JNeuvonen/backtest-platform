@@ -26,7 +26,8 @@ import { CODE_PRESET_CATEGORY } from "../utils/constants";
 import { FormSubmitBar } from "./form/FormSubmitBar";
 import { WithLabel } from "./form/WithLabel";
 import { IoTrashBinSharp } from "react-icons/io5";
-import { putCodePreset } from "../clients/requests";
+import { deleteCodePreset, putCodePreset } from "../clients/requests";
+import { ConfirmModal } from "./form/Confirm";
 
 interface Props {
   onPresetSelect: (selectedPreset: CodePreset) => void;
@@ -68,6 +69,9 @@ const PresetItem = ({
   const [editedName, setEditedName] = useState(preset.name);
   const [editedDescrp, setEditedDescrp] = useState(preset.description || "");
 
+  const editSubmitConfirmModal = useDisclosure();
+  const deleteSubmitConfirmModal = useDisclosure();
+
   const toast = useToast();
 
   const onEditSubmit = async () => {
@@ -87,9 +91,25 @@ const PresetItem = ({
         duration: 5000,
         isClosable: true,
       });
+      refetchCallback();
       editModal.onClose();
     }
   };
+
+  const onDeletePresetSubmit = async () => {
+    const res = await deleteCodePreset(preset.id);
+    if (res.status === 200) {
+      toast({
+        title: "Deleted code preset",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      refetchCallback();
+      editModal.onClose();
+    }
+  };
+
   return (
     <>
       <ChakraModal
@@ -114,6 +134,7 @@ const PresetItem = ({
             colorScheme={"red"}
             variant={BUTTON_VARIANTS.dangerFill}
             leftIcon={<IoTrashBinSharp />}
+            onClick={deleteSubmitConfirmModal.onOpen}
           >
             Delete
           </Button>
@@ -145,10 +166,15 @@ const PresetItem = ({
             style={{ marginTop: "16px" }}
             submitText={"Save"}
             cancelCallback={editModal.onClose}
-            submitCallback={onEditSubmit}
+            submitCallback={editSubmitConfirmModal.onOpen}
           />
         </div>
       </ChakraModal>
+      <ConfirmModal {...editSubmitConfirmModal} onConfirm={onEditSubmit} />
+      <ConfirmModal
+        {...deleteSubmitConfirmModal}
+        onConfirm={onDeletePresetSubmit}
+      />
       <Tooltip label={preset.description || ""}>
         <div
           style={{
@@ -205,12 +231,10 @@ const ManageCodePresetsModal = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const groups = useMemo(() => {
-    const filteredPresets = presets.filter((preset) =>
-      preset.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    return groupByLabels(filteredPresets);
-  }, [JSON.stringify(presets), searchTerm]);
+  const filteredPresets = presets.filter((preset) =>
+    preset.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const groups = groupByLabels(filteredPresets);
 
   const renderByGroups = () => (
     <div>

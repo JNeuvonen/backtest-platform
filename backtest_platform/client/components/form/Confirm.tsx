@@ -50,7 +50,13 @@ export const ConfirmModal: React.FC<ConfirmProps> = ({
           >
             {cancelText}
           </Button>
-          <Button colorScheme="blue" onClick={onConfirm}>
+          <Button
+            colorScheme="blue"
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+          >
             {confirmText}
           </Button>
         </>

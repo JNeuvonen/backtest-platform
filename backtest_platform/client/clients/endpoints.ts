@@ -128,6 +128,8 @@ export const LOCAL_API_URL = {
   backtest: LOCAL_API_URI + LOCAL_API.backtest.root,
   createCodePreset: () => LOCAL_API_URI + LOCAL_API.code_preset.root,
   putCodePreset: () => LOCAL_API_URI + LOCAL_API.code_preset.root,
+  deleteCodePreset: (id: number) =>
+    LOCAL_API_URI + LOCAL_API.code_preset.root + `/${id}`,
   fetchCodePresets: () => LOCAL_API_URI + LOCAL_API.code_preset.root + "/all",
   deleteManyBacktest: (listOfIds: number[]) =>
     LOCAL_API_URI +

@@ -594,3 +594,11 @@ export const putCodePreset = async (codePreset: CodePresetBody) => {
   });
   return res;
 };
+
+export const deleteCodePreset = async (id: number) => {
+  const res = await buildRequest({
+    method: "DELETE",
+    url: LOCAL_API_URL.deleteCodePreset(id),
+  });
+  return res;
+};
