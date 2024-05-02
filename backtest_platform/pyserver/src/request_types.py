@@ -58,6 +58,15 @@ class BodyCreateCodePreset(BaseModel):
     name: str
 
 
+class BodyCodePreset(BaseModel):
+    id: int
+    code: str
+    category: str
+    name: str
+    description: Optional[str] = None
+    label: Optional[str] = None
+
+
 class BodyCreateManualBacktest(BaseModel):
     backtest_data_range: List[int]
     open_trade_cond: str

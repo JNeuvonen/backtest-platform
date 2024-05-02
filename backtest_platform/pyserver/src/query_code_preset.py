@@ -65,3 +65,14 @@ class CodePresetQuery:
                     except Exception:
                         session.rollback()
                 return successful_ids
+
+    @staticmethod
+    def update_entry(preset_id: int, update_fields: Dict):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = (
+                    session.query(CodePreset).filter(CodePreset.id == preset_id).one()
+                )
+                for key, value in update_fields.items():
+                    setattr(entry, key, value)
+                session.commit()

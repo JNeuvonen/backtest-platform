@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response, status
 
 from context import HttpResponseContext
 from query_code_preset import CodePresetQuery
-from request_types import BodyCreateCodePreset
+from request_types import BodyCodePreset, BodyCreateCodePreset
 
 
 router = APIRouter()
@@ -27,6 +27,15 @@ async def route_create_code_preset(body: BodyCreateCodePreset):
     with HttpResponseContext():
         id = CodePresetQuery.create_entry(body.model_dump())
         return {"id": id}
+
+
+@router.put(RoutePaths.CODE_PRESET)
+async def route_put_code_preset(body: BodyCodePreset):
+    with HttpResponseContext():
+        CodePresetQuery.update_entry(body.id, body.model_dump())
+        return Response(
+            content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
+        )
 
 
 @router.get(RoutePaths.FETCH_ALL)
