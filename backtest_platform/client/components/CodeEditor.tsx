@@ -4,6 +4,7 @@ import { CodePresets } from "./CodePresets";
 import { FormControl, FormLabel } from "@chakra-ui/react";
 import { SaveCodePreset } from "./SaveCodePresetPopover";
 import { SelectCodePreset } from "./SelectCodePresetPopover";
+import { ManagePresets } from "./PresetManager";
 
 interface Props {
   code: string;
@@ -93,6 +94,7 @@ export const CodeEditor = ({
                       }
                     }}
                   />
+                  <ManagePresets presetCategory={presetCategory || ""} />
                 </>
               )}
             </div>
