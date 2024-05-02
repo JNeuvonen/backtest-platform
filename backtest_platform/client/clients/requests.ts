@@ -577,3 +577,20 @@ export const fetchLongShortBacktests = async () => {
   }
   return res;
 };
+
+interface CodePresetBody {
+  code: string;
+  name: string;
+  description: string;
+  id: number;
+  label?: string | undefined;
+  category: string;
+}
+export const putCodePreset = async (codePreset: CodePresetBody) => {
+  const res = await buildRequest({
+    method: "PUT",
+    url: LOCAL_API_URL.putCodePreset(),
+    payload: codePreset,
+  });
+  return res;
+};
