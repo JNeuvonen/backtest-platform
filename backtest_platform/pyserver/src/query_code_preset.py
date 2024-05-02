@@ -76,3 +76,13 @@ class CodePresetQuery:
                 for key, value in update_fields.items():
                     setattr(entry, key, value)
                 session.commit()
+
+    @staticmethod
+    def delete_by_id(preset_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = (
+                    session.query(CodePreset).filter(CodePreset.id == preset_id).one()
+                )
+                session.delete(entry)
+                session.commit()

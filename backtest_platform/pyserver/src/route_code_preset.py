@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response, status
+from starlette.routing import Route
 
 from context import HttpResponseContext
 from query_code_preset import CodePresetQuery
@@ -50,3 +51,12 @@ async def route_fetch_by_id(id):
     with HttpResponseContext():
         code_preset = CodePresetQuery.fetch_one_by_id(id)
         return {"data": code_preset}
+
+
+@router.delete(RoutePaths.BY_ID)
+async def route_delete_by_id(id):
+    with HttpResponseContext():
+        CodePresetQuery.delete_by_id(id)
+        return Response(
+            content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
+        )
