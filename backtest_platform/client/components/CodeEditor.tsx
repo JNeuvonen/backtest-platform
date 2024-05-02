@@ -1,10 +1,10 @@
 import { Editor, EditorProps, OnMount } from "@monaco-editor/react";
 import React, { CSSProperties } from "react";
-import { CodePresets } from "./CodePresets";
-import { FormControl, FormLabel } from "@chakra-ui/react";
+import { FormControl, FormLabel, Link } from "@chakra-ui/react";
 import { SaveCodePreset } from "./SaveCodePresetPopover";
 import { SelectCodePreset } from "./SelectCodePresetPopover";
 import { ManagePresets } from "./PresetManager";
+import ExternalLink from "./ExternalLink";
 
 interface Props {
   code: string;
@@ -21,6 +21,7 @@ interface Props {
   autoFocus?: boolean;
   usePresets?: boolean;
   presetCategory?: string;
+  chatGptLink?: string;
 }
 
 export const CodeEditor = ({
@@ -36,6 +37,7 @@ export const CodeEditor = ({
   autoFocus = true,
   usePresets = true,
   presetCategory,
+  chatGptLink,
 }: Props) => {
   const handleCodeChange = (newValue: string | undefined) => {
     if (setCode) {
@@ -94,8 +96,22 @@ export const CodeEditor = ({
                       }
                     }}
                   />
-                  <ManagePresets presetCategory={presetCategory || ""} />
+                  <ManagePresets
+                    presetCategory={presetCategory || ""}
+                    onPresetSelect={(preset) => {
+                      if (setCode) {
+                        setCode(preset.code);
+                      }
+                    }}
+                  />
                 </>
+              )}
+              {chatGptLink && (
+                <ExternalLink
+                  to={chatGptLink}
+                  linkText={"Copilot"}
+                  isExternal={true}
+                ></ExternalLink>
               )}
             </div>
           </FormLabel>

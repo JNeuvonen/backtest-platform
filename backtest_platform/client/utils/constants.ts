@@ -15,6 +15,11 @@ export const CODE = {
   DATASET_SYMBOL: "dataset",
 };
 
+export const COPILOT_LINKS = {
+  trade_criteria:
+    "https://chat.openai.com/g/g-K8Yblv0nE-trade-criteria-copilot",
+};
+
 export const PATHS = {
   data: {
     index: "/data",
