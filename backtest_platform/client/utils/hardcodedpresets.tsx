@@ -98,7 +98,6 @@ export const BULK_SIM_PAIR_PRESETS = [
       genOptiontype("MINAUSDT"),
       genOptiontype("XRPUSDT"),
       genOptiontype("UTKUSDT"),
-      genOptiontype("VIDTUSDT"),
       genOptiontype("VICUSDT"),
       genOptiontype("VGXUSDT"),
       genOptiontype("TROYUSDT"),
