@@ -309,7 +309,10 @@ export const ManagePresets = ({ onPresetSelect, presetCategory }: Props) => {
       >
         <ManageCodePresetsModal
           presets={presets}
-          onSelect={onPresetSelect}
+          onSelect={(preset) => {
+            onPresetSelect(preset);
+            managePresetsModal.onClose();
+          }}
           refetchCallback={() => {
             codePresetsQuery.refetch();
           }}

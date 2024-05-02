@@ -31,7 +31,7 @@ import { ChakraPopover } from "../../components/chakra/popover";
 import { SelectColumnPopover } from "../../components/SelectTargetColumnPopover";
 import { getDatasetColumnOptions } from "../../utils/dataset";
 import { CodeEditor } from "../../components/CodeEditor";
-import { CODE_PRESET_CATEGORY } from "../../utils/constants";
+import { CODE_PRESET_CATEGORY, COPILOT_LINKS } from "../../utils/constants";
 import { BUTTON_VARIANTS } from "../../theme";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
@@ -281,6 +281,7 @@ export const BacktestForm = () => {
                           presetCategory={
                             CODE_PRESET_CATEGORY.backtest_long_cond
                           }
+                          chatGptLink={COPILOT_LINKS.trade_criteria}
                         />
                       );
                     }}
@@ -307,6 +308,7 @@ export const BacktestForm = () => {
                           presetCategory={
                             CODE_PRESET_CATEGORY.backtest_close_long_ccond
                           }
+                          chatGptLink={COPILOT_LINKS.trade_criteria}
                         />
                       );
                     }}
