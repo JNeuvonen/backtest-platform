@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import math
-from typing import List
+from typing import Dict, List
+from db import candlesize_to_timedelta
 from math_utils import safe_divide
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
@@ -8,6 +9,9 @@ from constants import ONE_HOUR_IN_MS, CandleSize
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from request_types import BodyMLBasedBacktest
+
+
+START_BALANCE = 10000
 
 
 def get_backtest_profit_factor_comp(trades):
@@ -398,6 +402,93 @@ def create_long_short_trades(backtest_id, completed_trades):
         PairTradeQuery.create_entry(pair_trade)
 
 
+class MLBasedBacktestRules:
+    def __init__(self, backtest_details: BodyMLBasedBacktest):
+        self.buy_cond = backtest_details.buy_cond
+        self.sell_cond = backtest_details.sell_cond
+
+        self.use_profit_based_close = backtest_details.use_profit_based_close
+        self.use_stop_loss_based_close = backtest_details.use_stop_loss_based_close
+        self.use_time_based_close = backtest_details.use_time_based_close
+
+        self.max_klines_until_close = backtest_details.klines_until_close
+        self.take_profit_threshold_perc = backtest_details.take_profit_threshold_perc
+        self.stop_loss_threshold_perc = backtest_details.stop_loss_threshold_perc
+
+        self.trading_fees = (backtest_details.trading_fees_perc) / 100
+
+        self.short_fee_coeff = turn_short_fee_perc_to_coeff(
+            backtest_details.short_fee_hourly,
+            candlesize_to_timedelta(backtest_details.candle_interval) * 1000,
+        )
+
+
+class MLBasedBacktestStats:
+    def __init__(self, backtest_details: BodyMLBasedBacktest):
+        self.cumulative_time = 0
+        self.position_held_time = 0
+        self.candles_time_delta = (
+            candlesize_to_timedelta(backtest_details.candle_interval) * 1000
+        )
+
+
+class MLBasedPositionManager:
+    def __init__(self, usdt_start_balance: float):
+        self.usdt_balance = usdt_start_balance
+        self.net_value = usdt_start_balance
+        self.usdt_debt = 0
+
+        self.open_positions_total_debt = 0
+        self.open_positions_total_long = 0
+        self.debt_to_net_value_ratio = 0.0
+
+        self.position_history: List = []
+
+    def close_long(self, proceedings: float):
+        self.usdt_balance += proceedings
+
+    def close_short(self, proceedings: float):
+        self.usdt_balance -= proceedings
+
+    def update(
+        self, positions_debt, positions_long, kline_open_time, benchmark_eq_value
+    ):
+        self.net_value = self.usdt_balance + positions_long - positions_debt
+        self.open_positions_total_long = positions_long
+        self.open_positions_total_debt = positions_debt
+        self.debt_to_net_value_ratio = positions_debt / self.net_value
+
+        tick = {
+            "total_debt": positions_debt,
+            "total_long": positions_long,
+            "kline_open_time": kline_open_time,
+            "debt_to_net_value_ratio": self.debt_to_net_value_ratio,
+            "portfolio_worth": self.net_value,
+            "benchmark_price": benchmark_eq_value,
+        }
+        self.position_history.append(tick)
+
+
+class MLBasedBenchmarkManager:
+    def __init__(self, start_balance):
+        pass
+
+
+class MLBasedActiveTrade:
+    def __init__(self):
+        pass
+
+
+class MLBasedCompletedTrade:
+    def __init__(self):
+        pass
+
+
 class MLBasedBacktest:
     def __init__(self, backtest_details: BodyMLBasedBacktest):
-        pass
+        self.rules = MLBasedBacktestRules(backtest_details)
+        self.stats = MLBasedBacktestStats(backtest_details)
+        self.position = MLBasedPositionManager(START_BALANCE)
+        self.benchmark = MLBasedBenchmarkManager(START_BALANCE)
+        self.active_trade = None
+        self.completed_trades: List[MLBasedCompletedTrade] = []
