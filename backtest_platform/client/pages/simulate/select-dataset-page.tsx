@@ -6,14 +6,35 @@ import { Link } from "react-router-dom";
 import { PATHS, PATH_KEYS } from "../../utils/constants";
 import { ChakraInput } from "../../components/chakra/input";
 import useQueryParams from "../../hooks/useQueryParams";
+import { DatasetMetadata } from "../../clients/queries/response-types";
+import { UI_BACKTEST_MODES } from ".";
 
 const COLUMNS = ["Dataset name"];
+
+interface QueryParams {
+  mode: string;
+}
 
 export const SimulateSelectDataset = () => {
   const { data } = useDatasetsQuery();
 
+  const { mode } = useQueryParams<QueryParams>();
+
   const [textFilter, setTextFilter] = useState("");
-  const queryParams = useQueryParams();
+
+  const getToLinkBasedOnMode = (item: DatasetMetadata) => {
+    if (mode === UI_BACKTEST_MODES.simple) {
+      return PATHS.simulate.dataset.replace(PATH_KEYS.dataset, item.table_name);
+    }
+
+    if (mode === UI_BACKTEST_MODES.machine_learning) {
+      return PATHS.simulate.machine_learning.replace(
+        PATH_KEYS.dataset,
+        item.table_name
+      );
+    }
+    return "/";
+  };
 
   return (
     <div>
@@ -40,10 +61,7 @@ export const SimulateSelectDataset = () => {
                 })
                 .map((item) => [
                   <Link
-                    to={PATHS.simulate.dataset.replace(
-                      PATH_KEYS.dataset,
-                      item.table_name
-                    )}
+                    to={getToLinkBasedOnMode(item)}
                     className="link-default"
                   >
                     {item.table_name}

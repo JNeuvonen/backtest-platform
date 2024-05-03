@@ -10,6 +10,7 @@ const addModeToPath = (mode: string) => {
 export const UI_BACKTEST_MODES = {
   simple: "invidual",
   long_short_simple: "long_short",
+  machine_learning: "machine_learning",
 };
 
 export const SimulateSelectMode = () => {
@@ -26,11 +27,15 @@ export const SimulateSelectMode = () => {
       >
         <ExternalLink
           to={addModeToPath(UI_BACKTEST_MODES.simple)}
-          linkText={"Invidual"}
+          linkText={"Simple rule based"}
         />
         <ExternalLink
           to={PATHS.simulate.bulk_long_short}
           linkText={"Bulk Long/short"}
+        />
+        <ExternalLink
+          to={addModeToPath(UI_BACKTEST_MODES.machine_learning)}
+          linkText={"Machine Learning"}
         />
       </div>
     </div>
