@@ -110,8 +110,7 @@ class BodyCreateLongShortBacktest(BaseModel):
 
 class BodyMLBasedBacktest(BaseModel):
     fetch_latest_data: bool
-    model_name: str
-    train_run: str
+    train_run_id: int
     epoch: int
     buy_cond: str
     sell_cond: str
