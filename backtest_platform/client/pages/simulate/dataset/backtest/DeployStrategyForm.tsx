@@ -7,12 +7,8 @@ import {
 } from "../../../../clients/queries/queries";
 import {
   Button,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  Spinner,
   Switch,
   UseDisclosureReturn,
   useToast,
@@ -31,6 +27,7 @@ import { BUTTON_VARIANTS } from "../../../../theme";
 import { deployStrategyReq } from "../../../../clients/requests";
 import { useAppContext } from "../../../../context/app";
 import { FETCH_DATASOURCES_DEFAULT } from "../../../../utils/code";
+import { ChakraNumberStepper } from "../../../../components/ChakraNumberStepper";
 
 interface PathParams {
   datasetName: string;
@@ -379,10 +376,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );
@@ -412,10 +406,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );
@@ -445,10 +436,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );
@@ -487,10 +475,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );
@@ -519,10 +504,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );
@@ -552,10 +534,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );
@@ -585,10 +564,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 }
                               >
                                 <NumberInputField />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper color={"white"} />
-                                  <NumberDecrementStepper color={"white"} />
-                                </NumberInputStepper>
+                                <ChakraNumberStepper />
                               </NumberInput>
                             </WithLabel>
                           );

@@ -5,11 +5,8 @@ import { ChakraDrawer } from "../../components/chakra/Drawer";
 import { usePathParams } from "../../hooks/usePathParams";
 import {
   Button,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
   Spinner,
   Switch,
   useDisclosure,
@@ -39,6 +36,7 @@ import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 import { BUTTON_VARIANTS } from "../../theme";
+import { ChakraNumberStepper } from "../../components/ChakraNumberStepper";
 
 type PathParams = {
   datasetName: string;
@@ -385,10 +383,7 @@ export const LongShortBacktestForm = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper />
-                              <NumberDecrementStepper />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -418,10 +413,7 @@ export const LongShortBacktestForm = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper color={"white"} />
-                              <NumberDecrementStepper color={"white"} />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -450,10 +442,7 @@ export const LongShortBacktestForm = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper />
-                              <NumberDecrementStepper />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );

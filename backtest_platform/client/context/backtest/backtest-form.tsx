@@ -16,11 +16,8 @@ import { usePathParams } from "../../hooks/usePathParams";
 import { useDatasetQuery } from "../../clients/queries/queries";
 import {
   Button,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
   Spinner,
   Switch,
   useDisclosure,
@@ -45,6 +42,7 @@ import {
   getBacktestFormDefaultKeys,
   BACKTEST_FORM_LABELS,
 } from "../../utils/backtest";
+import { ChakraNumberStepper } from "../../components/ChakraNumberStepper";
 
 type PathParams = {
   datasetName: string;
@@ -423,17 +421,18 @@ export const BacktestForm = () => {
                           }}
                         >
                           <NumberInput
-                            step={5}
+                            step={0.1}
                             min={0}
                             value={field.value}
                             onChange={(valueString) =>
                               form.setFieldValue(
                                 formKeys.takeProfitThresholdPerc,
-                                parseInt(valueString)
+                                parseFloat(valueString)
                               )
                             }
                           >
                             <NumberInputField />
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -486,10 +485,7 @@ export const BacktestForm = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper />
-                              <NumberDecrementStepper />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -523,10 +519,7 @@ export const BacktestForm = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper />
-                              <NumberDecrementStepper />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -556,10 +549,7 @@ export const BacktestForm = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper color={"white"} />
-                              <NumberDecrementStepper color={"white"} />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -590,10 +580,7 @@ export const BacktestForm = () => {
                               }
                             >
                               <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
+                              <ChakraNumberStepper />
                             </NumberInput>
                           </WithLabel>
                         );

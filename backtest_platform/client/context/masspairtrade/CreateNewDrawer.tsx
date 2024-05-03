@@ -23,11 +23,8 @@ import {
   Button,
   FormControl,
   FormLabel,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
   Select,
   Spinner,
   Switch,
@@ -45,6 +42,7 @@ import {
   PAIR_TRADE_EXIT_DEFAULT,
   PAIR_TRADE_SELL_DEFAULT,
 } from "../../utils/code";
+import { ChakraNumberStepper } from "../../components/ChakraNumberStepper";
 
 const backtestDiskManager = new DiskManager(DISK_KEYS.mass_long_short_form);
 
@@ -454,10 +452,7 @@ export const BulkLongShortCreateNew = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper color={"white"} />
-                              <NumberDecrementStepper color={"white"} />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -640,10 +635,7 @@ export const BulkLongShortCreateNew = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper />
-                              <NumberDecrementStepper />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -673,10 +665,7 @@ export const BulkLongShortCreateNew = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper color={"white"} />
-                              <NumberDecrementStepper color={"white"} />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
@@ -705,10 +694,7 @@ export const BulkLongShortCreateNew = () => {
                             }
                           >
                             <NumberInputField />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper />
-                              <NumberDecrementStepper />
-                            </NumberInputStepper>
+                            <ChakraNumberStepper />
                           </NumberInput>
                         </WithLabel>
                       );
