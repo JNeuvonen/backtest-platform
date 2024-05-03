@@ -150,6 +150,15 @@ class DatasetDumps:
         "SOLUSDT",
     )
 
+    BNBUSDT_FULL_1D_ML = DatasetMetadata(
+        FixturePaths.BINANCE.format("bnbusdt_1d_ml_based_test.csv"),
+        "bnbusdt_1d",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.CLOSE_PRICE,
+        BinanceCols.CLOSE_PRICE,
+        "BNBUSDT",
+    )
+
 
 class EnvTestSpeed:
     FAST = "FAST"

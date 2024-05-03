@@ -143,6 +143,18 @@ def fixt_add_blue_chip_1d_datasets():
 
 
 @pytest.fixture
+def fixt_add_dataset_for_ml_based_backtest():
+    datasets = [
+        DatasetDumps.BNBUSDT_FULL_1D_ML,
+    ]
+
+    for dataset in datasets:
+        t_add_custom_dataset_to_db(dataset)
+
+    return datasets
+
+
+@pytest.fixture
 def fixt_btc_small_1h():
     dataset = BinanceData.BTCUSDT_1H_2023_06
     t_add_binance_dataset_to_db(dataset)

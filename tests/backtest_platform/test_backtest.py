@@ -1,11 +1,15 @@
 import pytest
 import time
+from backtest_platform.pyserver.src.constants import NullFillStrategy
 from tests.backtest_platform.conftest import fixt_add_many_datasets
-from tests.backtest_platform.t_utils import gen_data_transformations
+from tests.backtest_platform.t_utils import create_model_body, gen_data_transformations
 
 from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
     create_manual_backtest,
+    create_train_job_basic,
+    criterion_basic,
+    linear_model_basic,
     long_short_buy_cond_basic,
     long_short_pair_exit_code_basic,
     long_short_sell_cond_basic,
@@ -64,7 +68,7 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
     Post.create_manual_backtest(body)
 
 
-@pytest.mark.dev
+@pytest.mark.input_dump
 def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
     datasets = fixt_add_blue_chip_1d_datasets
     body = backtest_rule_based_v2
@@ -88,3 +92,22 @@ def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
     body["fetch_latest_data"] = False
 
     Post.create_long_short_backtest(body)
+
+
+@pytest.mark.dev
+def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
+    ML_MODEL_NAME = "Example model"
+    time.sleep(3)
+
+    body = create_model_body(
+        name=ML_MODEL_NAME,
+        drop_cols=[],
+        null_fill_strategy=NullFillStrategy.NONE.value,
+        model=linear_model_basic(),
+        hyper_params_and_optimizer_code=criterion_basic(),
+        validation_split=[70, 100],
+    )
+
+    Post.create_model(fixt_add_dataset_for_ml_based_backtest[0].name, body)
+    Post.create_train_job(ML_MODEL_NAME, body=create_train_job_basic())
+    print("hello world")
