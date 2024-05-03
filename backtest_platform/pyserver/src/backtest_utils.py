@@ -7,6 +7,7 @@ from query_backtest_history import BacktestHistoryQuery
 from constants import ONE_HOUR_IN_MS, CandleSize
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
+from request_types import BodyMLBasedBacktest
 
 
 def get_backtest_profit_factor_comp(trades):
@@ -395,3 +396,8 @@ def create_long_short_trades(backtest_id, completed_trades):
         )
 
         PairTradeQuery.create_entry(pair_trade)
+
+
+class MLBasedBacktest:
+    def __init__(self, backtest_details: BodyMLBasedBacktest):
+        pass

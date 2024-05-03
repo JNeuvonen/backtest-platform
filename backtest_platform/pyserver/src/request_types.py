@@ -108,6 +108,27 @@ class BodyCreateLongShortBacktest(BaseModel):
     klines_until_close: Optional[int] = None
 
 
+class BodyMLBasedBacktest(BaseModel):
+    fetch_latest_data: bool
+    model_name: str
+    train_run: str
+    epoch: int
+    buy_cond: str
+    sell_cond: str
+    allow_shorts: bool
+    candle_interval: str
+    use_time_based_close: bool
+    use_profit_based_close: bool
+    use_stop_loss_based_close: bool
+    trading_fees_perc: float
+    slippage_perc: float
+    short_fee_hourly: float
+    take_profit_threshold_perc: float
+    stop_loss_threshold_perc: float
+    name: Optional[str] = None
+    klines_until_close: Optional[int] = None
+
+
 class BodyDeleteManyBacktestsById:
     list_of_ids: List[int]
 

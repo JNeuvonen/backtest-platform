@@ -10,6 +10,7 @@ from backtest_utils import (
 )
 from fastapi_utils import convert_to_bool
 from long_short_backtest import run_long_short_backtest
+from ml_based_backtest import run_ml_based_backtest
 from query_backtest_history import BacktestHistoryQuery
 from constants import BACKTEST_REPORT_HTML_PATH
 
@@ -28,6 +29,7 @@ from request_types import (
     BodyCreateLongShortBacktest,
     BodyCreateManualBacktest,
     BodyCreateMassBacktest,
+    BodyMLBasedBacktest,
 )
 from utils import base_model_to_dict, get_periods_per_year
 
@@ -48,6 +50,7 @@ class RoutePaths:
     COMBINED_STRATEGY_SUMMARY = "/mass-backtest/combined/summary"
     LONG_SHORT_BACKTEST = "/long-short-backtest"
     FETCH_LONG_SHORT_BACKTEST = "/mass-backtest/long-short/fetch"
+    ML_BASED_BACKTEST = "/ml-based"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -281,3 +284,10 @@ async def route_get_long_short_backtests():
     with HttpResponseContext():
         backtests = BacktestQuery.fetch_all_long_short_backtests()
         return {"data": backtests}
+
+
+@router.put(RoutePaths.ML_BASED_BACKTEST)
+async def route_create_ml_based_backtest(body: BodyMLBasedBacktest):
+    with HttpResponseContext():
+        asyncio.create_task(run_ml_based_backtest(body))
+        pass
