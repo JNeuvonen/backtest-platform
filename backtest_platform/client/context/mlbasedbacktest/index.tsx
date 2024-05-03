@@ -1,5 +1,6 @@
 import { UseDisclosureReturn, useDisclosure } from "@chakra-ui/react";
 import React, { ReactNode, createContext, useContext } from "react";
+import { CreateNewMLBasedBacktestDrawer } from "./CreateNewDrawer";
 
 interface MLBasedBacktestProviderProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ export const MLBasedBacktestProvider: React.FC<
         onDeleteMode,
       }}
     >
+      <CreateNewMLBasedBacktestDrawer />
       {children}
     </MLBasedBacktestContext.Provider>
   );

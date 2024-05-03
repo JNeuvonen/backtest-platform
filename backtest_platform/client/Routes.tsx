@@ -19,6 +19,7 @@ import { BulkLongShortSimPage } from "./pages/simulate/bulk/long-short";
 import { MassPairTradeProvider } from "./context/masspairtrade";
 import { LongShortBacktestsDetailsView } from "./pages/simulate/bulk/backtest-details-view";
 import { MachineLearningBacktestPage } from "./pages/simulate/machine-learning";
+import { MLBasedBacktestProvider } from "./context/mlbasedbacktest";
 
 export const AppRoutes = () => {
   return (
@@ -70,7 +71,11 @@ export const AppRoutes = () => {
 
       <Route
         path={PATHS.simulate.machine_learning}
-        element={<MachineLearningBacktestPage />}
+        element={
+          <MLBasedBacktestProvider>
+            <MachineLearningBacktestPage />
+          </MLBasedBacktestProvider>
+        }
       />
       <Route
         path={PATHS.mass_backtest.pairtrade}
