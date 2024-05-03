@@ -47,7 +47,7 @@ export const DatasetModelIndex = () => {
     return () => setInnerSideNavWidth(0);
   }, []);
 
-  if (!data || !data?.res || data.status !== 200) {
+  if (!data) {
     return (
       <div>
         <Spinner />
@@ -59,7 +59,7 @@ export const DatasetModelIndex = () => {
     return path === ROOT_PATH.replace(PATH_KEYS.dataset, datasetName);
   };
 
-  const modelsArr = data.res.data;
+  const modelsArr = data;
 
   return (
     <div>

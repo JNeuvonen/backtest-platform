@@ -99,6 +99,10 @@ export async function fetchDatasetModels(datasetName: string) {
     url: LOCAL_API_URL.fetch_dataset_models(datasetName),
   });
 
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+
   return res;
 }
 

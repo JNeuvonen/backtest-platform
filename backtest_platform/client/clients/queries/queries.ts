@@ -78,8 +78,8 @@ export function useColumnQuery(
 
 export function useDatasetModelsQuery(
   datasetName: string
-): UseQueryResult<DatasetModelResponse, unknown> {
-  return useQuery<DatasetModelResponse, unknown>({
+): UseQueryResult<DatasetModel[], unknown> {
+  return useQuery<DatasetModel[], unknown>({
     queryKey: [QUERY_KEYS.fetch_datasets_models, datasetName],
     queryFn: () => fetchDatasetModels(datasetName),
   });
