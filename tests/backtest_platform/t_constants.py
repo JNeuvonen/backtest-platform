@@ -242,6 +242,10 @@ class URL:
         )
 
     @classmethod
+    def create_ml_based_backtest(cls):
+        return cls._backtest_route() + BacktestRoutePaths.ML_BASED_BACKTEST
+
+    @classmethod
     def get_quant_stats_summary(cls, backtest_id):
         return cls._backtest_route() + BacktestRoutePaths.DETAILED_SUMMARY.format(
             backtest_id=backtest_id

@@ -13,6 +13,8 @@ from tests.backtest_platform.fixtures import (
     long_short_buy_cond_basic,
     long_short_pair_exit_code_basic,
     long_short_sell_cond_basic,
+    ml_based_buy_cond_basic,
+    ml_based_sell_cond_basic,
     open_long_trade_cond_basic,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
@@ -110,4 +112,15 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
 
     Post.create_model(fixt_add_dataset_for_ml_based_backtest[0].name, body)
     Post.create_train_job(ML_MODEL_NAME, body=create_train_job_basic())
-    print("hello world")
+
+    body = backtest_rule_based_v2
+
+    body["candle_interval"] = "1d"
+    body["fetch_latest_data"] = False
+    body["buy_cond"] = ml_based_buy_cond_basic()
+    body["sell_cond"] = ml_based_sell_cond_basic()
+    body["allow_shorts"] = True
+    body["train_run_id"] = 1
+    body["epoch"] = 30
+
+    Post.create_ml_based_backtest(body=body)

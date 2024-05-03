@@ -329,6 +329,11 @@ class Post:
         with Req("post", URL.create_code_preset(), json=body) as res:
             return res.json()["id"]
 
+    @staticmethod
+    def create_ml_based_backtest(body):
+        with Req("post", URL.create_ml_based_backtest(), json=body) as res:
+            return res
+
 
 class Put:
     @staticmethod

@@ -175,6 +175,14 @@ def long_short_buy_cond_basic():
     return buy_cond.get()
 
 
+def ml_based_buy_cond_basic():
+    return ""
+
+
+def ml_based_sell_cond_basic():
+    return ""
+
+
 def long_short_sell_cond_basic():
     buy_cond = PyCode()
     buy_cond.append_line("def get_is_valid_sell(bar):")
