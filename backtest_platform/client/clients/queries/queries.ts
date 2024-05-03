@@ -100,15 +100,17 @@ export function useModelTrainMetadata(
   return useQuery<AllTrainingMetadata | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_all_model_training_metadata, modelName],
     queryFn: () => fetchAllTrainingMetadataForModel(modelName),
+    enabled: !!modelName,
   });
 }
 
 export function useTrainJobDetailed(
-  trainJobId: string
+  trainJobId: string | number | null
 ): UseQueryResult<TrainDataDetailed | null, unknown> {
   return useQuery<TrainDataDetailed | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_train_job_detailed, trainJobId],
-    queryFn: () => fetchTrainjobDetailed(trainJobId),
+    queryFn: () => fetchTrainjobDetailed(trainJobId as string),
+    enabled: trainJobId !== null,
   });
 }
 
