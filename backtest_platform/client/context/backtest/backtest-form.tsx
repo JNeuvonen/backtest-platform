@@ -475,17 +475,21 @@ export const BacktestForm = () => {
                           }}
                         >
                           <NumberInput
-                            step={5}
                             min={0}
+                            step={0.1}
                             value={field.value}
                             onChange={(valueString) =>
                               form.setFieldValue(
                                 formKeys.stopLossThresholdPerc,
-                                parseInt(valueString)
+                                parseFloat(valueString)
                               )
                             }
                           >
                             <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
                           </NumberInput>
                         </WithLabel>
                       );
