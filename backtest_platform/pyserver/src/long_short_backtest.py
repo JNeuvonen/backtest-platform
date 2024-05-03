@@ -1,9 +1,7 @@
 import logging
-import numpy as np
 import math
 from typing import Dict, List, Set
 
-from pandas.core.tools.datetimes import should_cache
 from api_binance import save_historical_klines
 from backtest_utils import (
     calc_long_short_profit_factor,
@@ -521,7 +519,7 @@ class PairTrade:
         return {"buy_df": buy_df.iloc[0], "sell_df": sell_df.iloc[0]}
 
 
-class CompletedTrade:
+class CompletedPairTrade:
     def __init__(
         self,
         buy_id: int,
@@ -699,7 +697,7 @@ class LongShortOnUniverseBacktest:
         sell_long_proceedings = self.get_close_long_proceedings(buy_df, pair)
         required_for_close_short = self.get_close_short_amount(sell_df, pair)
 
-        completed_trade = CompletedTrade(
+        completed_trade = CompletedPairTrade(
             buy_id=pair.buy_id,
             sell_id=pair.sell_id,
             long_open_price=pair.on_open_buy_price,
