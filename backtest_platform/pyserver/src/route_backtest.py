@@ -286,7 +286,7 @@ async def route_get_long_short_backtests():
         return {"data": backtests}
 
 
-@router.put(RoutePaths.ML_BASED_BACKTEST)
+@router.post(RoutePaths.ML_BASED_BACKTEST)
 async def route_create_ml_based_backtest(body: BodyMLBasedBacktest):
     with HttpResponseContext():
         asyncio.create_task(run_ml_based_backtest(body))
