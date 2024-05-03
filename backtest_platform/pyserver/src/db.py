@@ -446,6 +446,27 @@ def timedelta_to_candlesize(seconds):
         return None
 
 
+def candlesize_to_timedelta(candlesize):
+    mapping = {
+        CandleSize.ONE_MINUTE: 60,
+        CandleSize.THREE_MINUTES: 180,
+        CandleSize.FIVE_MINUTES: 300,
+        CandleSize.FIFTEEN_MINUTES: 900,
+        CandleSize.THIRTY_MINUTES: 1800,
+        CandleSize.ONE_HOUR: 3600,
+        CandleSize.TWO_HOURS: 7200,
+        CandleSize.FOUR_HOURS: 14400,
+        CandleSize.SIX_HOURS: 21600,
+        CandleSize.EIGHT_HOURS: 28800,
+        CandleSize.TWELVE_HOURS: 43200,
+        CandleSize.ONE_DAY: 86400,
+        CandleSize.THREE_DAYS: 259200,
+        CandleSize.ONE_WEEK: 604800,
+        CandleSize.ONE_MONTH: 2592000,
+    }
+    return mapping.get(candlesize, 0)
+
+
 def get_df_corr(df, col_1, col_2):
     if col_1 == col_2:
         return 1
