@@ -46,7 +46,6 @@ def test_fetch_backtests(fixt_manual_backtest):
     assert len(backtests) == 1, "Backtest wasnt created or fetches succesfully"
 
 
-@pytest.mark.input_dump
 def test_quant_stats_report_gen(cleanup_db, add_custom_datasets):
     dataset = Fetch.get_dataset_by_name("btcusdt_1h_dump")
     body = backtest_rule_based_v2

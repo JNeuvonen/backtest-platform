@@ -362,19 +362,28 @@ class ManualBacktest:
         price = df_row[price_col]
 
         if (
-            self.pos_open_klines == self.max_klines_until_close
+            should_open_trade is False
+            and self.pos_open_klines == self.max_klines_until_close
             and self.use_time_based_close
         ):
             # auto close positions if time threshold is met
             should_close_trade = True
 
-        if self.use_profit_based_close and self.positions.take_profit_threshold_hit(
-            price, self.take_profit_threshold_perc
+        if (
+            should_open_trade is False
+            and self.use_profit_based_close is True
+            and self.positions.take_profit_threshold_hit(
+                price, self.take_profit_threshold_perc
+            )
         ):
             should_close_trade = True
 
-        if self.use_stop_loss_based_close and self.positions.stop_loss_threshold_hit(
-            price, self.stop_loss_threshold_perc
+        if (
+            should_open_trade is False
+            and self.use_stop_loss_based_close is True
+            and self.positions.stop_loss_threshold_hit(
+                price, self.stop_loss_threshold_perc
+            )
         ):
             should_close_trade = True
 

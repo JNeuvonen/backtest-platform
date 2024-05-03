@@ -106,6 +106,7 @@ class Positions:
         self.position = 0.0
         self.cash = self.cash * self.slippage * self.fees
         self.add_trade(price, kline_open_time, Direction.SHORT)
+        self.reset_trade_track_data()
 
     def reset_trade_track_data(self):
         self.trade_prices = []
@@ -138,8 +139,8 @@ class Positions:
         self.cash -= price_to_close
         self.short_debt = 0.0
         self.cash = self.cash * self.slippage * self.fees
-
         self.add_trade(price, kline_open_time, Direction.LONG)
+        self.reset_trade_track_data()
 
     def init_trade_track_data(
         self, price: float, prediction: float, kline_open_time: int
@@ -167,16 +168,23 @@ class Positions:
         return False
 
     def stop_loss_threshold_hit(self, price: float, stop_loss_threshold_perc: float):
-        if self.position > 0:
-            return price / self.enter_trade_price < (
-                1 - (stop_loss_threshold_perc / 100)
-            )
+        if self.position == 0 and self.short_debt == 0:
+            return False
 
-        if self.short_debt > 0:
-            return price / self.enter_trade_price > (
-                1 + (stop_loss_threshold_perc / 100)
-            )
+        if len(self.trade_prices) == 0:
+            return False
 
+        prices = self.trade_prices
+        price_ath = prices[0]
+
+        for item in prices:
+            if self.position > 0:
+                if item / price_ath < (1 - stop_loss_threshold_perc / 100):
+                    return True
+            else:
+                if item / price_ath > (1 + (stop_loss_threshold_perc / 100)):
+                    return True
+            price_ath = max(item, price_ath)
         return False
 
     def go_long(self, price: float, prediction: float, kline_open_time: int):
@@ -201,15 +209,16 @@ class Positions:
         portfolio_worth = self.cash
         if self.position > 0.0:
             portfolio_worth += price * self.position
+            self.trade_prices.append(price)
         if self.short_debt > 0.0:
             self.short_debt *= self.short_fee_coeff
             portfolio_worth -= price * self.short_debt
+            self.trade_prices.append(price)
 
         if portfolio_worth <= START_BALANCE * 0.2:
             self.is_trading_forced_stop = True
 
         self.total_positions_value = portfolio_worth
-        self.trade_prices.append(price)
 
         if self.buy_and_hold_position is None:
             self.buy_and_hold_position = self.start_balance / price
