@@ -4,6 +4,7 @@ from sqlalchemy import Boolean, Column, Integer, String
 from constants import AppConstants
 from log import LogExceptionContext
 from orm import Base, Session
+from query_ml_validation_set_prices import MLValidationSetPriceQuery
 from query_weights import ModelWeightsQuery
 from query_model import Model, ModelQuery
 from request_types import BodyCreateTrain
@@ -32,11 +33,15 @@ class TrainJobQuery:
         model: Model = ModelQuery.fetch_model_by_name(train_job.model_name)
         dataset: Dataset = DatasetQuery.fetch_dataset_by_id(model.dataset_id)
         epochs = ModelWeightsQuery.fetch_model_weights_by_train_job_id(train_job_id)
+
         return {
             "train_job": train_job,
             "model": model,
             "dataset_metadata": dataset,
             "epochs": epochs,
+            "validation_set_ticks": MLValidationSetPriceQuery.fetch_all_by_job_id(
+                train_job_id
+            ),
         }
 
     @staticmethod

@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 from log import LogExceptionContext
 
 from orm import Base, Session
+from query_epoch_prediction import EpochPredictionQuery
 
 
 class ModelWeights(Base):
@@ -75,6 +76,9 @@ class ModelWeightsQuery:
                         "epoch": weight.epoch,
                         "train_loss": weight.train_loss,
                         "val_loss": weight.val_loss,
+                        "val_predictions": EpochPredictionQuery.get_entries_by_weights_id_sorted(
+                            weight.id
+                        ),
                     }
                     for weight in weights_metadata
                 ]

@@ -54,11 +54,11 @@ class EpochPredictionQuery:
                 session.commit()
 
     @staticmethod
-    def get_entries_by_backtest_id_sorted(backtest_id: int):
+    def get_entries_by_weights_id_sorted(weights_id: int):
         with Session() as session:
             return (
                 session.query(EpochPrediction)
-                .filter_by(backtest_id=backtest_id)
+                .filter_by(weights_id=weights_id)
                 .order_by(EpochPrediction.kline_open_time.asc())
                 .all()
             )

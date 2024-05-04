@@ -44,3 +44,14 @@ class MLValidationSetPriceQuery:
                 ]
                 session.bulk_save_objects(entries)
                 session.commit()
+
+    @staticmethod
+    def fetch_all_by_job_id(train_job_id: int) -> List[MLValidationSetPrice]:
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(MLValidationSetPrice)
+                    .filter_by(train_job_id=train_job_id)
+                    .order_by(MLValidationSetPrice.kline_open_time.asc())
+                    .all()
+                )
