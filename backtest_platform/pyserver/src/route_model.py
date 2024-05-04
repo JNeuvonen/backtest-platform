@@ -92,9 +92,6 @@ async def route_run_backtest(train_job_id: int, body: BodyRunBacktest):
         price_col = DatasetQuery.get_price_col(body.dataset_name)
         if price_col is None:
             DatasetQuery.update_price_column(body.dataset_name, body.price_col)
-            TrainJobQuery.set_backtest_prices(
-                train_job_id, body.dataset_name, body.price_col
-            )
         res = run_model_backtest(train_job_id, body)
         return {"data": res}
 
