@@ -102,7 +102,10 @@ def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
 @pytest.mark.dev
 def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     ML_MODEL_NAME = "Example model"
-    time.sleep(3)
+
+    gen_ml_based_test_data_transformations(
+        fixt_add_dataset_for_ml_based_backtest[0].name
+    )
 
     body = create_model_body(
         name=ML_MODEL_NAME,
@@ -113,12 +116,8 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
         validation_split=[70, 100],
     )
 
-    gen_ml_based_test_data_transformations(
-        fixt_add_dataset_for_ml_based_backtest[0].name
-    )
-
-    Post.create_model(fixt_add_dataset_for_ml_based_backtest[0].name, body)
-    Post.create_train_job(ML_MODEL_NAME, body=create_train_job_basic())
+    model_id = Post.create_model(fixt_add_dataset_for_ml_based_backtest[0].name, body)
+    train_job_id = Post.create_train_job(model_id, body=create_train_job_basic())
 
     body = backtest_rule_based_v2
 
@@ -128,7 +127,8 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     body["buy_cond"] = ml_based_buy_cond_basic()
     body["sell_cond"] = ml_based_sell_cond_basic()
     body["allow_shorts"] = True
-    body["train_run_id"] = 1
-    body["epoch"] = 30
+    body["train_run_id"] = train_job_id
+    body["id_of_model"] = model_id
+    body["epoch"] = 4
 
     Post.create_ml_based_backtest(body=body)
