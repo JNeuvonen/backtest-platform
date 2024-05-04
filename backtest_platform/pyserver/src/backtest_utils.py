@@ -1,14 +1,17 @@
 from datetime import datetime, timedelta
 import math
 from typing import Dict, List
-from db import candlesize_to_timedelta
+from db import candlesize_to_timedelta, exec_python
 from math_utils import safe_divide
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
 from constants import ONE_HOUR_IN_MS, CandleSize
+from query_data_transformation import DataTransformation
+from query_dataset import Dataset
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from request_types import BodyMLBasedBacktest
+from utils import PythonCode
 
 
 START_BALANCE = 10000
@@ -400,6 +403,16 @@ def create_long_short_trades(backtest_id, completed_trades):
         )
 
         PairTradeQuery.create_entry(pair_trade)
+
+
+def run_transformations_on_dataset(
+    transformations: List[DataTransformation], dataset: Dataset
+):
+    for transformation in transformations:
+        python_program = PythonCode.on_dataset(
+            dataset.dataset_name, transformation.transformation_code
+        )
+        exec_python(python_program)
 
 
 class MLBasedBacktestRules:
