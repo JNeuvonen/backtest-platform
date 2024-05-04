@@ -6,10 +6,12 @@ from context import HttpResponseContext
 from db import get_dataset_columns
 from query_backtest import BacktestQuery
 from query_dataset import DatasetQuery
+from query_epoch_prediction import EpochPredictionQuery
 from query_model import ModelQuery
 from query_trainjob import TrainJobQuery
 from code_gen import start_train_loop
 from config import is_testing
+from query_weights import ModelWeightsQuery
 from request_types import BodyCreateTrain, BodyRunBacktest
 
 
@@ -24,6 +26,7 @@ class RoutePaths:
     STOP_TRAIN = "/train/stop/{train_job_id}"
     TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID = "/train/{train_job_id}/detailed"
     RUN_BACKTEST = "/backtest/{train_job_id}/run"
+    FETCH_EPOCH_VAL_PREDS = "/train/{train_job_id}/epoch/{epoch_nr}"
     BACKTESTS = "/backtest/{train_job_id}"
 
 
@@ -101,3 +104,15 @@ async def route_get_backtests(train_job_id: int):
     with HttpResponseContext():
         data = BacktestQuery.fetch_backtests_by_train_job_id(train_job_id)
         return {"data": data}
+
+
+@router.get(RoutePaths.FETCH_EPOCH_VAL_PREDS)
+async def route_fetch_epoch_val_preds(train_job_id: int, epoch_nr: int):
+    with HttpResponseContext():
+        epoch_metadata = ModelWeightsQuery.fetch_metadata_by_epoch(
+            train_job_id, epoch_nr
+        )
+        epoch_val_preds = EpochPredictionQuery.get_entries_by_weights_id_sorted(
+            epoch_metadata.id
+        )
+        return {"data": epoch_val_preds}

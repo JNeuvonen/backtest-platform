@@ -1,5 +1,3 @@
-import json
-from typing import List
 from sqlalchemy import Column, Float, ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import relationship
 from log import LogExceptionContext
@@ -56,6 +54,25 @@ class ModelWeightsQuery:
                 return weights_data.deserialize()
 
     @staticmethod
+    def fetch_metadata_by_epoch(train_job_id: int, epoch: int):
+        with LogExceptionContext():
+            with Session() as session:
+                metadata = (
+                    session.query(
+                        ModelWeights.id,
+                        ModelWeights.epoch,
+                        ModelWeights.train_loss,
+                        ModelWeights.val_loss,
+                    )
+                    .filter(
+                        ModelWeights.train_job_id == train_job_id,
+                        ModelWeights.epoch == epoch,
+                    )
+                    .one()
+                )
+                return metadata
+
+    @staticmethod
     def fetch_model_weights_by_train_job_id(train_job_id: int):
         with LogExceptionContext():
             with Session() as session:
@@ -76,9 +93,7 @@ class ModelWeightsQuery:
                         "epoch": weight.epoch,
                         "train_loss": weight.train_loss,
                         "val_loss": weight.val_loss,
-                        "val_predictions": EpochPredictionQuery.get_entries_by_weights_id_sorted(
-                            weight.id
-                        ),
+                        "val_predictions": [],
                     }
                     for weight in weights_metadata
                 ]
