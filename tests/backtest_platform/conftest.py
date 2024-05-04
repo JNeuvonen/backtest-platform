@@ -270,7 +270,7 @@ def setup_test_environment():
     download_data()
     process = multiprocessing.Process(target=t_init_server)
     process.start()
-    time.sleep(5)
+    time.sleep(8)
     yield
     process.terminate()
     process.join()

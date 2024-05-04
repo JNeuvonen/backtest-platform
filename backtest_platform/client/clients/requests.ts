@@ -606,3 +606,20 @@ export const deleteCodePreset = async (id: number) => {
   });
   return res;
 };
+
+export const fetchEpochValidationPreds = async (
+  trainJobId: number,
+  epochNr: number | undefined
+) => {
+  if (epochNr === undefined) return [];
+
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchEpochValidationPreds(trainJobId, epochNr),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};

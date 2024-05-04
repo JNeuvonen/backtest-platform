@@ -1,4 +1,5 @@
 import pytest
+import time
 from tests.backtest_platform.fixtures import (
     NUM_EPOCHS_DEFAULT,
     create_backtest,
@@ -21,7 +22,7 @@ def test_fetch_model_by_name(cleanup_db, create_basic_model: DatasetMetadata):
     assert model["model_name"] == Constants.EXAMPLE_MODEL_NAME
 
 
-@pytest.mark.acceptance
+@pytest.mark.dev
 def test_create_train_job(cleanup_db, create_basic_model: DatasetMetadata):
     Post.create_train_job(Constants.EXAMPLE_MODEL_NAME, body=create_train_job_basic())
 

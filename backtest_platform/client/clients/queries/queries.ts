@@ -13,6 +13,7 @@ import {
   fetchDataset,
   fetchDatasetModels,
   fetchDatasets,
+  fetchEpochValidationPreds,
   fetchLongShortBacktests,
   fetchManyBacktestsById,
   fetchMassBacktestById,
@@ -31,6 +32,7 @@ import {
   DatasetMetadata,
   DatasetModel,
   DatasetModelResponse,
+  EpochPredictionTick,
   FetchBacktestByIdRes,
   FetchBulkBacktests,
   MassBacktest,
@@ -200,5 +202,20 @@ export function useLongShortBacktests(): UseQueryResult<
   return useQuery<BacktestObject[] | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_long_short_backtests],
     queryFn: () => fetchLongShortBacktests(),
+  });
+}
+
+export function useEpochValPredictions(
+  trainJobId: number,
+  epochNumber: number | undefined
+): UseQueryResult<EpochPredictionTick[] | null, unknown> {
+  return useQuery<EpochPredictionTick[] | null, unknown>({
+    queryKey: [
+      QUERY_KEYS.fetch_epoch_validation_preds,
+      trainJobId,
+      epochNumber,
+    ],
+    queryFn: () => fetchEpochValidationPreds(trainJobId, epochNumber),
+    enabled: trainJobId !== undefined && epochNumber !== undefined,
   });
 }
