@@ -181,3 +181,30 @@ BACKTEST_LONG_SHORT_CLOSE_TEMPLATE = """
 
 should_close_trade = get_exit_trade_decision(buy_df, sell_df)
 """
+
+
+LOAD_MODEL_TEMPLATE = """
+import torch
+import pickle
+import torch.nn as nn
+from query_weights import ModelWeightsQuery
+
+{MODEL_CLASS}
+
+def fetch_and_load_model_weights(train_job_id: int, epoch: int):
+
+    model = Model({X_INPUT_SIZE})
+    weights_data = ModelWeightsQuery.fetch_model_weights_by_epoch(train_job_id, epoch)
+
+    if weights_data is None:
+        raise Exception("No weights found for the given train_job_id and epoch")
+
+    state_dict = pickle.loads(weights_data)
+    model.load_state_dict(state_dict)
+    model.eval() 
+    return model
+    
+
+
+model = fetch_and_load_model_weights({TRAIN_JOB_ID}, {EPOCH_NR})
+"""

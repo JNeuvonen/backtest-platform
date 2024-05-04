@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import math
 from typing import Dict, List
+from code_gen_template import LOAD_MODEL_TEMPLATE
 from db import candlesize_to_timedelta, exec_python
 from math_utils import safe_divide
 from query_backtest import BacktestQuery
@@ -11,7 +12,7 @@ from query_dataset import Dataset
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from request_types import BodyMLBasedBacktest
-from utils import PythonCode
+from utils import GlobalSymbols, PythonCode
 
 
 START_BALANCE = 10000
@@ -413,6 +414,26 @@ def run_transformations_on_dataset(
             dataset.dataset_name, transformation.transformation_code
         )
         exec_python(python_program)
+
+
+def exec_load_model(model_class_code, train_job_id, epoch_nr, x_input_size):
+    template = LOAD_MODEL_TEMPLATE
+    replacements = {
+        "{MODEL_CLASS}": model_class_code,
+        "{X_INPUT_SIZE}": x_input_size,
+        "{TRAIN_JOB_ID}": train_job_id,
+        "{EPOCH_NR}": epoch_nr,
+    }
+
+    for key, value in replacements.items():
+        template = template.replace(key, str(value))
+
+    local_variables = {}
+    exec(template, local_variables, local_variables)
+    model = local_variables.get("model")
+    if model is None:
+        raise Exception("Unable to load model")
+    return model
 
 
 class MLBasedBacktestRules:

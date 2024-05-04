@@ -8,6 +8,7 @@ from backtest_utils import (
     get_backtest_id_to_dataset_name_map,
     get_mass_sim_backtests_equity_curves,
 )
+from config import is_testing
 from fastapi_utils import convert_to_bool
 from long_short_backtest import run_long_short_backtest
 from ml_based_backtest import run_ml_based_backtest
@@ -289,5 +290,8 @@ async def route_get_long_short_backtests():
 @router.post(RoutePaths.ML_BASED_BACKTEST)
 async def route_create_ml_based_backtest(body: BodyMLBasedBacktest):
     with HttpResponseContext():
-        asyncio.create_task(run_ml_based_backtest(body))
+        if is_testing():
+            await run_ml_based_backtest((body))
+        else:
+            asyncio.create_task(run_ml_based_backtest(body))
         pass
