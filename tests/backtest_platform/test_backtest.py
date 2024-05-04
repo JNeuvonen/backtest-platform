@@ -71,7 +71,7 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
 
 
 @pytest.mark.input_dump
-def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
+def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
     datasets = fixt_add_blue_chip_1d_datasets
     body = backtest_rule_based_v2
     dataset_names = []
@@ -96,7 +96,7 @@ def test_long_short_backtest(fixt_add_blue_chip_1d_datasets):
     Post.create_long_short_backtest(body)
 
 
-@pytest.mark.dev
+@pytest.mark.temporal
 def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     ML_MODEL_NAME = "Example model"
     time.sleep(3)

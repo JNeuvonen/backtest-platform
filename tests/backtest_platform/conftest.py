@@ -14,7 +14,6 @@ from tests.backtest_platform.fixtures import (
     criterion_basic,
     linear_model_basic,
     open_long_trade_cond_basic,
-    open_short_trade_cond_basic,
 )
 from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
 
@@ -200,6 +199,7 @@ def create_basic_model(fixt_btc_small_1h):
     Creates a basic model using the 'fixt_btc_small_1h' fixture.
     The 'fixt_btc_small_1h' fixture is executed as a dependency.
     """
+    time.sleep(3)
     body = create_model_body(
         name=Constants.EXAMPLE_MODEL_NAME,
         drop_cols=[],
