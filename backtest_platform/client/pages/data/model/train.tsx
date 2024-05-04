@@ -20,7 +20,7 @@ import { getTrainJobPath } from "../../../utils/navigate";
 
 interface RouteParams {
   datasetName: string;
-  modelName: string;
+  modelId: string;
 }
 
 const COLUMNS = [
@@ -33,11 +33,10 @@ const COLUMNS = [
 ];
 
 export const ModelTrainPage = () => {
-  const { modelName, datasetName } = usePathParams<RouteParams>();
-  const { data: modelData, refetch: refetchModelData } =
-    useModelQuery(modelName);
+  const { modelId, datasetName } = usePathParams<RouteParams>();
+  const { data: modelData, refetch: refetchModelData } = useModelQuery(modelId);
   const { data: allTrainingMetadata, refetch: refetchAllTrainingMetadata } =
-    useModelTrainMetadata(modelName);
+    useModelTrainMetadata(modelId);
   const createTrainJobModal = useModal();
 
   useMessageListener({
@@ -79,7 +78,7 @@ export const ModelTrainPage = () => {
               className="link-default"
               to={getTrainJobPath(
                 datasetName,
-                modelName,
+                Number(modelId),
                 String(item.train.id)
               )}
             >

@@ -1,7 +1,7 @@
 export const PATH_KEYS = {
   dataset: ":datasetName",
   column: ":columnName",
-  model: ":modelName",
+  model: ":modelId",
   train: ":trainJobId",
   backtest: ":backtestId",
   mass_backtest: ":massBacktestId",

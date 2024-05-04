@@ -16,7 +16,7 @@ import { createTrainJob } from "../clients/requests";
 
 interface RouteParams {
   datasetName: string;
-  modelName: string;
+  modelId: string;
 }
 
 interface Props {
@@ -30,8 +30,8 @@ export interface TrainJobForm {
 }
 
 export const CreateTrainJobForm = ({ onClose }: Props) => {
-  const { modelName } = usePathParams<RouteParams>();
-  const { data } = useModelQuery(modelName);
+  const { modelId } = usePathParams<RouteParams>();
+  const { data } = useModelQuery(modelId);
   const toast = useToast();
 
   if (!data) {
@@ -43,7 +43,7 @@ export const CreateTrainJobForm = ({ onClose }: Props) => {
   }
 
   const onSubmit = async (values: TrainJobForm) => {
-    const res = await createTrainJob(modelName, {
+    const res = await createTrainJob(modelId, {
       num_epochs: values.numEpochs,
       save_model_after_every_epoch: values.saveModelEveryEpoch,
       backtest_on_val_set: values.backtestOnValidationSet,

@@ -106,10 +106,10 @@ export async function fetchDatasetModels(datasetName: string) {
   return res;
 }
 
-export async function fetchModelByName(modelName: string) {
+export async function fetchModelById(modelId: string) {
   const res: FetchModelByNameRes = await buildRequest({
     method: "GET",
-    url: LOCAL_API_URL.fetch_model_by_name(modelName),
+    url: LOCAL_API_URL.fetch_model_by_id(modelId),
   });
   return res.res.model ? res.res.model : null;
 }

@@ -25,10 +25,10 @@ export const getDatasetInfoPagePath = (datasetName: string) => {
   return PATHS.data.dataset.index.replace(PATH_KEYS.dataset, datasetName);
 };
 
-export const getModelInfoPath = (datasetName: string, modelName: string) => {
+export const getModelInfoPath = (datasetName: string, modelId: number) => {
   return PATHS.data.model.info
     .replace(PATH_KEYS.dataset, datasetName)
-    .replace(PATH_KEYS.model, modelName);
+    .replace(PATH_KEYS.model, String(modelId));
 };
 
 export const getMassbacktestTablesPath = (backtestId: string) => {
@@ -44,12 +44,12 @@ export const getInvidualMassBacktestPath = (massBacktestId: string) => {
 
 export const getTrainJobPath = (
   datasetName: string,
-  modelName: string,
+  modelId: number,
   trainJobId: string
 ) => {
   return PATHS.data.model.train
     .replace(PATH_KEYS.dataset, datasetName)
-    .replace(PATH_KEYS.model, modelName)
+    .replace(PATH_KEYS.model, String(modelId))
     .replace(PATH_KEYS.train, trainJobId);
 };
 

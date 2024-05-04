@@ -82,8 +82,8 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/models/create`,
   fetch_dataset_models: (datasetName: string) =>
     LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/models`,
-  fetch_model_by_name: (modelName: string) =>
-    LOCAL_API_URI + LOCAL_API.model.root + `/${modelName}`,
+  fetch_model_by_id: (modelId: string) =>
+    LOCAL_API_URI + LOCAL_API.model.root + `/${modelId}`,
   create_train_job: (modelName: string) =>
     LOCAL_API_URI + LOCAL_API.model.root + `/${modelName}/create-train`,
   fetch_all_training_metadata: (modelName: string) =>

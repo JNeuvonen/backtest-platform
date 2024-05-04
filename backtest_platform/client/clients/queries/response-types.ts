@@ -58,6 +58,7 @@ export interface FetchModelByNameRes {
 }
 
 export interface DatasetModel {
+  id: number;
   dataset_id: number;
   drop_cols: string[];
   optimizer_and_criterion_code: string;

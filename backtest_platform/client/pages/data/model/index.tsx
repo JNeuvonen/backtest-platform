@@ -20,7 +20,7 @@ import useQueryParams from "../../../hooks/useQueryParams";
 import { ChakraTabs } from "../../../components/layout/Tabs";
 import { ModelTrainPage } from "./Train";
 import { displayValidationSplit } from "../../../utils/content";
-import { useAppContext } from "../../../context/App";
+import { useAppContext } from "../../../context/app";
 
 const TAB_LABELS = ["Info", "Train"];
 const TABS = [<ModelInfoPage key={"1"} />, <ModelTrainPage key={"2"} />];
@@ -29,7 +29,7 @@ interface QueryParams {
   defaultTab: string | undefined;
 }
 
-const MODEL_COLUMNS = ["Name", "Target Column", "Validation Split"];
+const MODEL_COLUMNS = ["Id", "Name", "Target Column", "Validation Split"];
 const ROOT_PATH = PATHS.data.model.index;
 
 export const DatasetModelIndex = () => {
@@ -86,6 +86,7 @@ export const DatasetModelIndex = () => {
             columns={MODEL_COLUMNS}
             rows={modelsArr.map((item) => {
               return [
+                item.id,
                 item.model_name,
                 item.target_col,
                 displayValidationSplit(
@@ -94,7 +95,7 @@ export const DatasetModelIndex = () => {
               ];
             })}
             rowOnClickFunc={(item: RowItem) => {
-              navigate(getModelInfoPath(datasetName, item[0] as string));
+              navigate(getModelInfoPath(datasetName, item[0] as number));
             }}
           />
         </>

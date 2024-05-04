@@ -9,12 +9,12 @@ import { formatValidationSplit } from "../../../utils/constants";
 
 interface RouteParams {
   datasetName: string;
-  modelName: string;
+  modelId: number;
 }
 
 export const ModelInfoPage = () => {
-  const { modelName } = usePathParams<RouteParams>();
-  const { data } = useModelQuery(modelName);
+  const { modelId } = usePathParams<RouteParams>();
+  const { data } = useModelQuery(modelId);
 
   if (!data) {
     return (

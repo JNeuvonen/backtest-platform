@@ -18,7 +18,7 @@ import {
   fetchManyBacktestsById,
   fetchMassBacktestById,
   fetchMassbacktestsById,
-  fetchModelByName,
+  fetchModelById,
   fetchTrainjobBacktests,
   fetchTrainjobDetailed,
 } from "../requests";
@@ -31,7 +31,6 @@ import {
   Dataset,
   DatasetMetadata,
   DatasetModel,
-  DatasetModelResponse,
   EpochPredictionTick,
   FetchBacktestByIdRes,
   FetchBulkBacktests,
@@ -88,11 +87,11 @@ export function useDatasetModelsQuery(
 }
 
 export function useModelQuery(
-  modelName: string
+  modelId: string
 ): UseQueryResult<DatasetModel | null, unknown> {
   return useQuery<DatasetModel | null, unknown>({
-    queryKey: [QUERY_KEYS.fetch_dataset_model_by_name, modelName],
-    queryFn: () => fetchModelByName(modelName),
+    queryKey: [QUERY_KEYS.fetch_dataset_model_by_name, modelId],
+    queryFn: () => fetchModelById(modelId),
   });
 }
 
