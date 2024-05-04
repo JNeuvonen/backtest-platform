@@ -2,7 +2,11 @@ import pytest
 import time
 from backtest_platform.pyserver.src.constants import NullFillStrategy
 from tests.backtest_platform.conftest import fixt_add_many_datasets
-from tests.backtest_platform.t_utils import create_model_body, gen_data_transformations
+from tests.backtest_platform.t_utils import (
+    create_model_body,
+    gen_data_transformations,
+    gen_ml_based_test_data_transformations,
+)
 
 from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
@@ -109,6 +113,10 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
         validation_split=[70, 100],
     )
 
+    gen_ml_based_test_data_transformations(
+        fixt_add_dataset_for_ml_based_backtest[0].name
+    )
+
     Post.create_model(fixt_add_dataset_for_ml_based_backtest[0].name, body)
     Post.create_train_job(ML_MODEL_NAME, body=create_train_job_basic())
 
@@ -116,7 +124,7 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
 
     body["candle_interval"] = "1d"
     body["dataset_name"] = fixt_add_dataset_for_ml_based_backtest[0].name
-    body["fetch_latest_data"] = False
+    body["fetch_latest_data"] = True
     body["buy_cond"] = ml_based_buy_cond_basic()
     body["sell_cond"] = ml_based_sell_cond_basic()
     body["allow_shorts"] = True

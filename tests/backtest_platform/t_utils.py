@@ -198,6 +198,88 @@ calculate_rsi(dataset, column=column, periods=periods)
     return transformation_results
 
 
+def gen_ml_based_test_data_transformations(dataset_name: str):
+    transformation_results = []
+
+    aroon_result = """
+import numpy as np
+import pandas as pd
+
+def calculate_aroon(df, column='close_price', periods=25):
+    aroon_up = df[column].rolling(window=periods, min_periods=0).apply(
+        lambda x: float(np.argmax(x) + 1) / periods * 100, raw=True)
+    aroon_down = df[column].rolling(window=periods, min_periods=0).apply(
+        lambda x: float(np.argmin(x) + 1) / periods * 100, raw=True)
+
+    df[f'AROON_UP_CUST_{periods}_{column}'] = aroon_up
+    df[f'AROON_DOWN_CUST_{periods}_{column}'] = aroon_down
+
+# Usage example:
+periods = 25
+column = "close_price"
+calculate_aroon(dataset, column=column, periods=periods)
+    """
+    transformation_results.append(aroon_result)
+
+    ma_result = Post.exec_python_on_dataset(
+        dataset_name,
+        body={
+            "code": """
+def calculate_ma(df, column='close_price', periods=[50]):
+    for period in periods:
+        ma_label = f"MA_{period}_{column}"
+        df[ma_label] = df[column].rolling(window=period).mean()
+
+periods = [50]
+column = "close_price"
+calculate_ma(dataset, column=column, periods=periods)
+    """
+        },
+    )
+    transformation_results.append(ma_result)
+
+    # Execute and store the result of the RSI calculation
+    rsi_result = Post.exec_python_on_dataset(
+        dataset_name,
+        body={
+            "code": """
+def calculate_rsi(df, column='open_price', periods=[14]):
+    for period in periods:
+        delta = df[column].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+        rs = gain / loss
+        df_label = f"RSI_{period}_{column}"
+        df[df_label] = 100 - (100 / (1 + rs))
+
+periods = [30]
+column = "MA_50_close_price"
+calculate_rsi(dataset, column=column, periods=periods)
+    """
+        },
+    )
+    transformation_results.append(rsi_result)
+
+    target_result = Post.exec_python_on_dataset(
+        dataset_name,
+        body={
+            "code": """
+def create_targets(df, column='close_price', shifts=[7, 14, 30]):
+    for shift in shifts:
+        target_label = f"target_{shift}"
+        df[target_label] = df[column].shift(-shift) / df[column]
+
+shifts = [7]
+create_targets(dataset, column='close_price', shifts=shifts)
+    """
+        },
+    )
+    transformation_results.append(target_result)
+
+    return transformation_results
+
+
 def create_backtest_body(
     price_column: str,
     epoch_nr: int,
@@ -243,14 +325,14 @@ class Fetch:
             return res_json["data"]
 
     @staticmethod
-    def get_model_by_name(model_name: str):
-        with Req("get", URL.get_model_by_name(model_name)) as res:
+    def get_model_by_id(model_id: int):
+        with Req("get", URL.get_model_by_id(model_id)) as res:
             res_json = res.json()
             return res_json["model"]
 
     @staticmethod
-    def all_metadata_by_model_name(model_name: str):
-        with Req("get", URL.get_all_metadata_by_model_name(model_name)) as res:
+    def all_metadata_by_model_id(model_id: int):
+        with Req("get", URL.get_all_metadata_by_model_id(model_id)) as res:
             res_json = res.json()
             return res_json["data"]
 
@@ -315,8 +397,8 @@ class Post:
             return res.json()
 
     @staticmethod
-    def create_train_job(model_name: str, body):
-        with Req("post", URL.create_train_job(model_name), json=body) as res:
+    def create_train_job(model_id: int, body):
+        with Req("post", URL.create_train_job(model_id), json=body) as res:
             return res.json()["id"]
 
     @staticmethod

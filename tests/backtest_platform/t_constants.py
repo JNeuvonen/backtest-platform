@@ -167,6 +167,17 @@ class DatasetDumps:
         "BNBUSDT",
     )
 
+    BNBUSDT_FULL_1D_ML_V2 = DatasetMetadata(
+        FixturePaths.BINANCE.format("bnbusdt_1d_ml_v2.csv"),
+        "bnbusdt_1d",
+        BinanceCols.KLINE_OPEN_TIME,
+        BinanceCols.CLOSE_PRICE,
+        BinanceCols.CLOSE_PRICE,
+        "BNBUSDT",
+        "1d",
+        "BNBUSDT",
+    )
+
 
 class EnvTestSpeed:
     FAST = "FAST"
@@ -199,19 +210,17 @@ class URL:
         return cls.BASE_URL + Routers.CODE_PRESET
 
     @classmethod
-    def get_model_by_name(cls, model_name):
-        return cls._models_route() + ModelRoutePaths.FETCH_MODEL.format(
-            model_name=model_name
-        )
+    def get_model_by_id(cls, model_id):
+        return cls._models_route() + ModelRoutePaths.FETCH_MODEL.format(id=model_id)
 
     @classmethod
     def create_long_short_backtest(cls):
         return cls._backtest_route() + BacktestRoutePaths.LONG_SHORT_BACKTEST
 
     @classmethod
-    def get_all_metadata_by_model_name(cls, model_name):
+    def get_all_metadata_by_model_id(cls, model_id: int):
         return cls._models_route() + ModelRoutePaths.ALL_METADATA_BY_MODEL_NAME.format(
-            model_name=model_name
+            id=model_id
         )
 
     @classmethod
@@ -313,9 +322,9 @@ class URL:
         )
 
     @classmethod
-    def create_train_job(cls, model_name):
+    def create_train_job(cls, model_id):
         return cls._models_route() + ModelRoutePaths.CREATE_TRAIN_JOB.format(
-            model_name=model_name
+            id=model_id
         )
 
     @classmethod

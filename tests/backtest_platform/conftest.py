@@ -144,7 +144,7 @@ def fixt_add_blue_chip_1d_datasets():
 @pytest.fixture
 def fixt_add_dataset_for_ml_based_backtest():
     datasets = [
-        DatasetDumps.BNBUSDT_FULL_1D_ML,
+        DatasetDumps.BNBUSDT_FULL_1D_ML_V2,
     ]
 
     for dataset in datasets:
@@ -208,17 +208,22 @@ def create_basic_model(fixt_btc_small_1h):
         hyper_params_and_optimizer_code=criterion_basic(),
         validation_split=[70, 100],
     )
-    Post.create_model(fixt_btc_small_1h.name, body)
-    return fixt_btc_small_1h, body
+    id = Post.create_model(fixt_btc_small_1h.name, body)
+    return fixt_btc_small_1h, body, int(id)
 
 
 @pytest.fixture
 def create_train_job(create_basic_model):
     train_job_id = Post.create_train_job(
-        Constants.EXAMPLE_MODEL_NAME, body=create_train_job_basic()
+        create_basic_model[2], body=create_train_job_basic()
     )
     train_job = TrainJobQuery.get_train_job(train_job_id)
-    return create_basic_model[0], create_basic_model[1], train_job
+    return (
+        create_basic_model[0],
+        create_basic_model[1],
+        train_job,
+        create_basic_model[2],
+    )
 
 
 @pytest.fixture
