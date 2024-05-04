@@ -10,6 +10,8 @@ import pickle
 from config import append_app_data_path
 from query_weights import ModelWeightsQuery 
 from query_trainjob import TrainJobQuery
+from query_epoch_prediction import EpochPredictionQuery
+from query_ml_validation_set_prices import MLValidationSetPriceQuery
 from log import get_logger
 from constants import DomEventChannels, Signals
 from datetime import timedelta
@@ -19,7 +21,7 @@ from datetime import timedelta
 
 def train():
     x_train, y_train, x_val, y_val, val_kline_open_times, val_prices = load_data({DATASET_NAME}, {MODEL_ID}, {TARGET_COL}, {NULL_FILL_STRATEGY}, {TRAIN_VAL_SPLIT}, {SCALING_STRATEGY}, {SCALE_TARGET})
-    TrainJobQuery.set_backtest_data({TRAIN_JOB_ID}, val_prices, val_kline_open_times.values.tolist())
+    MLValidationSetPriceQuery.create_many_from_ml_template({TRAIN_JOB_ID}, val_prices.values.tolist(), val_kline_open_times.tolist())
     train_dataset = TensorDataset(x_train, y_train)
     val_dataset = TensorDataset(x_val, y_val)
     train_loader = DataLoader(train_dataset, batch_size={BATCH_SIZE}, shuffle={SHUFFLE})
@@ -60,6 +62,7 @@ def train():
             optimizer.step()
             total_train_loss += loss.item()
             train_predictions.extend(outputs.cpu().detach().numpy().tolist())
+
 
 
         model.eval()
@@ -110,7 +113,8 @@ def train():
 
         if save_every_epoch is True:
             model_weights_dump = pickle.dumps(model.state_dict())
-            ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean, validation_predictions, train_predictions)
+            model_weights_id = ModelWeightsQuery.create_model_weights_entry({TRAIN_JOB_ID}, epoch, model_weights_dump, train_loss_mean, val_loss_mean)
+            EpochPredictionQuery.create_many_from_ml_template(model_weights_id, validation_predictions, val_kline_open_times)
 
         #check for cancel
         is_train_job_active = TrainJobQuery.is_job_training({TRAIN_JOB_ID})
