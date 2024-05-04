@@ -21,9 +21,8 @@ class Model(Base):
     validation_split = Column(String)
     scale_target = Column(Boolean)
     scaling_strategy = Column(Integer)
+    x_num_cols = Column(Integer)
     drop_cols_on_train = Column(String)
-
-    dataset = relationship("Dataset")
 
 
 class ModelQuery:
@@ -64,3 +63,11 @@ class ModelQuery:
                     session.query(Model).filter(Model.dataset_id == dataset_id).all()
                 )
                 return models
+
+    @staticmethod
+    def update_x_shape(model_id: int, new_x_num_cols: int):
+        with LogExceptionContext():
+            with Session() as session:
+                model = session.query(Model).filter(Model.id == model_id).one()
+                model.x_num_cols = new_x_num_cols
+                session.commit()
