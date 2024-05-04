@@ -403,7 +403,7 @@ def create_long_short_trades(backtest_id, completed_trades):
 
 
 class MLBasedBacktestRules:
-    def __init__(self, backtest_details: BodyMLBasedBacktest):
+    def __init__(self, backtest_details: BodyMLBasedBacktest, candle_interval):
         self.buy_cond = backtest_details.buy_cond
         self.sell_cond = backtest_details.sell_cond
 
@@ -419,17 +419,15 @@ class MLBasedBacktestRules:
 
         self.short_fee_coeff = turn_short_fee_perc_to_coeff(
             backtest_details.short_fee_hourly,
-            candlesize_to_timedelta(backtest_details.candle_interval) * 1000,
+            candlesize_to_timedelta(candle_interval) * 1000,
         )
 
 
 class MLBasedBacktestStats:
-    def __init__(self, backtest_details: BodyMLBasedBacktest):
+    def __init__(self, candle_interval):
         self.cumulative_time = 0
         self.position_held_time = 0
-        self.candles_time_delta = (
-            candlesize_to_timedelta(backtest_details.candle_interval) * 1000
-        )
+        self.candles_time_delta = candlesize_to_timedelta(candle_interval) * 1000
 
 
 class MLBasedPositionManager:
@@ -485,9 +483,9 @@ class MLBasedCompletedTrade:
 
 
 class MLBasedBacktest:
-    def __init__(self, backtest_details: BodyMLBasedBacktest):
-        self.rules = MLBasedBacktestRules(backtest_details)
-        self.stats = MLBasedBacktestStats(backtest_details)
+    def __init__(self, backtest_details: BodyMLBasedBacktest, dataset):
+        self.rules = MLBasedBacktestRules(backtest_details, dataset.interval)
+        self.stats = MLBasedBacktestStats(dataset.interval)
         self.position = MLBasedPositionManager(START_BALANCE)
         self.benchmark = MLBasedBenchmarkManager(START_BALANCE)
         self.active_trade = None

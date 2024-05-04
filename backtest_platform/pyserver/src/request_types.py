@@ -110,12 +110,12 @@ class BodyCreateLongShortBacktest(BaseModel):
 
 class BodyMLBasedBacktest(BaseModel):
     fetch_latest_data: bool
+    dataset_name: str
     train_run_id: int
     epoch: int
     buy_cond: str
     sell_cond: str
     allow_shorts: bool
-    candle_interval: str
     use_time_based_close: bool
     use_profit_based_close: bool
     use_stop_loss_based_close: bool

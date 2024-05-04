@@ -19,6 +19,22 @@ BINANCE_DATA_COLS = [
     "ignore",
 ]
 
+
+class BinanceDataCols:
+    KLINE_OPEN_TIME = "kline_open_time"
+    OPEN_PRICE = "open_price"
+    HIGH_PRICE = "high_price"
+    LOW_PRICE = "low_price"
+    CLOSE_PRICE = "close_price"
+    VOLUME = "volume"
+    KLINE_CLOSE_TIME = "kline_close_time"
+    QUOTE_ASSET_VOLUME = "quote_asset_volume"
+    NUMBER_OF_TRADES = "number_of_trades"
+    TAKER_BUY_BASE_ASSET_VOLUME = "taker_buy_base_asset_volume"
+    TAKER_BUY_QUOTE_ASSET_VOLUME = "taker_buy_quote_asset_volume"
+    IGNORE = "ignore"
+
+
 BINANCE_BACKTEST_PRICE_COL = "close_price"
 
 LOG_FILE = "logs"

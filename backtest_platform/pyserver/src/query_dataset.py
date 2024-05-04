@@ -7,6 +7,8 @@ from orm import Base, Session
 class DatasetBody(BaseModel):
     id: int
     dataset_name: str
+    symbol: str
+    interval: str
     timeseries_column: str
     price_column: str
     target_column: str
@@ -20,6 +22,8 @@ class Dataset(Base):
     timeseries_column = Column(String)
     price_column = Column(String)
     target_column = Column(String)
+    symbol = Column(String)
+    interval = Column(String)
 
     def to_dict(self):
         return {
@@ -112,6 +116,8 @@ class DatasetQuery:
         timeseries_column: str,
         target_column: str | None = None,
         price_column: str | None = None,
+        symbol: str | None = None,
+        interval: str | None = None,
     ):
         with LogExceptionContext():
             with Session() as session:
@@ -120,6 +126,8 @@ class DatasetQuery:
                     timeseries_column=timeseries_column,
                     target_column=target_column,
                     price_column=price_column,
+                    symbol=symbol,
+                    interval=interval,
                 )
                 session.add(new_dataset)
                 session.commit()

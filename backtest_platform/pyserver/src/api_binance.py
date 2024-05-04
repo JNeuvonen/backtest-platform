@@ -4,7 +4,7 @@ import asyncio
 import pandas as pd
 
 from binance import Client
-from constants import BINANCE_DATA_COLS, AppConstants, DomEventChannels
+from constants import BINANCE_DATA_COLS, AppConstants, BinanceDataCols, DomEventChannels
 from db import create_connection
 from log import LogExceptionContext, get_logger
 from query_dataset import DatasetQuery
@@ -83,7 +83,13 @@ async def save_historical_klines(symbol, interval, send_msg_to_fe=True):
             DatasetQuery.delete_entry_by_dataset_name(table_name)
 
         klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
-        DatasetQuery.create_dataset_entry(table_name, "kline_open_time")
+        DatasetQuery.create_dataset_entry(
+            dataset_name=table_name,
+            timeseries_column="kline_open_time",
+            price_column=BinanceDataCols.CLOSE_PRICE,
+            symbol=symbol,
+            interval=interval,
+        )
 
         if send_msg_to_fe is True:
             logger.log(
