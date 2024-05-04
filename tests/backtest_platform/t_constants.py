@@ -34,6 +34,8 @@ class DatasetMetadata:
         target_col: str,
         price_col: str,
         pair_name: str | None = None,
+        interval: str | None = None,
+        symbol: str | None = None,
     ) -> None:
         self.path = path
         self.name = dataset_name
@@ -41,6 +43,8 @@ class DatasetMetadata:
         self.pair_name = pair_name
         self.target_col = target_col
         self.price_col = price_col
+        self.interval = interval
+        self.symbol = symbol
 
 
 class BinanceCols:
@@ -121,6 +125,8 @@ class DatasetDumps:
         BinanceCols.OPEN_PRICE,
         BinanceCols.OPEN_PRICE,
         "BTCUSDT",
+        "1d",
+        "BTCUSDT",
     )
 
     BTCUSDT_FULL_1D = DatasetMetadata(
@@ -156,6 +162,8 @@ class DatasetDumps:
         BinanceCols.KLINE_OPEN_TIME,
         BinanceCols.CLOSE_PRICE,
         BinanceCols.CLOSE_PRICE,
+        "BNBUSDT",
+        "1d",
         "BNBUSDT",
     )
 

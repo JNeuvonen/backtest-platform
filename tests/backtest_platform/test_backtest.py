@@ -75,7 +75,6 @@ def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
     datasets = fixt_add_blue_chip_1d_datasets
     body = backtest_rule_based_v2
     dataset_names = []
-    time.sleep(3)
 
     first_dataset = datasets[0]
     data_transformation_ids = gen_data_transformations(first_dataset.name)
@@ -96,7 +95,7 @@ def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
     Post.create_long_short_backtest(body)
 
 
-@pytest.mark.temporal
+@pytest.mark.dev
 def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     ML_MODEL_NAME = "Example model"
     time.sleep(3)
@@ -116,6 +115,7 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     body = backtest_rule_based_v2
 
     body["candle_interval"] = "1d"
+    body["dataset_name"] = fixt_add_dataset_for_ml_based_backtest[0].name
     body["fetch_latest_data"] = False
     body["buy_cond"] = ml_based_buy_cond_basic()
     body["sell_cond"] = ml_based_sell_cond_basic()
