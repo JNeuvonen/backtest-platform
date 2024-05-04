@@ -208,6 +208,7 @@ def load_data(
         x_val = torch.Tensor(val_df.values.astype(np.float32))
         y_val = torch.Tensor(val_target.to_numpy().reshape(-1, 1).astype(np.float64))
 
+        ModelQuery.update_x_shape(model_id, x_train.shape[1])
         return (
             x_train,
             y_train,
@@ -216,14 +217,7 @@ def load_data(
             val_kline_open_times,
             price_col,
         )
-    else:
-        if scaler is not None:
-            df[df.columns] = scaler.fit_transform(df[df.columns])
-
-        target = df.pop(target_column)
-        x_train = torch.Tensor(df.values.astype(np.float32))
-        y_train = torch.Tensor(target.to_numpy().reshape(-1, 1).astype(np.float64))
-        return x_train, y_train, None, None, None, None
+    raise Exception("Validation split is required to train a model.")
 
 
 def read_all_cols_matching_kline_open_times(
