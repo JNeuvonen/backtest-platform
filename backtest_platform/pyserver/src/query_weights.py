@@ -51,7 +51,7 @@ class ModelWeightsQuery:
                     )
                     .scalar()
                 )
-                return weights_data.deserialize()
+                return weights_data 
 
     @staticmethod
     def fetch_metadata_by_epoch(train_job_id: int, epoch: int):
