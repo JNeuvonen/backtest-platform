@@ -1,7 +1,6 @@
 import json
 from typing import List
 from sqlalchemy import Boolean, Column, Integer, String
-from sqlalchemy.orm import relationship
 from constants import AppConstants
 from log import LogExceptionContext
 from orm import Base, Session
@@ -23,17 +22,7 @@ class TrainJob(Base):
     epochs_ran = Column(Integer, default=0, nullable=False)
     save_model_every_epoch = Column(Boolean)
     backtest_on_validation_set = Column(Boolean)
-    backtest_kline_open_times = Column(String)
-    backtest_prices = Column(String)
     device = Column(String)
-
-    model_weights = relationship("ModelWeights", overlaps="train_job")
-
-    def serialize_kline_open_times(self, kline_open_times):
-        self.backtest_kline_open_times = json.dumps(kline_open_times)
-
-    def serialize_prices(self, prices):
-        self.backtest_prices = json.dumps(prices)
 
 
 class TrainJobQuery:
@@ -64,23 +53,6 @@ class TrainJobQuery:
                 session.add(new_train_job)
                 session.commit()
                 return new_train_job.id
-
-    @staticmethod
-    def set_backtest_data(
-        train_job_id: int,
-        prices,
-        kline_open_times: List[float] | None,
-    ):
-        with Session() as session:
-            query = session.query(TrainJob)
-            train_job: TrainJob = query.filter(
-                getattr(TrainJob, "id") == train_job_id
-            ).first()
-            if kline_open_times is not None:
-                train_job.serialize_kline_open_times(kline_open_times)
-            if prices is not None:
-                train_job.serialize_prices(prices.values.tolist())
-            session.commit()
 
     @staticmethod
     def set_curr_epoch(train_job_id: int, epoch: int):
@@ -162,30 +134,6 @@ class TrainJobQuery:
                 )
                 for item in train_jobs:
                     item.is_training = False
-                session.commit()
-
-    @staticmethod
-    def set_backtest_prices(train_job_id: int, dataset_name: str, price_col: str):
-        with LogExceptionContext():
-            with Session() as session:
-                train_job = (
-                    session.query(TrainJob).filter(TrainJob.id == train_job_id).first()
-                )
-                df_price_col = read_columns_to_mem(
-                    AppConstants.DB_DATASETS, dataset_name, [price_col]
-                )
-
-                if df_price_col is None:
-                    return
-
-                timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
-                backtest_klines = json.loads(train_job.backtest_kline_open_times)
-                val_df = read_all_cols_matching_kline_open_times(
-                    dataset_name, timeseries_col, backtest_klines
-                )
-                backtest_prices_list = val_df[price_col].values.tolist()
-
-                train_job.serialize_prices(backtest_prices_list)
                 session.commit()
 
     @staticmethod
