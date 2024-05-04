@@ -1,20 +1,16 @@
-import json
-import math
 from typing import Dict, List
-
-from sqlalchemy import text
 
 
 from log import LogExceptionContext
 from query_backtest_history import BacktestHistoryQuery
 from query_backtest_statistics import BacktestStatisticsQuery
+from query_epoch_prediction import EpochPredictionQuery
 from query_trade import TradeQuery
-from query_weights import ModelWeights
+from query_weights import ModelWeights, ModelWeightsQuery
 from query_trainjob import TrainJob, TrainJobQuery
 from query_backtest import BacktestQuery
 from request_types import BodyRunBacktest
 from code_gen_template import BACKTEST_MODEL_TEMPLATE
-from utils import get_is_invalid_number
 
 
 class Direction:
@@ -30,16 +26,18 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
     with LogExceptionContext():
         train_job_detailed = TrainJobQuery.get_train_job_detailed(train_job_id)
         train_job: TrainJob = train_job_detailed["train_job"]
-        epochs: List[ModelWeights] = train_job_detailed["epochs"]
+        modelweights_metadata = ModelWeightsQuery.fetch_metadata_by_epoch(
+            train_job_id, backtestInfo.epoch_nr
+        )
+        epoch_val_preds = EpochPredictionQuery.get_entries_by_weights_id_sorted(
+            modelweights_metadata.id
+        )
 
         prices = [item.price for item in train_job_detailed["validation_set_ticks"]]
         kline_open_time = [
             item.kline_open_time for item in train_job_detailed["validation_set_ticks"]
         ]
-        predictions = [
-            item.prediction
-            for item in epochs[backtestInfo.epoch_nr - 1]["val_predictions"]
-        ]
+        predictions = [item.prediction for item in epoch_val_preds]
         assert len(prices) == len(predictions)
 
         replacements = {
@@ -61,7 +59,7 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
             {
                 "open_trade_cond": backtestInfo.enter_trade_cond,
                 "close_trade_cond": backtestInfo.exit_trade_cond,
-                "model_weights_id": epochs[backtestInfo.epoch_nr]["id"],
+                "model_weights_id": modelweights_metadata.id,
                 "train_job_id": train_job.id,
             }
         )
