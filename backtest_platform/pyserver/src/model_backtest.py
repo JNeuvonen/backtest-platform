@@ -32,10 +32,14 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
         train_job: TrainJob = train_job_detailed["train_job"]
         epochs: List[ModelWeights] = train_job_detailed["epochs"]
 
-        prices = json.loads(train_job.backtest_prices)
-        kline_open_time = json.loads(train_job.backtest_kline_open_times)
-        predictions = json.loads(epochs[backtestInfo.epoch_nr - 1]["val_predictions"])
-
+        prices = [item.price for item in train_job_detailed["validation_set_ticks"]]
+        kline_open_time = [
+            item.kline_open_time for item in train_job_detailed["validation_set_ticks"]
+        ]
+        predictions = [
+            item.prediction
+            for item in epochs[backtestInfo.epoch_nr - 1]["val_predictions"]
+        ]
         assert len(prices) == len(predictions)
 
         replacements = {
@@ -49,7 +53,7 @@ def run_model_backtest(train_job_id: int, backtestInfo: BodyRunBacktest):
         for idx in range(len(prices)):
             price = prices[idx]
             prediction = predictions[idx]
-            backtest_v2.enter_kline(price, prediction[0], kline_open_time[idx])
+            backtest_v2.enter_kline(price, prediction, kline_open_time[idx])
 
         end_balance = backtest_v2.positions.total_positions_value
 

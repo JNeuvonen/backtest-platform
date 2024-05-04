@@ -12,8 +12,8 @@ import {
 } from "recharts";
 
 interface Props {
-  kline_open_times: string;
-  _prices: string;
+  kline_open_times: number[];
+  _prices: number[];
   epoch: EpochInfo;
   containerStyles?: CSSProperties;
 }
@@ -30,14 +30,14 @@ export const PredAndPriceChart = ({
   epoch,
   containerStyles,
 }: Props) => {
-  const [klineOpenTimes] = useState<number[]>(JSON.parse(kline_open_times));
-  const [prices] = useState<number[]>(JSON.parse(_prices));
+  const [klineOpenTimes] = useState<number[]>(kline_open_times);
+  const [prices] = useState<number[]>(_prices);
   const [preds, setPreds] = useState<number[]>(
-    JSON.parse(epoch.val_predictions)
+    epoch.val_predictions.map((item) => item.prediction)
   );
 
   useEffect(() => {
-    setPreds(JSON.parse(epoch.val_predictions));
+    setPreds(epoch.val_predictions.map((item) => item.prediction));
   }, [epoch.val_predictions]);
 
   const generateChartData = () => {
@@ -48,16 +48,14 @@ export const PredAndPriceChart = ({
     for (let i = 0; i < klineOpenTimes.length; i += increment) {
       const item = {
         price: prices[i],
-        prediction: preds[i][0],
-        kline_open_time: new Date(klineOpenTimes[i]).toLocaleString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }),
+        prediction: preds[i],
+        kline_open_time: new Date(klineOpenTimes[i]).toLocaleDateString(
+          "default",
+          {
+            year: "numeric",
+            month: "short",
+          }
+        ),
         price_in_24_ticks:
           kline_open_times.length > i + 24 ? prices[i + 24] : null,
         price_in_72_ticks:

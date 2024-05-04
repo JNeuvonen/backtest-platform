@@ -110,12 +110,19 @@ export interface TrainJob {
   backtest_kline_open_times: string;
 }
 
+export interface EpochPredictionTick {
+  id: number;
+  weights_id: number;
+  kline_open_time: number;
+  prediction: number;
+}
+
 export interface EpochInfo {
   epoch: number;
   id: number;
   train_loss: number;
   val_loss: number;
-  val_predictions: string;
+  val_predictions: EpochPredictionTick[];
 }
 
 export interface StatsByCol {

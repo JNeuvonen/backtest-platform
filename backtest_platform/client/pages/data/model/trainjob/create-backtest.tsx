@@ -165,10 +165,14 @@ export const BacktestModelPage = () => {
             </Stack>
             {epochNr && (
               <PredAndPriceChart
-                kline_open_times={
-                  modelDataDetailed.train_job.backtest_kline_open_times
-                }
-                _prices={modelDataDetailed.train_job.backtest_prices}
+                kline_open_times={modelDataDetailed.validation_set_ticks.map(
+                  (item) => {
+                    return item.kline_open_time;
+                  }
+                )}
+                _prices={modelDataDetailed.validation_set_ticks.map((item) => {
+                  return item.price;
+                })}
                 epoch={modelDataDetailed.epochs[epochNr]}
               />
             )}
