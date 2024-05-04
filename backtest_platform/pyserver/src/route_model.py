@@ -19,10 +19,10 @@ router = APIRouter()
 
 
 class RoutePaths:
-    FETCH_MODEL = "/{model_name}"
-    CREATE_TRAIN_JOB = "/{model_name}/create-train"
+    FETCH_MODEL = "/{id}"
+    CREATE_TRAIN_JOB = "/{id}/create-train"
     TRAIN_JOB_BY_ID = "/train/{id}"
-    ALL_METADATA_BY_MODEL_NAME = "/{model_name}/trains"
+    ALL_METADATA_BY_MODEL_NAME = "/{id}/trains"
     STOP_TRAIN = "/train/stop/{train_job_id}"
     TRAIN_JOB_AND_ALL_WEIGHT_METADATA_BY_ID = "/train/{train_job_id}/detailed"
     RUN_BACKTEST = "/backtest/{train_job_id}/run"
@@ -31,19 +31,19 @@ class RoutePaths:
 
 
 @router.get(RoutePaths.FETCH_MODEL)
-async def route_fetch_model(model_name: str):
+async def route_fetch_model(id: int):
     with HttpResponseContext():
-        model = ModelQuery.fetch_model_by_name(model_name)
+        model = ModelQuery.fetch_model_by_id(id)
         return {"model": model}
 
 
 @router.post(RoutePaths.CREATE_TRAIN_JOB)
-async def route_create_train_job(model_name: str, body: BodyCreateTrain):
+async def route_create_train_job(id: int, body: BodyCreateTrain):
     with HttpResponseContext():
-        train_job_id = TrainJobQuery.create_train_job(model_name, body)
+        train_job_id = TrainJobQuery.create_train_job(id, body)
 
         train_job = TrainJobQuery.get_train_job(train_job_id)
-        model = ModelQuery.fetch_model_by_name(model_name)
+        model = ModelQuery.fetch_model_by_id(id)
 
         if train_job is None or model is None:
             raise ValueError("No model or train job found")
@@ -64,9 +64,9 @@ async def route_fetch_train_job(id: int):
 
 
 @router.get(RoutePaths.ALL_METADATA_BY_MODEL_NAME)
-async def route_fetch_all_metadata_by_name(model_name: str):
+async def route_fetch_all_metadata_by_name(id: int):
     with HttpResponseContext():
-        ret = TrainJobQuery.fetch_all_metadata_by_name(model_name)
+        ret = TrainJobQuery.fetch_all_metadata_by_model_id(id)
         return {"data": ret}
 
 

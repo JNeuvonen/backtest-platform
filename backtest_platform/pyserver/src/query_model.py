@@ -16,7 +16,7 @@ class Model(Base):
     drop_cols = Column(String)
     null_fill_strategy = Column(String)
     model_code = Column(String)
-    model_name = Column(String, unique=True)
+    model_name = Column(String)
     optimizer_and_criterion_code = Column(String)
     validation_split = Column(String)
     scale_target = Column(Boolean)
@@ -47,6 +47,7 @@ class ModelQuery:
                 )
                 session.add(new_model)
                 session.commit()
+                return new_model.id
 
     @staticmethod
     def fetch_model_by_id(model_id: int):
@@ -63,12 +64,3 @@ class ModelQuery:
                     session.query(Model).filter(Model.dataset_id == dataset_id).all()
                 )
                 return models
-
-    @staticmethod
-    def fetch_model_by_name(model_name: str):
-        with LogExceptionContext():
-            with Session() as session:
-                model_data = (
-                    session.query(Model).filter(Model.model_name == model_name).first()
-                )
-                return model_data

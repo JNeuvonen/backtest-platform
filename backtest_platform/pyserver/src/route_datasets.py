@@ -252,8 +252,13 @@ async def route_create_model(dataset_name: str, body: BodyModelData):
                 detail=f"No dataset found for {dataset_name}", status_code=400
             )
 
-        ModelQuery.create_model_entry(dataset, body)
-        return {"Message": "OK"}
+        id = ModelQuery.create_model_entry(dataset, body)
+
+        return Response(
+            content=str(id),
+            status_code=status.HTTP_200_OK,
+            media_type="text/plain",
+        )
 
 
 @router.get(RoutePaths.FETCH_MODELS)

@@ -1,6 +1,6 @@
 import json
 from typing import List
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from constants import AppConstants
 from log import LogExceptionContext
 from orm import Base, Session
@@ -16,9 +16,10 @@ class TrainJob(Base):
     __tablename__ = "train_job"
 
     id = Column(Integer, primary_key=True)
+    model_id = Column(Integer, ForeignKey("model.id"))
+
     is_training = Column(Boolean)
     name = Column(String)
-    model_name = Column(String)
     num_epochs = Column(Integer)
     epochs_ran = Column(Integer, default=0, nullable=False)
     save_model_every_epoch = Column(Boolean)
@@ -30,7 +31,7 @@ class TrainJobQuery:
     @classmethod
     def get_train_job_detailed(cls, train_job_id: int):
         train_job: TrainJob = cls.get_train_job(train_job_id)
-        model: Model = ModelQuery.fetch_model_by_name(train_job.model_name)
+        model: Model = ModelQuery.fetch_model_by_id(train_job.model_id)
         dataset: Dataset = DatasetQuery.fetch_dataset_by_id(model.dataset_id)
         epochs = ModelWeightsQuery.fetch_model_weights_by_train_job_id(train_job_id)
 
@@ -45,11 +46,11 @@ class TrainJobQuery:
         }
 
     @staticmethod
-    def create_train_job(model_name: str, request_body: BodyCreateTrain):
+    def create_train_job(model_id: int, request_body: BodyCreateTrain):
         with LogExceptionContext():
             with Session() as session:
                 new_train_job = TrainJob(
-                    model_name=model_name,
+                    model_id=model_id,
                     num_epochs=request_body.num_epochs,
                     save_model_every_epoch=request_body.save_model_after_every_epoch,
                     backtest_on_validation_set=request_body.backtest_on_val_set,
@@ -85,13 +86,11 @@ class TrainJobQuery:
                 return train_job_data
 
     @staticmethod
-    def fetch_train_jobs_by_model(model_name):
+    def fetch_train_jobs_by_model(model_id):
         with LogExceptionContext():
             with Session() as session:
                 train_jobs = (
-                    session.query(TrainJob)
-                    .filter(TrainJob.model_name == model_name)
-                    .all()
+                    session.query(TrainJob).filter(TrainJob.model_id == model_id).all()
                 )
                 return train_jobs
 
@@ -110,13 +109,11 @@ class TrainJobQuery:
                     return False
 
     @classmethod
-    def fetch_all_metadata_by_name(cls, model_name: str):
+    def fetch_all_metadata_by_model_id(cls, model_id: int):
         with LogExceptionContext():
             with Session() as session:
                 train_jobs: List[TrainJob] = (
-                    session.query(TrainJob)
-                    .filter(TrainJob.model_name == model_name)
-                    .all()
+                    session.query(TrainJob).filter(TrainJob.model_id == model_id).all()
                 )
 
                 ret = []
