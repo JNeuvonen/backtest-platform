@@ -33,12 +33,12 @@ export const PredAndPriceChart = ({
   const [klineOpenTimes] = useState<number[]>(kline_open_times);
   const [prices] = useState<number[]>(_prices);
   const [preds, setPreds] = useState<number[]>(
-    epoch.val_predictions.map((item) => item.prediction)
+    epoch.map((item) => item.prediction)
   );
 
   useEffect(() => {
-    setPreds(epoch.val_predictions.map((item) => item.prediction));
-  }, [epoch.val_predictions]);
+    setPreds(epoch.map((item) => item.prediction));
+  }, [epoch]);
 
   const generateChartData = () => {
     const ret = [] as PredAndPriceChartTick[];

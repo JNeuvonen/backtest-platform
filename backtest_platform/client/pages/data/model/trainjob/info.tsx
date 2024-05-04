@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { usePathParams } from "../../../../hooks/usePathParams";
-import { useTrainJobDetailed } from "../../../../clients/queries/queries";
+import {
+  useEpochValPredictions,
+  useTrainJobDetailed,
+} from "../../../../clients/queries/queries";
 import { useAppContext } from "../../../../context/app";
 import { LAYOUT } from "../../../../utils/constants";
 import {
@@ -41,6 +44,10 @@ export const TrainjobInfoPage = () => {
   const { data } = useTrainJobDetailed(trainJobId);
   const { setInnerSideNavWidth } = useAppContext();
   const [epochSlider, setEpochSlider] = useState(1);
+  const epochPredsQuery = useEpochValPredictions(
+    Number(trainJobId),
+    epochSlider
+  );
 
   useEffect(() => {}, [epochSlider, data?.epochs]);
 
@@ -98,8 +105,8 @@ export const TrainjobInfoPage = () => {
 
   const trainingProgessTicks = generateTrainingProgressChart();
   let epochPredictions: number[] =
-    data.epochs.length > 0
-      ? data.epochs[epochSlider - 1].val_predictions.map((item) => {
+    epochPredsQuery.data && epochPredsQuery.data?.length > 0
+      ? epochPredsQuery.data.map((item) => {
           return item["prediction"];
         })
       : [];

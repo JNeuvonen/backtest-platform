@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   useDatasetsQuery,
+  useEpochValPredictions,
   useTrainJobBacktests,
   useTrainJobDetailed,
 } from "../../../../clients/queries/queries";
@@ -41,6 +42,11 @@ export const BacktestModelPage = () => {
   const { refetch: refetchBacktests } = useTrainJobBacktests(trainJobId);
   const toast = useToast();
   const [epochNr, setEpochNr] = useState("");
+
+  const epochPredsQuery = useEpochValPredictions(
+    Number(trainJobId),
+    epochNr !== "" ? Number(epochNr) : undefined
+  );
 
   if (!modelDataDetailed || !allDatasets) {
     return (
@@ -173,7 +179,7 @@ export const BacktestModelPage = () => {
                 _prices={modelDataDetailed.validation_set_ticks.map((item) => {
                   return item.price;
                 })}
-                epoch={modelDataDetailed.epochs[epochNr]}
+                epoch={epochPredsQuery.data ? epochPredsQuery.data : []}
               />
             )}
             <div style={{ marginTop: "16px" }}>
