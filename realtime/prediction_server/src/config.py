@@ -12,6 +12,7 @@ SERVICE_PORT = os.getenv("SERVICE_PORT", "")
 AUTO_WHITELISTED_IP = os.getenv("AUTO_WHITELISTED_IP", "")
 ENV = os.getenv("ENV", "")
 LOG_FILE = "logs"
+DATASETS_DB_URI = "datasets"
 
 
 def get_auto_whitelisted_ip():

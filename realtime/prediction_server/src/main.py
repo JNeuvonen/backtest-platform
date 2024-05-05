@@ -56,6 +56,26 @@ app.add_middleware(
 )
 
 
+class DataProviderService:
+    def __init__(self):
+        self.stop_event = Event()
+        self.thread = Thread(target=self.collect_data_loop)
+
+    def collect_data_loop(self):
+        pass
+
+    def start(self):
+        if self.thread is None or not self.thread.is_alive():
+            self.thread = Thread(target=self.collect_data_loop)
+            self.thread.start()
+
+    def stop(self):
+        if self.thread and self.thread.is_alive():
+            self.stop_event.set()
+            self.thread.join()
+            self.thread = None
+
+
 class PredictionService:
     def __init__(self):
         self.stop_event = Event()
