@@ -55,8 +55,6 @@ class Logger:
         if not any(isinstance(h, RotatingFileHandler) for h in self.logger.handlers):
             self.logger.addHandler(rotating_handler)
 
-        self.info("Logger started")
-
     def log_exception_stackframe(self, stack_frame, error_msg):
         self.error(f"exception was raised: {error_msg}\nstack frame: {stack_frame}")
 
