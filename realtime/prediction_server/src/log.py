@@ -6,7 +6,7 @@ import os
 from config import is_dev, LOG_FILE
 from logging.handlers import RotatingFileHandler
 
-from schema.cloudlog import CloudLogQuery, create_log
+from schema.cloudlog import create_log
 from constants import LogLevel
 
 
@@ -55,27 +55,21 @@ class Logger:
         if not any(isinstance(h, RotatingFileHandler) for h in self.logger.handlers):
             self.logger.addHandler(rotating_handler)
 
-        self.logger.info("Logger started")
+        self.info("Logger started")
 
     def log_exception_stackframe(self, stack_frame, error_msg):
-        self.logger.error(
-            f"exception was raised: {error_msg}\nstack frame: {stack_frame}"
-        )
+        self.error(f"exception was raised: {error_msg}\nstack frame: {stack_frame}")
 
     def info(self, message):
-        self.logger.info(message)
         create_log(msg=message, level=LogLevel.INFO)
 
     def warning(self, message):
-        self.logger.warning(message)
         create_log(msg=message, level=LogLevel.WARNING)
 
     def error(self, message):
-        self.logger.error(message)
         create_log(msg=message, level=LogLevel.EXCEPTION)
 
     def debug(self, message):
-        self.logger.debug(message)
         create_log(msg=message, level=LogLevel.DEBUG)
 
 
