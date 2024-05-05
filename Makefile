@@ -24,12 +24,20 @@ dev-pred-serv:
 dev-pred-service:
 	./scripts/dev_prediction_server.sh
 
+pred-service-gen-migr-file:
+	./scripts/alembic_autogen_pred_service.sh -d $(DATABASE_URI) -m $(MIGRATION_MESSAGE)
+
+pred-service-run-migr-file:
+	./scripts/alembic_migrate_pred_service.sh $(DATABASE_URI)
+
+
 
 test-pred-server:
 	./scripts/test_prediction_server.sh
 
 dev-trading-client:
 	./scripts/dev_trading_client.sh
+
 
 build-trading-client-container:
 	docker buildx build --platform linux/amd64 -t jneuv/trading_client:latest -f ./deploy/Dockerfile.trading_client \
