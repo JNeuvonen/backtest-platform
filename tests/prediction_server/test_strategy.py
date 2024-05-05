@@ -20,3 +20,8 @@ def test_setup_sanity(cleanup_db, create_api_key):
 def test_strategy_polling(cleanup_db, create_api_key):
     Post.create_strategy(create_api_key, body=gen_test_case_dump_body())
     time.sleep(1000)
+
+
+@pytest.mark.debug_live_env
+def test_debug_live_env():
+    time.sleep(1000)

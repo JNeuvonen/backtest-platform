@@ -33,7 +33,10 @@ def drop_tables(engine):
 
 
 def create_tables():
-    Base.metadata.create_all(engine)
+    try:
+        Base.metadata.create_all(engine)
+    except Exception:
+        pass
 
 
 def test_db_conn():

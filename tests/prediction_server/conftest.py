@@ -8,7 +8,7 @@ import secrets
 from pandas.compat import platform
 from dotenv import load_dotenv
 
-from conf import TEST_RUN_PORT
+from conf import TEST_RUN_PORT, DROP_TABLES
 from import_helper import (
     start_server,
     drop_tables,
@@ -37,10 +37,12 @@ def create_api_key():
 
 @pytest.fixture
 def cleanup_db():
-    drop_tables()
+    if DROP_TABLES == 1:
+        drop_tables()
     create_tables()
     yield
-    drop_tables()
+    if DROP_TABLES == 1:
+        drop_tables()
     create_tables()
 
 
@@ -67,7 +69,11 @@ def kill_process_on_port(port):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
-    drop_tables()
+    if DROP_TABLES is None:
+        raise Exception("Provide DROP_TABLES (0 or 1) env variable to the test run.")
+
+    if int(DROP_TABLES) == 1:
+        drop_tables()
     kill_process_on_port(TEST_RUN_PORT)
     server_process = multiprocessing.Process(target=start_service, daemon=True)
     server_process.start()
@@ -77,4 +83,5 @@ def setup_test_environment():
     server_process.terminate()
     server_process.join(timeout=5)
     kill_process_on_port(TEST_RUN_PORT)  # Ensure the process is killed
-    drop_tables()
+    if DROP_TABLES == 1:
+        drop_tables()
