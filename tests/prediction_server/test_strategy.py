@@ -2,7 +2,6 @@ import pytest
 import time
 from t_utils import Get, Post
 from fixtures.strategy import (
-    create_strategy_with_syntax_err,
     gen_test_case_dump_body,
     strategy_simple_1,
 )
