@@ -23,6 +23,7 @@ class BodyCreateStrategy(BaseModel):
     kline_size_ms: int
     maximum_klines_hold_time: int
     minimum_time_between_trades_ms: int
+    num_req_klines: int
     trade_quantity_precision: int
 
     allocated_size_perc: float

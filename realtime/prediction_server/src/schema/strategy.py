@@ -33,6 +33,7 @@ class Strategy(Base):
 
     trade_quantity_precision = Column(Integer, nullable=False)
     priority = Column(Integer, nullable=False)
+    num_req_klines = Column(Integer, nullable=False)
     kline_size_ms = Column(Integer)
     prev_kline_ms = Column(Integer)
     minimum_time_between_trades_ms = Column(Integer)
