@@ -19,18 +19,12 @@ async def get_historical_klines(symbol, interval):
     start_time = "1 Jan, 2017"
     klines = []
 
-    while True:
-        new_klines = await asyncio.to_thread(
-            client.get_historical_klines, symbol, interval, start_time, limit=1000
-        )
-        if not new_klines:
-            break
-
-        klines += new_klines
-        start_time = int(new_klines[-1][0]) + 1
+    klines = await asyncio.to_thread(
+        client.get_historical_klines, symbol, interval, start_str=start_time
+    )
 
     df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
-    df.drop(["ignore", "kline_close_time"], axis=1, inplace=True)
+    df.drop(["ignore"], axis=1, inplace=True)
     df["kline_open_time"] = pd.to_numeric(df["kline_open_time"])
 
     for col in df.columns:
@@ -45,18 +39,12 @@ def non_async_get_historical_klines(symbol, interval):
     start_time = "1 Jan, 2017"
     klines = []
 
-    while True:
-        new_klines = client.get_historical_klines(
-            symbol=symbol, interval=interval, start_str=start_time, limit=1000
-        )
-        if not new_klines:
-            break
-
-        klines += new_klines
-        start_time = int(new_klines[-1][0]) + 1
+    klines = client.get_historical_klines(
+        symbol=symbol, interval=interval, start_str=start_time
+    )
 
     df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
-    df.drop(["ignore", "kline_close_time"], axis=1, inplace=True)
+    df.drop(["ignore"], axis=1, inplace=True)
     df["kline_open_time"] = pd.to_numeric(df["kline_open_time"])
 
     for col in df.columns:
