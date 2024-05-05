@@ -52,6 +52,7 @@ const formKeys = {
   priority: "priority",
   klineSizeMs: "kline_size_ms",
   maximumKlinesHoldTime: "maximum_klines_hold_time",
+  numReqKlines: "num_req_klines",
   allocatedSizePerc: "allocated_size_perc",
   takeProfitThresholdPerc: "take_profit_threshold_perc",
   stopLossThresholdPerc: "stop_loss_threshold_perc",
@@ -77,6 +78,7 @@ export interface DeployStratForm {
   priority: number;
   kline_size_ms: number;
   maximum_klines_hold_time: number;
+  num_req_klines: number;
   allocated_size_perc: number;
   take_profit_threshold_perc: number;
   stop_loss_threshold_perc: number;
@@ -106,6 +108,7 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
       priority: 1,
       kline_size_ms: 0,
       maximum_klines_hold_time: backtest.klines_until_close,
+      num_req_klines: 1000,
       allocated_size_perc: 25,
       take_profit_threshold_perc: backtest.take_profit_threshold_perc,
       stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
@@ -419,6 +422,36 @@ export const DeployStrategyForm = (props: Props) => {
                           return (
                             <WithLabel
                               label={"Kline size MS"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                                marginTop: "16px",
+                              }}
+                            >
+                              <NumberInput
+                                step={10000}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.klineSizeMs,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <ChakraNumberStepper />
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.numReqKlines}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Num of required candles"}
                               containerStyles={{
                                 maxWidth: "200px",
                                 marginTop: "16px",
