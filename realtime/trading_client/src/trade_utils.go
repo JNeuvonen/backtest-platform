@@ -26,7 +26,7 @@ func UpdatePredServerOnTradeClose(
 			NewFmtError(
 				errors.New(
 					fmt.Sprintf(
-						"%s\n%s: res *binance_connector.MarginAccountNewOrderResponseFULL was unexpectedly nil",
+						"%s\n%s: res *binance_connector.MarginAccountNewOrderResponseFULL was unexpectedly nil when closing a trade.",
 						strat.Symbol,
 						GetCurrentFunctionName(),
 					),
@@ -56,6 +56,19 @@ func UpdatePredServerAfterTradeOpen(
 	direction string,
 ) {
 	if res == nil {
+		CreateCloudLog(
+			NewFmtError(
+				errors.New(
+					fmt.Sprintf(
+						"%s\n%s: res *binance_connector.MarginAccountNewOrderResponseFULL was unexpectedly nil when opening a trade.",
+						strat.Symbol,
+						GetCurrentFunctionName(),
+					),
+				),
+				CaptureStack(),
+			).Error(),
+			LOG_EXCEPTION,
+		)
 		return
 	}
 
