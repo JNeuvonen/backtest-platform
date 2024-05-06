@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response, status
 from context import HttpResponseContext
 from api.v1.request_types import BodyCreateTrade, BodyPutTrade
 from middleware import api_key_auth
+from schema.cloudlog import slack_log_enter_trade_notif
 from schema.trade import TradeQuery
 
 
@@ -23,6 +24,8 @@ async def route_get_trades():
 async def route_create_trade(body: BodyCreateTrade):
     with HttpResponseContext():
         id = TradeQuery.create_entry(body.model_dump())
+        if id is not None:
+            slack_log_enter_trade_notif(body)
         return Response(
             content=f"{str(id)}",
             status_code=status.HTTP_200_OK,
