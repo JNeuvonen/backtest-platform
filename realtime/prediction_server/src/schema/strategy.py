@@ -31,6 +31,7 @@ class Strategy(Base):
     exit_trade_code = Column(String, nullable=False)
     fetch_datasources_code = Column(String, nullable=False)
 
+    candle_interval = Column(String)
     trade_quantity_precision = Column(Integer, nullable=False)
     priority = Column(Integer, nullable=False)
     num_req_klines = Column(Integer, nullable=False)
