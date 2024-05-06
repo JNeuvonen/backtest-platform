@@ -19,9 +19,20 @@ async def get_historical_klines(symbol, interval):
     start_time = "1 Jan, 2017"
     klines = []
 
-    klines = await asyncio.to_thread(
-        client.get_historical_klines, symbol, interval, start_str=start_time
-    )
+    while True:
+        new_klines = await asyncio.to_thread(
+            client.get_historical_klines,
+            symbol,
+            interval,
+            start_str=start_time,
+            limit=1000,
+        )
+
+        if not new_klines:
+            break
+
+        klines += new_klines
+        start_time = int(new_klines[-1][0]) + 1
 
     df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
     df.drop(["ignore"], axis=1, inplace=True)
@@ -39,9 +50,16 @@ def non_async_get_historical_klines(symbol, interval):
     start_time = "1 Jan, 2017"
     klines = []
 
-    klines = client.get_historical_klines(
-        symbol=symbol, interval=interval, start_str=start_time
-    )
+    while True:
+        new_klines = client.get_historical_klines(
+            symbol=symbol, interval=interval, start_str=start_time, limit=1000
+        )
+
+        if not new_klines:
+            break
+
+        klines += new_klines
+        start_time = int(new_klines[-1][0]) + 1
 
     df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
     df.drop(["ignore"], axis=1, inplace=True)
