@@ -1,3 +1,5 @@
+import os
+import time
 import threading
 
 
@@ -11,3 +13,11 @@ def replace_placeholders_on_code_templ(code, replacements):
     for key, value in replacements.items():
         code = code.replace(key, str(value))
     return code
+
+
+def file_exists(file_path: str) -> bool:
+    return os.path.exists(file_path)
+
+
+def get_current_timestamp_ms() -> int:
+    return int(time.time() * 1000)

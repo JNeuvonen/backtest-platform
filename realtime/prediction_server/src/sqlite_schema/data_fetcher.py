@@ -1,7 +1,7 @@
 from typing import Dict
 from sqlalchemy import Column, Integer, String
 from backtest_platform.pyserver.src.log import LogExceptionContext
-from realtime.prediction_server.src.sqlite_orm import Session
+from sqlite_orm import Session
 from sqlite_orm import Base
 
 
@@ -10,10 +10,13 @@ class DataFetcher(Base):
 
     id = Column(Integer, primary_key=True)
 
+    strategy_id = Column(Integer)
     strategy_name = Column(String, unique=True)
     fetch_datasources_code = Column(String, nullable=False)
     num_required_klines = Column(Integer, nullable=False)
+    kline_size_ms = Column(Integer, nullable=False)
     symbol = Column(String)
+    interval = Column(String)
 
 
 class DataFetcherQuery:

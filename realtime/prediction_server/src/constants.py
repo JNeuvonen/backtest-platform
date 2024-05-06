@@ -19,3 +19,12 @@ class SlackWebhooks:
 
     TRADE_CLIENT_EXCEPTIONS = "trade_client_exceptions"
     TRADE_CLIENT_ALL = "trade_client_all"
+
+    TRADE_NOTIFS = "trade_notifications"
+
+
+def strategy_name_to_db_file(strat_name: str):
+    return strat_name + ".db"
+
+
+KLINES_MAX_TIME_RANGE = "1 Jan, 2017"
