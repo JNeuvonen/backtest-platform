@@ -4,8 +4,8 @@ from log import LogExceptionContext
 from binance_utils import fetch_binance_klines
 from constants import KLINES_MAX_TIME_RANGE, SOFTWARE_VERSION
 from schema.data_transformation import DataTransformation, DataTransformationQuery
-from utils import replace_placeholders_on_code_templ
-from schema.strategy import Strategy
+from utils import get_current_timestamp_ms, replace_placeholders_on_code_templ
+from schema.strategy import Strategy, StrategyQuery
 from datetime import datetime
 
 
@@ -74,27 +74,83 @@ def get_trading_decisions(strategy: Strategy):
         }
 
 
-def format_pred_loop_log_msg(active_strats: int, strats_on_error: int, strategies_info):
+def format_pred_loop_log_msg(
+    current_state_dict, strategies_info, last_trade_loop_completed_timestamp_ms
+):
+    active_strats = current_state_dict["active_strategies"]
+    strats_on_error = current_state_dict["strats_on_error"]
+    in_position = current_state_dict["strats_in_pos"]
+    strats_wanting_to_enter = current_state_dict["strats_wanting_to_enter"]
+    strats_wanting_to_close = current_state_dict["strats_wanting_to_close"]
+
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_msg = f"```Prediction service (v{SOFTWARE_VERSION}) loop info - Timestamp (UTC): {current_time}```"
+    current_timestamp_ms = get_current_timestamp_ms()
+    log_msg = f"```Prediction service (v{SOFTWARE_VERSION}) loop info - Timestamp (UTC): {current_time} - Time to complete {(current_timestamp_ms - last_trade_loop_completed_timestamp_ms) / 1000} sec```"
+
     log_msg += "\n------------"
     log_msg += f"\nPrediction loop completed.\nActive strategies: {active_strats}.\nStrategies in error state: {strats_on_error}"
 
     log_msg += "\n------------"
     log_msg += "\nStrategies state breakdown:"
+    log_msg += f"""\nNum in  position: `{in_position}`"""
+    log_msg += f"""\nNum predicting enter: `{strats_wanting_to_enter}`"""
+    log_msg += f"""\nNum predicting close: `{strats_wanting_to_close}`"""
 
-    for item in strategies_info:
-        log_msg += "\n------------"
-        log_msg += f"\nStrategy: `{item['name']}`"
-        if item["trading_decisions"] is not None:
-            log_msg += f"\nShould Enter Trade: `{item['trading_decisions']['should_enter_trade']}`"
-            log_msg += f"\nShould Close Trade: `{item['trading_decisions']['should_close_trade']}`"
-        else:
-            log_msg += "\nTrading decisions not available for the strategy."
+    strategies_in_pos = []
 
-        log_msg += f"\nIn Position: `{item['in_position']}`"
+    if in_position > 0:
+        for item in strategies_info:
+            if item["in_position"] is True:
+                strat_name = "`" + item["name"] + "`"
+                strategies_in_pos.append(strat_name)
 
-        if item["is_on_error"] is True:
-            log_msg += f"\nIs on Error: {item['is_on_error']}"
+    formatted_strategies = ", ".join(strategies_in_pos)
+
+    log_msg += "\n------------"
+    log_msg += f"\nStrategies currently in a position: {formatted_strategies}"
 
     return log_msg
+
+
+def update_strategies_state_dict(
+    strategy, trading_decisions, strats_dict, strategies_info
+):
+    if not strategy.is_disabled:
+        strats_dict["active_strategies"] += 1
+
+    if strategy.is_in_position is True:
+        strats_dict["strats_in_pos"] += 1
+
+    if trading_decisions is not None:
+        StrategyQuery.update_strategy(strategy.id, trading_decisions)
+        strategies_info.append(
+            {
+                "name": strategy.name,
+                "trading_decisions": trading_decisions,
+                "in_position": strategy.is_in_position,
+                "is_on_error": False,
+            }
+        )
+
+        if trading_decisions["should_enter_trade"] is True:
+            strats_dict["strats_wanting_to_enter"] += 1
+        elif (
+            trading_decisions["should_close_trade"] is False
+            and trading_decisions["should_enter_trade"] is False
+        ):
+            strats_dict["strats_still"] += 1
+
+        elif trading_decisions["should_close_trade"] is True:
+            strats_dict["strats_wanting_to_close"] += 1
+
+    else:
+        strategies_info.append(
+            {
+                "name": strategy.name,
+                "trading_decisions": None,
+                "in_position": strategy.is_in_position,
+                "is_on_error": True,
+            }
+        )
+        StrategyQuery.update_strategy(strategy.id, {"is_on_pred_serv_err": True})
+        strats_dict["strats_on_error"] += 1

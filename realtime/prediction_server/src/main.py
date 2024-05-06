@@ -15,7 +15,12 @@ from api.v1.trade import router as v1_trade_router
 from api.v1.api_key import router as v1_api_key_router
 from middleware import ValidateIPMiddleware
 from constants import LogLevel
-from strategy import format_pred_loop_log_msg, get_trading_decisions
+from utils import get_current_timestamp_ms
+from strategy import (
+    format_pred_loop_log_msg,
+    get_trading_decisions,
+    update_strategies_state_dict,
+)
 from schema.strategy import StrategyQuery
 from schema.whitelisted_ip import WhiteListedIPQuery
 from schema.cloudlog import CloudLogQuery, create_log
@@ -87,47 +92,30 @@ class PredictionService:
 
         iterations_completed = 0
 
+        last_loop_complete_timestamp = get_current_timestamp_ms()
+
         while not self.stop_event.is_set():
             strategies = StrategyQuery.get_strategies()
-            active_strategies = 0
-            strats_on_error = 0
 
+            current_state_dict = {
+                "active_strategies": 0,
+                "strats_on_error": 0,
+                "strats_in_pos": 0,
+                "strats_wanting_to_close": 0,
+                "strats_wanting_to_enter": 0,
+                "strats_still": 0,
+            }
             strategies_info = []
 
             for strategy in strategies:
                 trading_decisions = get_trading_decisions(strategy)
-
-                if not strategy.is_disabled:
-                    active_strategies += 1
-
-                if trading_decisions is not None:
-                    StrategyQuery.update_strategy(strategy.id, trading_decisions)
-                    strategies_info.append(
-                        {
-                            "name": strategy.name,
-                            "trading_decisions": trading_decisions,
-                            "in_position": strategy.is_in_position,
-                            "is_on_error": False,
-                        }
-                    )
-
-                else:
-                    strategies_info.append(
-                        {
-                            "name": strategy.name,
-                            "trading_decisions": None,
-                            "in_position": strategy.is_in_position,
-                            "is_on_error": True,
-                        }
-                    )
-                    StrategyQuery.update_strategy(
-                        strategy.id, {"is_on_pred_serv_err": True}
-                    )
-                    strats_on_error += 1
+                update_strategies_state_dict(
+                    strategy, trading_decisions, current_state_dict, strategies_info
+                )
 
             create_log(
                 msg=format_pred_loop_log_msg(
-                    active_strategies, strats_on_error, strategies_info
+                    current_state_dict, strategies_info, last_loop_complete_timestamp
                 ),
                 level=LogLevel.INFO,
             )
@@ -136,8 +124,9 @@ class PredictionService:
                 CloudLogQuery.clear_outdated_logs()
                 iterations_completed = 0
 
-            self.stop_event.wait(2)
+            self.stop_event.wait(1)
             iterations_completed += 1
+            last_loop_complete_timestamp = get_current_timestamp_ms()
 
     def start(self):
         if self.thread is None or not self.thread.is_alive():
