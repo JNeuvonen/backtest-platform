@@ -17,6 +17,7 @@ from log import LogExceptionContext
 class Trade(Base):
     __tablename__ = "trade"
     id = Column(Integer, primary_key=True)
+    symbol = Column(String)
     strategy_id = Column(Integer, ForeignKey("strategy.id"), nullable=False)
 
     created_at = Column(DateTime, default=func.now())
