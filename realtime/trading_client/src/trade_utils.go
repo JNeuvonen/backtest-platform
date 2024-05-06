@@ -82,6 +82,7 @@ func UpdatePredServerAfterTradeOpen(
 		"open_time_ms": res.TransactTime,
 		"quantity":     res.ExecutedQty,
 		"direction":    direction,
+		"symbol":       strat.Symbol,
 		"strategy_id":  int32(strat.ID),
 	})
 
