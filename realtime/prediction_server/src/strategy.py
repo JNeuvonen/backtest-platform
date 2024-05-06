@@ -1,6 +1,8 @@
 from typing import List
 from code_gen_templates import CodeTemplates, PyCode
 from log import LogExceptionContext
+from binance_utils import fetch_binance_klines
+from constants import KLINES_MAX_TIME_RANGE
 from schema.data_transformation import DataTransformation, DataTransformationQuery
 from utils import replace_placeholders_on_code_templ
 from schema.strategy import Strategy
@@ -29,17 +31,10 @@ def get_trading_decisions(strategy: Strategy):
             "should_exit_trade": None,
         }
 
-        fetch_data_helper = {
-            "{FETCH_DATASOURCES_FUNC}": strategy.fetch_datasources_code
-        }
-
-        exec(
-            replace_placeholders_on_code_templ(
-                CodeTemplates.FETCH_DATASOURCES, fetch_data_helper
-            ),
-            globals(),
-            results_dict,
+        binance_klines = fetch_binance_klines(
+            strategy.symbol, strategy.candle_interval, KLINES_MAX_TIME_RANGE
         )
+        results_dict["fetched_data"] = binance_klines
 
         data_transformations = DataTransformationQuery.get_transformations_by_strategy(
             strategy.id
