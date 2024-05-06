@@ -1,11 +1,13 @@
 import threading
 from typing import Dict
+from fastapi import Body
 from sqlalchemy import Column, DateTime, Integer, String, func
 from orm import Base, Session
 
 from datetime import datetime, timedelta
 
 from constants import LogLevel, LogSourceProgram, SlackWebhooks
+from api.v1.request_types import BodyCreateTrade
 from slack import post_slack_message
 from schema.slack_bots import SlackWebhookQuery
 
@@ -71,6 +73,32 @@ class CloudLogQuery:
             return (
                 session.query(CloudLog).filter(CloudLog.created_at >= cutoff_date).all()
             )
+
+
+def create_trade_enter_notif_msg(body: BodyCreateTrade) -> str:
+    direction_emoji = "📈" if body.direction == "long" else "📉"
+    return (
+        f"```Trade Alert - {body.symbol} {direction_emoji}```\n"
+        f"------------\n"
+        f"- Quantity: `{body.quantity}` at `{body.open_price}`\n"
+        f"- Opened at: `{datetime.fromtimestamp(body.open_time_ms / 1000).strftime('%Y-%m-%d %H:%M:%S')}`"
+    )
+
+
+def slack_log_enter_trade_notif(body: BodyCreateTrade):
+    def func_helper():
+        hook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.TRADE_NOTIFS)
+
+        if hook is None:
+            create_log(
+                "Hook for TRADE_NOTIFS is not correctly set", level=LogLevel.EXCEPTION
+            )
+            return
+
+        post_slack_message(hook.webhook_uri, create_trade_enter_notif_msg(body))
+
+    thread = threading.Thread(target=func_helper)
+    thread.start()
 
 
 def slack_log(msg: str, source_program: int, level: str):
