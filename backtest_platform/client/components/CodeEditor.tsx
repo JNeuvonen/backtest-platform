@@ -1,6 +1,6 @@
 import { Editor, EditorProps, OnMount } from "@monaco-editor/react";
 import React, { CSSProperties } from "react";
-import { FormControl, FormLabel, Link } from "@chakra-ui/react";
+import { FormControl, FormLabel } from "@chakra-ui/react";
 import { SaveCodePreset } from "./SaveCodePresetPopover";
 import { SelectCodePreset } from "./SelectCodePresetPopover";
 import { ManagePresets } from "./PresetManager";

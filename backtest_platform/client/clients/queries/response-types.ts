@@ -73,6 +73,7 @@ export interface DatasetModel {
 export interface Dataset {
   columns: string[];
   head: Array<number[]>;
+  symbol: string;
   tail: Array<number[]>;
   null_counts: NullCounts;
   row_count: number;
@@ -185,6 +186,7 @@ export interface BacktestObject {
   id: number;
   dataset_name: string;
   open_trade_cond: string;
+  candle_interval: string;
   close_trade_cond: string;
   use_time_based_close: boolean;
   use_profit_based_close: boolean;

@@ -17,6 +17,7 @@ import { Field, Form, Formik } from "formik";
 import {
   BacktestObject,
   DataTransformation,
+  Dataset,
 } from "../../../../clients/queries/response-types";
 import { DISK_KEYS, DiskManager } from "../../../../utils/disk";
 import { WithLabel } from "../../../../components/form/WithLabel";
@@ -28,6 +29,7 @@ import { deployStrategyReq } from "../../../../clients/requests";
 import { useAppContext } from "../../../../context/app";
 import { FETCH_DATASOURCES_DEFAULT } from "../../../../utils/code";
 import { ChakraNumberStepper } from "../../../../components/ChakraNumberStepper";
+import { getIntervalLengthInMs, inferAssets } from "../../../../utils/binance";
 
 interface PathParams {
   datasetName: string;
@@ -73,6 +75,7 @@ export interface DeployStratForm {
   quote_asset: string;
   enter_trade_code: string;
   exit_trade_code: string;
+  candle_interval: string;
   fetch_datasources_code: string;
   trade_quantity_precision: number;
   priority: number;
@@ -93,20 +96,25 @@ export interface DeployStratForm {
   data_transformations: DataTransformation[];
 }
 
-const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
+const getFormInitialValues = (
+  backtest: BacktestObject,
+  symbol: string
+): DeployStratForm => {
   const prevForm = backtestDiskManager.read();
+  const { quoteAsset, baseAsset } = inferAssets(symbol);
   if (prevForm === null) {
     return {
       name: "",
-      symbol: "",
-      base_asset: "",
-      quote_asset: "",
+      symbol: symbol,
+      base_asset: baseAsset,
+      quote_asset: quoteAsset,
       enter_trade_code: backtest.open_trade_cond,
       exit_trade_code: backtest.close_trade_cond,
       fetch_datasources_code: FETCH_DATASOURCES_DEFAULT,
       trade_quantity_precision: 5,
+      candle_interval: backtest.candle_interval,
       priority: 1,
-      kline_size_ms: 0,
+      kline_size_ms: getIntervalLengthInMs(backtest.candle_interval),
       maximum_klines_hold_time: backtest.klines_until_close,
       num_req_klines: 1000,
       allocated_size_perc: 25,
@@ -126,6 +134,11 @@ const getFormInitialValues = (backtest: BacktestObject): DeployStratForm => {
 
   return {
     ...prevForm,
+    symbol: symbol,
+    base_asset: baseAsset,
+    quote_asset: quoteAsset,
+    kline_size_ms: getIntervalLengthInMs(backtest.candle_interval),
+    candle_interval: backtest.candle_interval,
     enter_trade_code: backtest.open_trade_cond,
     exit_trade_code: backtest.close_trade_cond,
     is_short_selling_strategy: backtest.is_short_selling_strategy,
@@ -147,7 +160,12 @@ export const DeployStrategyForm = (props: Props) => {
 
   const toast = useToast();
 
-  if (!backtestQuery || !backtestQuery.data || !backtestQuery.data.data) {
+  if (
+    !backtestQuery ||
+    !backtestQuery.data ||
+    !backtestQuery.data.data ||
+    !datasetQuery.data
+  ) {
     return null;
   }
 
@@ -161,6 +179,7 @@ export const DeployStrategyForm = (props: Props) => {
     const res = await deployStrategyReq(getPredServAPIKey(), {
       ...form,
       data_transformations: datasetQuery.data.data_transformations,
+      candle_interval: backtest.candle_interval,
     });
 
     if (res.status === 200) {
@@ -191,7 +210,10 @@ export const DeployStrategyForm = (props: Props) => {
       >
         <div>
           <Formik
-            initialValues={getFormInitialValues(backtest)}
+            initialValues={getFormInitialValues(
+              backtest,
+              datasetQuery.data.symbol
+            )}
             onSubmit={onSubmit}
           >
             {() => {
@@ -232,6 +254,7 @@ export const DeployStrategyForm = (props: Props) => {
                                   form.setFieldValue(formKeys.symbol, value)
                                 }
                                 value={field.value}
+                                disabled={true}
                               />
                             </WithLabel>
                           );
@@ -249,6 +272,7 @@ export const DeployStrategyForm = (props: Props) => {
                                   form.setFieldValue(formKeys.baseAsset, value)
                                 }
                                 value={field.value}
+                                disabled={true}
                               />
                             </WithLabel>
                           );
@@ -266,6 +290,7 @@ export const DeployStrategyForm = (props: Props) => {
                                   form.setFieldValue(formKeys.quoteAsset, value)
                                 }
                                 value={field.value}
+                                disabled={true}
                               />
                             </WithLabel>
                           );
@@ -285,6 +310,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 newState
                               )
                             }
+                            readOnly={true}
                             style={{ marginTop: "16px" }}
                             fontSize={13}
                             label={"Enter trade code"}
@@ -303,6 +329,7 @@ export const DeployStrategyForm = (props: Props) => {
                       {({ field, form }) => {
                         return (
                           <CodeEditor
+                            readOnly={true}
                             code={field.value}
                             setCode={(newState) =>
                               form.setFieldValue(
@@ -317,31 +344,6 @@ export const DeployStrategyForm = (props: Props) => {
                             height={"250px"}
                             presetCategory={
                               CODE_PRESET_CATEGORY.strategy_deploy_exit_trade
-                            }
-                          />
-                        );
-                      }}
-                    </Field>
-                  </div>
-                  <div>
-                    <Field name={formKeys.fetchDatasourcesCode}>
-                      {({ field, form }) => {
-                        return (
-                          <CodeEditor
-                            code={field.value}
-                            setCode={(newState) =>
-                              form.setFieldValue(
-                                formKeys.fetchDatasourcesCode,
-                                newState
-                              )
-                            }
-                            style={{ marginTop: "16px" }}
-                            fontSize={13}
-                            label={"Fetch datasources code"}
-                            codeContainerStyles={{ width: "100%" }}
-                            height={"250px"}
-                            presetCategory={
-                              CODE_PRESET_CATEGORY.strategy_deploy_fetch_datasources
                             }
                           />
                         );
@@ -429,6 +431,7 @@ export const DeployStrategyForm = (props: Props) => {
                             >
                               <NumberInput
                                 step={10000}
+                                isDisabled={true}
                                 min={0}
                                 value={field.value}
                                 onChange={(valueString) =>
@@ -463,7 +466,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 value={field.value}
                                 onChange={(valueString) =>
                                   form.setFieldValue(
-                                    formKeys.klineSizeMs,
+                                    formKeys.numReqKlines,
                                     parseInt(valueString)
                                   )
                                 }
