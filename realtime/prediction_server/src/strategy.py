@@ -2,7 +2,7 @@ from typing import List
 from code_gen_templates import CodeTemplates, PyCode
 from log import LogExceptionContext
 from binance_utils import fetch_binance_klines
-from constants import KLINES_MAX_TIME_RANGE
+from constants import KLINES_MAX_TIME_RANGE, SOFTWARE_VERSION
 from schema.data_transformation import DataTransformation, DataTransformationQuery
 from utils import replace_placeholders_on_code_templ
 from schema.strategy import Strategy
@@ -76,7 +76,7 @@ def get_trading_decisions(strategy: Strategy):
 
 def format_pred_loop_log_msg(active_strats: int, strats_on_error: int, strategies_info):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_msg = f"```Prediction service loop info - Timestamp (UTC): {current_time}```"
+    log_msg = f"```Prediction service (v{SOFTWARE_VERSION}) loop info - Timestamp (UTC): {current_time}```"
     log_msg += "\n------------"
     log_msg += f"\nPrediction loop completed.\nActive strategies: {active_strats}.\nStrategies in error state: {strats_on_error}"
 
