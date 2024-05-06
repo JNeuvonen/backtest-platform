@@ -349,6 +349,7 @@ def get_dataset_table(table_name: str):
             row_count = get_table_row_count(cursor, table_name)
             rows = get_dataset_pagination(table_name, 1, 100)
             dataset_id = DatasetQuery.fetch_dataset_id_by_name(table_name)
+            dataset = DatasetQuery.fetch_dataset_by_id(dataset_id)
 
             data_transformations = (
                 DataTransformationQuery.get_transformations_by_dataset(dataset_id)
@@ -371,6 +372,7 @@ def get_dataset_table(table_name: str):
                 "id": DatasetQuery.fetch_dataset_id_by_name(table_name),
                 "rows": rows,
                 "data_transformations": transformations_dicts,
+                "symbol": dataset.symbol,
             }
 
 
