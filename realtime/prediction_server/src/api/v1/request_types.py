@@ -18,6 +18,7 @@ class BodyCreateStrategy(BaseModel):
     enter_trade_code: str
     exit_trade_code: str
     fetch_datasources_code: str
+    candle_interval: str
 
     priority: int
     kline_size_ms: int
@@ -65,6 +66,7 @@ class BodyCreateTrade(BaseModel):
     strategy_id: int
     quantity: float
     open_price: float
+    symbol: str
     direction: str
 
     @field_validator("direction")
