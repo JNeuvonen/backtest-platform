@@ -17,7 +17,6 @@ import { Field, Form, Formik } from "formik";
 import {
   BacktestObject,
   DataTransformation,
-  Dataset,
 } from "../../../../clients/queries/response-types";
 import { DISK_KEYS, DiskManager } from "../../../../utils/disk";
 import { WithLabel } from "../../../../components/form/WithLabel";
@@ -29,7 +28,11 @@ import { deployStrategyReq } from "../../../../clients/requests";
 import { useAppContext } from "../../../../context/app";
 import { FETCH_DATASOURCES_DEFAULT } from "../../../../utils/code";
 import { ChakraNumberStepper } from "../../../../components/ChakraNumberStepper";
-import { getIntervalLengthInMs, inferAssets } from "../../../../utils/binance";
+import {
+  getIntervalLengthInMs,
+  getTradeQuantityPrecision,
+  inferAssets,
+} from "../../../../utils/binance";
 
 interface PathParams {
   datasetName: string;
@@ -77,9 +80,9 @@ export interface DeployStratForm {
   exit_trade_code: string;
   candle_interval: string;
   fetch_datasources_code: string;
-  trade_quantity_precision: number;
+  trade_quantity_precision?: number;
   priority: number;
-  kline_size_ms: number;
+  kline_size_ms?: number;
   maximum_klines_hold_time: number;
   num_req_klines: number;
   allocated_size_perc: number;
@@ -111,7 +114,6 @@ const getFormInitialValues = (
       enter_trade_code: backtest.open_trade_cond,
       exit_trade_code: backtest.close_trade_cond,
       fetch_datasources_code: FETCH_DATASOURCES_DEFAULT,
-      trade_quantity_precision: 5,
       candle_interval: backtest.candle_interval,
       priority: 1,
       kline_size_ms: getIntervalLengthInMs(backtest.candle_interval),
@@ -176,10 +178,13 @@ export const DeployStrategyForm = (props: Props) => {
       return null;
     }
 
+    const precision = await getTradeQuantityPrecision(form.symbol);
+
     const res = await deployStrategyReq(getPredServAPIKey(), {
       ...form,
       data_transformations: datasetQuery.data.data_transformations,
       candle_interval: backtest.candle_interval,
+      trade_quantity_precision: precision,
     });
 
     if (res.status === 200) {
@@ -359,36 +364,6 @@ export const DeployStrategyForm = (props: Props) => {
                     }}
                   >
                     <div>
-                      <Field name={formKeys.tradeQuantityPrecision}>
-                        {({ field, form }) => {
-                          return (
-                            <WithLabel
-                              label={"Trade quantity precision"}
-                              containerStyles={{
-                                maxWidth: "200px",
-                                marginTop: "16px",
-                              }}
-                            >
-                              <NumberInput
-                                step={1}
-                                min={0}
-                                value={field.value}
-                                onChange={(valueString) =>
-                                  form.setFieldValue(
-                                    formKeys.tradeQuantityPrecision,
-                                    parseInt(valueString)
-                                  )
-                                }
-                              >
-                                <NumberInputField />
-                                <ChakraNumberStepper />
-                              </NumberInput>
-                            </WithLabel>
-                          );
-                        }}
-                      </Field>
-                    </div>
-                    <div>
                       <Field name={formKeys.priority}>
                         {({ field, form }) => {
                           return (
@@ -406,37 +381,6 @@ export const DeployStrategyForm = (props: Props) => {
                                 onChange={(valueString) =>
                                   form.setFieldValue(
                                     formKeys.priority,
-                                    parseInt(valueString)
-                                  )
-                                }
-                              >
-                                <NumberInputField />
-                                <ChakraNumberStepper />
-                              </NumberInput>
-                            </WithLabel>
-                          );
-                        }}
-                      </Field>
-                    </div>
-                    <div>
-                      <Field name={formKeys.klineSizeMs}>
-                        {({ field, form }) => {
-                          return (
-                            <WithLabel
-                              label={"Kline size MS"}
-                              containerStyles={{
-                                maxWidth: "200px",
-                                marginTop: "16px",
-                              }}
-                            >
-                              <NumberInput
-                                step={10000}
-                                isDisabled={true}
-                                min={0}
-                                value={field.value}
-                                onChange={(valueString) =>
-                                  form.setFieldValue(
-                                    formKeys.klineSizeMs,
                                     parseInt(valueString)
                                   )
                                 }

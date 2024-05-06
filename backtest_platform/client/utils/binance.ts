@@ -27,6 +27,8 @@ export function inferAssets(symbol: string): {
 export const MINUTE_IN_MS = 60000;
 export const HOUR_IN_MS = MINUTE_IN_MS * 60;
 export const DAY_IN_MS = HOUR_IN_MS * 24;
+export const SPOT_EXCHANGE_INFO_ENDPOINT =
+  "https://api.binance.com/api/v3/exchangeInfo";
 
 export const getIntervalLengthInMs = (interval: string): number => {
   const intervals = {
@@ -47,5 +49,26 @@ export const getIntervalLengthInMs = (interval: string): number => {
     "1M": DAY_IN_MS * 30,
   };
 
-  return intervals[interval] || 0; // Return 0 if interval is not defined
+  return intervals[interval] || 0;
 };
+
+export async function getTradeQuantityPrecision(
+  symbol: string
+): Promise<number> {
+  const response = await fetch(SPOT_EXCHANGE_INFO_ENDPOINT);
+  const data = await response.json();
+
+  for (const item of data.symbols) {
+    if (item.symbol === symbol) {
+      for (const filter of item.filters) {
+        if (filter.filterType === "LOT_SIZE") {
+          const tradeQuantityPrecision = filter.minQty.includes(".")
+            ? filter.minQty.split(".")[1].replace(/0+$/, "").length
+            : 0;
+          return Number(tradeQuantityPrecision);
+        }
+      }
+    }
+  }
+  throw new Error("Symbol doesn't exist");
+}
