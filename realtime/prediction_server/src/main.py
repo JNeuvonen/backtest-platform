@@ -1,6 +1,5 @@
 import uvicorn
 import os
-import time
 from contextlib import asynccontextmanager
 
 from threading import Event, Thread
@@ -124,7 +123,7 @@ class PredictionService:
                 CloudLogQuery.clear_outdated_logs()
                 iterations_completed = 0
 
-            self.stop_event.wait(1)
+            self.stop_event.wait(120)
             iterations_completed += 1
             last_loop_complete_timestamp = get_current_timestamp_ms()
 

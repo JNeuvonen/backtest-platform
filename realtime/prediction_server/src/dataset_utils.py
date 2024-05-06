@@ -5,10 +5,11 @@ from typing import Optional
 from binance_utils import fetch_binance_klines
 from constants import strategy_name_to_db_file
 from schema.data_transformation import DataTransformationQuery
-from utils import file_exists, get_current_timestamp_ms
-
-
-NUM_REQ_KLINES_BUFFER = 5
+from utils import (
+    calculate_timestamp_for_kline_fetch,
+    file_exists,
+    get_current_timestamp_ms,
+)
 
 
 def read_dataset_to_mem(db_path: str, table_name: str):
@@ -40,10 +41,8 @@ def initiate_dataset(data_fetcher):
     klines = fetch_binance_klines(
         data_fetcher.symbol,
         data_fetcher.interval,
-        curr_time_ms
-        - (
-            data_fetcher.kline_size_ms
-            * (data_fetcher.num_required_klines + NUM_REQ_KLINES_BUFFER)
+        calculate_timestamp_for_kline_fetch(
+            data_fetcher.num_required_klines, data_fetcher.kline_size_ms
         ),
     )
 

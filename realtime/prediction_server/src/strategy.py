@@ -1,10 +1,16 @@
+import json
 from typing import List
 from code_gen_templates import CodeTemplates, PyCode
 from log import LogExceptionContext
 from binance_utils import fetch_binance_klines
-from constants import KLINES_MAX_TIME_RANGE, SOFTWARE_VERSION
+from constants import SOFTWARE_VERSION, LogLevel
+from schema.cloudlog import create_log
 from schema.data_transformation import DataTransformation, DataTransformationQuery
-from utils import get_current_timestamp_ms, replace_placeholders_on_code_templ
+from utils import (
+    calculate_timestamp_for_kline_fetch,
+    get_current_timestamp_ms,
+    replace_placeholders_on_code_templ,
+)
 from schema.strategy import Strategy, StrategyQuery
 from datetime import datetime
 
@@ -32,8 +38,13 @@ def get_trading_decisions(strategy: Strategy):
         }
 
         binance_klines = fetch_binance_klines(
-            strategy.symbol, strategy.candle_interval, KLINES_MAX_TIME_RANGE
+            strategy.symbol,
+            strategy.candle_interval,
+            calculate_timestamp_for_kline_fetch(
+                strategy.num_req_klines, strategy.kline_size_ms
+            ),
         )
+
         results_dict["fetched_data"] = binance_klines
 
         data_transformations = DataTransformationQuery.get_transformations_by_strategy(
