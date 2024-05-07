@@ -113,12 +113,15 @@ class PredictionService:
                     strategy, trading_decisions, current_state_dict, strategies_info
                 )
 
-            create_log(
-                msg=format_pred_loop_log_msg(
-                    current_state_dict, strategies_info, last_loop_complete_timestamp
-                ),
-                level=LogLevel.INFO,
-            )
+            if iterations_completed % 100 == 0:
+                create_log(
+                    msg=format_pred_loop_log_msg(
+                        current_state_dict,
+                        strategies_info,
+                        last_loop_complete_timestamp,
+                    ),
+                    level=LogLevel.INFO,
+                )
 
             if iterations_completed % 1000 == 0:
                 CloudLogQuery.clear_outdated_logs()
