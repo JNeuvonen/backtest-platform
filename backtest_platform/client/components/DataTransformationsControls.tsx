@@ -105,8 +105,6 @@ const SelectTransformationsModal = ({
   const [newSelectedTransformationsState, setNewSelectedTransformationsState] =
     useState(selectedTransformationIds);
 
-  console.log(newSelectedTransformationsState);
-
   return (
     <div>
       <ChakraModal
@@ -122,6 +120,7 @@ const SelectTransformationsModal = ({
           columns={["", "Name", "Inspect code"]}
           rows={transformations
             .filter((item) => {
+              if (!item.name) return false;
               if (!textFilter) return true;
               return item.name.toLowerCase().includes(textFilter.toLowerCase());
             })
@@ -236,7 +235,12 @@ export const DataTransformationControls = (props: Props) => {
         modalContentStyle={{ maxWidth: "80%", marginTop: "5%" }}
       >
         <SelectTransformationsModal
-          transformations={dataTransformationsQuery.data || []}
+          transformations={
+            dataTransformationsQuery.data?.filter((item) => {
+              if (!item.name) return false;
+              return true;
+            }) || []
+          }
           selectedTransformationIds={props.selectedTransformations}
           onSelect={props.onSelect}
           onClose={selectTransformationsModal.onClose}
