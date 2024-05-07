@@ -557,6 +557,8 @@ test_case_dump = {
     "is_leverage_allowed": False,
     "is_short_selling_strategy": False,
     "is_paper_trade_mode": False,
+    "candle_interval": "1d",
+    "num_req_klines": 700,
     "data_transformations": [
         {
             "id": 1,
