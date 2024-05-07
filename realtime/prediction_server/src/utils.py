@@ -1,6 +1,11 @@
 import os
+import sqlite3
 import time
 import threading
+from typing import List
+import pandas as pd
+
+from code_gen_templates import PyCode
 
 
 NUM_REQ_KLINES_BUFFER = 5
@@ -32,3 +37,23 @@ def calculate_timestamp_for_kline_fetch(num_required_klines, kline_size_ms):
     return curr_time_ms - (
         kline_size_ms * (num_required_klines + NUM_REQ_KLINES_BUFFER)
     )
+
+
+def read_dataset_to_mem(db_path: str, table_name: str):
+    with sqlite3.connect(db_path) as conn:
+        query = f"SELECT * FROM {table_name}"
+        df = pd.read_sql_query(query, conn)
+        return df
+
+
+def gen_data_transformations_code(data_transformations: List):
+    sorted_transformations = sorted(data_transformations, key=lambda x: x.strategy_id)
+
+    data_transformations_code = PyCode()
+    data_transformations_code.append_line("def make_data_transformations(dataset):")
+    data_transformations_code.add_indent()
+    for item in sorted_transformations:
+        data_transformations_code.add_block(item.transformation_code)
+
+    data_transformations_code.append_line("return dataset")
+    return data_transformations_code.get()

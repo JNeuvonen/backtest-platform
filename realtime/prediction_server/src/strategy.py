@@ -8,24 +8,12 @@ from schema.cloudlog import create_log
 from schema.data_transformation import DataTransformation, DataTransformationQuery
 from utils import (
     calculate_timestamp_for_kline_fetch,
+    gen_data_transformations_code,
     get_current_timestamp_ms,
     replace_placeholders_on_code_templ,
 )
 from schema.strategy import Strategy, StrategyQuery
 from datetime import datetime
-
-
-def gen_data_transformations_code(data_transformations: List[DataTransformation]):
-    sorted_transformations = sorted(data_transformations, key=lambda x: x.strategy_id)
-
-    data_transformations_code = PyCode()
-    data_transformations_code.append_line("def make_data_transformations(dataset):")
-    data_transformations_code.add_indent()
-    for item in sorted_transformations:
-        data_transformations_code.add_block(item.transformation_code)
-
-    data_transformations_code.append_line("return dataset")
-    return data_transformations_code.get()
 
 
 def get_trading_decisions(strategy: Strategy):

@@ -14,16 +14,17 @@ from api.v1.trade import router as v1_trade_router
 from api.v1.api_key import router as v1_api_key_router
 from middleware import ValidateIPMiddleware
 from constants import LogLevel
+from binance_utils import cleanup_unused_disk_space, gen_trading_decisions
 from utils import get_current_timestamp_ms
 from strategy import (
     format_pred_loop_log_msg,
-    get_trading_decisions,
     update_strategies_state_dict,
 )
 from schema.strategy import StrategyQuery
 from schema.whitelisted_ip import WhiteListedIPQuery
 from schema.cloudlog import CloudLogQuery, create_log
 from fastapi.middleware.cors import CORSMiddleware
+from sqlite_orm import create_sqlite_tables
 
 
 @asynccontextmanager
@@ -107,7 +108,7 @@ class PredictionService:
             strategies_info = []
 
             for strategy in strategies:
-                trading_decisions = get_trading_decisions(strategy)
+                trading_decisions = gen_trading_decisions(strategy)
                 update_strategies_state_dict(
                     strategy, trading_decisions, current_state_dict, strategies_info
                 )
@@ -119,11 +120,11 @@ class PredictionService:
                 level=LogLevel.INFO,
             )
 
-            if iterations_completed % 100 == 0:
+            if iterations_completed % 1000 == 0:
                 CloudLogQuery.clear_outdated_logs()
+                cleanup_unused_disk_space(strategies)
                 iterations_completed = 0
 
-            self.stop_event.wait(120)
             iterations_completed += 1
             last_loop_complete_timestamp = get_current_timestamp_ms()
 
@@ -151,6 +152,7 @@ def webserver_root():
 
 def start_server():
     create_tables()
+    create_sqlite_tables()
     logger = get_logger()
     prediction_service.start()
     logger.info("Starting server")

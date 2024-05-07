@@ -6,6 +6,7 @@ from api.v1.request_types import (
     BodyUpdateTradeClose,
 )
 from middleware import api_key_auth
+from sqlite_schema.data_fetcher import DataFetcherQuery
 from schema.strategy import StrategyQuery
 from schema.trade import TradeQuery
 from log import get_logger
@@ -35,6 +36,18 @@ async def route_create_strategy(body: BodyCreateStrategy):
         body_copy = body.model_dump(exclude={"data_transformations"})
 
         id = StrategyQuery.create_entry(body_copy)
+        DataFetcherQuery.create_entry(
+            {
+                "strategy_id": id,
+                "strategy_name": body.name,
+                "fetch_datasources_code": body.fetch_datasources_code,
+                "num_required_klines": body.num_req_klines,
+                "kline_size_ms": body.num_req_klines,
+                "symbol": body.symbol,
+                "interval": body.candle_interval,
+                "last_kline_open_time_sec": None,
+            }
+        )
 
         for item in data_transformations:
             DataTransformationQuery.create_transformation(
