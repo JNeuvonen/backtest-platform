@@ -222,7 +222,6 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.process_bar(
                 kline_open_time=kline_open_time, kline_state=kline_state
             )
-            print(idx)
 
         profit_factor_dict = calc_long_short_profit_factor(
             long_short_backtest.completed_trades
