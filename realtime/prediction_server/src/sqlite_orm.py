@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from config import DATASETS_DB_URI
 
 
-engine = create_engine(DATASETS_DB_URI)
+engine = create_engine(f"sqlite:///{DATASETS_DB_URI}")
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
@@ -25,7 +25,7 @@ def drop_tables(engine):
     metadata.drop_all(bind=engine)
 
 
-def create_tables():
+def create_sqlite_tables():
     try:
         Base.metadata.create_all(engine)
     except Exception:
