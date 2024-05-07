@@ -12,7 +12,6 @@ from conf import TEST_RUN_PORT, DROP_TABLES
 from import_helper import (
     start_server,
     drop_tables,
-    drop_sqlite_tables,
     stop_server,
     create_api_key_entry,
     create_tables,
@@ -40,12 +39,10 @@ def create_api_key():
 def cleanup_db():
     if DROP_TABLES == 1:
         drop_tables()
-        drop_sqlite_tables()
     create_tables()
     yield
     if DROP_TABLES == 1:
         drop_tables()
-        drop_sqlite_tables()
     create_tables()
 
 
@@ -77,7 +74,6 @@ def setup_test_environment():
 
     if int(DROP_TABLES) == 1:
         drop_tables()
-        drop_sqlite_tables()
     kill_process_on_port(TEST_RUN_PORT)
     server_process = multiprocessing.Process(target=start_service, daemon=True)
     server_process.start()
@@ -89,4 +85,3 @@ def setup_test_environment():
     kill_process_on_port(TEST_RUN_PORT)  # Ensure the process is killed
     if DROP_TABLES == 1:
         drop_tables()
-        drop_sqlite_tables()
