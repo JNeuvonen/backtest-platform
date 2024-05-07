@@ -1,11 +1,8 @@
-import json
-from typing import List
-from code_gen_templates import CodeTemplates, PyCode
+from code_gen_templates import CodeTemplates
 from log import LogExceptionContext
 from binance_utils import fetch_binance_klines
-from constants import SOFTWARE_VERSION, LogLevel
-from schema.cloudlog import create_log
-from schema.data_transformation import DataTransformation, DataTransformationQuery
+from constants import SOFTWARE_VERSION
+from schema.data_transformation import DataTransformationQuery
 from utils import (
     calculate_timestamp_for_kline_fetch,
     gen_data_transformations_code,
@@ -121,7 +118,6 @@ def update_strategies_state_dict(
         strats_dict["strats_in_pos"] += 1
 
     if trading_decisions is not None:
-        StrategyQuery.update_strategy(strategy.id, trading_decisions)
         strategies_info.append(
             {
                 "name": strategy.name,

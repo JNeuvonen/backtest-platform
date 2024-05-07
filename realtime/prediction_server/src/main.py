@@ -14,7 +14,7 @@ from api.v1.trade import router as v1_trade_router
 from api.v1.api_key import router as v1_api_key_router
 from middleware import ValidateIPMiddleware
 from constants import LogLevel
-from binance_utils import cleanup_unused_disk_space, gen_trading_decisions
+from binance_utils import gen_trading_decisions
 from utils import get_current_timestamp_ms
 from strategy import (
     format_pred_loop_log_msg,
@@ -24,7 +24,6 @@ from schema.strategy import StrategyQuery
 from schema.whitelisted_ip import WhiteListedIPQuery
 from schema.cloudlog import CloudLogQuery, create_log
 from fastapi.middleware.cors import CORSMiddleware
-from sqlite_orm import create_sqlite_tables
 
 
 @asynccontextmanager
@@ -90,9 +89,9 @@ class PredictionService:
         logger = get_logger()
         logger.info("Initiating prediction service")
 
-        iterations_completed = 0
-
         last_loop_complete_timestamp = get_current_timestamp_ms()
+        last_slack_message_timestamp = get_current_timestamp_ms()
+        last_logs_cleared_timestamp = get_current_timestamp_ms()
 
         while not self.stop_event.is_set():
             strategies = StrategyQuery.get_strategies()
@@ -113,7 +112,7 @@ class PredictionService:
                     strategy, trading_decisions, current_state_dict, strategies_info
                 )
 
-            if iterations_completed % 100 == 0:
+            if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
                 create_log(
                     msg=format_pred_loop_log_msg(
                         current_state_dict,
@@ -122,13 +121,12 @@ class PredictionService:
                     ),
                     level=LogLevel.INFO,
                 )
+                last_slack_message_timestamp = get_current_timestamp_ms()
 
-            if iterations_completed % 1000 == 0:
+            if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
                 CloudLogQuery.clear_outdated_logs()
-                cleanup_unused_disk_space(strategies)
-                iterations_completed = 0
+                last_logs_cleared_timestamp = get_current_timestamp_ms()
 
-            iterations_completed += 1
             last_loop_complete_timestamp = get_current_timestamp_ms()
 
     def start(self):
@@ -155,7 +153,6 @@ def webserver_root():
 
 def start_server():
     create_tables()
-    create_sqlite_tables()
     logger = get_logger()
     prediction_service.start()
     logger.info("Starting server")

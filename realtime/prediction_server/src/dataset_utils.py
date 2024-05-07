@@ -4,8 +4,8 @@ import pandas as pd
 from typing import Optional
 
 
-def read_dataset_to_mem(db_path: str, table_name: str):
-    with sqlite3.connect(db_path) as conn:
+def read_dataset_to_mem(engine, table_name: str):
+    with engine.connect() as conn:
         query = f"SELECT * FROM {table_name}"
         df = pd.read_sql_query(query, conn)
         return df

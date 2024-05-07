@@ -1,19 +1,19 @@
-import sqlite3
-import os
 import pandas as pd
 from binance import Client
 from log import LogExceptionContext
+from orm import engine
 from dataset_utils import read_dataset_to_mem
 from code_gen_templates import CodeTemplates
 from schema.data_transformation import (
     DataTransformationQuery,
 )
+from schema.strategy import StrategyQuery
 
-from sqlite_schema.data_fetcher import DataFetcherQuery
 from utils import (
     NUM_REQ_KLINES_BUFFER,
     calculate_timestamp_for_kline_fetch,
     gen_data_transformations_code,
+    get_current_timestamp_ms,
     replace_placeholders_on_code_templ,
 )
 
@@ -40,23 +40,6 @@ BINANCE_DATA_COLS = [
 ]
 
 BINANCE_KLINES_MAX_LIMIT = 1000
-
-
-def strategy_local_db_path(strategy_name):
-    if not os.path.exists(DATABASES_DIR):
-        os.makedirs(DATABASES_DIR)
-    return os.path.join(DATABASES_DIR, strategy_name)
-
-
-def cleanup_unused_disk_space(strategies):
-    files = []
-
-    for filename in os.listdir(DATABASES_DIR):
-        file_path = os.path.join(DATABASES_DIR, filename)
-        files.append(filename)
-
-        if not any(strategy.name == filename for strategy in strategies):
-            os.remove(file_path)
 
 
 def fetch_binance_klines(symbol, interval, start_str):
@@ -87,12 +70,11 @@ def fetch_binance_klines(symbol, interval, start_str):
     return df
 
 
-def update_last_kline_open_time(strategy_id, klines_df):
+def get_last_kline_open_time(klines_df):
     if not klines_df.empty:
         last_kline_open_time_ms = klines_df.iloc[-1]["kline_open_time"]
-        DataFetcherQuery.update_last_kline_open_time(
-            strategy_id, last_kline_open_time_ms / 1000
-        )
+        return last_kline_open_time_ms / 1000
+    return None
 
 
 def transform_and_predict(strategy, df):
@@ -141,12 +123,7 @@ def transform_and_predict(strategy, df):
 
 def gen_trading_decisions(strategy):
     with LogExceptionContext(re_raise=False):
-        data_fetcher = DataFetcherQuery.get_by_strat_id(strategy.id)
-
-        if data_fetcher is None:
-            raise Exception("data_fetcher was unexpectedly None")
-
-        if data_fetcher.last_kline_open_time_sec is None:
+        if strategy.last_kline_open_time_sec is None:
             klines = fetch_binance_klines(
                 strategy.symbol,
                 strategy.candle_interval,
@@ -154,30 +131,33 @@ def gen_trading_decisions(strategy):
                     strategy.num_req_klines, strategy.kline_size_ms
                 ),
             )
-            with sqlite3.connect(strategy_local_db_path(strategy.name)) as conn:
-                klines.to_sql(strategy.name, conn, if_exists="replace", index=False)
+            klines.to_sql(strategy.name, con=engine, if_exists="replace", index=False)
 
-            update_last_kline_open_time(strategy.id, klines)
+            last_kline_open_time_sec = get_last_kline_open_time(klines)
             results = transform_and_predict(strategy, klines)
-            DataFetcherQuery.update_trade_flags(
+            StrategyQuery.update_trade_flags(
                 strategy.id,
                 results["should_enter_trade"],
                 results["should_close_trade"],
                 results["is_on_pred_serv_err"],
+                last_kline_open_time_sec,
             )
             return results
 
-        last_kline_open_time_ms = (data_fetcher.last_kline_open_time_sec * 1000) + 1
-        klines = fetch_binance_klines(
-            strategy.symbol, strategy.candle_interval, last_kline_open_time_ms
-        )
+        last_kline_open_time_ms = (strategy.last_kline_open_time_sec * 1000) + 1
+
+        current_time_ms = get_current_timestamp_ms()
+        if current_time_ms >= last_kline_open_time_ms + strategy.kline_size_ms * 2:
+            klines = fetch_binance_klines(
+                strategy.symbol, strategy.candle_interval, last_kline_open_time_ms
+            )
+        else:
+            klines = pd.DataFrame()
 
         if not klines.empty:
-            update_last_kline_open_time(strategy.id, klines)
-            df = read_dataset_to_mem(
-                strategy_local_db_path(strategy.name), strategy.name
-            )
-            df = df.append(klines, ignore_index=True)
+            last_kline_open_time_sec = get_last_kline_open_time(klines)
+            df = read_dataset_to_mem(engine, strategy.name)
+            df = pd.concat([df, klines], ignore_index=True)
             df = df.align(klines, axis=1)[0]
             df.sort_values(by="kline_open_time", ascending=True, inplace=True)
 
@@ -185,19 +165,19 @@ def gen_trading_decisions(strategy):
 
             df = df.tail(strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
 
-            with sqlite3.connect(strategy_local_db_path(strategy.name)) as conn:
-                df.to_sql(strategy.name, conn, if_exists="replace", index=False)
+            df.to_sql(strategy.name, con=engine, if_exists="replace", index=False)
 
-            DataFetcherQuery.update_trade_flags(
+            StrategyQuery.update_trade_flags(
                 strategy.id,
                 results["should_enter_trade"],
                 results["should_close_trade"],
                 results["is_on_pred_serv_err"],
+                last_kline_open_time_sec,
             )
             return results
 
         return {
-            "should_enter_trade": data_fetcher.prev_should_open_trade,
-            "should_close_trade": data_fetcher.prev_should_close_trade,
-            "is_on_pred_serv_err": data_fetcher.is_on_pred_serv_err,
+            "should_enter_trade": strategy.should_enter_trade,
+            "should_close_trade": strategy.should_close_trade,
+            "is_on_pred_serv_err": strategy.is_on_pred_serv_err,
         }

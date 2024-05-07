@@ -24,13 +24,6 @@ def drop_tables(engine):
     metadata.reflect(bind=engine)
     metadata.drop_all(bind=engine)
 
-    # with engine.connect() as connection:
-    #     inspector = inspect(engine)
-    #     tables = inspector.get_table_names()
-    #
-    #     for table in tables:
-    #         connection.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE;"))
-
 
 def create_tables():
     try:

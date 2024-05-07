@@ -36,7 +36,7 @@ class Strategy(Base):
     priority = Column(Integer, nullable=False)
     num_req_klines = Column(Integer, nullable=False)
     kline_size_ms = Column(Integer)
-    prev_kline_ms = Column(Integer)
+    last_kline_open_time_sec = Column(BigInteger, nullable=True)
     minimum_time_between_trades_ms = Column(Integer)
     maximum_klines_hold_time = Column(Integer, nullable=True)
     time_on_trade_open_ms = Column(BigInteger, default=0)
@@ -100,3 +100,25 @@ class StrategyQuery:
                 return (
                     session.query(Strategy).filter(Strategy.id == strategy_id).first()
                 )
+
+    @staticmethod
+    def update_trade_flags(
+        strategy_id: int,
+        should_open_trade: bool,
+        should_close_trade: bool,
+        is_on_pred_serv_err: bool,
+        last_kline_open_time_sec: int,
+    ):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = (
+                    session.query(Strategy).filter(Strategy.id == strategy_id).first()
+                )
+                if entry:
+                    entry.should_enter_trade = should_open_trade
+                    entry.should_close_trade = should_close_trade
+                    entry.is_on_pred_serv_err = is_on_pred_serv_err
+                    entry.last_kline_open_time_sec = last_kline_open_time_sec
+                    session.commit()
+                    return True
+                return False
