@@ -4,6 +4,7 @@ import { useMLBasedBacktestContext } from ".";
 import { usePathParams } from "../../hooks/usePathParams";
 import {
   useDatasetModelsQuery,
+  useEpochValPredictions,
   useModelTrainMetadata,
   useTrainJobDetailed,
 } from "../../clients/queries/queries";
@@ -19,7 +20,10 @@ import { DISK_KEYS, DiskManager } from "../../utils/disk";
 import { WithLabel } from "../../components/form/WithLabel";
 import { ChakraInput } from "../../components/chakra/input";
 import { BACKTEST_FORM_LABELS } from "../../utils/backtest";
-import { getBacktestFormDefaultKeys } from "../../utils/backtest";
+import {
+  getBacktestFormDefaultKeys,
+  getBacktestFormDefaults,
+} from "../../utils/backtest";
 import { BUTTON_VARIANTS } from "../../theme";
 import {
   OptionType,
@@ -63,7 +67,7 @@ const getFormInitialValues = () => {
     open_trade_code: "",
     close_trade_code: "",
     use_shorts: true,
-    ...getBacktestFormDefaultKeys(),
+    ...getBacktestFormDefaults(),
   };
 };
 
@@ -83,26 +87,33 @@ export const CreateNewMLBasedBacktestDrawer = () => {
   const { datasetName } = usePathParams<{ datasetName: string }>();
   const datasetModelsQuery = useDatasetModelsQuery(datasetName);
   const [selectedModel, setSelectedModel] = useState("");
-  const [selectedTrainJobId, setSelectedTrainJobId] = useState<number | null>(
-    null
-  );
-  const [selectedEpoch, setSelectedEpoch] = useState<number | null>(null);
+  const [selectedTrainJobId, setSelectedTrainJobId] = useState<
+    number | undefined
+  >(undefined);
+  const [selectedEpoch, setSelectedEpoch] = useState<number | undefined>(1);
 
   const modelTrainsQuery = useModelTrainMetadata(selectedModel);
   const trainRunQuery = useTrainJobDetailed(selectedTrainJobId);
+  const epochPredsQuery = useEpochValPredictions(
+    selectedTrainJobId,
+    selectedEpoch
+  );
 
   const formikRef = useRef<FormikProps<any>>(null);
 
   const parseEpochPredictions = (epochNr: number | null) => {
     if (!trainRunQuery.data || !epochNr) return [];
-    return trainRunQuery.data.epochs.length > 0
-      ? JSON.parse(trainRunQuery.data.epochs[epochNr - 1].val_predictions).map(
-          (item: number[]) => item[0]
-        )
-      : [];
+    return [];
   };
 
   const onSubmit = async (values: MLBasedBacktestFormValues) => {};
+
+  let epochPredictions: number[] =
+    epochPredsQuery.data && epochPredsQuery.data?.length > 0
+      ? epochPredsQuery.data.map((item) => {
+          return item["prediction"];
+        })
+      : [];
 
   if (!datasetModelsQuery.data) {
     return (
@@ -164,7 +175,7 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                         as={SelectWithTextFilter}
                         options={datasetModelsQuery.data.map((item) => {
                           return {
-                            value: item.model_name,
+                            value: item.id,
                             label: item.model_name,
                           };
                         })}
@@ -239,9 +250,7 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                     containerStyles={{ marginTop: "16px" }}
                   >
                     <GenericBarChart
-                      data={getNormalDistributionItems(
-                        parseEpochPredictions(selectedEpoch as number)
-                      )}
+                      data={getNormalDistributionItems(epochPredictions)}
                       yAxisKey="count"
                       xAxisKey="label"
                       containerStyles={{ marginTop: "16px" }}
