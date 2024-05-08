@@ -27,6 +27,9 @@ class Backtest(Base):
     long_short_sell_cond = Column(String)
     long_short_exit_cond = Column(String)
 
+    ml_long_cond = Column(String)
+    ml_short_cond = Column(String)
+
     is_short_selling_strategy = Column(Boolean)
     is_long_short_strategy = Column(Boolean)
     is_ml_based_strategy = Column(Boolean)
