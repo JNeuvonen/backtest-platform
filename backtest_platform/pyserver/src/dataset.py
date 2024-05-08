@@ -2,9 +2,12 @@ import json
 import sqlite3
 import pandas as pd
 import torch
+import pickle
 import numpy as np
 from typing import List, Optional
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from query_model_columns import ModelColumnsQuery
+from query_model_scalers import ModelScalerQuery
 
 from constants import (
     AppConstants,
@@ -22,6 +25,11 @@ def get_select_columns_str(columns: List[Optional[str]]):
     return columns_str
 
 
+def remove_inf_values(df: pd.DataFrame):
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(how="any", inplace=True)
+
+
 def df_fill_nulls_on_dataframe(df: pd.DataFrame, strategy: NullFillStrategy | None):
     if (
         strategy is NullFillStrategy.NONE.value
@@ -32,6 +40,10 @@ def df_fill_nulls_on_dataframe(df: pd.DataFrame, strategy: NullFillStrategy | No
     with LogExceptionContext():
         for col in df.columns:
             df_fill_nulls(df, col, strategy)
+
+
+def scale_df(df: pd.DataFrame, scaler):
+    pass
 
 
 def df_fill_nulls_on_all_cols(dataset_name: str, strategy: NullFillStrategy):
@@ -193,9 +205,12 @@ def load_data(
                 val_df[target_column] = val_target_temp
 
                 del train_target_temp, val_target_temp
+            ModelScalerQuery.create_scaler_entry(model_id, pickle.dumps(scaler))
 
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
+
+        ModelColumnsQuery.create_columns_entry(model_id, list(train_df.columns))
 
         drop_cols = json.loads(model.drop_cols_on_train)
         train_df.drop(drop_cols, axis=1, inplace=True)
