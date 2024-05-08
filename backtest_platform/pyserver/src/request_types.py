@@ -109,6 +109,7 @@ class BodyCreateLongShortBacktest(BaseModel):
 
 
 class BodyMLBasedBacktest(BaseModel):
+    backtest_data_range: List[int]
     fetch_latest_data: bool
     dataset_name: str
     id_of_model: int
