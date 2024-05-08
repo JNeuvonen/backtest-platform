@@ -176,11 +176,19 @@ def long_short_buy_cond_basic():
 
 
 def ml_based_buy_cond_basic():
-    return ""
+    enter_trade_cond = PyCode()
+    enter_trade_cond.append_line("def get_enter_trade_decision(prediction):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return prediction > 1.01")
+    return enter_trade_cond.get()
 
 
 def ml_based_sell_cond_basic():
-    return ""
+    exit_trade_cond = PyCode()
+    exit_trade_cond.append_line("def get_exit_trade_decision(prediction):")
+    exit_trade_cond.add_indent()
+    exit_trade_cond.append_line("return prediction < 0.99")
+    return exit_trade_cond.get()
 
 
 def long_short_sell_cond_basic():
@@ -276,7 +284,7 @@ backtest_rule_based_v2 = {
     "is_short_selling_strategy": False,
     "dataset_id": 23,
     "name": "",
-    "use_time_based_close": True,
+    "use_time_based_close": False,
     "klines_until_close": 1,
     "trading_fees_perc": 0.1,
     "slippage_perc": 0.001,
