@@ -143,9 +143,16 @@ def get_trade_details(trades):
         cumulative_returns += item.perc_result
 
         worst_trade_result_perc = min(item.perc_result, worst_trade_result_perc)
-        best_trade_result_perc = min(item.perc_result, best_trade_result_perc)
+        best_trade_result_perc = max(item.perc_result, best_trade_result_perc)
 
     num_total_trades = num_winning_trades + num_losing_trades
+
+    best_trade_result_perc = (
+        None if best_trade_result_perc == float("-inf") else best_trade_result_perc
+    )
+    worst_trade_result_perc = (
+        None if worst_trade_result_perc == float("inf") else worst_trade_result_perc
+    )
 
     return {
         "best_trade_result_perc": best_trade_result_perc,
