@@ -115,8 +115,8 @@ class BodyMLBasedBacktest(BaseModel):
     id_of_model: int
     train_run_id: int
     epoch: int
-    buy_cond: str
-    sell_cond: str
+    enter_trade_cond: str
+    exit_trade_cond: str
     allow_shorts: bool
     use_time_based_close: bool
     use_profit_based_close: bool
