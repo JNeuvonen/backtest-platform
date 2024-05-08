@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import math
-from typing import Dict, List
+from typing import Dict, List, Optional
 from code_gen_template import LOAD_MODEL_TEMPLATE
 from db import candlesize_to_timedelta, exec_python
 from math_utils import safe_divide
@@ -12,7 +12,7 @@ from query_dataset import Dataset
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from request_types import BodyMLBasedBacktest
-from utils import GlobalSymbols, PythonCode
+from utils import PythonCode
 
 
 START_BALANCE = 10000
@@ -122,6 +122,46 @@ def calc_short_side_trade_res_perc(open_price, close_price):
     if open_price == 0:
         return 0
     return (close_price / open_price - 1) * -1 * 100
+
+
+def get_trade_details(trades):
+    cumulative_hold_time = 0
+    cumulative_returns = 0.0
+    num_winning_trades = 0
+    num_losing_trades = 0
+
+    worst_trade_result_perc = float("inf")
+    best_trade_result_perc = float("-inf")
+
+    for item in trades:
+        if item.trade_gross_result > 0:
+            num_winning_trades += 1
+        if item.trade_gross_result < 0:
+            num_losing_trades += 1
+
+        cumulative_hold_time += item.close_time - item.open_time
+        cumulative_returns += item.perc_result
+
+        worst_trade_result_perc = min(item.perc_result, worst_trade_result_perc)
+        best_trade_result_perc = min(item.perc_result, best_trade_result_perc)
+
+    num_total_trades = num_winning_trades + num_losing_trades
+
+    return {
+        "best_trade_result_perc": best_trade_result_perc,
+        "worst_trade_result_perc": worst_trade_result_perc,
+        "share_of_winning_trades_perc": safe_divide(
+            num_winning_trades, num_total_trades, 0
+        )
+        * 100,
+        "share_of_losing_trades_perc": safe_divide(
+            num_losing_trades, num_total_trades, 0
+        )
+        * 100,
+        "mean_return_perc": safe_divide(cumulative_returns, num_total_trades, 0),
+        "mean_hold_time_sec": safe_divide(cumulative_hold_time, num_total_trades, 0)
+        / 1000,
+    }
 
 
 def get_long_short_trade_details(trades):
@@ -391,6 +431,24 @@ def get_pair_trade_entry(pair_trade, backtest_id, long_trade_id, short_trade_id)
     }
 
 
+def trade_entry_body(backtest_id, completed_trade):
+    return {
+        "backtest_id": backtest_id,
+        "open_price": completed_trade.open_price,
+        "close_price": completed_trade.close_price,
+        "open_time": completed_trade.open_time / 1000,
+        "close_time": completed_trade.close_time / 1000,
+        "net_result": completed_trade.trade_gross_result,
+        "percent_result": completed_trade.perc_result,
+        "is_short_trade": False if completed_trade.was_long_trade is True else True,
+    }
+
+
+def create_trade_entries(backtest_id, completed_trades):
+    for item in completed_trades:
+        TradeQuery.create_entry(trade_entry_body(backtest_id, item))
+
+
 def create_long_short_trades(backtest_id, completed_trades):
     for item in completed_trades:
         long_trade = get_long_trade_from_completed_pair_trade(item, backtest_id)
@@ -438,9 +496,6 @@ def exec_load_model(model_class_code, train_job_id, epoch_nr, x_input_size):
 
 class MLBasedBacktestRules:
     def __init__(self, backtest_details: BodyMLBasedBacktest, candle_interval):
-        self.buy_cond = backtest_details.buy_cond
-        self.sell_cond = backtest_details.sell_cond
-
         self.use_profit_based_close = backtest_details.use_profit_based_close
         self.use_stop_loss_based_close = backtest_details.use_stop_loss_based_close
         self.use_time_based_close = backtest_details.use_time_based_close
@@ -450,6 +505,7 @@ class MLBasedBacktestRules:
         self.stop_loss_threshold_perc = backtest_details.stop_loss_threshold_perc
 
         self.trading_fees = (backtest_details.trading_fees_perc) / 100
+        self.trading_fees_coeff = 1 - (backtest_details.trading_fees_perc / 100)
 
         self.short_fee_coeff = turn_short_fee_perc_to_coeff(
             backtest_details.short_fee_hourly,
@@ -473,14 +529,20 @@ class MLBasedPositionManager:
         self.open_positions_total_debt = 0
         self.open_positions_total_long = 0
         self.debt_to_net_value_ratio = 0.0
-
         self.position_history: List = []
+
+    def open_long(self, proceedings: float):
+        self.usdt_balance -= proceedings
+
+    def open_short(self, proceedings: float):
+        self.usdt_balance += proceedings
 
     def close_long(self, proceedings: float):
         self.usdt_balance += proceedings
 
     def close_short(self, proceedings: float):
         self.usdt_balance -= proceedings
+        self.open_positions_total_debt = 0.0
 
     def update(
         self, positions_debt, positions_long, kline_open_time, benchmark_eq_value
@@ -488,7 +550,9 @@ class MLBasedPositionManager:
         self.net_value = self.usdt_balance + positions_long - positions_debt
         self.open_positions_total_long = positions_long
         self.open_positions_total_debt = positions_debt
-        self.debt_to_net_value_ratio = positions_debt / self.net_value
+        self.debt_to_net_value_ratio = safe_divide(
+            positions_debt, self.net_value, fallback=0
+        )
 
         tick = {
             "total_debt": positions_debt,
@@ -502,25 +566,295 @@ class MLBasedPositionManager:
 
 
 class MLBasedBenchmarkManager:
-    def __init__(self, start_balance):
-        pass
+    def __init__(self, start_balance, first_price):
+        self.position = start_balance / first_price
 
 
 class MLBasedActiveTrade:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        enter_price: float,
+        size_in_base: float,
+        is_side_long: bool,
+        debt_amount_base: float,
+        short_proceedings: float,
+        kline_open_time: float,
+        size_in_quote: float,
+    ):
+        self.enter_price = enter_price
+        self.size_in_base = size_in_base
+        self.is_side_long = is_side_long
+        self.candles_held = 0
+        self.balance_history: List[Dict] = []
+        self.debt_amount_base = debt_amount_base
+        self.short_proceedings = short_proceedings
+        self.trade_open_time = kline_open_time
+
+        self.size_in_quote = size_in_quote
+
+    def update(self, kline_open_time, price):
+        self.candles_held += 1
+        self.balance_history.append(
+            {
+                "kline_open_time": kline_open_time,
+                "price": price,
+                "debt_amount_base": self.debt_amount_base,
+                "size_in_base": self.size_in_base,
+            }
+        )
 
 
 class MLBasedCompletedTrade:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        open_price: float,
+        close_price: float,
+        was_long_trade: bool,
+        open_time,
+        close_time,
+        balance_history: List,
+        on_open_amount_quote: float,
+        on_close_amount_quote: float,
+    ):
+        self.balance_history = balance_history
+        self.open_time = open_time
+        self.close_time = close_time
+        self.was_long_trade = was_long_trade
+        self.open_price = open_price
+        self.close_price = close_price
+
+        if was_long_trade is True:
+            self.trade_gross_result = on_close_amount_quote - on_open_amount_quote
+            self.perc_result = (
+                safe_divide(on_close_amount_quote, on_open_amount_quote, fallback=0) - 1
+            ) * 100
+
+        else:
+            self.trade_gross_result = on_open_amount_quote - on_close_amount_quote
+            self.perc_result = (
+                safe_divide(
+                    (on_open_amount_quote - on_close_amount_quote),
+                    on_open_amount_quote,
+                    fallback=0,
+                )
+                * 100
+            )
 
 
 class MLBasedBacktest:
-    def __init__(self, backtest_details: BodyMLBasedBacktest, dataset):
+    def __init__(
+        self, backtest_details: BodyMLBasedBacktest, dataset, first_price: float
+    ):
         self.rules = MLBasedBacktestRules(backtest_details, dataset.interval)
         self.stats = MLBasedBacktestStats(dataset.interval)
         self.position = MLBasedPositionManager(START_BALANCE)
-        self.benchmark = MLBasedBenchmarkManager(START_BALANCE)
-        self.active_trade = None
+        self.benchmark = MLBasedBenchmarkManager(START_BALANCE, first_price)
+        self.active_trade: Optional[MLBasedActiveTrade] = None
         self.completed_trades: List[MLBasedCompletedTrade] = []
+
+    def update_pos_held_time(self):
+        if self.active_trade is not None:
+            self.stats.position_held_time += self.stats.candles_time_delta
+        self.stats.cumulative_time += self.stats.candles_time_delta
+
+    def update_acc_state(self, kline_open_time: int, price: float):
+        benchmark_eq_value = self.benchmark.position * price
+
+        if self.active_trade is not None and self.active_trade.is_side_long is False:
+            self.active_trade.debt_amount_base *= self.rules.short_fee_coeff
+
+        if self.active_trade is not None:
+            debt_amount = self.active_trade.debt_amount_base * price
+            long_amount = self.active_trade.size_in_base * price
+            self.position.update(
+                debt_amount, long_amount, kline_open_time, benchmark_eq_value
+            )
+            self.active_trade.update(kline_open_time, price)
+
+        else:
+            self.position.update(0, 0, kline_open_time, benchmark_eq_value)
+        self.update_pos_held_time()
+
+    def trading_fees_coeff_reduce_amount(self):
+        return 1 - self.rules.trading_fees
+
+    def trading_fees_coeff_increase_amount(self):
+        return self.rules.trading_fees + 1
+
+    def close_trade(self, kline_open_time: int, price: float):
+        if self.active_trade is None:
+            return
+
+        if self.active_trade.is_side_long is True:
+            close_size_in_quote = (
+                self.active_trade.size_in_base
+                * price
+                * self.trading_fees_coeff_reduce_amount()
+            )
+        else:
+            close_size_in_quote = (
+                self.active_trade.debt_amount_base
+                * price
+                * self.trading_fees_coeff_increase_amount()
+            )
+
+        completed_trade = MLBasedCompletedTrade(
+            self.active_trade.enter_price,
+            price,
+            self.active_trade.is_side_long,
+            self.active_trade.trade_open_time,
+            kline_open_time,
+            self.active_trade.balance_history,
+            self.active_trade.size_in_quote,
+            close_size_in_quote,
+        )
+        self.completed_trades.append(completed_trade)
+
+        if self.active_trade.is_side_long is True:
+            self.position.close_long(close_size_in_quote)
+        else:
+            self.position.close_short(close_size_in_quote)
+
+        self.active_trade = None
+
+    def check_close_by_trading_stop_loss(self):
+        if self.active_trade is None:
+            return False
+
+        if self.rules.use_stop_loss_based_close is False:
+            return False
+
+        price_ath = self.active_trade.enter_price
+        price_atl = self.active_trade.enter_price
+
+        for item in self.active_trade.balance_history:
+            if self.active_trade.is_side_long:
+                if item["price"] < price_ath and (
+                    abs((item["price"] / price_ath - 1) * 100)
+                    >= self.rules.stop_loss_threshold_perc
+                ):
+                    return True
+                price_ath = max(price_ath, item["price"])
+            else:
+                if (
+                    item["price"] > price_atl
+                    and (item["price"] / price_atl - 1) * 100
+                    >= self.rules.stop_loss_threshold_perc
+                ):
+                    return True
+                price_atl = min(price_atl, item["price"])
+        return False
+
+    def check_close_by_take_profit(self, price):
+        if self.active_trade is None:
+            return False
+        if self.rules.use_profit_based_close is False:
+            return False
+
+        enter_price = self.active_trade.enter_price
+
+        if self.active_trade.is_side_long is True:
+            return (
+                price / enter_price - 1
+            ) * 100 >= self.rules.take_profit_threshold_perc
+        else:
+            return (
+                1 - price / enter_price
+            ) * 100 >= self.rules.take_profit_threshold_perc
+
+    def check_close_by_time_based(self):
+        if self.active_trade is None:
+            return False
+        if self.rules.use_time_based_close is False:
+            return False
+
+        return self.active_trade.candles_held >= self.rules.max_klines_until_close
+
+    def check_for_trade_close(
+        self, kline_open_time: int, price: float, trading_decisions: Dict
+    ):
+        if self.active_trade is None:
+            return
+
+        should_enter_trade = trading_decisions["should_open_trade"]
+        should_close_trade = trading_decisions["should_close_trade"]
+
+        if self.active_trade.is_side_long is True and should_enter_trade is False:
+            self.close_trade(kline_open_time, price)
+            return
+
+        if self.active_trade.is_side_long is False and should_close_trade is False:
+            self.close_trade(kline_open_time, price)
+            return
+
+        if self.check_close_by_time_based() is True:
+            self.close_trade(kline_open_time, price)
+            return
+
+        if self.check_close_by_trading_stop_loss() is True:
+            self.close_trade(kline_open_time, price)
+            return
+
+        if self.check_close_by_take_profit(price) is True:
+            self.close_trade(kline_open_time, price)
+            return
+
+    def enter_long_trade(self, kline_open_time: int, price: float):
+        size_in_base = self.position.usdt_balance / price
+        self.position.open_long(self.position.usdt_balance)
+        self.active_trade = MLBasedActiveTrade(
+            price,
+            size_in_base * self.trading_fees_coeff_reduce_amount(),
+            True,
+            0.0,
+            0.0,
+            kline_open_time,
+            size_in_base * price,
+        )
+
+    def enter_short_trade(self, kline_open_time: int, price: float):
+        size_in_base = self.position.usdt_balance / price
+        short_proceedings = size_in_base * self.rules.trading_fees_coeff * price
+        self.position.open_short(short_proceedings)
+        self.active_trade = MLBasedActiveTrade(
+            price,
+            0.0,
+            False,
+            size_in_base,
+            short_proceedings,
+            kline_open_time,
+            size_in_base * price * self.trading_fees_coeff_reduce_amount(),
+        )
+
+    def check_for_enter_trade(
+        self, kline_open_time: int, price: float, trading_decisions: Dict
+    ):
+        if self.active_trade is not None:
+            return
+
+        should_enter_trade = trading_decisions["should_open_trade"]
+        should_close_trade = trading_decisions["should_close_trade"]
+
+        if should_close_trade is True:
+            self.enter_short_trade(kline_open_time, price)
+
+        if should_enter_trade is True:
+            self.enter_long_trade(kline_open_time, price)
+
+    def process_bar(self, kline_open_time: int, price: float, trading_decisions: Dict):
+        self.update_acc_state(kline_open_time, price)
+        self.check_for_trade_close(kline_open_time, price, trading_decisions)
+        self.check_for_enter_trade(kline_open_time, price, trading_decisions)
+
+
+def calc_profit_factor(trades):
+    gross_profit = 0.0
+    gross_losses = 0.0
+
+    for item in trades:
+        if item.trade_gross_result >= 0:
+            gross_profit += item.trade_gross_result
+        else:
+            gross_losses += abs(item.trade_gross_result)
+
+    return safe_divide(gross_profit, gross_losses, fallback=None)
