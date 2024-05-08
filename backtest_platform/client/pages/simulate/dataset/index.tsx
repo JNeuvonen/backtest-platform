@@ -47,7 +47,6 @@ export const SimulateDatasetIndex = () => {
     selectedBacktests,
     resetSelection,
     confirmDeleteSelectedModal,
-    longShortFormDrawer,
     onDeleteMode,
   } = useBacktestContext();
 

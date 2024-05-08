@@ -14,6 +14,7 @@ import {
   NumberInputField,
   Spinner,
   Switch,
+  useToast,
 } from "@chakra-ui/react";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { DISK_KEYS, DiskManager } from "../../utils/disk";
@@ -36,13 +37,16 @@ import { ChakraSlider } from "../../components/chakra/Slider";
 import { CodeEditor } from "../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../utils/constants";
 import { ChakraNumberStepper } from "../../components/ChakraNumberStepper";
+import { ML_SIM_ENTER_DEFAULT, ML_SIM_EXIT_DEFAULT } from "../../utils/code";
+import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
+import { createMlBasedBacktest } from "../../clients/requests";
 
 const formDiskManager = new DiskManager(DISK_KEYS.ml_backtest_form);
 
 export interface MLBasedBacktestFormValues {
   use_latest_data: boolean;
-  model: null | string;
-  train_run: null | string;
+  model: SingleValue<OptionType>;
+  train_run: SingleValue<OptionType>;
   epoch: null | number;
   open_trade_code: string;
   close_trade_code: string;
@@ -56,6 +60,8 @@ export interface MLBasedBacktestFormValues {
   shortFeeHourly: number;
   stopLossThresholdPerc: number;
   takeProfitThresholdPerc: number;
+  backtestDataRange: number[];
+  backtestName: string;
 }
 
 const getFormInitialValues = () => {
@@ -64,8 +70,8 @@ const getFormInitialValues = () => {
     model: null,
     train_run: null,
     epoch: null,
-    open_trade_code: "",
-    close_trade_code: "",
+    open_trade_code: ML_SIM_ENTER_DEFAULT(),
+    close_trade_code: ML_SIM_EXIT_DEFAULT(),
     use_shorts: true,
     ...getBacktestFormDefaults(),
   };
@@ -100,13 +106,44 @@ export const CreateNewMLBasedBacktestDrawer = () => {
   );
 
   const formikRef = useRef<FormikProps<any>>(null);
+  const toast = useToast();
 
-  const parseEpochPredictions = (epochNr: number | null) => {
-    if (!trainRunQuery.data || !epochNr) return [];
-    return [];
+  const onSubmit = async (values: MLBasedBacktestFormValues) => {
+    if (!values.model || !values.train_run) return;
+    const body = {
+      backtest_data_range: values.backtestDataRange,
+      fetch_latest_data: values.use_latest_data,
+      dataset_name: datasetName,
+      id_of_model: Number(values.model.value),
+      train_run_id: Number(values.train_run.value),
+      epoch: values.epoch,
+      enter_trade_cond: values.open_trade_code,
+      exit_trade_cond: values.close_trade_code,
+      allow_shorts: values.use_shorts,
+      use_time_based_close: values.useTimeBasedClose,
+      use_profit_based_close: values.useProfitBasedClose,
+      use_stop_loss_based_close: values.useStopLossBasedClose,
+      trading_fees_perc: values.tradingFees,
+      slippage_perc: values.slippage,
+      short_fee_hourly: values.shortFeeHourly,
+      take_profit_threshold_perc: values.takeProfitThresholdPerc,
+      stop_loss_threshold_perc: values.stopLossThresholdPerc,
+      name: values.backtestName,
+      klines_until_close: values.klinesUntilClose,
+    };
+
+    const res = await createMlBasedBacktest(body);
+
+    if (res.status === 200) {
+      toast({
+        title: "Backtest started",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      createNewDrawer.onClose();
+    }
   };
-
-  const onSubmit = async (values: MLBasedBacktestFormValues) => {};
 
   let epochPredictions: number[] =
     epochPredsQuery.data && epochPredsQuery.data?.length > 0
@@ -138,7 +175,9 @@ export const CreateNewMLBasedBacktestDrawer = () => {
       >
         <div>
           <Formik
-            onSubmit={() => {}}
+            onSubmit={(values) => {
+              onSubmit(values);
+            }}
             initialValues={getFormInitialValues()}
             innerRef={formikRef}
             enableReinitialize
@@ -304,6 +343,27 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                             CODE_PRESET_CATEGORY.backtest_close_long_ccond
                           }
                         />
+                      );
+                    }}
+                  </Field>
+                </div>
+                <div
+                  style={{ marginTop: "16px", display: "flex", gap: "16px" }}
+                >
+                  <Field name={formKeys.use_latest_data}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel label={"Download latest data"}>
+                          <Switch
+                            isChecked={field.value}
+                            onChange={() =>
+                              form.setFieldValue(
+                                formKeys.use_latest_data,
+                                !field.value
+                              )
+                            }
+                          />
+                        </WithLabel>
                       );
                     }}
                   </Field>
@@ -575,6 +635,29 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                       }}
                     </Field>
                   )}
+                </div>
+
+                <div style={{ marginTop: "16px" }}>
+                  <div style={{ width: "400px" }}>
+                    <Field name={formKeys.backtestDataRange}>
+                      {({ field, form }) => {
+                        return (
+                          <ValidationSplitSlider
+                            sliderValue={field.value}
+                            formLabelText={
+                              BACKTEST_FORM_LABELS.backtest_data_range
+                            }
+                            setSliderValue={(newVal: number[]) =>
+                              form.setFieldValue(
+                                formKeys.backtestDataRange,
+                                newVal
+                              )
+                            }
+                          />
+                        );
+                      }}
+                    </Field>
+                  </div>
                 </div>
                 <div
                   style={{

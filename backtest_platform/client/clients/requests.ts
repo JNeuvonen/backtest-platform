@@ -22,6 +22,7 @@ import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrate
 import { predServerHeaders } from "./headers-utils";
 import { CreateDataTransformationBody } from "../components/DataTransformationsControls";
 import { BodyMassPairTradeSim } from "../context/masspairtrade/CreateNewDrawer";
+import { MLBasedBacktestFormValues } from "../context/mlbasedbacktest/CreateNewDrawer";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -622,4 +623,13 @@ export const fetchEpochValidationPreds = async (
     return res.res["data"];
   }
   return [];
+};
+
+export const createMlBasedBacktest = async (values) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.createMlBasedBacktest(),
+    payload: values,
+  });
+  return res;
 };

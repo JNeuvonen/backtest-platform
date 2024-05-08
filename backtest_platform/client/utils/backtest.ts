@@ -410,7 +410,7 @@ export const getBacktestFormDefaults = () => {
     shortFeeHourly: 0.00165888 / 100,
     takeProfitThresholdPerc: 0,
     stopLossThresholdPerc: 0,
-    backtestDataRange: [0, 100],
+    backtestDataRange: [70, 100],
   };
 };
 

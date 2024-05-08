@@ -178,6 +178,8 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI +
     LOCAL_API.model.root +
     `/train/${trainJobId}/epoch/${epochNr}`,
+  createMlBasedBacktest: () =>
+    LOCAL_API_URI + LOCAL_API.backtest.root + "/ml-based",
 };
 
 export const PRED_SERVER_URLS = {

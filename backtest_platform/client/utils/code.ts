@@ -9,6 +9,24 @@ export const ENTER_TRADE_DEFAULT = () => {
   return code.get();
 };
 
+export const ML_SIM_ENTER_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_enter_trade_decision(prediction):");
+  code.addIndent();
+  code.appendLine("return prediction > 1.01");
+  return code.get();
+};
+
+export const ML_SIM_EXIT_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_exit_trade_decision(prediction):");
+  code.addIndent();
+  code.appendLine("return prediction < 0.99");
+  return code.get();
+};
+
 export const PAIR_TRADE_BUY_DEFAULT = () => {
   const code = new CodeHelper();
 

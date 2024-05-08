@@ -7,6 +7,12 @@ import { useMLBasedBacktestContext } from "../../../context/mlbasedbacktest";
 import { usePathParams } from "../../../hooks/usePathParams";
 import ExternalLink from "../../../components/ExternalLink";
 import { getDatasetInfoPagePath } from "../../../utils/navigate";
+import {
+  useDatasetQuery,
+  useDatasetsBacktests,
+} from "../../../clients/queries/queries";
+import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
+import { useMessageListener } from "../../../hooks/useMessageListener";
 
 interface PathParams {
   datasetName: string;
@@ -14,6 +20,18 @@ interface PathParams {
 export const MachineLearningBacktestPage = () => {
   const mlBasedBacktestContext = useMLBasedBacktestContext();
   const { datasetName } = usePathParams<PathParams>();
+  const datasetQuery = useDatasetQuery(datasetName);
+  const datasetBacktestsQuery = useDatasetsBacktests(
+    datasetQuery.data?.id || undefined
+  );
+
+  useMessageListener({
+    messageName: DOM_EVENT_CHANNELS.refetch_component,
+    messageCallback: () => {
+      datasetBacktestsQuery.refetch();
+    },
+  });
+
   return (
     <div>
       <div
@@ -45,7 +63,7 @@ export const MachineLearningBacktestPage = () => {
       </div>
       <div style={{ marginTop: "8px" }}>
         <BacktestDatagrid
-          backtests={[]}
+          backtests={datasetBacktestsQuery.data || []}
           onDeleteMode={mlBasedBacktestContext.onDeleteMode}
         />
       </div>
