@@ -167,6 +167,14 @@ should_open_trade = get_enter_trade_decision(df_row)
 should_close_trade = get_exit_trade_decision(df_row)
 """
 
+BACKTEST_MODEL_TEMPLATE_V2 = """
+{ENTER_TRADE_DECISION_FUNC}
+{EXIT_TRADE_DECISION_FUNC}
+
+should_open_trade = get_enter_trade_decision({PREDICTION}) 
+should_close_trade = get_exit_trade_decision({PREDICTION})
+"""
+
 
 BACKTEST_LONG_SHORT_BUYS_AND_SELLS = """
 {BUY_COND_FUNC}
