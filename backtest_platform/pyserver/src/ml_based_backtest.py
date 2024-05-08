@@ -145,6 +145,7 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
 
     backtest_dict = {
         "name": body.name,
+        "dataset_id": dataset.id,
         "candle_interval": dataset.interval,
         "ml_long_cond": body.enter_trade_cond,
         "ml_short_cond": body.exit_trade_cond,
@@ -200,7 +201,7 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
 
     logger = get_logger()
     logger.log(
-        f"Finished ML based backtest. Profit: {(end_balance/START_BALANCE - 1) * 100}%",
+        f"Finished ML based backtest. Profit: {(end_balance/START_BALANCE - 1) * 100:.2f}%",
         logging.INFO,
         True,
         True,
