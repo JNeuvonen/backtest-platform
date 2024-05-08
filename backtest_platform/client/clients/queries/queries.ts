@@ -106,12 +106,12 @@ export function useModelTrainMetadata(
 }
 
 export function useTrainJobDetailed(
-  trainJobId: string | number | null
+  trainJobId: string | number | undefined
 ): UseQueryResult<TrainDataDetailed | null, unknown> {
   return useQuery<TrainDataDetailed | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_train_job_detailed, trainJobId],
     queryFn: () => fetchTrainjobDetailed(trainJobId as string),
-    enabled: trainJobId !== null,
+    enabled: trainJobId !== undefined,
   });
 }
 
@@ -205,7 +205,7 @@ export function useLongShortBacktests(): UseQueryResult<
 }
 
 export function useEpochValPredictions(
-  trainJobId: number,
+  trainJobId: number | undefined,
   epochNumber: number | undefined
 ): UseQueryResult<EpochPredictionTick[] | null, unknown> {
   return useQuery<EpochPredictionTick[] | null, unknown>({
