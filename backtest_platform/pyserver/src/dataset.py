@@ -43,7 +43,12 @@ def df_fill_nulls_on_dataframe(df: pd.DataFrame, strategy: NullFillStrategy | No
 
 
 def scale_df(df: pd.DataFrame, scaler):
-    pass
+    df.loc[:, df.columns] = scaler.transform(df[df.columns])
+
+
+def drop_all_redundant_cols_and_reorder(df: pd.DataFrame, cols: List[str]) -> None:
+    df.drop(columns=[col for col in df.columns if col not in cols], inplace=True)
+    df = df[cols]
 
 
 def df_fill_nulls_on_all_cols(dataset_name: str, strategy: NullFillStrategy):
@@ -186,6 +191,10 @@ def load_data(
         else:
             price_col = None
 
+        drop_cols = json.loads(model.drop_cols_on_train)
+        train_df.drop(drop_cols, axis=1, inplace=True)
+        val_df.drop(drop_cols, axis=1, inplace=True)
+
         if scaler is not None:
             if scale_target:
                 train_df.loc[:, train_df.columns] = scaler.fit_transform(
@@ -210,12 +219,6 @@ def load_data(
         train_target = train_df.pop(target_column)
         val_target = val_df.pop(target_column)
 
-        ModelColumnsQuery.create_columns_entry(model_id, list(train_df.columns))
-
-        drop_cols = json.loads(model.drop_cols_on_train)
-        train_df.drop(drop_cols, axis=1, inplace=True)
-        val_df.drop(drop_cols, axis=1, inplace=True)
-
         x_train = torch.Tensor(train_df.values.astype(np.float32))
         y_train = torch.Tensor(
             train_target.to_numpy().reshape(-1, 1).astype(np.float64)
@@ -223,6 +226,7 @@ def load_data(
         x_val = torch.Tensor(val_df.values.astype(np.float32))
         y_val = torch.Tensor(val_target.to_numpy().reshape(-1, 1).astype(np.float64))
 
+        ModelColumnsQuery.create_columns_entry(model_id, list(train_df.columns))
         ModelQuery.update_x_shape(model_id, x_train.shape[1])
         return (
             x_train,
