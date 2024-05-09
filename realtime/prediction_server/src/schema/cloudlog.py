@@ -6,7 +6,7 @@ from orm import Base, Session
 
 from datetime import datetime, timedelta
 
-from constants import LogLevel, LogSourceProgram, SlackWebhooks
+from constants import LogLevel, LogSourceProgram, SlackWebhooks, TradeDirection
 from api.v1.request_types import BodyCreateTrade
 from slack import post_slack_message
 from schema.slack_bots import SlackWebhookQuery
@@ -76,13 +76,57 @@ class CloudLogQuery:
 
 
 def create_trade_enter_notif_msg(body: BodyCreateTrade) -> str:
-    direction_emoji = "📈" if body.direction == "long" else "📉"
+    direction_emoji = "📈" if body.direction == TradeDirection.LONG else "📉"
     return (
         f"```Trade Alert - {body.symbol} {direction_emoji}```\n"
         f"------------\n"
         f"- Quantity: `{body.quantity}` at `{body.open_price}`\n"
         f"- Opened at: `{datetime.fromtimestamp(body.open_time_ms / 1000).strftime('%Y-%m-%d %H:%M:%S')}`"
     )
+
+
+def create_trade_close_notif_msg(strat, trade_update_dict: dict) -> str:
+    direction_emoji = "📉" if strat.is_short_selling_strategy else "📈"
+    close_time = datetime.fromtimestamp(
+        trade_update_dict["close_time_ms"] / 1000
+    ).strftime("%Y-%m-%d %H:%M:%S")
+    open_time = datetime.fromtimestamp(strat.time_on_trade_open_ms / 1000).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    hold_time_seconds = (
+        trade_update_dict["close_time_ms"] - strat.time_on_trade_open_ms
+    ) / 1000
+    if hold_time_seconds < 86400:
+        hold_time = f"{int(hold_time_seconds / 60)} minutes"
+    else:
+        hold_time = f"{int(hold_time_seconds / 86400)} days"
+    return (
+        f"```Trade Close Alert - {strat.symbol} {direction_emoji}```\n"
+        f"------------\n"
+        f"- Quantity: `{strat.quantity_on_trade_open}` at `{trade_update_dict['close_price']}`\n"
+        f"- Hold Time: `{hold_time}`\n"
+        f"- Opened at: `{open_time}`\n"
+        f"- Closed at: `{close_time}`\n"
+        f"- Net Result: `{trade_update_dict.get('net_result', 'N/A')}`\n"
+        f"- Percent Result: `{trade_update_dict.get('percent_result', 'N/A')}%`"
+    )
+
+
+def slack_log_close_trade_notif(strat, trade_update_dict):
+    def func_helper():
+        hook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.TRADE_NOTIFS)
+
+        if hook is None:
+            create_log(
+                "Hook for TRADE_NOTIFS is not correctly set", level=LogLevel.EXCEPTION
+            )
+            return
+        post_slack_message(
+            hook.webhook_uri, create_trade_close_notif_msg(strat, trade_update_dict)
+        )
+
+    thread = threading.Thread(target=func_helper)
+    thread.start()
 
 
 def slack_log_enter_trade_notif(body: BodyCreateTrade):

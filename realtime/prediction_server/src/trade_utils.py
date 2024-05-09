@@ -1,5 +1,6 @@
 import json
 from api.v1.request_types import BodyUpdateTradeClose
+from realtime.prediction_server.src.schema.cloudlog import slack_log_close_trade_notif
 from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
 from log import LogExceptionContext, get_logger
@@ -63,7 +64,7 @@ def close_short_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeCl
     with LogExceptionContext():
         logger = get_logger()
         update_dict = get_trade_close_dict(strat, trade, req_body)
-
+        slack_log_close_trade_notif(strat, update_dict)
         stringified_dict = json.dumps(update_dict)
 
         logger.info(
@@ -76,6 +77,7 @@ def close_long_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClo
     with LogExceptionContext():
         logger = get_logger()
         update_dict = get_trade_close_dict(strat, trade, req_body)
+        slack_log_close_trade_notif(strat, update_dict)
         stringified_dict = json.dumps(update_dict)
         logger.info(
             f"Closing short trade on strat {strat.id} with payload: {stringified_dict}"

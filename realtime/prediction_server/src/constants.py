@@ -29,3 +29,8 @@ def strategy_name_to_db_file(strat_name: str):
 
 KLINES_MAX_TIME_RANGE = "1 Jan, 2017"
 SOFTWARE_VERSION = "1.0.1"
+
+
+class TradeDirection:
+    LONG = "LONG"
+    SHORT = "SHORT"
