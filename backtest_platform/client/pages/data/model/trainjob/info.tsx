@@ -35,6 +35,21 @@ type TrainingProgessChartTicks = {
   epoch: number;
 }[];
 
+export const getDataForSortedPredictions = (epochPreds: number[]) => {
+  const ret = [] as { prediction: number; num: number }[];
+  const copy = [...epochPreds];
+  copy.sort((a, b) => a - b);
+  const increment = Math.max(Math.floor(copy.length / 500), 1);
+  for (let i = 0; i < copy.length; i += increment) {
+    const item = copy[i];
+    ret.push({
+      prediction: item,
+      num: i,
+    });
+  }
+  return ret;
+};
+
 export const TrainjobInfoPage = () => {
   const { trainJobId, datasetName } = usePathParams<{
     trainJobId: string;
@@ -87,21 +102,6 @@ export const TrainjobInfoPage = () => {
         <Spinner />
       </div>
     );
-
-  const getDataForSortedPredictions = (epochPreds: number[]) => {
-    const ret = [] as { prediction: number; num: number }[];
-    const copy = [...epochPreds];
-    copy.sort((a, b) => a - b);
-    const increment = Math.max(Math.floor(copy.length / 500), 1);
-    for (let i = 0; i < copy.length; i += increment) {
-      const item = copy[i];
-      ret.push({
-        prediction: item,
-        num: i,
-      });
-    }
-    return ret;
-  };
 
   const trainingProgessTicks = generateTrainingProgressChart();
   let epochPredictions: number[] =
