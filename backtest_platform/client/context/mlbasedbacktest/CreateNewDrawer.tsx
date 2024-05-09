@@ -40,6 +40,8 @@ import { ChakraNumberStepper } from "../../components/ChakraNumberStepper";
 import { ML_SIM_ENTER_DEFAULT, ML_SIM_EXIT_DEFAULT } from "../../utils/code";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 import { createMlBasedBacktest } from "../../clients/requests";
+import { GenericAreaChart } from "../../components/charts/AreaChart";
+import { getDataForSortedPredictions } from "../../pages/data/model/trainjob/info";
 
 const formDiskManager = new DiskManager(DISK_KEYS.ml_backtest_form);
 
@@ -65,15 +67,23 @@ export interface MLBasedBacktestFormValues {
 }
 
 const getFormInitialValues = () => {
+  const prevForm = formDiskManager.read();
+
+  if (prevForm === null) {
+    return {
+      use_latest_data: false,
+      model: null,
+      train_run: null,
+      epoch: null,
+      open_trade_code: ML_SIM_ENTER_DEFAULT(),
+      close_trade_code: ML_SIM_EXIT_DEFAULT(),
+      use_shorts: true,
+      ...getBacktestFormDefaults(),
+    };
+  }
+
   return {
-    use_latest_data: false,
-    model: null,
-    train_run: null,
-    epoch: null,
-    open_trade_code: ML_SIM_ENTER_DEFAULT(),
-    close_trade_code: ML_SIM_EXIT_DEFAULT(),
-    use_shorts: true,
-    ...getBacktestFormDefaults(),
+    ...prevForm,
   };
 };
 
@@ -141,6 +151,7 @@ export const CreateNewMLBasedBacktestDrawer = () => {
         duration: 5000,
         isClosable: true,
       });
+      formDiskManager.save(values);
       createNewDrawer.onClose();
     }
   };
@@ -292,6 +303,20 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                       data={getNormalDistributionItems(epochPredictions)}
                       yAxisKey="count"
                       xAxisKey="label"
+                      containerStyles={{ marginTop: "16px" }}
+                    />
+                  </WithLabel>
+                )}
+
+                {selectedEpoch !== null && (
+                  <WithLabel
+                    label="Validation predictions sorted by smallest first"
+                    containerStyles={{ marginTop: "32px" }}
+                  >
+                    <GenericAreaChart
+                      data={getDataForSortedPredictions(epochPredictions)}
+                      yAxisKey="prediction"
+                      xAxisKey="num"
                       containerStyles={{ marginTop: "16px" }}
                     />
                   </WithLabel>
