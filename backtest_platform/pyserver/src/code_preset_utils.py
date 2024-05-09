@@ -839,27 +839,20 @@ def calculate_mfi(df, high_col='high_price', low_col='low_price', close_col='clo
         # Raw Money Flow
         raw_money_flow = typical_price * df[volume_col]
         
-        # Money Flow Ratio
-        money_flow_positive = 0
-        money_flow_negative = 0
-        
-        # Shift the typical price to compare with previous day
-        shifted_typical_price = typical_price.shift(1)
-        for i in range(1, len(df)):
-            if typical_price[i] > shifted_typical_price[i]:
-                money_flow_positive += raw_money_flow[i]
-            elif typical_price[i] < shifted_typical_price[i]:
-                money_flow_negative += raw_money_flow[i]
-        
-        money_flow_ratio = money_flow_positive / money_flow_negative if money_flow_negative != 0 else 0
-        
-        # Money Flow Index
+        # Money Flow Positive and Negative
+        money_flow_positive = (typical_price > typical_price.shift(1)) * raw_money_flow
+        money_flow_negative = (typical_price < typical_price.shift(1)) * raw_money_flow
+
+        # Money Flow Ratio and MFI
+        money_flow_ratio = money_flow_positive.rolling(window=period).sum() / money_flow_negative.rolling(window=period).sum()
         mfi = 100 - (100 / (1 + money_flow_ratio))
+
+        # Assign MFI to DataFrame
         df_label = f"MFI_{period}"
-        df[df_label] = mfi.rolling(window=period).mean()
+        df[df_label] = mfi
 
 # Example usage:
-periods = [14]
+periods = [14, 28, 42]  # Example periods for MFI calculation
 calculate_mfi(dataset, periods=periods)
 """
 
@@ -1498,6 +1491,16 @@ close_col = 'close_price'
 calculate_cdl2crows(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
 """
 
+CLIP_FROM_RANGE = """
+import pandas as pd
+
+def adjust_column_values_based_on_range(df, column_name, lower_bound, upper_bound):
+    # Applying the conditional logic to the specified column
+    df[column_name] = df[column_name].apply(lambda x: 0 if lower_bound <= x <= upper_bound else x)
+
+adjust_column_values_based_on_range(dataset, 'ROCP_7_close_price', -30, 30)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -1960,6 +1963,13 @@ DEFAULT_CODE_PRESETS = [
         name="CDL2CROWS",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Two Crows candlestick pattern, a bearish reversal pattern that appears in an uptrend. It consists of three candles: a long bullish candle, followed by a gap-up open candle that closes within the body of the first but does not surpass its high, and a third candle that opens higher than the second but closes below its open, signaling a potential reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CLIP_FROM_RANGE,
+        name="CLIP_FROM_RANGE",
+        category=CodePresetCategories.INDICATOR,
+        description="The function adjust_column_values_based_on_range is designed to selectively modify values within a specified column of a pandas DataFrame based on a defined numerical range. When a value in the column falls within this specified range, inclusive of the lower and upper bounds, it is reset to 0. Values outside this range are left unchanged. This functionality is particularly useful for data cleaning or normalization processes where certain value ranges are considered as outliers or require nullification for analytical reasons",
         labels=CodePresetLabels.CANDLE_PATTERN,
     ),
 ]
