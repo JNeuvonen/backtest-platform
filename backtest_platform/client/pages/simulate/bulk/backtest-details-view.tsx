@@ -117,7 +117,7 @@ const getTradesData = (
   };
 };
 
-const getDateRange = (portfolioTicks: ChartTick[]): string => {
+export const getDateRange = (portfolioTicks: ChartTick[]): string => {
   const firstItem = portfolioTicks[0].kline_open_time;
   const lastItem = portfolioTicks[portfolioTicks.length - 1].kline_open_time;
 
