@@ -184,6 +184,7 @@ export interface BacktestBalance {
 
 export interface BacktestObject {
   id: number;
+  model_id: number;
   dataset_name: string;
   open_trade_cond: string;
   candle_interval: string;
@@ -197,6 +198,8 @@ export interface BacktestObject {
   klines_until_close: number;
   long_side_profit_factor: number;
   short_side_profit_factor: number;
+  ml_long_cond: string;
+  ml_short_cond: string;
   name: string;
   data: BacktestBalance[];
   trade_count: number;
@@ -240,6 +243,7 @@ export interface Trade {
   net_result: number;
   open_time: number;
   percent_result: number;
+  is_short_trade: boolean;
   predictions: number[];
   prices: number[];
 }
