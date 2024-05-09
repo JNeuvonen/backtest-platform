@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import APIRouter, Response, status
+from query_model_columns import ModelColumnsQuery
 from model_backtest import run_model_backtest
 
 from context import HttpResponseContext
@@ -28,6 +29,7 @@ class RoutePaths:
     RUN_BACKTEST = "/backtest/{train_job_id}/run"
     FETCH_EPOCH_VAL_PREDS = "/train/{train_job_id}/epoch/{epoch_nr}"
     BACKTESTS = "/backtest/{train_job_id}"
+    GET_MODEL_COLUMNS = "/{id}/columns"
 
 
 @router.get(RoutePaths.FETCH_MODEL)
@@ -116,3 +118,10 @@ async def route_fetch_epoch_val_preds(train_job_id: int, epoch_nr: int):
             epoch_metadata.id
         )
         return {"data": epoch_val_preds}
+
+
+@router.get(RoutePaths.GET_MODEL_COLUMNS)
+async def route_fetch_model_train_cols(id):
+    with HttpResponseContext():
+        columns = ModelColumnsQuery.get_columns_by_model_id(id)
+        return {"data": columns}
