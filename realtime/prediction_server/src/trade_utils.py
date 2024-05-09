@@ -1,6 +1,6 @@
 import json
 from api.v1.request_types import BodyUpdateTradeClose
-from realtime.prediction_server.src.schema.cloudlog import slack_log_close_trade_notif
+from schema.cloudlog import slack_log_close_trade_notif
 from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
 from log import LogExceptionContext, get_logger
