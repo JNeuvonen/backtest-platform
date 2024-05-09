@@ -2,32 +2,71 @@ import React from "react";
 import { ChakraCard } from "../../../../components/chakra/Card";
 import { Heading } from "@chakra-ui/react";
 import { COLOR_CONTENT_PRIMARY } from "../../../../utils/colors";
-import { FetchBacktestByIdRes } from "../../../../clients/queries/response-types";
+import {
+  DatasetModel,
+  FetchBacktestByIdRes,
+} from "../../../../clients/queries/response-types";
 import { UseQueryResult } from "@tanstack/react-query";
 
 interface Props {
   backtestQuery: UseQueryResult<FetchBacktestByIdRes | null, unknown>;
+  modelQuery?: UseQueryResult<DatasetModel | null, unknown>;
 }
 export const TradingCriteriaCard = (props: Props) => {
-  const { backtestQuery } = props;
+  const { backtestQuery, modelQuery } = props;
   if (backtestQuery.data === undefined || backtestQuery.data === null) {
     return;
   }
+
+  const getStrategyType = () => {
+    if (backtestQuery.data === undefined || backtestQuery.data === null) {
+      return;
+    }
+
+    if (backtestQuery.data?.data.is_ml_based_strategy) {
+      return "ML based";
+    } else {
+      {
+        return backtestQuery.data.data.is_short_selling_strategy
+          ? "Short"
+          : "Long";
+      }
+    }
+  };
+
+  const getOpenTradeCond = () => {
+    if (backtestQuery.data === undefined || backtestQuery.data === null) {
+      return;
+    }
+
+    if (backtestQuery.data.data.is_ml_based_strategy) {
+      return backtestQuery.data.data.ml_long_cond;
+    }
+    return backtestQuery.data?.data.open_trade_cond;
+  };
+
+  const getCloseTradeCond = () => {
+    if (backtestQuery.data === undefined || backtestQuery.data === null) {
+      return;
+    }
+    if (backtestQuery.data.data.is_ml_based_strategy) {
+      return backtestQuery.data.data.ml_short_cond;
+    }
+    return backtestQuery.data?.data.close_trade_cond;
+  };
+
   return (
     <>
       <div style={{ marginTop: "16px" }}>
         <ChakraCard heading={<Heading size="md">Trading criteria</Heading>}>
           <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
-            Strategy type:{" "}
-            {backtestQuery.data.data.is_short_selling_strategy
-              ? "Short"
-              : "Long"}
+            Strategy type: {getStrategyType()}
           </pre>
           <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
-            {backtestQuery.data.data.open_trade_cond}
+            {getOpenTradeCond()}
           </pre>
           <pre style={{ marginTop: "8px", color: COLOR_CONTENT_PRIMARY }}>
-            {backtestQuery.data.data.close_trade_cond}
+            {getCloseTradeCond()}
           </pre>
         </ChakraCard>
       </div>
@@ -54,6 +93,19 @@ export const TradingCriteriaCard = (props: Props) => {
           </pre>
         </ChakraCard>
       </div>
+
+      {modelQuery && (
+        <div style={{ marginTop: "16px" }}>
+          <ChakraCard heading={<Heading size="md">Model</Heading>}>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              {modelQuery.data?.model_code}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              {modelQuery.data?.optimizer_and_criterion_code}
+            </pre>
+          </ChakraCard>
+        </div>
+      )}
     </>
   );
 };
