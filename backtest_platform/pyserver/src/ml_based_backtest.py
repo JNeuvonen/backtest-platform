@@ -146,6 +146,7 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
     backtest_dict = {
         "name": body.name,
         "dataset_id": dataset.id,
+        "model_id": body.id_of_model,
         "candle_interval": dataset.interval,
         "ml_long_cond": body.enter_trade_cond,
         "ml_short_cond": body.exit_trade_cond,
@@ -155,6 +156,7 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
         "klines_until_close": body.klines_until_close,
         "backtest_range_start": body.backtest_data_range[0],
         "backtest_range_end": body.backtest_data_range[1],
+        "is_ml_based_strategy": True,
     }
 
     backtest_id = BacktestQuery.create_entry(backtest_dict)

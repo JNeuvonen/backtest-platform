@@ -14,6 +14,7 @@ class Backtest(Base):
 
     model_weights_id = Column(Integer, ForeignKey("model_weights.id"))
     train_job_id = Column(Integer, ForeignKey("train_job.id"))
+    model_id = Column(Integer, ForeignKey("model.id"))
     dataset_id = Column(Integer, ForeignKey("dataset.id"))
     dataset_name = Column(String)
 
