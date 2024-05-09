@@ -1512,6 +1512,32 @@ close_col = 'close_price'
 calculate_cdl2crows(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
 """
 
+CDLENGULFING = """
+import pandas as pd
+
+def calculate_engulfing_pattern(df, open_col='open_price', close_col='close_price'):
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+
+    bullish_engulfing = ((df[close_col] > df['prev_open']) & 
+                         (df[open_col] < df['prev_close']) & 
+                         (df[close_col] > df['prev_close']) & 
+                         (df[open_col] < df['prev_open']))
+
+    bearish_engulfing = ((df[open_col] > df['prev_close']) & 
+                         (df[close_col] < df['prev_open']) & 
+                         (df[open_col] > df['prev_open']) & 
+                         (df[close_col] < df['prev_close']))
+
+    df['bullish_engulfing'] = bullish_engulfing.astype(int)
+    df['bearish_engulfing'] = bearish_engulfing.astype(int)
+
+# Usage example:
+open_col = "open_price"
+close_col = "close_price"
+calculate_engulfing_pattern(dataset, open_col=open_col, close_col=close_col)
+"""
+
 CLIP_FROM_RANGE = """
 import pandas as pd
 
@@ -2006,6 +2032,13 @@ DEFAULT_CODE_PRESETS = [
         name="CDL2CROWS",
         category=CodePresetCategories.INDICATOR,
         description="Calculates the Two Crows candlestick pattern, a bearish reversal pattern that appears in an uptrend. It consists of three candles: a long bullish candle, followed by a gap-up open candle that closes within the body of the first but does not surpass its high, and a third candle that opens higher than the second but closes below its open, signaling a potential reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLENGULFING,
+        name="Engulfing pattern",
+        category=CodePresetCategories.INDICATOR,
+        description="Engulfing Pattern: This indicator identifies potential reversal points in price trends. A bullish engulfing pattern occurs when a smaller red (down) candle is followed by a larger green (up) candle, engulfing the previous day's body. This suggests a potential bullish reversal. Conversely, a bearish engulfing pattern appears when a green candle is followed by a larger red candle, signaling a potential bearish reversal.",
         labels=CodePresetLabels.CANDLE_PATTERN,
     ),
     CodePreset(
