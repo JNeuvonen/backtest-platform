@@ -1,6 +1,5 @@
 import json
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 from log import LogExceptionContext
 from orm import Base, Session
 from query_dataset import Dataset
