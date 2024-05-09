@@ -190,11 +190,12 @@ export const ColumnModal = ({
         </div>
       );
     }
+
     return (
       <ColumnChart
-        data={createColumnChartData(rows, columnName, kline_open_time)}
+        data={createColumnChartData(rows, columnName, kline_open_time, [])}
         xAxisDataKey={"kline_open_time"}
-        lines={[{ dataKey: columnName, stroke: "red" }]}
+        lines={[{ dataKey: columnName, stroke: "red", yAxisId: "left" }]}
       />
     );
   };
