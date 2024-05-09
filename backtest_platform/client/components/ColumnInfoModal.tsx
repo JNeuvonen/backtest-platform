@@ -20,6 +20,7 @@ import { createColumnChartData } from "../utils/dataset";
 import { WithLabel } from "./form/WithLabel";
 import { GenericBarChart } from "./charts/BarChart";
 import { parseJson } from "../utils/str";
+import { usePlotImage } from "../hooks/usePlotImages";
 
 interface Props {
   datasetName: string;
@@ -29,16 +30,22 @@ interface Props {
 export const ColumnInfoModal = (props: Props) => {
   const { datasetName, columnName } = props;
   const columnDetailedQuery = useColumnQuery(datasetName, columnName);
-  const [linearRegrPltSrc, setLinearRegrPltSrc] = useState("");
+
+  const linearRegrPltSrc = usePlotImage({
+    apiQuery: columnDetailedQuery.data?.res || {},
+    key: "linear_regr_img_b64",
+  });
+  const histogramPltSrc = usePlotImage({
+    apiQuery: columnDetailedQuery.data?.res || {},
+    key: "histogram_img_b64",
+  });
+
+  const boxplotPLtSrc = usePlotImage({
+    apiQuery: columnDetailedQuery.data?.res || {},
+    key: "box_plot_img_b64",
+  });
 
   const columnData = columnDetailedQuery.data?.res.column;
-
-  useEffect(() => {
-    if (columnDetailedQuery.data?.res) {
-      const data = columnDetailedQuery.data?.res;
-      setLinearRegrPltSrc(`data:image/png;base64,${data.linear_regr_img_b64}`);
-    }
-  }, [columnDetailedQuery.data]);
 
   if (!columnData) return <Spinner />;
 
@@ -137,7 +144,7 @@ export const ColumnInfoModal = (props: Props) => {
             <Stat color={COLOR_CONTENT_PRIMARY}>
               <StatLabel>Linear regr const</StatLabel>
               <StatNumber>
-                {columnData.corr_to_price
+                {linearRegrParams && linearRegrParams.const
                   ? String(roundNumberDropRemaining(linearRegrParams.const, 6))
                   : "N/A"}
               </StatNumber>
@@ -147,7 +154,7 @@ export const ColumnInfoModal = (props: Props) => {
             <Stat color={COLOR_CONTENT_PRIMARY}>
               <StatLabel>Linear regr coeff</StatLabel>
               <StatNumber>
-                {columnData.corr_to_price
+                {linearRegrParams && linearRegrParams[columnName]
                   ? String(
                       roundNumberDropRemaining(linearRegrParams[columnName], 6)
                     )
@@ -158,9 +165,21 @@ export const ColumnInfoModal = (props: Props) => {
         </Box>
       </ChakraCard>
 
-      <Box marginTop={"16px"}>
+      <Box style={{ width: "max-content", margin: "16px auto" }}>
         {linearRegrPltSrc && (
           <img src={linearRegrPltSrc} alt="Linear Regression Plot" />
+        )}
+      </Box>
+
+      <Box style={{ width: "max-content", margin: "16px auto" }}>
+        {histogramPltSrc && (
+          <img src={histogramPltSrc} alt="Linear Regression Plot" />
+        )}
+      </Box>
+
+      <Box style={{ width: "max-content", margin: "16px auto" }}>
+        {boxplotPLtSrc && (
+          <img src={boxplotPLtSrc} alt="Linear Regression Plot" />
         )}
       </Box>
 
