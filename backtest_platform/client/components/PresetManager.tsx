@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useCodePresets } from "../clients/queries/queries";
 import {
   Button,
@@ -249,9 +249,9 @@ const ManageCodePresetsModal = ({
           containerStyles={{ marginTop: "16px" }}
         >
           <div style={{ marginTop: "16px" }}>
-            {groups[label].map((preset, index) => (
+            {groups[label].map((preset) => (
               <PresetItem
-                key={index}
+                key={preset.name}
                 preset={preset}
                 onSelect={onSelect}
                 refetchCallback={refetchCallback}
