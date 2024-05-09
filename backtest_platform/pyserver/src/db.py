@@ -563,12 +563,63 @@ def capture_std_out(print_fn):
     return summary_buffer.getvalue()
 
 
+def create_linear_regression_plot(X, Y, X_with_constant, col_name, target_col):
+    if col_name == target_col:
+        return ""
+    plt.scatter(X, Y, alpha=0.5)
+    plt.plot(X, sm.OLS(Y, X_with_constant).fit().predict(X_with_constant), color="red")
+    plt.title(f"{col_name} vs {target_col}")
+    plt.xlabel(col_name)
+    plt.ylabel(target_col)
+
+    buffer = BytesIO()
+    plt.savefig(buffer, format="png")
+    plt.close()
+    buffer.seek(0)
+
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+
+def create_histogram_plot(X, col_name):
+    plt.figure()
+    plt.hist(X, bins=20, color="blue", alpha=0.7)
+    plt.title(f"Histogram of {col_name}")
+    plt.xlabel(col_name)
+    plt.ylabel("Frequency")
+
+    buffer = BytesIO()
+    plt.savefig(buffer, format="png")
+    plt.close()
+    buffer.seek(0)
+
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+
+def create_box_plot(X, col_name):
+    plt.figure()
+    plt.boxplot(X)
+    plt.title(f"Box Plot of {col_name}")
+    plt.ylabel(col_name)
+
+    buffer = BytesIO()
+    plt.savefig(buffer, format="png")
+    plt.close()
+    buffer.seek(0)
+
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+
 def get_linear_regression_analysis(
     table_name: str, col_name: str, target_col: str | None
 ):
     try:
         if target_col is None:
-            return None, None, None
+            return {
+                "linear_regr_img_b64": None,
+                "linear_regr_params": None,
+                "linear_regr_summary": None,
+                "histogram_img_b64": None,
+            }
 
         df = read_columns_to_mem(
             AppConstants.DB_DATASETS,
@@ -585,32 +636,23 @@ def get_linear_regression_analysis(
         X_with_constant = sm.add_constant(X)
 
         model = sm.OLS(Y, X_with_constant).fit()
-
-        buffer = BytesIO()
-        plt.scatter(X, Y, alpha=0.5)
-        plt.plot(X, model.predict(X_with_constant), color="red")
-        plt.title(f"{col_name} vs {target_col}")
-        plt.xlabel(col_name)
-        plt.ylabel(target_col)
-        plt.savefig(buffer, format="png")
-        plt.close()
-
-        buffer.seek(0)
-
-        linear_regr_img_b64 = (
-            base64.b64encode(buffer.getvalue()).decode("utf-8")
-            if buffer is not None
-            else None
+        linear_regr_img_b64 = create_linear_regression_plot(
+            X, Y, X_with_constant, col_name, target_col
         )
+        histogram_img_b64 = create_histogram_plot(X, col_name)
+        box_plot_img_b64 = create_box_plot(X, col_name)
 
-        return (
-            linear_regr_img_b64,
-            model.params.to_json(),
-            capture_std_out(lambda: print(model.summary())),
-        )
+        return {
+            "linear_regr_img_b64": linear_regr_img_b64,
+            "linear_regr_params": model.params.to_json(),
+            "linear_regr_summary": capture_std_out(lambda: print(model.summary())),
+            "histogram_img_b64": histogram_img_b64,
+            "box_plot_img_b64": box_plot_img_b64,
+        }
+
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None, None, None
+        return {}
 
 
 def get_column_detailed_info(
@@ -646,8 +688,6 @@ def get_column_detailed_info(
             corr_to_price, corrs_to_shifted_prices = get_correlation_data(
                 df, col_name, timeseries_col_name, target_col
             )
-
-            get_linear_regression_analysis(table_name, col_name, target_col)
 
             return {
                 "rows": rows,

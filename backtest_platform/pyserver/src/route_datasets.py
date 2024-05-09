@@ -139,19 +139,15 @@ async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dic
         col_info = get_column_detailed_info(
             dataset_name, column_name, timeseries_col, target_col, price_col
         )
-        (
-            linear_regr_img_buff,
-            linear_regr_params,
-            linear_regr_summary,
-        ) = get_linear_regression_analysis(dataset_name, column_name, target_col)
+        analysis_dict = get_linear_regression_analysis(
+            dataset_name, column_name, target_col
+        )
 
         return {
             "column": col_info,
             "timeseries_col": timeseries_col,
             "price_col": price_col,
-            "linear_regr_img_b64": linear_regr_img_buff,
-            "linear_regr_params": linear_regr_params,
-            "linear_regr_summary": linear_regr_summary,
+            **analysis_dict,
         }
 
 
