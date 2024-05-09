@@ -19,6 +19,7 @@ import {
   fetchMassBacktestById,
   fetchMassbacktestsById,
   fetchModelById,
+  fetchModelTrainColumns,
   fetchTrainjobBacktests,
   fetchTrainjobDetailed,
 } from "../requests";
@@ -87,11 +88,12 @@ export function useDatasetModelsQuery(
 }
 
 export function useModelQuery(
-  modelId: string
+  modelId?: number
 ): UseQueryResult<DatasetModel | null, unknown> {
   return useQuery<DatasetModel | null, unknown>({
     queryKey: [QUERY_KEYS.fetch_dataset_model_by_name, modelId],
-    queryFn: () => fetchModelById(modelId),
+    queryFn: () => fetchModelById(modelId as number),
+    enabled: modelId !== undefined,
   });
 }
 
@@ -216,5 +218,15 @@ export function useEpochValPredictions(
     ],
     queryFn: () => fetchEpochValidationPreds(trainJobId, epochNumber),
     enabled: trainJobId !== undefined && epochNumber !== undefined,
+  });
+}
+
+export function useMLModelsColumns(
+  modelId: number | undefined
+): UseQueryResult<string[], unknown> {
+  return useQuery<string[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_ml_models_cols, modelId],
+    queryFn: () => fetchModelTrainColumns(modelId as number),
+    enabled: modelId !== undefined,
   });
 }

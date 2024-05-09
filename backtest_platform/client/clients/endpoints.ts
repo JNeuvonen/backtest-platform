@@ -82,7 +82,7 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/models/create`,
   fetch_dataset_models: (datasetName: string) =>
     LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/models`,
-  fetch_model_by_id: (modelId: string) =>
+  fetch_model_by_id: (modelId: number) =>
     LOCAL_API_URI + LOCAL_API.model.root + `/${modelId}`,
   create_train_job: (modelName: string) =>
     LOCAL_API_URI + LOCAL_API.model.root + `/${modelName}/create-train`,
@@ -180,6 +180,8 @@ export const LOCAL_API_URL = {
     `/train/${trainJobId}/epoch/${epochNr}`,
   createMlBasedBacktest: () =>
     LOCAL_API_URI + LOCAL_API.backtest.root + "/ml-based",
+  fetchMlModelColumns: (modelId: number | undefined) =>
+    LOCAL_API_URI + LOCAL_API.model.root + `/${modelId}/columns`,
 };
 
 export const PRED_SERVER_URLS = {

@@ -107,7 +107,7 @@ export async function fetchDatasetModels(datasetName: string) {
   return res;
 }
 
-export async function fetchModelById(modelId: string) {
+export async function fetchModelById(modelId: number) {
   const res: FetchModelByNameRes = await buildRequest({
     method: "GET",
     url: LOCAL_API_URL.fetch_model_by_id(modelId),
@@ -632,4 +632,16 @@ export const createMlBasedBacktest = async (values) => {
     payload: values,
   });
   return res;
+};
+
+export const fetchModelTrainColumns = async (modelId: number) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchMlModelColumns(modelId),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
 };
