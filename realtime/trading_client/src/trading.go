@@ -11,6 +11,10 @@ import (
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {
+	if !strat.UseStopLossBasedClose {
+		return false
+	}
+
 	if strat.IsShortSellingStrategy {
 		threshold := 1 + (strat.StopLossThresholdPerc / 100)
 		return price > strat.PriceOnTradeOpen*threshold
@@ -34,12 +38,16 @@ func shouldTimebasedClose(strat Strategy) bool {
 }
 
 func shouldProfitBasedClose(strat Strategy, price float64) bool {
+	if !strat.UseProfitBasedClose {
+		return false
+	}
+
 	profitThreshold := 1 - (strat.TakeProfitThresholdPerc / 100)
 
 	if strat.IsShortSellingStrategy {
 		return price < strat.PriceOnTradeOpen*profitThreshold
 	} else {
-		return price > strat.PriceOnTradeOpen*(1+strat.TakeProfitThresholdPerc/100)
+		return price > strat.PriceOnTradeOpen*(1+(strat.TakeProfitThresholdPerc/100))
 	}
 }
 
