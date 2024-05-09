@@ -59,6 +59,12 @@ export const getDatasetBacktestPath = (dataset: string, backtestId: number) => {
     .replace(PATH_KEYS.backtest, String(backtestId));
 };
 
+export const getMlBasedBacktestPath = (dataset: string, backtestId: number) => {
+  return PATHS.ml_based.backtest
+    .replace(PATH_KEYS.dataset, dataset)
+    .replace(PATH_KEYS.backtest, String(backtestId));
+};
+
 export const getPairTradeBacktestPath = (backtestId: number) => {
   return PATHS.mass_backtest.pairtrade.replace(
     PATH_KEYS.mass_pair_trade_backtest,

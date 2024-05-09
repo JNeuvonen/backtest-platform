@@ -222,7 +222,12 @@ export const SimulateDatasetIndex = () => {
       <div>
         {datasetBacktestsQuery.data ? (
           <BacktestDatagrid
-            backtests={datasetBacktestsQuery.data}
+            backtests={datasetBacktestsQuery.data.filter((item) => {
+              if (item.is_ml_based_strategy) {
+                return false;
+              }
+              return true;
+            })}
             onDeleteMode={onDeleteMode}
           />
         ) : (

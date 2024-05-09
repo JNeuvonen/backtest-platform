@@ -193,6 +193,7 @@ export interface BacktestObject {
   use_stop_loss_based_close: boolean;
   is_short_selling_strategy: boolean;
   is_long_short_strategy: boolean;
+  is_ml_based_strategy: boolean;
   klines_until_close: number;
   long_side_profit_factor: number;
   short_side_profit_factor: number;

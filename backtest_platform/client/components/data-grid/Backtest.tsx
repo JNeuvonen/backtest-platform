@@ -10,6 +10,7 @@ import { ColDef } from "ag-grid-community";
 import { usePathParams } from "../../hooks/usePathParams";
 import {
   getDatasetBacktestPath,
+  getMlBasedBacktestPath,
   getPairTradeBacktestPath,
 } from "../../utils/navigate";
 import { Link } from "react-router-dom";
@@ -17,7 +18,7 @@ import { roundNumberDropRemaining } from "../../utils/number";
 import { Checkbox, UseDisclosureReturn } from "@chakra-ui/react";
 import { useBacktestContext } from "../../context/backtest";
 import { useMassBacktestContext } from "../../context/masspairtrade";
-import { PATHS } from "../../utils/constants";
+import { PATHS, PATH_KEYS } from "../../utils/constants";
 
 interface Props {
   backtests: BacktestObject[];
@@ -57,15 +58,25 @@ const checkboxCellRenderer = (params: ICellRendererParams) => {
 
 const idCellRenderer = (params: ICellRendererParams) => {
   const { datasetName } = usePathParams<PathParams>();
+
+  const getToLinkBasedOnMode = () => {
+    if (window.location.pathname.includes(PATHS.simulate.bulk_long_short)) {
+      return getPairTradeBacktestPath(params.value);
+    }
+
+    const backtestUri = PATHS.simulate.dataset.replace(
+      PATH_KEYS.dataset,
+      datasetName
+    );
+
+    if (window.location.pathname == backtestUri) {
+      return getDatasetBacktestPath(datasetName, params.value);
+    }
+
+    return getMlBasedBacktestPath(datasetName, params.value);
+  };
   return (
-    <Link
-      to={
-        window.location.pathname.includes(PATHS.simulate.bulk_long_short)
-          ? getPairTradeBacktestPath(params.value)
-          : getDatasetBacktestPath(datasetName, params.value)
-      }
-      className="link-default"
-    >
+    <Link to={getToLinkBasedOnMode()} className="link-default">
       {params.value}
     </Link>
   );

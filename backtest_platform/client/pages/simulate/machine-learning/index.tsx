@@ -63,7 +63,11 @@ export const MachineLearningBacktestPage = () => {
       </div>
       <div style={{ marginTop: "8px" }}>
         <BacktestDatagrid
-          backtests={datasetBacktestsQuery.data || []}
+          backtests={
+            datasetBacktestsQuery.data?.filter(
+              (item) => item.is_ml_based_strategy
+            ) || []
+          }
           onDeleteMode={mlBasedBacktestContext.onDeleteMode}
         />
       </div>
