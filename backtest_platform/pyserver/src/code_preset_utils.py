@@ -14,6 +14,7 @@ class CodePresetLabels:
     CROSSING = "crossing"
     SEASONAL = "seasonal"
     TARGET = "target"
+    CUSTOM = "custom"
 
 
 class CodePresetCategories:
@@ -1021,9 +1022,29 @@ ROCP = """
 import pandas as pd
 
 def calculate_rocp(df, column='close_price', periods=[1]):
+    # First, ensure the column exists in DataFrame to avoid KeyError
+    if column not in df.columns:
+        raise ValueError(f"The specified column '{column}' does not exist in the DataFrame.")
+
+    # Fill NaN values and ensure no infinite values exist in the column
+    df[column] = df[column].replace([float('inf'), -float('inf')], pd.NA)
+    df[column] = df[column].fillna(method='bfill').fillna(method='ffill')
+    
+    if df[column].isnull().any():
+        raise ValueError("NaN values persist in the column after filling; check data integrity.")
+
+    # Calculate ROCP for each specified period
     for period in periods:
         rocp_label = f"ROCP_{period}_{column}"
-        df[rocp_label] = ((df[column] - df[column].shift(period)) / df[column].shift(period)).fillna(0)
+        # Shift and calculate difference
+        shifted_data = df[column].shift(period)
+        differences = df[column] - shifted_data
+        # Safeguard against division by zero and inf values
+        differences.replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+        shifted_data.replace(0, pd.NA, inplace=True)  # Replace zero to avoid division by zero
+
+        # Calculate ROCP and handle potential NaN from division
+        df[rocp_label] = (differences / shifted_data).fillna(0)
 
 # Usage example:
 periods = [1, 5, 10]  # You can specify multiple periods
@@ -1501,6 +1522,28 @@ def adjust_column_values_based_on_range(df, column_name, lower_bound, upper_boun
 adjust_column_values_based_on_range(dataset, 'ROCP_7_close_price', -30, 30)
 """
 
+THRESHOLD_FLAG = """
+import pandas as pd
+import numpy as np
+
+def set_threshold_flag(df, source_column, target_column, threshold, above_threshold=True):
+    # Check if the source column exists to avoid KeyError
+    if source_column not in df.columns:
+        raise ValueError(f"The specified source column '{source_column}' does not exist in the DataFrame.")
+    
+    # Use numpy.where to set values in the new column based on the condition
+    if above_threshold:
+        df[target_column] = np.where(df[source_column] > threshold, 1, 0)
+    else:
+        df[target_column] = np.where(df[source_column] < threshold, 1, 0)
+
+# Usage example:
+source_column = "ROCP_168_volume"
+target_column = "ROCP_168_volume_large_vol"
+threshold = 1.0  # 100%
+set_threshold_flag(dataset, source_column, target_column, threshold, above_threshold=True)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -1970,7 +2013,14 @@ DEFAULT_CODE_PRESETS = [
         name="CLIP_FROM_RANGE",
         category=CodePresetCategories.INDICATOR,
         description="The function adjust_column_values_based_on_range is designed to selectively modify values within a specified column of a pandas DataFrame based on a defined numerical range. When a value in the column falls within this specified range, inclusive of the lower and upper bounds, it is reset to 0. Values outside this range are left unchanged. This functionality is particularly useful for data cleaning or normalization processes where certain value ranges are considered as outliers or require nullification for analytical reasons",
-        labels=CodePresetLabels.CANDLE_PATTERN,
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=THRESHOLD_FLAG,
+        name="THRESHOLD_FLAG",
+        category=CodePresetCategories.INDICATOR,
+        description="Makes a new column based on some existing one where all the values will be (0 or 1) based on whether the value in the existing column surpasses some threshold. It is useful in cases where we want to ignore most normal cases but don't want the model to learn too much from very extreme values. One example column where this could be useful is 'volume'.",
+        labels=CodePresetLabels.CUSTOM,
     ),
 ]
 
