@@ -22,7 +22,10 @@ import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrate
 import { predServerHeaders } from "./headers-utils";
 import { CreateDataTransformationBody } from "../components/DataTransformationsControls";
 import { BodyMassPairTradeSim } from "../context/masspairtrade/CreateNewDrawer";
-import { MLBasedBacktestFormValues } from "../context/mlbasedbacktest/CreateNewDrawer";
+import {
+  CloneIndicatorsBodyBackendFormat,
+  CloneIndicatorsFormValues,
+} from "../components/CloneIndicatorsForm";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -644,4 +647,16 @@ export const fetchModelTrainColumns = async (modelId: number) => {
     return res.res["data"];
   }
   return [];
+};
+
+export const cloneIndicators = async (
+  datasetName: string,
+  body: CloneIndicatorsBodyBackendFormat
+) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.cloneIndicators(datasetName),
+    payload: body,
+  });
+  return res;
 };

@@ -3,7 +3,7 @@ import {
   useBinanceTickersQuery,
   useDatasetsQuery,
 } from "../clients/queries/queries";
-import { Select, Spinner, Switch } from "@chakra-ui/react";
+import { Select, Spinner, Switch, useToast } from "@chakra-ui/react";
 import { SelectDatasetV2 } from "./SelectDatasetV2";
 import { Field, Form, Formik } from "formik";
 import { DatasetMetadata } from "../clients/queries/response-types";
@@ -13,6 +13,7 @@ import { binanceTickSelectOptions } from "../pages/Datasets";
 import { MultiValue } from "react-select";
 import { GET_KLINE_OPTIONS } from "../utils/constants";
 import { FormSubmitBar } from "./form/FormSubmitBar";
+import { cloneIndicators } from "../clients/requests";
 
 const formKeys = {
   datasets: "datasets",
@@ -21,14 +22,33 @@ const formKeys = {
   useFutures: "useFutures",
 };
 
+export interface CloneIndicatorsFormValues {
+  datasets: OptionType[];
+  newDatasets: OptionType[];
+  candleInterval: string | null;
+  useFutures: boolean | null;
+}
+
+export interface CloneIndicatorsBodyBackendFormat {
+  existing_datasets: string[];
+  new_datasets: string[];
+  candle_interval: string | null;
+  use_futures: boolean | null;
+}
+
 interface Props {
+  datasetName: string;
   cancelCallback: () => void;
   submitCallback: () => void;
 }
 
-export const CloneIndicatorsDrawer = ({ cancelCallback }: Props) => {
+export const CloneIndicatorsDrawer = ({
+  datasetName,
+  cancelCallback,
+}: Props) => {
   const datasetsQuery = useDatasetsQuery();
   const binanceTickersQuery = useBinanceTickersQuery();
+  const toast = useToast();
 
   if (!datasetsQuery.data || !binanceTickersQuery.data) {
     return (
@@ -37,6 +57,25 @@ export const CloneIndicatorsDrawer = ({ cancelCallback }: Props) => {
       </div>
     );
   }
+
+  const submit = async (values: CloneIndicatorsFormValues) => {
+    const res = await cloneIndicators(datasetName, {
+      existing_datasets: values.datasets.map((item) => item.value),
+      new_datasets: values.newDatasets.map((item) => item.value),
+      candle_interval: values.candleInterval,
+      use_futures: values.useFutures,
+    });
+
+    if (res.status === 200) {
+      toast({
+        title: "Cloned indicators",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <div>
       <Formik
@@ -47,7 +86,7 @@ export const CloneIndicatorsDrawer = ({ cancelCallback }: Props) => {
           useFutures: false,
         }}
         onSubmit={(values) => {
-          console.log(values);
+          submit(values);
         }}
       >
         {({ values, setFieldValue }) => (

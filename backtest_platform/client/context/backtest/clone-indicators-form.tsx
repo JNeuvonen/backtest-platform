@@ -4,7 +4,7 @@ import { ChakraDrawer } from "../../components/chakra/Drawer";
 import { CloneIndicatorsDrawer } from "../../components/CloneIndicatorsForm";
 
 export const BacktestCloneIndicators = () => {
-  const { cloneIndicatorsDrawer } = useBacktestContext();
+  const { cloneIndicatorsDrawer, datasetName } = useBacktestContext();
   return (
     <div>
       <ChakraDrawer
@@ -13,6 +13,7 @@ export const BacktestCloneIndicators = () => {
         {...cloneIndicatorsDrawer}
       >
         <CloneIndicatorsDrawer
+          datasetName={datasetName}
           cancelCallback={cloneIndicatorsDrawer.onClose}
           submitCallback={() => {
             cloneIndicatorsDrawer.onClose();
