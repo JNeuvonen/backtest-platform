@@ -43,6 +43,7 @@ class Backtest(Base):
     klines_until_close = Column(Integer)
     backtest_range_start = Column(Integer)
     backtest_range_end = Column(Integer)
+    model_train_epoch = Column(Integer)
 
 
 class BacktestQuery:
