@@ -660,6 +660,35 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                       }}
                     </Field>
                   )}
+                  <Field name={formKeys.shortFeeHourly}>
+                    {({ field, form }) => {
+                      return (
+                        <WithLabel
+                          label={BACKTEST_FORM_LABELS.shorting_fees_hourly}
+                          containerStyles={{
+                            maxWidth: "200px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <NumberInput
+                            step={0.00005}
+                            min={0}
+                            value={field.value}
+                            precision={6}
+                            onChange={(valueString) =>
+                              form.setFieldValue(
+                                formKeys.shortFeeHourly,
+                                parseFloat(valueString)
+                              )
+                            }
+                          >
+                            <NumberInputField />
+                            <ChakraNumberStepper />
+                          </NumberInput>
+                        </WithLabel>
+                      );
+                    }}
+                  </Field>
                 </div>
 
                 <div style={{ marginTop: "16px" }}>
