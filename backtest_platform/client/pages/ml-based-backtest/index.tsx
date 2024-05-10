@@ -17,7 +17,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import ExternalLink from "../../components/ExternalLink";
-import { getDatasetInfoPagePath } from "../../utils/navigate";
+import { getDatasetInfoPagePath, getModelInfoPath } from "../../utils/navigate";
 import { BacktestSummaryCard } from "../simulate/dataset/backtest/SummaryCard";
 import {
   BacktestBalance,
@@ -356,7 +356,7 @@ export const MLBasedBacktestPage = () => {
         </Heading>
         <div style={{ display: "flex", gap: "16px" }}>
           <ExternalLink
-            to={getDatasetInfoPagePath(datasetName)}
+            to={getModelInfoPath(datasetName, backtest.model_id)}
             linkText={"Model"}
           />
           <ExternalLink
