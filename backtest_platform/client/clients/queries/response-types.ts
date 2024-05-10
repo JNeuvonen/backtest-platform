@@ -199,8 +199,10 @@ export interface BacktestObject {
   klines_until_close: number;
   long_side_profit_factor: number;
   short_side_profit_factor: number;
-  ml_long_cond: string;
-  ml_short_cond: string;
+  ml_enter_long_cond: string;
+  ml_exit_long_cond: string;
+  ml_enter_short_cond: string;
+  ml_exit_short_cond: string;
   name: string;
   data: BacktestBalance[];
   trade_count: number;

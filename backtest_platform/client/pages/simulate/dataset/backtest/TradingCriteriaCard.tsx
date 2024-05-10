@@ -39,18 +39,12 @@ export const TradingCriteriaCard = (props: Props) => {
       return;
     }
 
-    if (backtestQuery.data.data.is_ml_based_strategy) {
-      return backtestQuery.data.data.ml_long_cond;
-    }
     return backtestQuery.data?.data.open_trade_cond;
   };
 
   const getCloseTradeCond = () => {
     if (backtestQuery.data === undefined || backtestQuery.data === null) {
       return;
-    }
-    if (backtestQuery.data.data.is_ml_based_strategy) {
-      return backtestQuery.data.data.ml_short_cond;
     }
     return backtestQuery.data?.data.close_trade_cond;
   };
@@ -98,6 +92,18 @@ export const TradingCriteriaCard = (props: Props) => {
         <div style={{ marginTop: "16px" }}>
           <ChakraCard heading={<Heading size="md">Model</Heading>}>
             <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              {backtestQuery.data.data.ml_enter_long_cond}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              {backtestQuery.data.data.ml_exit_long_cond}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              {backtestQuery.data.data.ml_enter_short_cond}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              {backtestQuery.data.data.ml_exit_short_cond}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "32px" }}>
               Epoch nr: {backtestQuery.data.data.model_train_epoch}
             </pre>
             <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>

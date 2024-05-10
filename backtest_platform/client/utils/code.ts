@@ -9,21 +9,39 @@ export const ENTER_TRADE_DEFAULT = () => {
   return code.get();
 };
 
-export const ML_SIM_ENTER_DEFAULT = () => {
+export const ML_SIM_ENTER_LONG_DEFAULT = () => {
   const code = new CodeHelper();
 
-  code.appendLine("def get_enter_trade_decision(prediction):");
+  code.appendLine("def get_enter_long_decision(prediction):");
   code.addIndent();
-  code.appendLine("return prediction > 1.01");
+  code.appendLine("return prediction > 1.03");
   return code.get();
 };
 
-export const ML_SIM_EXIT_DEFAULT = () => {
+export const ML_SIM_ENTER_SHORT_DEFAULT = () => {
   const code = new CodeHelper();
 
-  code.appendLine("def get_exit_trade_decision(prediction):");
+  code.appendLine("def get_enter_short_decision(prediction):");
   code.addIndent();
-  code.appendLine("return prediction < 0.99");
+  code.appendLine("return prediction < 0.97");
+  return code.get();
+};
+
+export const ML_SIM_EXIT_SHORT_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_exit_short_decision(prediction):");
+  code.addIndent();
+  code.appendLine("return prediction > 0.98");
+  return code.get();
+};
+
+export const ML_SIM_EXIT_LONG_DEFAULT = () => {
+  const code = new CodeHelper();
+
+  code.appendLine("def get_exit_long_decision(prediction):");
+  code.addIndent();
+  code.appendLine("return prediction < 1.02");
   return code.get();
 };
 

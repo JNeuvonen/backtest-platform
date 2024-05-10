@@ -37,7 +37,12 @@ import { ChakraSlider } from "../../components/chakra/Slider";
 import { CodeEditor } from "../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../utils/constants";
 import { ChakraNumberStepper } from "../../components/ChakraNumberStepper";
-import { ML_SIM_ENTER_DEFAULT, ML_SIM_EXIT_DEFAULT } from "../../utils/code";
+import {
+  ML_SIM_ENTER_LONG_DEFAULT,
+  ML_SIM_ENTER_SHORT_DEFAULT,
+  ML_SIM_EXIT_LONG_DEFAULT,
+  ML_SIM_EXIT_SHORT_DEFAULT,
+} from "../../utils/code";
 import { ValidationSplitSlider } from "../../components/ValidationSplitSlider";
 import { createMlBasedBacktest } from "../../clients/requests";
 import { GenericAreaChart } from "../../components/charts/AreaChart";
@@ -50,8 +55,10 @@ export interface MLBasedBacktestFormValues {
   model: SingleValue<OptionType>;
   train_run: SingleValue<OptionType>;
   epoch: null | number;
-  open_trade_code: string;
-  close_trade_code: string;
+  open_long_trade_code: string;
+  close_long_trade_code: string;
+  open_short_trade_code: string;
+  close_short_trade_code: string;
   use_shorts: boolean;
   useTimeBasedClose: boolean;
   useProfitBasedClose: boolean;
@@ -75,8 +82,10 @@ const getFormInitialValues = () => {
       model: null,
       train_run: null,
       epoch: null,
-      open_trade_code: ML_SIM_ENTER_DEFAULT(),
-      close_trade_code: ML_SIM_EXIT_DEFAULT(),
+      open_long_trade_code: ML_SIM_ENTER_LONG_DEFAULT(),
+      close_long_trade_code: ML_SIM_EXIT_LONG_DEFAULT(),
+      open_short_trade_code: ML_SIM_ENTER_SHORT_DEFAULT(),
+      close_short_trade_code: ML_SIM_EXIT_SHORT_DEFAULT(),
       use_shorts: true,
       ...getBacktestFormDefaults(),
     };
@@ -92,8 +101,10 @@ const formKeys = {
   model: "model",
   train_run: "train_run",
   epoch: "epoch",
-  open_trade_code: "open_trade_code",
-  close_trade_code: "close_trade_code",
+  open_long_trade_code: "open_long_trade_code",
+  close_long_trade_code: "close_long_trade_code",
+  open_short_trade_code: "open_short_trade_code",
+  close_short_trade_code: "close_short_trade_code",
   use_shorts: "use_shorts",
   ...getBacktestFormDefaultKeys(),
 };
@@ -127,8 +138,10 @@ export const CreateNewMLBasedBacktestDrawer = () => {
       id_of_model: Number(values.model.value),
       train_run_id: Number(values.train_run.value),
       epoch: values.epoch,
-      enter_trade_cond: values.open_trade_code,
-      exit_trade_cond: values.close_trade_code,
+      enter_long_trade_cond: values.open_long_trade_code,
+      exit_long_trade_cond: values.close_long_trade_code,
+      enter_short_trade_cond: values.open_short_trade_code,
+      exit_short_trade_cond: values.close_short_trade_code,
       allow_shorts: values.use_shorts,
       use_time_based_close: values.useTimeBasedClose,
       use_profit_based_close: values.useProfitBasedClose,
@@ -323,20 +336,20 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                 )}
 
                 <div>
-                  <Field name={formKeys.open_trade_code}>
+                  <Field name={formKeys.open_long_trade_code}>
                     {({ field, form }) => {
                       return (
                         <CodeEditor
                           code={field.value}
                           setCode={(newState) =>
                             form.setFieldValue(
-                              formKeys.open_trade_code,
+                              formKeys.open_long_trade_code,
                               newState
                             )
                           }
                           style={{ marginTop: "16px" }}
                           fontSize={13}
-                          label={BACKTEST_FORM_LABELS.long_condition}
+                          label={"Open long trade rule"}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
@@ -348,30 +361,81 @@ export const CreateNewMLBasedBacktestDrawer = () => {
                   </Field>
                 </div>
                 <div>
-                  <Field name={formKeys.close_trade_code}>
+                  <Field name={formKeys.close_long_trade_code}>
                     {({ field, form }) => {
                       return (
                         <CodeEditor
                           code={field.value}
                           setCode={(newState) =>
                             form.setFieldValue(
-                              formKeys.close_trade_code,
+                              formKeys.close_long_trade_code,
                               newState
                             )
                           }
                           style={{ marginTop: "16px" }}
                           fontSize={13}
-                          label={BACKTEST_FORM_LABELS.close_condition}
+                          label={"Close long trade rule"}
                           codeContainerStyles={{ width: "100%" }}
                           height={"250px"}
                           presetCategory={
-                            CODE_PRESET_CATEGORY.backtest_close_long_ccond
+                            CODE_PRESET_CATEGORY.backtest_long_cond
                           }
                         />
                       );
                     }}
                   </Field>
                 </div>
+                <div>
+                  <Field name={formKeys.open_short_trade_code}>
+                    {({ field, form }) => {
+                      return (
+                        <CodeEditor
+                          code={field.value}
+                          setCode={(newState) =>
+                            form.setFieldValue(
+                              formKeys.open_short_trade_code,
+                              newState
+                            )
+                          }
+                          style={{ marginTop: "16px" }}
+                          fontSize={13}
+                          label={"Open short trade rule"}
+                          codeContainerStyles={{ width: "100%" }}
+                          height={"250px"}
+                          presetCategory={
+                            CODE_PRESET_CATEGORY.backtest_long_cond
+                          }
+                        />
+                      );
+                    }}
+                  </Field>
+                </div>
+                <div>
+                  <Field name={formKeys.close_short_trade_code}>
+                    {({ field, form }) => {
+                      return (
+                        <CodeEditor
+                          code={field.value}
+                          setCode={(newState) =>
+                            form.setFieldValue(
+                              formKeys.close_short_trade_code,
+                              newState
+                            )
+                          }
+                          style={{ marginTop: "16px" }}
+                          fontSize={13}
+                          label={"Close short trade rule"}
+                          codeContainerStyles={{ width: "100%" }}
+                          height={"250px"}
+                          presetCategory={
+                            CODE_PRESET_CATEGORY.backtest_long_cond
+                          }
+                        />
+                      );
+                    }}
+                  </Field>
+                </div>
+
                 <div
                   style={{ marginTop: "16px", display: "flex", gap: "16px" }}
                 >
