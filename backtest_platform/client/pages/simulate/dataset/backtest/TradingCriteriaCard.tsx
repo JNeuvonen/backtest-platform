@@ -98,6 +98,9 @@ export const TradingCriteriaCard = (props: Props) => {
         <div style={{ marginTop: "16px" }}>
           <ChakraCard heading={<Heading size="md">Model</Heading>}>
             <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              Epoch nr: {backtestQuery.data.data.model_train_epoch}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
               {modelQuery.data?.model_code}
             </pre>
             <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>

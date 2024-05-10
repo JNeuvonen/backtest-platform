@@ -185,6 +185,7 @@ export interface BacktestBalance {
 export interface BacktestObject {
   id: number;
   model_id: number;
+  model_train_epoch: number;
   dataset_name: string;
   open_trade_cond: string;
   candle_interval: string;
