@@ -6,6 +6,7 @@ import {
   FormLabel,
   Select,
   Spinner,
+  Switch,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -30,6 +31,7 @@ import { useForceUpdate } from "../hooks/useForceUpdate";
 import { BUTTON_VARIANTS } from "../theme";
 import { removeDatasets } from "../clients/requests";
 import { ConfirmModal } from "../components/form/Confirm";
+import { WithLabel } from "../components/form/WithLabel";
 
 const DATA_PROVIDERS = [
   {
@@ -91,6 +93,7 @@ interface FormStateBinanceProps {
 const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
   const toast = useToast();
   const { data, isLoading } = useBinanceTickersQuery();
+  const [useFutures, setUseFutures] = useState(false);
 
   if (isLoading) {
     return <Spinner />;
@@ -111,6 +114,7 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
       const payload = {
         symbol: item.value,
         interval,
+        use_futures: useFutures,
       };
       const req = buildRequest({
         method: "POST",
@@ -177,6 +181,16 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
                 ))}
               </Field>
             </FormControl>
+
+            <WithLabel
+              label={"Use futures data"}
+              containerStyles={{ marginTop: "8px" }}
+            >
+              <Switch
+                isChecked={useFutures}
+                onChange={() => setUseFutures(!useFutures)}
+              />
+            </WithLabel>
 
             <Button mt={4} type="submit">
               Submit
