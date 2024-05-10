@@ -49,14 +49,20 @@ async def get_historical_klines(symbol, interval, use_futures=False):
     return df
 
 
-def non_async_get_historical_klines(symbol, interval):
+def non_async_get_historical_klines(symbol, interval, use_futures):
     client = Client()
     start_time = "1 Jan, 2017"
     klines = []
 
     while True:
         new_klines = client.get_historical_klines(
-            symbol=symbol, interval=interval, start_str=start_time, limit=1000
+            symbol=symbol,
+            interval=interval,
+            start_str=start_time,
+            limit=1000,
+            klines_type=HistoricalKlinesType.FUTURES
+            if use_futures is True
+            else HistoricalKlinesType.SPOT,
         )
 
         if not new_klines:
@@ -113,11 +119,13 @@ async def save_historical_klines(
             )
 
 
-def non_async_save_historical_klines(symbol, interval, send_msg_to_fe=True):
+def non_async_save_historical_klines(
+    symbol, interval, send_msg_to_fe=True, use_futures=False
+):
     with LogExceptionContext(notification_duration=60000):
         logger = get_logger()
         datasets_conn = create_connection(AppConstants.DB_DATASETS)
-        klines = non_async_get_historical_klines(symbol, interval)
+        klines = non_async_get_historical_klines(symbol, interval, use_futures)
         table_name = get_binance_dataset_tablename(symbol, interval)
 
         table_exists_query = (
