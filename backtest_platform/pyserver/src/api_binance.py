@@ -1,6 +1,7 @@
 import os
 import logging
 import asyncio
+from binance.client import HistoricalKlinesType
 import pandas as pd
 
 from binance import Client
@@ -14,7 +15,7 @@ from utils import get_binance_dataset_tablename
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 
 
-async def get_historical_klines(symbol, interval):
+async def get_historical_klines(symbol, interval, use_futures=False):
     client = Client()
     start_time = "1 Jan, 2017"
     klines = []
@@ -26,6 +27,9 @@ async def get_historical_klines(symbol, interval):
             interval,
             start_str=start_time,
             limit=1000,
+            klines_type=HistoricalKlinesType.FUTURES
+            if use_futures is True
+            else HistoricalKlinesType.SPOT,
         )
 
         if not new_klines:
@@ -72,12 +76,14 @@ def non_async_get_historical_klines(symbol, interval):
     return df
 
 
-async def save_historical_klines(symbol, interval, send_msg_to_fe=True):
+async def save_historical_klines(
+    symbol, interval, send_msg_to_fe=True, use_futures=False
+):
     with LogExceptionContext(notification_duration=60000):
         logger = get_logger()
         datasets_conn = create_connection(AppConstants.DB_DATASETS)
-        klines = await get_historical_klines(symbol, interval)
-        table_name = get_binance_dataset_tablename(symbol, interval)
+        klines = await get_historical_klines(symbol, interval, use_futures)
+        table_name = get_binance_dataset_tablename(symbol, interval, use_futures)
 
         table_exists_query = (
             f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"

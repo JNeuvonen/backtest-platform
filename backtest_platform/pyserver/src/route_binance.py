@@ -14,12 +14,17 @@ router = APIRouter()
 class FetchKlinesRequest(BaseModel):
     symbol: str
     interval: str
+    use_futures: bool
 
 
 @router.post("/fetch-klines")
 async def get_binance_klines(request: FetchKlinesRequest):
     with HttpResponseContext():
-        asyncio.create_task(save_historical_klines(request.symbol, request.interval))
+        asyncio.create_task(
+            save_historical_klines(
+                request.symbol, request.interval, True, request.use_futures
+            )
+        )
         return {"symbol": request.symbol}
 
 
