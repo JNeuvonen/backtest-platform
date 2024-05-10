@@ -16,6 +16,7 @@ import { FilterBacktestDrawer } from "./filter-backtests";
 import { ConfirmDeleteSelectedModal } from "./confirm-delete";
 import { BacktestOnManyPairs } from "./run-on-many-pairs";
 import { LongShortBacktestForm } from "./long-short-backtest-form";
+import { BacktestCloneIndicators } from "./clone-indicators-form";
 
 interface BacktestContextType {
   createNewDrawer: UseDisclosureReturn;
@@ -29,6 +30,7 @@ interface BacktestContextType {
   runPythonModal: UseDisclosureReturn;
   runBacktestOnManyPairsModal: UseDisclosureReturn;
   onDeleteMode: UseDisclosureReturn;
+  cloneIndicatorsDrawer: UseDisclosureReturn;
   datasetBacktestsQuery: UseQueryResult<BacktestObject[] | null, unknown>;
   datasetQuery: UseQueryResult<Dataset | null, unknown>;
   forceUpdate: () => void;
@@ -69,6 +71,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
   const filterDrawer = useDisclosure();
   const onDeleteMode = useDisclosure();
   const confirmDeleteSelectedModal = useDisclosure();
+  const cloneIndicatorsDrawer = useDisclosure();
 
   const forceUpdate = useForceUpdate();
   const [selectedBacktests, setSelectedBacktests] = useState<number[]>([]);
@@ -108,6 +111,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
         resetSelection,
         confirmDeleteSelectedModal,
         runBacktestOnManyPairsModal,
+        cloneIndicatorsDrawer,
       }}
     >
       <BacktestForm />
@@ -117,6 +121,7 @@ export const BacktestProvider: React.FC<BacktestProvidersProps> = ({
       <ConfirmDeleteSelectedModal />
       <BacktestOnManyPairs />
       <LongShortBacktestForm />
+      <BacktestCloneIndicators />
       {children}
     </BacktestContext.Provider>
   );

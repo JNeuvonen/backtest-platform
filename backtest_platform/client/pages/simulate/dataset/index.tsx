@@ -23,6 +23,7 @@ import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopov
 import { getDatasetColumnOptions } from "../../../utils/dataset";
 import { FaUndoAlt } from "react-icons/fa";
 import { GiSelect } from "react-icons/gi";
+import { MdCopyAll } from "react-icons/md";
 import {
   setBacktestPriceColumn,
   setKlineOpenTimeColumn,
@@ -48,6 +49,7 @@ export const SimulateDatasetIndex = () => {
     resetSelection,
     confirmDeleteSelectedModal,
     onDeleteMode,
+    cloneIndicatorsDrawer,
   } = useBacktestContext();
 
   const toast = useToast();
@@ -138,6 +140,9 @@ export const SimulateDatasetIndex = () => {
           </MenuItem>
           <MenuItem icon={<DiPython />} onClick={runPythonModal.onOpen}>
             Run python on dataset
+          </MenuItem>
+          <MenuItem icon={<MdCopyAll />} onClick={cloneIndicatorsDrawer.onOpen}>
+            Clone indicators to other dataset
           </MenuItem>
         </ChakraMenu>
 
