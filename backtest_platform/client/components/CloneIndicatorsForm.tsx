@@ -45,6 +45,7 @@ interface Props {
 export const CloneIndicatorsDrawer = ({
   datasetName,
   cancelCallback,
+  submitCallback,
 }: Props) => {
   const datasetsQuery = useDatasetsQuery();
   const binanceTickersQuery = useBinanceTickersQuery();
@@ -73,6 +74,7 @@ export const CloneIndicatorsDrawer = ({
         duration: 5000,
         isClosable: true,
       });
+      submitCallback();
     }
   };
 
@@ -125,38 +127,43 @@ export const CloneIndicatorsDrawer = ({
               </WithLabel>
             </div>
 
-            <div style={{ marginTop: "16px" }}>
-              <WithLabel label={"Candle interval"}>
-                <Field name={formKeys.candleInterval} as={Select}>
-                  {GET_KLINE_OPTIONS().map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </Field>
-              </WithLabel>
-            </div>
-            <div>
-              <Field
-                name={formKeys.datasets}
-                component={({ form }) => (
-                  <WithLabel
-                    label={"Use futures data"}
-                    containerStyles={{ marginTop: "8px" }}
-                  >
-                    <Switch
-                      isChecked={values.useFutures}
-                      onChange={() =>
-                        form.setFieldValue(
-                          formKeys.useFutures,
-                          !values.useFutures
-                        )
-                      }
-                    />
+            {values.newDatasets.length > 0 && (
+              <>
+                <div style={{ marginTop: "16px" }}>
+                  <WithLabel label={"Candle interval"}>
+                    <Field name={formKeys.candleInterval} as={Select}>
+                      {GET_KLINE_OPTIONS().map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </Field>
                   </WithLabel>
-                )}
-              />
-            </div>
+                </div>
+                <div>
+                  <Field
+                    name={formKeys.datasets}
+                    component={({ form }) => (
+                      <WithLabel
+                        label={"Use futures data"}
+                        containerStyles={{ marginTop: "8px" }}
+                      >
+                        <Switch
+                          isChecked={values.useFutures}
+                          onChange={() =>
+                            form.setFieldValue(
+                              formKeys.useFutures,
+                              !values.useFutures
+                            )
+                          }
+                        />
+                      </WithLabel>
+                    )}
+                  />
+                </div>
+              </>
+            )}
+
             <FormSubmitBar
               style={{ marginTop: "32px" }}
               cancelCallback={cancelCallback}
