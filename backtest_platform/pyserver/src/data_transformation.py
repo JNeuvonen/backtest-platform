@@ -37,8 +37,12 @@ def clone_indicators_to_existing_datasets(
                 }
             )
 
-        DatasetQuery.update_target_column(dataset_name, base_dataset.target_column)
-        DatasetQuery.update_price_column(dataset_name, base_dataset.price_column)
+        DatasetQuery.update_target_column(
+            dataset.dataset_name, base_dataset.target_column
+        )
+        DatasetQuery.update_price_column(
+            dataset.dataset_name, base_dataset.price_column
+        )
 
     if notify_frontend is True:
         logger.log(
