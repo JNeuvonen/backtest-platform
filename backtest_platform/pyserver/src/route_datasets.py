@@ -25,7 +25,7 @@ from db import (
     rename_column,
     rename_table,
 )
-from query_dataset import Dataset, DatasetBody, DatasetQuery
+from query_dataset import DatasetBody, DatasetQuery
 from query_data_transformation import DataTransformationQuery
 from query_model import ModelQuery
 from request_types import (
