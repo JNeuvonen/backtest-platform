@@ -99,7 +99,7 @@ const getPortfolioGrowthData = (backtestData: FetchBacktestByIdRes) => {
     ret.push({
       strategy: tickEnter["portfolio_worth"],
       kline_open_time: tickEnter["kline_open_time"] * 1000,
-      buy_and_hold: tickClose["benchmark_price"],
+      buy_and_hold: tickEnter["benchmark_price"],
       enter_short: isShortTrade ? tickEnter["benchmark_price"] : null,
       enter_long: isShortTrade ? null : tickEnter["benchmark_price"],
       exit_long: null,
