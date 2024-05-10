@@ -17,8 +17,10 @@ from tests.backtest_platform.fixtures import (
     long_short_buy_cond_basic,
     long_short_pair_exit_code_basic,
     long_short_sell_cond_basic,
-    ml_based_buy_cond_basic,
-    ml_based_sell_cond_basic,
+    ml_based_enter_long_cond_basic,
+    ml_based_enter_short_cond_basic,
+    ml_based_exit_long_cond_basic,
+    ml_based_exit_short_cond_basic,
     open_long_trade_cond_basic,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
@@ -124,8 +126,10 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     body["candle_interval"] = "1d"
     body["dataset_name"] = fixt_add_dataset_for_ml_based_backtest[0].name
     body["fetch_latest_data"] = True
-    body["enter_trade_cond"] = ml_based_buy_cond_basic()
-    body["exit_trade_cond"] = ml_based_sell_cond_basic()
+    body["enter_long_trade_cond"] = ml_based_enter_long_cond_basic()
+    body["exit_long_trade_cond"] = ml_based_exit_long_cond_basic()
+    body["enter_short_trade_cond"] = ml_based_enter_short_cond_basic()
+    body["exit_short_trade_cond"] = ml_based_exit_short_cond_basic()
     body["allow_shorts"] = True
     body["train_run_id"] = train_job_id
     body["id_of_model"] = model_id

@@ -168,11 +168,16 @@ should_close_trade = get_exit_trade_decision(df_row)
 """
 
 BACKTEST_MODEL_TEMPLATE_V2 = """
-{ENTER_TRADE_DECISION_FUNC}
-{EXIT_TRADE_DECISION_FUNC}
+{ENTER_LONG_DECISION_FUNC}
+{EXIT_LONG_DECISION_FUNC}
+{ENTER_SHORT_DECISION_FUNC}
+{EXIT_SHORT_DECISION_FUNC}
 
-should_open_trade = get_enter_trade_decision({PREDICTION}) 
-should_close_trade = get_exit_trade_decision({PREDICTION})
+should_open_long_trade = get_enter_long_decision({PREDICTION}) 
+should_close_long_trade = get_exit_long_decision({PREDICTION}) 
+
+should_open_short_trade = get_enter_short_decision({PREDICTION}) 
+should_close_short_trade = get_exit_short_decision({PREDICTION}) 
 """
 
 

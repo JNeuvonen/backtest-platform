@@ -39,19 +39,32 @@ from query_weights import ModelWeightsQuery
 from request_types import BodyMLBasedBacktest
 
 
-def get_trading_decisions(prediction, enter_trade_cond, exit_trade_cond):
+def get_model_trading_decisions(
+    prediction,
+    enter_long_trade_cond,
+    exit_long_trade_cond,
+    enter_short_trade_cond,
+    exit_short_trade_cond,
+):
     code = BACKTEST_MODEL_TEMPLATE_V2
 
     replacements = {
-        "{ENTER_TRADE_DECISION_FUNC}": enter_trade_cond,
-        "{EXIT_TRADE_DECISION_FUNC}": exit_trade_cond,
+        "{ENTER_LONG_DECISION_FUNC}": enter_long_trade_cond,
+        "{EXIT_LONG_DECISION_FUNC}": exit_long_trade_cond,
+        "{ENTER_SHORT_DECISION_FUNC}": enter_short_trade_cond,
+        "{EXIT_SHORT_DECISION_FUNC}": exit_short_trade_cond,
         "{PREDICTION}": prediction,
     }
 
     for key, value in replacements.items():
         code = code.replace(key, str(value))
 
-    results_dict = {"should_open_trade": None, "should_close_trade": None}
+    results_dict = {
+        "should_open_long_trade": None,
+        "should_close_long_trade": None,
+        "should_open_short_trade": None,
+        "should_close_short_trade": None,
+    }
     exec(code, globals(), results_dict)
     return results_dict
 
@@ -121,8 +134,12 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
         backtest.process_bar(
             kline_open_time,
             price,
-            get_trading_decisions(
-                prediction, body.enter_trade_cond, body.exit_trade_cond
+            get_model_trading_decisions(
+                prediction,
+                body.enter_long_trade_cond,
+                body.exit_long_trade_cond,
+                body.enter_short_trade_cond,
+                body.exit_short_trade_cond,
             ),
         )
 
@@ -156,8 +173,10 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
         "model_id": body.id_of_model,
         "model_weights_id": weights_metadata.id,
         "candle_interval": dataset.interval,
-        "ml_long_cond": body.enter_trade_cond,
-        "ml_short_cond": body.exit_trade_cond,
+        "ml_enter_long_cond": body.enter_long_trade_cond,
+        "ml_exit_long_cond": body.exit_long_trade_cond,
+        "ml_enter_short_cond": body.enter_short_trade_cond,
+        "ml_exit_short_cond": body.enter_short_trade_cond,
         "use_time_based_close": body.use_time_based_close,
         "use_profit_based_close": body.use_profit_based_close,
         "use_stop_loss_based_close": body.use_stop_loss_based_close,

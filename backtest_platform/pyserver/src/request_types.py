@@ -122,8 +122,10 @@ class BodyMLBasedBacktest(BaseModel):
     id_of_model: int
     train_run_id: int
     epoch: int
-    enter_trade_cond: str
-    exit_trade_cond: str
+    enter_long_trade_cond: str
+    exit_long_trade_cond: str
+    enter_short_trade_cond: str
+    exit_short_trade_cond: str
     allow_shorts: bool
     use_time_based_close: bool
     use_profit_based_close: bool

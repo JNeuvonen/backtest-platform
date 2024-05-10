@@ -175,20 +175,36 @@ def long_short_buy_cond_basic():
     return buy_cond.get()
 
 
-def ml_based_buy_cond_basic():
+def ml_based_enter_long_cond_basic():
     enter_trade_cond = PyCode()
-    enter_trade_cond.append_line("def get_enter_trade_decision(prediction):")
+    enter_trade_cond.append_line("def get_enter_long_decision(prediction):")
     enter_trade_cond.add_indent()
-    enter_trade_cond.append_line("return prediction > 1.01")
+    enter_trade_cond.append_line("return prediction > 1.03")
     return enter_trade_cond.get()
 
 
-def ml_based_sell_cond_basic():
-    exit_trade_cond = PyCode()
-    exit_trade_cond.append_line("def get_exit_trade_decision(prediction):")
-    exit_trade_cond.add_indent()
-    exit_trade_cond.append_line("return prediction < 0.99")
-    return exit_trade_cond.get()
+def ml_based_exit_long_cond_basic():
+    enter_trade_cond = PyCode()
+    enter_trade_cond.append_line("def get_exit_long_decision(prediction):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return prediction < 1.02")
+    return enter_trade_cond.get()
+
+
+def ml_based_enter_short_cond_basic():
+    enter_trade_cond = PyCode()
+    enter_trade_cond.append_line("def get_enter_short_decision(prediction):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return prediction < 0.97")
+    return enter_trade_cond.get()
+
+
+def ml_based_exit_short_cond_basic():
+    enter_trade_cond = PyCode()
+    enter_trade_cond.append_line("def get_exit_short_decision(prediction):")
+    enter_trade_cond.add_indent()
+    enter_trade_cond.append_line("return prediction > 0.98")
+    return enter_trade_cond.get()
 
 
 def long_short_sell_cond_basic():

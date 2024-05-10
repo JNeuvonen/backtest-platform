@@ -783,14 +783,14 @@ class MLBasedBacktest:
         if self.active_trade is None:
             return
 
-        should_enter_trade = trading_decisions["should_open_trade"]
-        should_close_trade = trading_decisions["should_close_trade"]
+        should_close_long_trade = trading_decisions["should_close_long_trade"]
+        should_close_short_trade = trading_decisions["should_close_short_trade"]
 
-        if self.active_trade.is_side_long is True and should_enter_trade is False:
+        if self.active_trade.is_side_long is True and should_close_long_trade is True:
             self.close_trade(kline_open_time, price)
             return
 
-        if self.active_trade.is_side_long is False and should_close_trade is False:
+        if self.active_trade.is_side_long is False and should_close_short_trade is True:
             self.close_trade(kline_open_time, price)
             return
 
@@ -839,13 +839,13 @@ class MLBasedBacktest:
         if self.active_trade is not None:
             return
 
-        should_enter_trade = trading_decisions["should_open_trade"]
-        should_close_trade = trading_decisions["should_close_trade"]
+        should_enter_long_trade = trading_decisions["should_open_long_trade"]
+        should_enter_short_trade = trading_decisions["should_open_short_trade"]
 
-        if should_close_trade is True:
+        if should_enter_short_trade is True:
             self.enter_short_trade(kline_open_time, price)
 
-        if should_enter_trade is True:
+        if should_enter_long_trade is True:
             self.enter_long_trade(kline_open_time, price)
 
     def process_bar(self, kline_open_time: int, price: float, trading_decisions: Dict):
