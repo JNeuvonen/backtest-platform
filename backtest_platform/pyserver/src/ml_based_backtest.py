@@ -35,6 +35,7 @@ from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
 from query_model import ModelQuery
 from query_trainjob import TrainJobQuery
+from query_weights import ModelWeightsQuery
 from request_types import BodyMLBasedBacktest
 
 
@@ -72,6 +73,9 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
 
     model_metadata = ModelQuery.fetch_model_by_id(body.id_of_model)
     trainjob = TrainJobQuery.get_train_job(body.train_run_id)
+    weights_metadata = ModelWeightsQuery.fetch_metadata_by_epoch(
+        trainjob.id, body.epoch
+    )
 
     model = exec_load_model(
         model_class_code=model_metadata.model_code,
@@ -83,7 +87,6 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
     split_start_index = int(len(dataset_df) * body.backtest_data_range[0] / 100)
     split_end_index = int(len(dataset_df) * body.backtest_data_range[1] / 100)
 
-    dataset_df = dataset_df.iloc[split_start_index:split_end_index]
     price_df = dataset_df[dataset.price_column].copy()
     kline_open_time_df = dataset_df[dataset.timeseries_column].copy()
 
@@ -100,13 +103,17 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
     remove_inf_values(dataset_df)
     scale_df(dataset_df, scaler)
 
-    first_price = price_df.iloc[0]
+    first_price = price_df.iloc[split_start_index]
 
     backtest = MLBasedBacktest(body, dataset, first_price)
 
-    for (_, row), price, kline_open_time in zip(
-        dataset_df.iterrows(), price_df, kline_open_time_df
-    ):
+    for i, row in dataset_df.iterrows():
+        if i < split_start_index or i > split_end_index:
+            continue
+
+        price = price_df.iloc[i]
+        kline_open_time = kline_open_time_df.iloc[i]
+
         tensor_row = torch.tensor(row.values, dtype=torch.float32)
         with torch.no_grad():
             prediction = model(tensor_row).item()
@@ -147,6 +154,7 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
         "name": body.name,
         "dataset_id": dataset.id,
         "model_id": body.id_of_model,
+        "model_weights_id": weights_metadata.id,
         "candle_interval": dataset.interval,
         "ml_long_cond": body.enter_trade_cond,
         "ml_short_cond": body.exit_trade_cond,
@@ -157,6 +165,7 @@ async def run_ml_based_backtest(body: BodyMLBasedBacktest):
         "backtest_range_start": body.backtest_data_range[0],
         "backtest_range_end": body.backtest_data_range[1],
         "is_ml_based_strategy": True,
+        "model_train_epoch": body.epoch,
     }
 
     backtest_id = BacktestQuery.create_entry(backtest_dict)
