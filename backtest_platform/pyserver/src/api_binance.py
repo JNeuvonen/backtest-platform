@@ -138,7 +138,13 @@ def non_async_save_historical_klines(
             DatasetQuery.delete_entry_by_dataset_name(table_name)
 
         klines.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
-        DatasetQuery.create_dataset_entry(table_name, "kline_open_time")
+        DatasetQuery.create_dataset_entry(
+            table_name,
+            "kline_open_time",
+            price_column=BinanceDataCols.CLOSE_PRICE,
+            symbol=symbol,
+            interval=interval,
+        )
 
         if send_msg_to_fe is True:
             logger.log(
