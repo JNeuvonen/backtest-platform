@@ -4,11 +4,21 @@ import asyncio
 from typing import List
 
 from fastapi.responses import FileResponse
+from api_binance import non_async_save_historical_klines
 from config import append_app_data_path
-from constants import STREAMING_DEFAULT_CHUNK_SIZE, AppConstants, NullFillStrategy
+from constants import (
+    BINANCE_BACKTEST_PRICE_COL,
+    STREAMING_DEFAULT_CHUNK_SIZE,
+    AppConstants,
+    NullFillStrategy,
+)
 from context import HttpResponseContext
 from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, status
 from pydantic import BaseModel
+from data_transformation import (
+    clone_indicators_to_existing_datasets,
+    clone_indicators_to_new_datasets,
+)
 from dataset import df_fill_nulls_on_all_cols, read_dataset_to_mem
 from db import (
     add_columns_to_table,
@@ -29,6 +39,7 @@ from query_dataset import DatasetBody, DatasetQuery
 from query_data_transformation import DataTransformationQuery
 from query_model import ModelQuery
 from request_types import (
+    BodyCloneIndicators,
     BodyDeleteDatasets,
     BodyExecPython,
     BodyModelData,
@@ -39,8 +50,10 @@ from request_types import (
 from utils import (
     PythonCode,
     add_to_datasets_db,
+    get_binance_dataset_tablename,
     read_file_to_dataframe,
     remove_all_csv_files,
+    run_in_thread,
 )
 
 
@@ -69,6 +82,7 @@ class RoutePaths:
     UPDATE_PRICE_COLUMN = "/{dataset_name}/price-column"
     GET_DATASET_ROW_PAGINATION = "/{dataset_name}/pagination/{page}/{page_size}"
     DOWNLOAD = "/{dataset_name}/download"
+    CLONE_INDICATORS = "/{dataset_name}/clone-indicators"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -319,6 +333,22 @@ async def route_del_tables(body: BodyDeleteDatasets):
         for item in datasets:
             DatasetQuery.delete_entry_by_dataset_name(item)
             remove_table(item)
+
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
+
+
+@router.post(RoutePaths.CLONE_INDICATORS)
+async def route_clone_indicators(dataset_name, body: BodyCloneIndicators):
+    with HttpResponseContext():
+        run_in_thread(
+            clone_indicators_to_existing_datasets,
+            dataset_name,
+            body.existing_datasets,
+            True,
+        )
+        run_in_thread(clone_indicators_to_new_datasets, dataset_name, body, True)
 
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"

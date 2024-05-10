@@ -52,6 +52,13 @@ class BodyDeleteDatasets(BaseModel):
     dataset_names: List[str]
 
 
+class BodyCloneIndicators(BaseModel):
+    existing_datasets: List[str]
+    new_datasets: List[str]
+    candle_interval: Optional[str] = None
+    use_futures: Optional[bool] = None
+
+
 class BodyCreateCodePreset(BaseModel):
     code: str
     category: str
