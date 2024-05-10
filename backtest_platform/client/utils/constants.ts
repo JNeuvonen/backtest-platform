@@ -48,7 +48,7 @@ export const PATHS = {
     backtest: `/simulate/mass-backtests/result/${PATH_KEYS.mass_backtest}`,
   },
   ml_based: {
-    backtest: `/ml-based/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
+    backtest: `/simulate/ml-based/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
   },
   train: `/data/train-job/${PATH_KEYS.train}`,
   settings: "/settings",
