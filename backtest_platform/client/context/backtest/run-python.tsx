@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChakraModal } from "../../components/chakra/modal";
 import { useBacktestContext } from ".";
 import { FormSubmitBar } from "../../components/form/FormSubmitBar";
@@ -7,14 +7,28 @@ import { useToast } from "@chakra-ui/react";
 import { execPythonOnDataset } from "../../clients/requests";
 import { CodeEditor } from "../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../utils/constants";
+import { DISK_KEYS, DiskManager } from "../../utils/disk";
+
+const diskManager = new DiskManager(DISK_KEYS.run_python_on_dataset);
+
+const getInitialValue = () => {
+  const initialValue = diskManager.read();
+
+  if (initialValue) {
+    return initialValue;
+  }
+  return CREATE_COLUMNS_DEFAULT();
+};
 
 export const RunPythonModal = () => {
   const toast = useToast();
   const { runPythonModal, datasetQuery, datasetName } = useBacktestContext();
 
-  const [createColumnsCode, setCreateColumnsCode] = useState(
-    CREATE_COLUMNS_DEFAULT()
-  );
+  const [createColumnsCode, setCreateColumnsCode] = useState(getInitialValue());
+
+  useEffect(() => {
+    diskManager.save(createColumnsCode);
+  }, [createColumnsCode]);
 
   const runPythonSubmit = async () => {
     const res = await execPythonOnDataset(

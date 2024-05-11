@@ -5,6 +5,7 @@ export const DISK_KEYS = {
   app_settings: "APP_SETTINGS",
   mass_long_short_form: "MASS_LONG_SHORT_FORM",
   ml_backtest_form: "ML_BASED_BACKTEST_FORM",
+  run_python_on_dataset: "RUN_PYTHON_ON_DATASET",
 };
 
 export class DiskManager {
