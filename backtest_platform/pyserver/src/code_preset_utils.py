@@ -1669,6 +1669,24 @@ calculate_max(dataset, col1=col1_max, col2=col2_max)
 """
 
 
+TRIM_TO_NONE = """
+import pandas as pd
+
+def trim_initial_values_from_first_non_null(df, column='RSI', num_values=None):
+    # Find the index of the first non-null value in the specified column
+    first_non_null_index = df[column].first_valid_index()
+    if first_non_null_index is not None and num_values is not None:
+        # Set the values to None from the first non-null index for the next num_values entries
+        end_index = first_non_null_index + num_values
+        df.loc[first_non_null_index:end_index, column] = None
+
+# Usage example:
+column = 'RSI'
+num_values = 14  # Number of initial valid entries to set as None after the first non-null
+trim_initial_values_from_first_non_null(dataset, column=column, num_values=num_values)
+"""
+
+
 DEFAULT_CODE_PRESETS = [
     CodePreset(
         code=GEN_RSI_CODE,
@@ -2193,6 +2211,13 @@ DEFAULT_CODE_PRESETS = [
         name="ROW_WISE_MIN_MAX",
         category=CodePresetCategories.INDICATOR,
         description="Determine the minimum or maximum of two columns at each row, useful for bounding values or finding extremes in data.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=TRIM_TO_NONE,
+        name="TRIM_TO_NONE",
+        category=CodePresetCategories.INDICATOR,
+        description="Removes the first up to N values of a column if the column gets skewed results when it doesn't have a sufficient look-back period available yet. Useful for cleaning up RSI for example.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]
