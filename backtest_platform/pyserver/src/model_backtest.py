@@ -176,17 +176,26 @@ class Positions:
         if len(self.trade_prices) == 0:
             return False
 
+        is_short_selling_strat = False
+
+        if self.short_debt > 0.0:
+            is_short_selling_strat = True
+
         prices = self.trade_prices
-        price_ath = prices[0]
+        position_ath_price = prices[0]
 
         for item in prices:
             if self.position > 0:
-                if item / price_ath < (1 - stop_loss_threshold_perc / 100):
+                if item / position_ath_price < (1 - stop_loss_threshold_perc / 100):
                     return True
             else:
-                if item / price_ath > (1 + (stop_loss_threshold_perc / 100)):
+                if item / position_ath_price > (1 + (stop_loss_threshold_perc / 100)):
                     return True
-            price_ath = max(item, price_ath)
+            position_ath_price = (
+                max(item, position_ath_price)
+                if is_short_selling_strat is False
+                else min(item, position_ath_price)
+            )
         return False
 
     def go_long(self, price: float, prediction: float, kline_open_time: int):
