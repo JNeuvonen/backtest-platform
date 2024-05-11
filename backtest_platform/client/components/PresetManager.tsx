@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useCodePresets } from "../clients/queries/queries";
 import {
   Button,
   Heading,
   Spinner,
+  Switch,
   Text,
   Textarea,
   Tooltip,
@@ -28,6 +29,10 @@ import { WithLabel } from "./form/WithLabel";
 import { IoTrashBinSharp } from "react-icons/io5";
 import { deleteCodePreset, putCodePreset } from "../clients/requests";
 import { ConfirmModal } from "./form/Confirm";
+import { ChakraAccordion } from "./chakra/Accordion";
+import { getKeysCount } from "../utils/object";
+import { DISK_KEYS, DiskManager } from "../utils/disk";
+import { useForceUpdate } from "../hooks/useForceUpdate";
 
 interface Props {
   onPresetSelect: (selectedPreset: CodePreset) => void;
@@ -220,6 +225,35 @@ const PresetItem = ({
   );
 };
 
+const diskManager = new DiskManager(DISK_KEYS.manage_code_presets_filters);
+
+const getGroupFiltersInitialState = (presets: CodePreset[]) => {
+  const prevFilters = diskManager.read();
+
+  const groups: Set<string> = new Set();
+
+  presets.forEach((item) => {
+    groups.add(item.label as string);
+  });
+
+  const groupsArr: string[] = Array.from(groups);
+
+  if (!prevFilters) {
+    const ret = {} as { [key: string]: boolean };
+    groupsArr.forEach((item: string) => {
+      ret[item] = true;
+    });
+    return ret;
+  }
+
+  groupsArr.forEach((group) => {
+    if (prevFilters[group] === undefined) {
+      prevFilters[group] = true;
+    }
+  });
+  return prevFilters;
+};
+
 const ManageCodePresetsModal = ({
   presets,
   onSelect,
@@ -230,14 +264,85 @@ const ManageCodePresetsModal = ({
   refetchCallback: () => void;
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const groupFilters = useRef(getGroupFiltersInitialState(presets));
+  const forceUpdate = useForceUpdate();
 
-  const filteredPresets = presets.filter((preset) =>
+  const afterGroupFilters = presets.filter((item) => {
+    return groupFilters.current[item.label as string];
+  });
+
+  const filteredPresets = afterGroupFilters.filter((preset) =>
     preset.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const groups = groupByLabels(filteredPresets);
 
+  const getEnabledFiltersCount = () => {
+    let count = 0;
+
+    for (const [_, value] of Object.entries(groupFilters.current)) {
+      if (value) {
+        count += 1;
+      }
+    }
+    return count;
+  };
+
+  const resetFilters = () => {
+    for (const [key, _] of Object.entries(groupFilters.current)) {
+      groupFilters.current[key] = true;
+    }
+    forceUpdate();
+    diskManager.save(groupFilters.current);
+  };
+
   const renderByGroups = () => (
     <div>
+      <Button
+        marginTop={"16px"}
+        variant={BUTTON_VARIANTS.nofill}
+        onClick={resetFilters}
+      >
+        Reset filters
+      </Button>
+      <ChakraAccordion
+        style={{ marginTop: "16px", marginBottom: "16px" }}
+        items={[
+          {
+            title: `Filters (${getEnabledFiltersCount()}/${getKeysCount(
+              groupFilters.current
+            )})`,
+            content: (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                {Object.keys(groupFilters.current).map((item) => {
+                  return (
+                    <div key={item}>
+                      <WithLabel label={item}>
+                        <Switch
+                          isChecked={groupFilters.current[item]}
+                          onChange={() => {
+                            groupFilters.current[item] =
+                              !groupFilters.current[item];
+                            forceUpdate();
+                            diskManager.save(groupFilters.current);
+                          }}
+                        />
+                      </WithLabel>
+                    </div>
+                  );
+                })}
+              </div>
+            ),
+          },
+        ]}
+        allowToggle
+      />
       {Object.keys(groups).map((label) => (
         <ChakraCard
           key={label}
