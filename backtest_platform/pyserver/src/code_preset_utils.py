@@ -1570,6 +1570,104 @@ threshold = 1.0  # 100%
 set_threshold_flag(dataset, source_column, target_column, threshold, above_threshold=True)
 """
 
+DIFF_TWO = """
+import pandas as pd
+
+def calculate_diff(df, col1='column1', col2='column2'):
+    diff_label = f"{col1}_minus_{col2}"
+    df[diff_label] = df[col1] - df[col2]
+
+col1 = "open_price"
+col2 = "close_price"
+calculate_diff(dataset, col1=col1, col2=col2)
+"""
+
+ROCP_DIFF = """
+import pandas as pd
+
+def calculate_percentage_change(df, col1='column1', col2='column2'):
+    change_label = f"{col1}_perc_change_frm_{col2}"
+    df[change_label] = ((df[col1] - df[col2]) / df[col2]) * 100
+
+
+col1 = "open_price"
+col2 = "close_price"
+calculate_percentage_change(dataset, col1=col1, col2=col2)
+"""
+
+RATIO_DIFF = """
+import pandas as pd
+
+def calculate_ratio(df, col1='column1', col2='column2'):
+    ratio_label = f"{col1}_to_{col2}_ratio"
+    df[ratio_label] = df[col1] / df[col2]
+
+# Usage example:
+col1 = "open_price"
+col2 = "close_price"
+calculate_ratio(dataset, col1=col1, col2=col2)
+"""
+
+SUM_FUNC = """
+import pandas as pd
+
+def calculate_sum(df, col1='column1', col2='column2'):
+    sum_label = f"{col1}_plus_{col2}"
+    df[sum_label] = df[col1] + df[col2]
+
+col1 = "open_price"
+col2 = "close_price"
+calculate_sum(dataset, col1=col1, col2=col2)
+"""
+
+PROD_FUNC = """
+import pandas as pd
+
+def calculate_product(df, col1='column1', col2='column2'):
+    product_label = f"{col1}_times_{col2}"
+    df[product_label] = df[col1] * df[col2]
+
+# Usage example:
+col1 = "open_price"
+col2 = "close_price"
+calculate_product(dataset, col1=col1, col2=col2)
+"""
+
+DIFF_SQRD_FUNC = """
+import pandas as pd
+
+def calculate_difference_squared(df, col1='column1', col2='column2'):
+    diff_squared_label = f"{col1}_minus_{col2}_squared"
+    df[diff_squared_label] = (df[col1] - df[col2]) ** 2
+
+# Usage example:
+col1 = "open_price"
+col2 = "close_price"
+calculate_difference_squared(dataset, col1=col1, col2=col2)
+"""
+
+ROW_WISE_MIN_MAX = """
+import pandas as pd
+
+def calculate_min(df, col1='column1', col2='column2'):
+    min_label = f"min_of_{col1}_and_{col2}"
+    df[min_label] = df[[col1, col2]].min(axis=1)
+
+def calculate_max(df, col1='column1', col2='column2'):
+    max_label = f"max_of_{col1}_and_{col2}"
+    df[max_label] = df[[col1, col2]].max(axis=1)
+
+# Usage example for Min:
+col1_min = "open_price"
+col2_min = "close_price"
+calculate_min(dataset, col1=col1_min, col2=col2_min)
+
+# Usage example for Max:
+col1_max = "open_price"
+col2_max = "close_price"
+calculate_max(dataset, col1=col1_max, col2=col2_max)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -2053,6 +2151,48 @@ DEFAULT_CODE_PRESETS = [
         name="THRESHOLD_FLAG",
         category=CodePresetCategories.INDICATOR,
         description="Makes a new column based on some existing one where all the values will be (0 or 1) based on whether the value in the existing column surpasses some threshold. It is useful in cases where we want to ignore most normal cases but don't want the model to learn too much from very extreme values. One example column where this could be useful is 'volume'.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=DIFF_TWO,
+        name="MINUS_FUNC",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the difference between two columns on each data point.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=ROCP_DIFF,
+        name="PERC_CHANGE_FUNC",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculate the percentage change between two columns, useful for financial data to see relative changes over time.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=SUM_FUNC,
+        name="SUM_FUNC",
+        category=CodePresetCategories.INDICATOR,
+        description="Sum two columns to combine data into a single metric, useful for aggregating related information.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=PROD_FUNC,
+        name="PROD_FUNC",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculate the product of two columns, which could be useful for creating interaction features in machine learning models.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=DIFF_SQRD_FUNC,
+        name="DIFF_SQRD_FUNC",
+        category=CodePresetCategories.INDICATOR,
+        description="Compute the squared difference between two columns to emphasize larger differences and penalize them more heavily, suitable for certain statistical analyses.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=ROW_WISE_MIN_MAX,
+        name="ROW_WISE_MIN_MAX",
+        category=CodePresetCategories.INDICATOR,
+        description="Determine the minimum or maximum of two columns at each row, useful for bounding values or finding extremes in data.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]
