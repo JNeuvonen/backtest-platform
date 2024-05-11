@@ -46,7 +46,6 @@ export const RunPythonModal = () => {
       });
       runPythonModal.onClose();
       datasetQuery.refetch();
-      setCreateColumnsCode(CREATE_COLUMNS_DEFAULT());
     }
   };
   return (
