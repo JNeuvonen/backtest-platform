@@ -1686,6 +1686,26 @@ num_values = 14  # Number of initial valid entries to set as None after the firs
 trim_initial_values_from_first_non_null(dataset, column=column, num_values=num_values)
 """
 
+COLS_CROSSING = """
+import pandas as pd
+
+def calculate_crossings(df, column_a='column_a', column_b='column_b'):
+    # Create labels for crossings
+    crossing_above_label = f"{column_a}_crosses_above_{column_b}"
+    crossing_below_label = f"{column_a}_crosses_below_{column_b}"
+
+    # Determine where column_a crosses above column_b
+    df[crossing_above_label] = ((df[column_a] >= df[column_b]) & (df[column_a].shift(1) < df[column_b].shift(1))).astype(int)
+
+    # Determine where column_a crosses below column_b
+    df[crossing_below_label] = ((df[column_a] <= df[column_b]) & (df[column_a].shift(1) > df[column_b].shift(1))).astype(int)
+
+# Usage example
+column_a = "open_price"
+column_b = "close_price"
+calculate_crossings(dataset, column_a=column_a, column_b=column_b)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -2218,6 +2238,13 @@ DEFAULT_CODE_PRESETS = [
         name="TRIM_TO_NONE",
         category=CodePresetCategories.INDICATOR,
         description="Removes the first up to N values of a column if the column gets skewed results when it doesn't have a sufficient look-back period available yet. Useful for cleaning up RSI for example.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=COLS_CROSSING,
+        name="COLS_CROSSING",
+        category=CodePresetCategories.INDICATOR,
+        description="This function determines the point when two columns cross. It generats two new columns: one when column A crosses above column B and also when column A crosses below column B.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]
