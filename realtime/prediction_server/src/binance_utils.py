@@ -67,6 +67,8 @@ def fetch_binance_klines(symbol, interval, start_str):
     klines = klines[:-1] if klines else klines
 
     df = pd.DataFrame(klines, columns=BINANCE_DATA_COLS)
+
+    convert_orig_cols_to_numeric(df)
     return df
 
 
@@ -82,24 +84,24 @@ def transform_and_predict(strategy, df):
         strategy.id
     )
 
-    data_transformations_helper = {
-        "{DATA_TRANSFORMATIONS_FUNC}": gen_data_transformations_code(
-            data_transformations
-        )
-    }
     results_dict = {
         "transformed_data": None,
         "fetched_data": df,
         "should_enter_trade": None,
         "should_exit_trade": None,
     }
-    exec(
-        replace_placeholders_on_code_templ(
-            CodeTemplates.DATA_TRANSFORMATIONS, data_transformations_helper
-        ),
-        globals(),
-        results_dict,
-    )
+
+    for item in data_transformations:
+        data_transformations_helper = {
+            "{DATA_TRANSFORMATIONS_FUNC}": gen_data_transformations_code([item])
+        }
+        exec(
+            replace_placeholders_on_code_templ(
+                CodeTemplates.DATA_TRANSFORMATIONS, data_transformations_helper
+            ),
+            globals(),
+            results_dict,
+        )
 
     trade_decision_helper = {
         "{ENTER_TRADE_FUNC}": strategy.enter_trade_code,
@@ -119,6 +121,12 @@ def transform_and_predict(strategy, df):
         "should_close_trade": results_dict["should_exit_trade"],
         "is_on_pred_serv_err": False,
     }
+
+
+def convert_orig_cols_to_numeric(df):
+    if not df.empty:
+        for col in BINANCE_DATA_COLS:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
 
 
 def gen_trading_decisions(strategy):
@@ -145,8 +153,8 @@ def gen_trading_decisions(strategy):
             return results
 
         last_kline_open_time_ms = (strategy.last_kline_open_time_sec * 1000) + 1
-
         current_time_ms = get_current_timestamp_ms()
+
         if current_time_ms >= last_kline_open_time_ms + strategy.kline_size_ms * 2:
             klines = fetch_binance_klines(
                 strategy.symbol, strategy.candle_interval, last_kline_open_time_ms
@@ -160,6 +168,8 @@ def gen_trading_decisions(strategy):
             df = pd.concat([df, klines], ignore_index=True)
             df = df.align(klines, axis=1)[0]
             df.sort_values(by="kline_open_time", ascending=True, inplace=True)
+
+            convert_orig_cols_to_numeric(df)
 
             results = transform_and_predict(strategy, df)
 
