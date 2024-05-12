@@ -1706,6 +1706,30 @@ column_b = "close_price"
 calculate_crossings(dataset, column_a=column_a, column_b=column_b)
 """
 
+SALARY_DAY = """
+import pandas as pd
+
+def calculate_second_last_day_of_month(df, date_col='kline_open_time'):
+    # Convert the timestamp to datetime format
+    df["temp_col"] = pd.to_datetime(df[date_col], unit='ms')
+    
+    # Calculate the last day of each month in the dataset
+    df['month_last_day'] = df["temp_col"] + pd.offsets.MonthEnd(0)
+    
+    # Calculate the second last day of the month by subtracting one day from the last day
+    df['second_last_day_of_month'] = df['month_last_day'] - pd.Timedelta(days=1)
+    
+    # Create a boolean indicator for the second last day of the month
+    df['is_second_last_day_of_month'] = (df["temp_col"].dt.date == df['second_last_day_of_month'].dt.date).astype(int)
+    
+    # Drop the helper columns
+    df.drop(['month_last_day', 'second_last_day_of_month', "temp_col"], axis=1, inplace=True)
+
+# Usage example:
+date_col = "kline_open_time"
+calculate_second_last_day_of_month(dataset, date_col=date_col)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -2246,6 +2270,13 @@ DEFAULT_CODE_PRESETS = [
         category=CodePresetCategories.INDICATOR,
         description="This function determines the point when two columns cross. It generats two new columns: one when column A crosses above column B and also when column A crosses below column B.",
         labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=SALARY_DAY,
+        name="SALARY_DAY",
+        category=CodePresetCategories.INDICATOR,
+        description="This function determines the point when two columns cross. It generats two new columns: one when column A crosses above column B and also when column A crosses below column B.",
+        labels=CodePresetLabels.SEASONAL,
     ),
 ]
 
