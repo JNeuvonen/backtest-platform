@@ -100,8 +100,8 @@ const getTradesData = (
       safeDivide(cumulativeResults, ret.length, 0),
       2
     ),
-    worstTradePerc: worstTrade.percent_result,
-    bestTradePerc: bestTrade.percent_result,
+    worstTradePerc: worstTrade !== undefined ? worstTrade.percent_result : null,
+    bestTradePerc: bestTrade !== undefined ? bestTrade.percent_result : null,
     shareOfAllTrades: roundNumberDropRemaining(
       safeDivide(totalTrades, trades.length, 0) * 100,
       2
@@ -160,10 +160,13 @@ export const LongShortBacktestsDetailsView = () => {
       );
       const worstTrade = trades[0];
       const bestTrade = trades[trades.length - 1];
-      setFilterTradesRange([
-        worstTrade.percent_result,
-        bestTrade.percent_result,
-      ]);
+
+      if (worstTrade && bestTrade) {
+        setFilterTradesRange([
+          worstTrade.percent_result,
+          bestTrade.percent_result,
+        ]);
+      }
     }
   }, [backtestQuery.data]);
 
