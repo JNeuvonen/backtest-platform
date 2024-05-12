@@ -1730,6 +1730,57 @@ date_col = "kline_open_time"
 calculate_second_last_day_of_month(dataset, date_col=date_col)
 """
 
+IS_MONDAY = """
+import pandas as pd
+
+def calculate_is_monday(df, timestamp_col='kline_open_time'):
+    # Convert timestamp from milliseconds to datetime
+    df['datetime'] = pd.to_datetime(df[timestamp_col], unit='ms')
+    
+    # Determine if the day is Monday (Monday is 0 in dt.weekday)
+    df['is_monday'] = (df['datetime'].dt.weekday == 0).astype(int)
+    
+    # Drop the temporary datetime column
+    df.drop(columns=['datetime'], inplace=True)
+
+# Usage example:
+timestamp_col = "kline_open_time"
+calculate_is_monday(dataset, timestamp_col=timestamp_col)
+"""
+
+EVENT_PERC_CHANGE_FLAG = """
+import pandas as pd
+
+def create_change_flag(df, close_col='close_price', flag_col='is_monday', change_threshold=2, direction='up'):
+    # Create a column for the previous day's closing price
+    df['previous_close'] = df[close_col].shift(1)
+    
+    # Calculate the percentage change from the previous close to the current close
+    df['percentage_change'] = ((df[close_col] - df['previous_close']) / df['previous_close']) * 100
+    
+    # Define the condition based on the direction of the change
+    if direction.lower() == 'up':
+        condition = df['percentage_change'] > change_threshold
+    elif direction.lower() == 'down':
+        condition = df['percentage_change'] < -change_threshold
+    else:
+        raise ValueError("Direction must be 'up' or 'down'")
+    
+    # Flag days based on the specified flag column and the condition
+    flag_label = f"{flag_col}_changed_{direction}_more_than_{change_threshold}_percent"
+    df[flag_label] = (condition & (df[flag_col] == 1)).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['previous_close', 'percentage_change'], inplace=True)
+
+# Usage example:
+close_col = "close_price"
+flag_col = "is_monday"
+change_threshold = 2
+direction = "up"
+create_change_flag(dataset, close_col=close_col, flag_col=flag_col, change_threshold=change_threshold, direction=direction)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -2275,8 +2326,22 @@ DEFAULT_CODE_PRESETS = [
         code=SALARY_DAY,
         name="SALARY_DAY",
         category=CodePresetCategories.INDICATOR,
-        description="This function determines the point when two columns cross. It generats two new columns: one when column A crosses above column B and also when column A crosses below column B.",
+        description="A flag that says whether the day is 2nd last day of the month. The global payday is thought to be the last day of the month.",
         labels=CodePresetLabels.SEASONAL,
+    ),
+    CodePreset(
+        code=IS_MONDAY,
+        name="IS_MONDAY",
+        category=CodePresetCategories.INDICATOR,
+        description="A flag that says whether current day is monday.",
+        labels=CodePresetLabels.SEASONAL,
+    ),
+    CodePreset(
+        code=EVENT_PERC_CHANGE_FLAG,
+        name="PRICE_CHANGE_ON_EVENT_FLAG",
+        category=CodePresetCategories.INDICATOR,
+        description="Function that is provided a binary column (0 or 1) and computes whether significant enough ROCP happened on cases where the binary column's value is 1.",
+        labels=CodePresetLabels.CUSTOM,
     ),
 ]
 
