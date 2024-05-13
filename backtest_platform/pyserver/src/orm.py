@@ -27,5 +27,5 @@ def drop_tables():
 def create_tables():
     try:
         Base.metadata.create_all(engine)
-    except Exception:
+    except Exception as e:
         pass

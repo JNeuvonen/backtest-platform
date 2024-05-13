@@ -1,5 +1,6 @@
 import pandas as pd
 from binance import Client
+from sqlalchemy import orm
 from log import LogExceptionContext
 from orm import engine
 from dataset_utils import read_dataset_to_mem
@@ -8,6 +9,7 @@ from schema.data_transformation import (
     DataTransformationQuery,
 )
 from schema.strategy import StrategyQuery
+from schema.longshortticker import LongShortTicker, LongShortTickerQuery
 
 from utils import (
     NUM_REQ_KLINES_BUFFER,
@@ -129,6 +131,128 @@ def convert_orig_cols_to_numeric(df):
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
 
+def long_short_transform_and_predict(longshort_strategy, klines, transformations):
+    results_dict = {
+        "fetched_data": klines,
+        "transformed_data": None,
+        "is_valid_buy": False,
+        "is_valid_sell": False,
+    }
+
+    for item in transformations:
+        data_transformations_helper = {
+            "{DATA_TRANSFORMATIONS_FUNC}": gen_data_transformations_code([item])
+        }
+        exec(
+            replace_placeholders_on_code_templ(
+                CodeTemplates.DATA_TRANSFORMATIONS, data_transformations_helper
+            ),
+            globals(),
+            results_dict,
+        )
+
+    trade_decision_helper = {
+        "{IS_VALID_BUY_FUNC}": longshort_strategy.buy_cond,
+        "{IS_VALID_SELL_FUNC}": longshort_strategy.sell_cond,
+    }
+
+    exec(
+        replace_placeholders_on_code_templ(
+            CodeTemplates.LONG_SHORT_BUY_AND_SELL, trade_decision_helper
+        ),
+        globals(),
+        results_dict,
+    )
+
+    return {
+        "is_on_pred_serv_err": False,
+        "is_valid_buy": results_dict["is_valid_buy"],
+        "is_valid_sell": results_dict["is_valid_sell"],
+    }
+
+
+def long_short_process_ticker(longshort_strategy, transformations, ticker):
+    if ticker.last_kline_open_time_sec is None:
+        klines = fetch_binance_klines(
+            ticker.symbol,
+            longshort_strategy.candle_interval,
+            calculate_timestamp_for_kline_fetch(
+                longshort_strategy.num_req_klines, longshort_strategy.kline_size_ms
+            ),
+        )
+        klines.to_sql(ticker.dataset_name, con=engine, if_exists="replace", index=False)
+
+        last_kline_open_time_sec = get_last_kline_open_time(klines)
+
+        decisions = long_short_transform_and_predict(
+            longshort_strategy, klines, transformations
+        )
+
+        LongShortTickerQuery.update(
+            ticker.id,
+            {"last_kline_open_time_sec": last_kline_open_time_sec, **decisions},
+        )
+        return decisions
+    else:
+        last_kline_open_time_ms = (ticker.last_kline_open_time_sec * 1000) + 1
+        current_time_ms = get_current_timestamp_ms()
+
+        if (
+            current_time_ms
+            >= last_kline_open_time_ms + longshort_strategy.kline_size_ms * 2
+        ):
+            klines = fetch_binance_klines(
+                ticker.symbol,
+                longshort_strategy.candle_interval,
+                last_kline_open_time_ms,
+            )
+        else:
+            klines = pd.DataFrame()
+
+        if not klines.empty:
+            last_kline_open_time_sec = get_last_kline_open_time(klines)
+            df = read_dataset_to_mem(engine, ticker.dataset_name)
+            df = pd.concat([df, klines], ignore_index=True)
+            df = df.align(klines, axis=1)[0]
+            df.sort_values(by="kline_open_time", ascending=True, inplace=True)
+            df = df.tail(longshort_strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
+            df.to_sql(ticker.dataset_name, con=engine, if_exists="replace", index=False)
+
+            convert_orig_cols_to_numeric(df)
+
+            decisions = long_short_transform_and_predict(
+                longshort_strategy, klines, transformations
+            )
+
+            LongShortTickerQuery.update(
+                ticker.id,
+                {"last_kline_open_time_sec": last_kline_open_time_sec, **decisions},
+            )
+            return decisions
+
+    return {
+        "is_valid_buy": ticker.is_valid_buy,
+        "is_valid_sell": ticker.is_valid_sell,
+        "is_on_Pred_serv_err": ticker.is_on_pred_serv_err,
+    }
+
+
+def update_long_short_tickers(longshort_strategy):
+    with LogExceptionContext():
+        tickers = LongShortTickerQuery.get_all_by_group_id(longshort_strategy.id)
+        transformations = (
+            DataTransformationQuery.get_transformations_by_longshort_group(
+                longshort_strategy.id
+            )
+        )
+
+        for ticker in tickers:
+            results = long_short_process_ticker(
+                longshort_strategy, transformations, ticker
+            )
+        print(tickers)
+
+
 def gen_trading_decisions(strategy):
     with LogExceptionContext(re_raise=False):
         if strategy.last_kline_open_time_sec is None:
@@ -191,3 +315,22 @@ def gen_trading_decisions(strategy):
             "should_close_trade": strategy.should_close_trade,
             "is_on_pred_serv_err": strategy.is_on_pred_serv_err,
         }
+
+
+def infer_assets(symbol: str) -> dict:
+    if symbol.endswith("USDT"):
+        quote_asset = "USDT"
+        base_asset = symbol[:-4]
+    elif symbol.endswith("BTC"):
+        quote_asset = "BTC"
+        base_asset = symbol[:-3]
+    elif symbol.endswith("ETH"):
+        quote_asset = "ETH"
+        base_asset = symbol[:-3]
+    elif symbol.endswith("BNB"):
+        quote_asset = "BNB"
+        base_asset = symbol[:-3]
+    else:
+        raise ValueError("Unsupported quote asset.")
+
+    return {"baseAsset": base_asset, "quoteAsset": quote_asset}

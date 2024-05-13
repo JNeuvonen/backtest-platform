@@ -10,6 +10,7 @@ from constants import LogLevel, LogSourceProgram, SlackWebhooks, TradeDirection
 from api.v1.request_types import BodyCreateTrade
 from slack import post_slack_message
 from schema.slack_bots import SlackWebhookQuery
+from utils import get_current_timestamp_ms
 
 
 class LogLevels:
@@ -183,13 +184,27 @@ def slack_log(msg: str, source_program: int, level: str):
     thread.start()
 
 
+last_log_message_time_ms = None
+
+
 def create_log(msg: str, level: str, source_program=LogSourceProgram.PRED_SERVER):
-    slack_log(msg, source_program, level)
-    id = CloudLogQuery.create_log_entry(
-        {
-            "message": msg,
-            "level": level,
-            "source_program": LogSourceProgram.PRED_SERVER,
-        }
-    )
-    return id
+    global last_log_message_time_ms
+    current_time_ms = get_current_timestamp_ms()
+
+    if last_log_message_time_ms is None or (
+        current_time_ms - last_log_message_time_ms >= 5000
+    ):
+        last_log_message_time_ms = current_time_ms
+        slack_log(msg, source_program, level)
+
+        def func_helper():
+            CloudLogQuery.create_log_entry(
+                {
+                    "message": msg,
+                    "level": level,
+                    "source_program": source_program,
+                }
+            )
+
+        thread = threading.Thread(target=func_helper)
+        thread.start()

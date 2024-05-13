@@ -12,9 +12,11 @@ from api.v1.log import router as v1_cloudlogs_router
 from api.v1.account import router as v1_account_router
 from api.v1.trade import router as v1_trade_router
 from api.v1.api_key import router as v1_api_key_router
+from api.v1.longshort import router as v1_longshort
 from middleware import ValidateIPMiddleware
 from constants import LogLevel
-from binance_utils import gen_trading_decisions
+from binance_utils import gen_trading_decisions, update_long_short_tickers
+from schema.longshortgroup import LongShortGroupQuery
 from utils import get_current_timestamp_ms
 from strategy import (
     format_pred_loop_log_msg,
@@ -40,6 +42,7 @@ class Routers:
     V1_ACC = "/v1/acc"
     V1_TRADE = "/v1/trade"
     V1_API_KEY = "/v1/api-key"
+    V1_LONG_SHORT = "/v1/longshort"
 
 
 app = FastAPI(lifespan=lifespan)
@@ -49,6 +52,7 @@ app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
 app.include_router(v1_account_router, prefix=Routers.V1_ACC)
 app.include_router(v1_trade_router, prefix=Routers.V1_TRADE)
 app.include_router(v1_api_key_router, prefix=Routers.V1_API_KEY)
+app.include_router(v1_longshort, prefix=Routers.V1_LONG_SHORT)
 
 app.add_middleware(ValidateIPMiddleware)
 app.add_middleware(
@@ -83,11 +87,12 @@ class DataProviderService:
 class PredictionService:
     def __init__(self):
         self.stop_event = Event()
-        self.thread = Thread(target=self.make_predictions_loop)
+        self.rule_based_thread = Thread(target=self.make_predictions_loop)
+        self.long_short_thread = Thread(target=self.make_long_short_predictions_loop)
 
     def make_predictions_loop(self):
         logger = get_logger()
-        logger.info("Initiating prediction service")
+        logger.info("Starting rule based loop")
 
         last_loop_complete_timestamp = get_current_timestamp_ms()
         last_slack_message_timestamp = get_current_timestamp_ms()
@@ -129,16 +134,36 @@ class PredictionService:
 
             last_loop_complete_timestamp = get_current_timestamp_ms()
 
+    def make_long_short_predictions_loop(self):
+        logger = get_logger()
+        logger.info("Starting longshort loop")
+
+        last_loop_complete_timestamp = get_current_timestamp_ms()
+        last_slack_message_timestamp = get_current_timestamp_ms()
+        last_logs_cleared_timestamp = get_current_timestamp_ms()
+
+        while not self.stop_event.is_set():
+            strategies = LongShortGroupQuery.get_strategies()
+
+            for strategy in strategies:
+                update_long_short_tickers(strategy)
+                pass
+
     def start(self):
-        if self.thread is None or not self.thread.is_alive():
-            self.thread = Thread(target=self.make_predictions_loop)
-            self.thread.start()
+        if self.rule_based_thread is None or not self.rule_based_thread.is_alive():
+            self.rule_based_thread = Thread(target=self.make_predictions_loop)
+            self.long_short_thread = Thread(
+                target=self.make_long_short_predictions_loop
+            )
+            self.rule_based_thread.start()
+            self.long_short_thread.start()
 
     def stop(self):
-        if self.thread and self.thread.is_alive():
+        if self.rule_based_thread and self.rule_based_thread.is_alive():
             self.stop_event.set()
-            self.thread.join()
-            self.thread = None
+            self.rule_based_thread.join()
+            self.rule_based_thread = None
+            self.long_short_thread = None
 
 
 prediction_service = PredictionService()
