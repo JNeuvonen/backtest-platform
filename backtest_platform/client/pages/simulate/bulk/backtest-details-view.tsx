@@ -10,7 +10,10 @@ import {
   Switch,
 } from "@chakra-ui/react";
 import { BacktestSummaryCard } from "../dataset/backtest/SummaryCard";
-import { FetchBacktestByIdRes } from "../../../clients/queries/response-types";
+import {
+  BacktestObject,
+  FetchBacktestByIdRes,
+} from "../../../clients/queries/response-types";
 import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
 import { Line } from "recharts";
 import {
@@ -131,6 +134,59 @@ export const getDateRange = (portfolioTicks: ChartTick[]): string => {
   });
 
   return `${firstDate} - ${lastDate}`;
+};
+
+const LongShortSummaryCard = ({ backtest }: { backtest: BacktestObject }) => {
+  return (
+    <ChakraCard heading={<Heading size={"md"}>Trading rules</Heading>}>
+      <div style={{ marginTop: "16px" }}>
+        <Heading size={"md"}>Assumptions</Heading>
+
+        <div style={{ marginTop: "16px" }}>
+          <div style={{ marginTop: "8px" }}>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              Use time based close:{" "}
+              {backtest.use_time_based_close
+                ? `True, ${backtest.klines_until_close} candles`
+                : "False"}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              Use stop loss based close:{" "}
+              {backtest.use_stop_loss_based_close
+                ? `True, ${backtest.stop_loss_threshold_perc}%`
+                : "False"}
+            </pre>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY, marginTop: "16px" }}>
+              Use profit (%) based close:{" "}
+              {backtest.use_profit_based_close
+                ? `True, ${backtest.take_profit_threshold_perc}%`
+                : "False"}
+            </pre>
+          </div>
+        </div>
+      </div>
+      <div style={{ marginTop: "16px" }}>
+        <Heading size={"md"}>Buy and sell rules</Heading>
+        <div style={{ marginTop: "16px" }}>
+          <div style={{ marginTop: "8px" }}>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
+              {backtest.long_short_buy_cond}
+            </pre>
+          </div>
+          <div style={{ marginTop: "8px" }}>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
+              {backtest.long_short_sell_cond}
+            </pre>
+          </div>
+          <div style={{ marginTop: "8px" }}>
+            <pre style={{ color: COLOR_CONTENT_PRIMARY }}>
+              {backtest.long_short_exit_cond}
+            </pre>
+          </div>
+        </div>
+      </div>
+    </ChakraCard>
+  );
 };
 
 export const LongShortBacktestsDetailsView = () => {
@@ -298,6 +354,7 @@ export const LongShortBacktestsDetailsView = () => {
           />
         </div>
       </div>
+      <LongShortSummaryCard backtest={backtest} />
     </div>
   );
 };
