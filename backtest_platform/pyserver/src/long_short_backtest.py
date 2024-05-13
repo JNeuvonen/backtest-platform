@@ -206,6 +206,8 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         )
         idx = 0
 
+        logger = get_logger()
+
         for _, row in kline_open_times.iterrows():
             idx += 1
             if idx <= idx_data_range_start or idx > idx_data_range_end:
@@ -222,6 +224,8 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.process_bar(
                 kline_open_time=kline_open_time, kline_state=kline_state
             )
+
+            print(idx)
 
         profit_factor_dict = calc_long_short_profit_factor(
             long_short_backtest.completed_trades
