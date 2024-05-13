@@ -203,6 +203,9 @@ export interface BacktestObject {
   ml_exit_long_cond: string;
   ml_enter_short_cond: string;
   ml_exit_short_cond: string;
+  long_short_buy_cond: string;
+  long_short_sell_cond: string;
+  long_short_exit_cond: string;
   name: string;
   data: BacktestBalance[];
   trade_count: number;
