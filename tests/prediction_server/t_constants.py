@@ -1,6 +1,7 @@
 from conf import TEST_RUN_PORT
 from import_helper import (
     account_router,
+    longshort_router,
     pred_server_routers,
     strategy_router,
     cloudlogs_router,
@@ -17,6 +18,7 @@ StrategyRouter = strategy_router()
 LogsRouter = cloudlogs_router()
 AccRouter = account_router()
 TradeRouter = trade_router()
+LongshortRouter = longshort_router()
 
 
 class URL:
@@ -39,8 +41,16 @@ class URL:
         return cls.BASE_URL + Routers.V1_TRADE
 
     @classmethod
+    def _longshort_route(cls):
+        return cls.BASE_URL + Routers.V1_LONG_SHORT
+
+    @classmethod
     def create_strategy(cls):
         return cls._strategy_route() + StrategyRouter.STRATEGY
+
+    @classmethod
+    def create_longshort_strategy(cls):
+        return cls._longshort_route() + LongshortRouter.LONG_SHORT
 
     @classmethod
     def create_trade(cls):

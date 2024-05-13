@@ -10,6 +10,7 @@ from api.v1.strategy import RoutePaths as strat_router
 from api.v1.log import RoutePaths as logs_router
 from api.v1.account import RoutePaths as acc_router
 from api.v1.trade import RoutePaths as trade_router_helper
+from api.v1.longshort import RoutePaths as longshort_router_helper
 from schema.api_key import APIKeyQuery
 from schema.slack_bots import SlackWebhookQuery
 from constants import SlackWebhooks
@@ -26,6 +27,7 @@ def stop_server():
 def drop_tables():
     engine = get_db_engine()
     orm.drop_tables(engine)
+
 
 def strategy_router():
     return strat_router
@@ -45,6 +47,10 @@ def create_tables():
 
 def trade_router():
     return trade_router_helper
+
+
+def longshort_router():
+    return longshort_router_helper
 
 
 def pred_server_routers():
