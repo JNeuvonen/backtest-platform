@@ -76,7 +76,7 @@ def test_backtest_time_based_close(cleanup_db, add_custom_datasets):
     Post.create_manual_backtest(body)
 
 
-@pytest.mark.input_dump
+@pytest.mark.long_short_test
 def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
     datasets = fixt_add_blue_chip_1d_datasets
     body = backtest_rule_based_v2
@@ -99,6 +99,7 @@ def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
     body["fetch_latest_data"] = False
 
     Post.create_long_short_backtest(body)
+    time.sleep(1000)
 
 
 @pytest.mark.dev
