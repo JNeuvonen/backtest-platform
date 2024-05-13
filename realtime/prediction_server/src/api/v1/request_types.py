@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
@@ -40,6 +40,32 @@ class BodyCreateStrategy(BaseModel):
     is_leverage_allowed: bool
     is_short_selling_strategy: bool
 
+    data_transformations: List[DataTransformation] = Field(default_factory=list)
+
+
+class BodyCreateLongShortStrategy(BaseModel):
+    name: str
+    candle_interval: str
+    buy_cond: str
+    sell_cond: str
+    exit_cond: str
+
+    num_req_klines: int
+    max_simultaneous_positions: int
+    kline_size_ms: int
+    klines_until_close: int
+
+    max_leverage_ratio: float
+    take_profit_threshold_perc: float
+    stop_loss_threshold_perc: float
+
+    use_time_based_close: float
+    use_profit_based_close: float
+    use_stop_loss_based_close: float
+
+    use_taker_order: bool
+
+    asset_universe: List[Dict]
     data_transformations: List[DataTransformation] = Field(default_factory=list)
 
 
