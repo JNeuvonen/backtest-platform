@@ -53,6 +53,7 @@ async def run_rule_based_mass_backtest(
         )
 
         for symbol in body.symbols:
+            print(symbol)
             table_name = get_binance_dataset_tablename(symbol, interval)
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
@@ -62,17 +63,20 @@ async def run_rule_based_mass_backtest(
 
             DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
 
-            for transformation in data_transformations:
-                python_program = PythonCode.on_dataset(
-                    table_name, transformation.transformation_code
-                )
-                exec_python(python_program)
-                DataTransformationQuery.create_entry(
-                    {
-                        "transformation_code": transformation.transformation_code,
-                        "dataset_id": symbol_dataset.id,
-                    }
-                )
+            try:
+                for transformation in data_transformations:
+                    python_program = PythonCode.on_dataset(
+                        table_name, transformation.transformation_code
+                    )
+                    exec_python(python_program)
+                    DataTransformationQuery.create_entry(
+                        {
+                            "transformation_code": transformation.transformation_code,
+                            "dataset_id": symbol_dataset.id,
+                        }
+                    )
+            except Exception:
+                continue
 
             backtest_body = {
                 "backtest_data_range": [
