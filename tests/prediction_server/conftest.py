@@ -76,7 +76,7 @@ def setup_test_environment():
         drop_tables()
     create_tables()
     kill_process_on_port(TEST_RUN_PORT)
-    server_process = multiprocessing.Process(target=start_service, daemon=True)
+    server_process = multiprocessing.Process(target=start_service, daemon=False)
     server_process.start()
     time.sleep(5)  # Allow server to start
     yield
