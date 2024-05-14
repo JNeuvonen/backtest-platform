@@ -19,8 +19,7 @@ func main() {
 		strategies := predServClient.FetchStrategies()
 		account, _ := predServClient.FetchAccount(accountName)
 
-		if IsEmptyStruct(account) || account.PreventAllTrading ||
-			GetNumFailedCallsToPredServer() >= FAILED_CALLS_TO_UPDATE_STRAT_STATE_LIMIT {
+		if IsEmptyStruct(account) || account.PreventAllTrading {
 			continue
 		}
 
