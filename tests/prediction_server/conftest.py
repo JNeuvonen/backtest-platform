@@ -16,6 +16,8 @@ from import_helper import (
     create_api_key_entry,
     create_tables,
 )
+from fixtures.account import create_master_acc
+from t_utils import Post
 
 load_dotenv()
 
@@ -26,6 +28,13 @@ def start_service():
 
 def generate_api_key_for_testrun():
     pass
+
+
+@pytest.fixture
+def fixt_create_master_acc(create_api_key):
+    master_acc = create_master_acc()
+    Post.create_account(create_api_key, master_acc)
+    return create_api_key
 
 
 @pytest.fixture
