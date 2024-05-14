@@ -4,6 +4,18 @@ type StrategyResponse struct {
 	Data []Strategy `json:"data"`
 }
 
+type LongShortGroupResponse struct {
+	Data []LongShortGroup `json:"data"`
+}
+
+type LongShortTickerResponse struct {
+	Data []LongShortTicker `json:"data"`
+}
+
+type LongShortPairResponse struct {
+	Data []LongShortPair `json:"data"`
+}
+
 type AccountByNameResponse struct {
 	Data Account `json:"data"`
 }
@@ -44,6 +56,59 @@ type Strategy struct {
 	IsShortSellingStrategy     bool    `json:"is_short_selling_strategy"`
 	IsDisabled                 bool    `json:"is_disabled"`
 	IsInPosition               bool    `json:"is_in_position"`
+}
+
+type LongShortGroup struct {
+	ID                       int     `json:"id"`
+	Name                     string  `json:"name"`
+	CandleInterval           string  `json:"candle_interval"`
+	BuyCond                  string  `json:"buy_cond"`
+	SellCond                 string  `json:"sell_cond"`
+	ExitCond                 string  `json:"exit_cond"`
+	NumReqKlines             int     `json:"num_req_klines"`
+	MaxSimultaneousPositions int     `json:"max_simultaneous_positions"`
+	KlinesUntilClose         int     `json:"klines_until_close"`
+	KlineSizeMs              int     `json:"kline_size_ms"`
+	MaxLeverageRatio         float64 `json:"max_leverage_ratio"`
+	TakeProfitThresholdPerc  float64 `json:"take_profit_threshold_perc"`
+	StopLossThresholdPerc    float64 `json:"stop_loss_threshold_perc"`
+	IsDisabled               bool    `json:"is_disabled"`
+	UseTimeBasedClose        bool    `json:"use_time_based_close"`
+	UseProfitBasedClose      bool    `json:"use_profit_based_close"`
+	UseStopLossBasedClose    bool    `json:"use_stop_loss_based_close"`
+	UseTakerOrder            bool    `json:"use_taker_order"`
+}
+
+type LongShortTicker struct {
+	ID                     int    `json:"id"`
+	LongShortGroupID       int    `json:"long_short_group_id"`
+	Symbol                 string `json:"symbol"`
+	BaseAsset              string `json:"base_asset"`
+	QuoteAsset             string `json:"quote_asset"`
+	DatasetName            string `json:"dataset_name"`
+	LastKlineOpenTimeSec   int64  `json:"last_kline_open_time_sec"`
+	TradeQuantityPrecision int    `json:"trade_quantity_precision"`
+	IsValidBuy             bool   `json:"is_valid_buy"`
+	IsValidSell            bool   `json:"is_valid_sell"`
+	IsOnPredServErr        bool   `json:"is_on_pred_serv_err"`
+}
+
+type LongShortPair struct {
+	ID                    int     `json:"id"`
+	LongShortGroupID      int     `json:"long_short_group_id"`
+	BuyTickerID           int     `json:"buy_ticker_id"`
+	SellTickerID          int     `json:"sell_ticker_id"`
+	BuyTickerDatasetName  string  `json:"buy_ticker_dataset_name"`
+	SellTickerDatasetName string  `json:"sell_ticker_dataset_name"`
+	BuyOpenTime           int     `json:"buy_open_time"`
+	SellOpenTime          int     `json:"sell_open_time"`
+	BuyOpenPrice          float64 `json:"buy_open_price"`
+	SellOpenPrice         float64 `json:"sell_open_price"`
+	BuyOpenQtyInBase      float64 `json:"buy_open_qty_in_base"`
+	SellOpenQtyInQuote    float64 `json:"sell_open_qty_in_quote"`
+	DebtOpenQtyInBase     float64 `json:"debt_open_qty_in_base"`
+	InPosition            bool    `json:"in_position"`
+	ShouldClose           bool    `json:"should_close"`
 }
 
 type CloudLogBody struct {

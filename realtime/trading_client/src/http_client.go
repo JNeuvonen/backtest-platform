@@ -87,6 +87,66 @@ func (client *HttpClient) FetchStrategies() []Strategy {
 	}
 }
 
+func (client *HttpClient) FetchLongShortStrategies() []LongShortGroup {
+	response, err := client.Get(PRED_SERV_V1_LONGSHORT)
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		return []LongShortGroup{}
+	}
+
+	if response != nil && len(response) > 0 {
+		var strategyResponse LongShortGroupResponse
+		err := json.Unmarshal(response, &strategyResponse)
+		if err != nil {
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+			return []LongShortGroup{}
+		}
+		return strategyResponse.Data
+	} else {
+		return []LongShortGroup{}
+	}
+}
+
+func (client *HttpClient) FetchLongShortTickers(id int) []LongShortTicker {
+	response, err := client.Get(GetLongShortTickersEndpoint(id))
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		return []LongShortTicker{}
+	}
+
+	if response != nil && len(response) > 0 {
+		var strategyResponse LongShortTickerResponse
+		err := json.Unmarshal(response, &strategyResponse)
+		if err != nil {
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+			return []LongShortTicker{}
+		}
+		return strategyResponse.Data
+	} else {
+		return []LongShortTicker{}
+	}
+}
+
+func (client *HttpClient) FetchLongShortPairs(id int) []LongShortPair {
+	response, err := client.Get(GetLongShortTickersEndpoint(id))
+	if err != nil {
+		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		return []LongShortPair{}
+	}
+
+	if response != nil && len(response) > 0 {
+		var strategyResponse LongShortPairResponse
+		err := json.Unmarshal(response, &strategyResponse)
+		if err != nil {
+			CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+			return []LongShortPair{}
+		}
+		return strategyResponse.Data
+	} else {
+		return []LongShortPair{}
+	}
+}
+
 func FetchStrategies() []Strategy {
 	predServConfig := GetPredServerConfig()
 	headers := map[string]string{
