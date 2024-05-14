@@ -1,8 +1,8 @@
 import uvicorn
 import os
+from multiprocessing import Process, Event
 from contextlib import asynccontextmanager
 
-from threading import Event, Thread
 from orm import create_tables, test_db_conn
 from config import get_auto_whitelisted_ip, get_service_port
 from fastapi import FastAPI, Response, status
@@ -64,106 +64,90 @@ app.add_middleware(
 )
 
 
-class DataProviderService:
-    def __init__(self):
-        self.stop_event = Event()
-        self.thread = Thread(target=self.collect_data_loop)
+def rule_based_loop(stop_event):
+    logger = get_logger()
+    logger.info("Starting rule based loop")
 
-    def collect_data_loop(self):
-        pass
+    last_loop_complete_timestamp = get_current_timestamp_ms()
+    last_slack_message_timestamp = get_current_timestamp_ms()
+    last_logs_cleared_timestamp = get_current_timestamp_ms()
 
-    def start(self):
-        if self.thread is None or not self.thread.is_alive():
-            self.thread = Thread(target=self.collect_data_loop)
-            self.thread.start()
+    while not stop_event.is_set():
+        strategies = StrategyQuery.get_strategies()
 
-    def stop(self):
-        if self.thread and self.thread.is_alive():
-            self.stop_event.set()
-            self.thread.join()
-            self.thread = None
+        current_state_dict = {
+            "active_strategies": 0,
+            "strats_on_error": 0,
+            "strats_in_pos": 0,
+            "strats_wanting_to_close": 0,
+            "strats_wanting_to_enter": 0,
+            "strats_still": 0,
+        }
+        strategies_info = []
+
+        for strategy in strategies:
+            trading_decisions = gen_trading_decisions(strategy)
+            update_strategies_state_dict(
+                strategy, trading_decisions, current_state_dict, strategies_info
+            )
+
+        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+            create_log(
+                msg=format_pred_loop_log_msg(
+                    current_state_dict,
+                    strategies_info,
+                    last_loop_complete_timestamp,
+                ),
+                level=LogLevel.INFO,
+            )
+            last_slack_message_timestamp = get_current_timestamp_ms()
+
+        if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
+            CloudLogQuery.clear_outdated_logs()
+            last_logs_cleared_timestamp = get_current_timestamp_ms()
+
+        last_loop_complete_timestamp = get_current_timestamp_ms()
+
+
+def long_short_loop(stop_event):
+    logger = get_logger()
+    logger.info("Starting longshort loop")
+
+    last_loop_complete_timestamp = get_current_timestamp_ms()
+    last_slack_message_timestamp = get_current_timestamp_ms()
+    last_logs_cleared_timestamp = get_current_timestamp_ms()
+
+    while not stop_event.is_set():
+        strategies = LongShortGroupQuery.get_strategies()
+
+        for strategy in strategies:
+            update_long_short_tickers(strategy)
 
 
 class PredictionService:
     def __init__(self):
         self.stop_event = Event()
-        self.rule_based_thread = Thread(target=self.make_predictions_loop)
-        self.long_short_thread = Thread(target=self.make_long_short_predictions_loop)
-
-    def make_predictions_loop(self):
-        logger = get_logger()
-        logger.info("Starting rule based loop")
-
-        last_loop_complete_timestamp = get_current_timestamp_ms()
-        last_slack_message_timestamp = get_current_timestamp_ms()
-        last_logs_cleared_timestamp = get_current_timestamp_ms()
-
-        while not self.stop_event.is_set():
-            strategies = StrategyQuery.get_strategies()
-
-            current_state_dict = {
-                "active_strategies": 0,
-                "strats_on_error": 0,
-                "strats_in_pos": 0,
-                "strats_wanting_to_close": 0,
-                "strats_wanting_to_enter": 0,
-                "strats_still": 0,
-            }
-            strategies_info = []
-
-            for strategy in strategies:
-                trading_decisions = gen_trading_decisions(strategy)
-                update_strategies_state_dict(
-                    strategy, trading_decisions, current_state_dict, strategies_info
-                )
-
-            if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
-                create_log(
-                    msg=format_pred_loop_log_msg(
-                        current_state_dict,
-                        strategies_info,
-                        last_loop_complete_timestamp,
-                    ),
-                    level=LogLevel.INFO,
-                )
-                last_slack_message_timestamp = get_current_timestamp_ms()
-
-            if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
-                CloudLogQuery.clear_outdated_logs()
-                last_logs_cleared_timestamp = get_current_timestamp_ms()
-
-            last_loop_complete_timestamp = get_current_timestamp_ms()
-
-    def make_long_short_predictions_loop(self):
-        logger = get_logger()
-        logger.info("Starting longshort loop")
-
-        last_loop_complete_timestamp = get_current_timestamp_ms()
-        last_slack_message_timestamp = get_current_timestamp_ms()
-        last_logs_cleared_timestamp = get_current_timestamp_ms()
-
-        while not self.stop_event.is_set():
-            strategies = LongShortGroupQuery.get_strategies()
-
-            for strategy in strategies:
-                update_long_short_tickers(strategy)
-                pass
+        self.rule_based_process = None
+        self.long_short_process = None
 
     def start(self):
-        if self.rule_based_thread is None or not self.rule_based_thread.is_alive():
-            self.rule_based_thread = Thread(target=self.make_predictions_loop)
-            self.long_short_thread = Thread(
-                target=self.make_long_short_predictions_loop
+        if self.rule_based_process is None or not self.rule_based_process.is_alive():
+            self.rule_based_process = Process(
+                target=rule_based_loop, args=(self.stop_event,), daemon=False
             )
-            self.rule_based_thread.start()
-            self.long_short_thread.start()
+            self.long_short_process = Process(
+                target=long_short_loop, args=(self.stop_event,), daemon=False
+            )
+            self.rule_based_process.start()
+            self.long_short_process.start()
 
     def stop(self):
-        if self.rule_based_thread and self.rule_based_thread.is_alive():
+        if self.rule_based_process and self.rule_based_process.is_alive():
             self.stop_event.set()
-            self.rule_based_thread.join()
-            self.rule_based_thread = None
-            self.long_short_thread = None
+            self.rule_based_process.join()
+            self.long_short_process.join()
+            self.rule_based_process = None
+            self.long_short_process = None
 
 
 prediction_service = PredictionService()

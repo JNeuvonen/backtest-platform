@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+backtest_report.html
+databases
 
 .vite
 
@@ -41,3 +43,4 @@ sandbox.py
 venv_pred_server
 
 *debug_bin*
+*thirdparty*
