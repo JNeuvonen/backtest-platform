@@ -26,6 +26,7 @@ from query_backtest import BacktestQuery
 from query_mass_backtest import MassBacktestQuery
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
+from multiprocessing import Process
 from request_types import (
     BodyCreateLongShortBacktest,
     BodyCreateManualBacktest,
@@ -274,7 +275,8 @@ async def route_combined_strat_summary(
 @router.post(RoutePaths.LONG_SHORT_BACKTEST)
 async def route_long_short_backtest(body: BodyCreateLongShortBacktest):
     with HttpResponseContext():
-        asyncio.create_task(run_long_short_backtest(body))
+        process = Process(target=run_long_short_backtest, args=(body,))
+        process.start()
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )

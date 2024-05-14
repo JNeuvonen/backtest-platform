@@ -2,7 +2,7 @@ import logging
 import math
 from typing import Dict, List, Set
 
-from api_binance import save_historical_klines
+from api_binance import non_async_save_historical_klines, save_historical_klines
 from backtest_utils import (
     calc_long_short_profit_factor,
     calc_max_drawdown,
@@ -135,7 +135,7 @@ def get_datasets_kline_state(
     }
 
 
-async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
+def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
     dataset_table_names = []
     with LogExceptionContext():
         dataset_table_name_to_id_map = {}
@@ -148,7 +148,9 @@ async def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             if dataset is None or backtest_info.fetch_latest_data:
-                await save_historical_klines(item, backtest_info.candle_interval, True)
+                non_async_save_historical_klines(
+                    item, backtest_info.candle_interval, True
+                )
                 dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             dataset_name = dataset.dataset_name
