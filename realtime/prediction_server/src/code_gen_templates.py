@@ -24,6 +24,12 @@ is_valid_buy = get_is_valid_buy(transformed_data.iloc[-1])
 is_valid_sell = get_is_valid_sell(transformed_data.iloc[-1])
     """
 
+    LONG_SHORT_PAIR_EXIT = """
+{EXIT_PAIR_TRADE_FUNC}
+
+should_close_trade = get_exit_trade_decision(buy_df, sell_df)
+"""
+
 
 class PyCode:
     def __init__(self):

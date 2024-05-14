@@ -1,5 +1,5 @@
 from typing import Dict
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from orm import Base, Session
 from log import LogExceptionContext
 
@@ -13,15 +13,20 @@ class LongShortPair(Base):
     buy_ticker_id = Column(Integer, ForeignKey("long_short_ticker.id"))
     sell_ticker_id = Column(Integer, ForeignKey("long_short_ticker.id"))
 
+    buy_ticker_dataset_name = Column(String)
+    sell_ticker_dataset_name = Column(String)
+
     buy_open_time = Column(Integer)
     sell_open_time = Column(Integer)
 
     buy_open_price = Column(Float)
     sell_open_price = Column(Float)
-    buy_open_qty = Column(Float)
-    sell_open_qty = Column(Float)
+    buy_open_qty_in_base = Column(Float)
+    sell_open_qty_in_quote = Column(Float)
+    debt_open_qty_in_base = Column(Float)
 
-    in_position = Column(Boolean)
+    in_position = Column(Boolean, default=False)
+    should_close = Column(Boolean, default=False)
 
 
 class LongShortPairQuery:

@@ -11,6 +11,18 @@ def read_dataset_to_mem(engine, table_name: str):
         return df
 
 
+def read_latest_row(engine, table_name: str):
+    with engine.connect() as conn:
+        query = f"""
+        SELECT * FROM "{table_name}"
+        WHERE "kline_open_time" = (
+            SELECT MAX("kline_open_time") FROM "{table_name}"
+        )
+        """
+        df = pd.read_sql_query(query, conn)
+        return df
+
+
 def check_table_exists(db_path: str, table_name: str) -> bool:
     with sqlite3.connect(db_path) as conn:
         query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"

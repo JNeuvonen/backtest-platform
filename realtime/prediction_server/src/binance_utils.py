@@ -1,15 +1,16 @@
+from typing import Set
 import pandas as pd
 from binance import Client
-from sqlalchemy import orm
 from log import LogExceptionContext
 from orm import engine
-from dataset_utils import read_dataset_to_mem
+from dataset_utils import read_dataset_to_mem, read_latest_row
 from code_gen_templates import CodeTemplates
 from schema.data_transformation import (
     DataTransformationQuery,
 )
 from schema.strategy import StrategyQuery
-from schema.longshortticker import LongShortTicker, LongShortTickerQuery
+from schema.longshortticker import LongShortTickerQuery
+from schema.longshortpair import LongShortPairQuery
 
 from utils import (
     NUM_REQ_KLINES_BUFFER,
@@ -168,7 +169,7 @@ def long_short_transform_and_predict(longshort_strategy, klines, transformations
         "is_on_pred_serv_err": False,
         "is_valid_buy": results_dict["is_valid_buy"],
         "is_valid_sell": results_dict["is_valid_sell"],
-    }
+    }, results_dict["transformed_data"]
 
 
 def long_short_process_ticker(longshort_strategy, transformations, ticker):
@@ -180,12 +181,15 @@ def long_short_process_ticker(longshort_strategy, transformations, ticker):
                 longshort_strategy.num_req_klines, longshort_strategy.kline_size_ms
             ),
         )
-        klines.to_sql(ticker.dataset_name, con=engine, if_exists="replace", index=False)
 
         last_kline_open_time_sec = get_last_kline_open_time(klines)
 
-        decisions = long_short_transform_and_predict(
+        decisions, transformed_data = long_short_transform_and_predict(
             longshort_strategy, klines, transformations
+        )
+
+        transformed_data.to_sql(
+            ticker.dataset_name, con=engine, if_exists="replace", index=False
         )
 
         LongShortTickerQuery.update(
@@ -216,12 +220,15 @@ def long_short_process_ticker(longshort_strategy, transformations, ticker):
             df = df.align(klines, axis=1)[0]
             df.sort_values(by="kline_open_time", ascending=True, inplace=True)
             df = df.tail(longshort_strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
-            df.to_sql(ticker.dataset_name, con=engine, if_exists="replace", index=False)
 
             convert_orig_cols_to_numeric(df)
 
-            decisions = long_short_transform_and_predict(
-                longshort_strategy, klines, transformations
+            decisions, transformed_data = long_short_transform_and_predict(
+                longshort_strategy, df, transformations
+            )
+
+            transformed_data.to_sql(
+                ticker.dataset_name, con=engine, if_exists="replace", index=False
             )
 
             LongShortTickerQuery.update(
@@ -237,20 +244,110 @@ def long_short_process_ticker(longshort_strategy, transformations, ticker):
     }
 
 
-def update_long_short_tickers(longshort_strategy):
+def find_ticker(tickers, ticker_id):
+    for item in tickers:
+        if item.id == ticker_id:
+            return item
+    return None
+
+
+def long_short_create_pairs(
+    current_pairs, buy_candidates, sell_candidates, long_short_group_id, tickers
+):
+    used_buy_ids = {pair.buy_ticker_id for pair in current_pairs}
+    used_sell_ids = {pair.sell_ticker_id for pair in current_pairs}
+
+    used_ids = used_buy_ids | used_sell_ids
+
+    valid_buys = [buy for buy in buy_candidates if buy not in used_ids]
+    valid_sells = [sell for sell in sell_candidates if sell not in used_ids]
+
+    n_valid_pairs = min(len(valid_buys), len(valid_sells))
+
+    for i in range(n_valid_pairs):
+        buy_ticker_id = valid_buys[i]
+        sell_ticker_id = valid_sells[i]
+
+        buy_ticker = find_ticker(tickers, buy_ticker_id)
+        sell_ticker = find_ticker(tickers, sell_ticker_id)
+
+        if buy_ticker is None or sell_ticker is None:
+            continue
+
+        LongShortPairQuery.create_entry(
+            {
+                "long_short_group_id": long_short_group_id,
+                "buy_ticker_id": buy_ticker_id,
+                "sell_ticker_id": sell_ticker_id,
+                "buy_ticker_dataset_name": buy_ticker.dataset_name,
+                "sell_ticker_dataset_name": sell_ticker.dataset_name,
+            }
+        )
+
+
+def long_short_process_pair_exit(longshort_strategy, pair):
+    buy_df = read_latest_row(engine, pair.buy_ticker_dataset_name).iloc[0]
+    sell_df = read_latest_row(engine, pair.sell_ticker_dataset_name).iloc[0]
+
+    results_dict = {
+        "buy_df": buy_df,
+        "sell_df": sell_df,
+        "should_close_trade": False,
+    }
+
+    helper = {"{EXIT_PAIR_TRADE_FUNC}": longshort_strategy.exit_cond}
+
+    exec(
+        replace_placeholders_on_code_templ(CodeTemplates.LONG_SHORT_PAIR_EXIT, helper),
+        globals(),
+        results_dict,
+    )
+
+    should_close_trade = results_dict["should_close_trade"]
+    LongShortPairQuery.update_entry(pair.id, {"should_close": should_close_trade})
+
+
+def update_long_short_exits(longshort_strategy):
+    current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
+
+    for item in current_pairs:
+        long_short_process_pair_exit(longshort_strategy, item)
+
+
+def update_long_short_enters(longshort_strategy):
     with LogExceptionContext():
         tickers = LongShortTickerQuery.get_all_by_group_id(longshort_strategy.id)
+        current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
         transformations = (
             DataTransformationQuery.get_transformations_by_longshort_group(
                 longshort_strategy.id
             )
         )
 
+        buy_candidates = set()
+        sell_candidates = set()
+
         for ticker in tickers:
             results = long_short_process_ticker(
                 longshort_strategy, transformations, ticker
             )
-        print(tickers)
+
+            is_valid_buy = results["is_valid_buy"]
+            is_valid_sell = results["is_valid_sell"]
+
+            if is_valid_buy is False:
+                buy_candidates.add(ticker.id)
+
+            if is_valid_sell is False:
+                sell_candidates.add(ticker.id)
+
+        long_short_create_pairs(
+            current_pairs,
+            buy_candidates,
+            sell_candidates,
+            longshort_strategy.id,
+            tickers,
+        )
 
 
 def gen_trading_decisions(strategy):

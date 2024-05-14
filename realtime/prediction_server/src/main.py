@@ -15,7 +15,11 @@ from api.v1.api_key import router as v1_api_key_router
 from api.v1.longshort import router as v1_longshort
 from middleware import ValidateIPMiddleware
 from constants import LogLevel
-from binance_utils import gen_trading_decisions, update_long_short_tickers
+from binance_utils import (
+    gen_trading_decisions,
+    update_long_short_enters,
+    update_long_short_exits,
+)
 from schema.longshortgroup import LongShortGroupQuery
 from utils import get_current_timestamp_ms
 from strategy import (
@@ -119,9 +123,12 @@ def long_short_loop(stop_event):
 
     while not stop_event.is_set():
         strategies = LongShortGroupQuery.get_strategies()
-
         for strategy in strategies:
-            update_long_short_tickers(strategy)
+            update_long_short_exits(strategy)
+
+        strategies = LongShortGroupQuery.get_strategies()
+        for strategy in strategies:
+            update_long_short_enters(strategy)
 
 
 class PredictionService:
