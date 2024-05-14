@@ -263,10 +263,28 @@ def long_short_create_pairs(
     valid_sells = [sell for sell in sell_candidates if sell not in used_ids]
 
     n_valid_pairs = min(len(valid_buys), len(valid_sells))
+    exhausted_ids = set()
 
     for i in range(n_valid_pairs):
         buy_ticker_id = valid_buys[i]
-        sell_ticker_id = valid_sells[i]
+        sell_ticker_id = None
+
+        for j in range(n_valid_pairs):
+            sell_ticker_id = valid_sells[j]
+            if buy_ticker_id == sell_ticker_id or sell_ticker_id in exhausted_ids:
+                continue
+            else:
+                break
+
+        if sell_ticker_id is None:
+            continue
+
+        if (
+            sell_ticker_id == buy_ticker_id
+            or sell_ticker_id in exhausted_ids
+            or buy_ticker_id in exhausted_ids
+        ):
+            continue
 
         buy_ticker = find_ticker(tickers, buy_ticker_id)
         sell_ticker = find_ticker(tickers, sell_ticker_id)
@@ -283,6 +301,9 @@ def long_short_create_pairs(
                 "sell_ticker_dataset_name": sell_ticker.dataset_name,
             }
         )
+
+        exhausted_ids.add(sell_ticker_id)
+        exhausted_ids.add(buy_ticker_id)
 
 
 def long_short_process_pair_exit(longshort_strategy, pair):

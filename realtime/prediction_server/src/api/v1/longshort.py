@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Response, status
 from middleware import api_key_auth
 from api.v1.request_types import BodyCreateLongShortStrategy
 from context import HttpResponseContext
+from schema.longshortpair import LongShortPairQuery
 from schema.data_transformation import DataTransformationQuery
 from schema.longshortgroup import LongShortGroupQuery
 from schema.longshortticker import LongShortTickerQuery
@@ -14,6 +15,8 @@ router = APIRouter()
 
 class RoutePaths:
     LONG_SHORT = "/"
+    LONG_SHORT_TICKERS = "/tickers/{longshort_group_id}"
+    LONG_SHORT_PAIRS = "/pairs/{longshort_group_id}"
 
 
 @router.post(RoutePaths.LONG_SHORT, dependencies=[Depends(api_key_auth)])
@@ -77,3 +80,24 @@ async def route_create_long_short_strategy(body: BodyCreateLongShortStrategy):
             status_code=status.HTTP_200_OK,
             media_type="text/plain",
         )
+
+
+@router.get(RoutePaths.LONG_SHORT, dependencies=[Depends(api_key_auth)])
+async def route_get_longshort_strategies():
+    with HttpResponseContext():
+        longshort_strategies = LongShortGroupQuery.get_strategies()
+        return {"data": longshort_strategies}
+
+
+@router.get(RoutePaths.LONG_SHORT_TICKERS, dependencies=[Depends(api_key_auth)])
+async def route_get_longshort_tickers_by_group(longshort_group_id):
+    with HttpResponseContext():
+        tickers = LongShortTickerQuery.get_all_by_group_id(longshort_group_id)
+        return {"data": tickers}
+
+
+@router.get(RoutePaths.LONG_SHORT_PAIRS, dependencies=[Depends(api_key_auth)])
+async def route_get_longshort_pairs_by_group(longshort_group_id):
+    with HttpResponseContext():
+        tickers = LongShortPairQuery.get_pairs_by_group_id(longshort_group_id)
+        return {"data": tickers}
