@@ -50,7 +50,7 @@ func main() {
 		longShortGroups := predServClient.FetchLongShortStrategies()
 
 		for _, longshortGroup := range longShortGroups {
-			ProcessLongShortGroup(predServClient, longshortGroup)
+			ProcessLongShortGroup(binanceClient, predServClient, &longshortGroup)
 		}
 		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
 		time.Sleep(time.Minute)

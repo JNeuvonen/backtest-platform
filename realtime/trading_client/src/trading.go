@@ -109,7 +109,6 @@ func getQuoteLoanToCloseShortTrade(
 			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
 			ORDER_BUY,
 			MARKET_ORDER,
-			strat,
 		)
 
 		handleRepaymentOfShortMarginLoan(bc, strat, res)
@@ -155,7 +154,6 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
 			ORDER_BUY,
 			MARKET_ORDER,
-			strat,
 		)
 		handleRepaymentOfShortMarginLoan(bc, strat, res)
 		UpdatePredServerOnTradeClose(strat, res)
@@ -183,7 +181,6 @@ func closeLongTrade(
 		closeQuantity,
 		ORDER_SELL,
 		MARKET_ORDER,
-		strat,
 	)
 	UpdatePredServerOnTradeClose(strat, res)
 
@@ -338,7 +335,7 @@ func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 
-	res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_BUY, MARKET_ORDER, strat)
+	res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_BUY, MARKET_ORDER)
 
 	UpdatePredServerAfterTradeOpen(strat, res, DIRECTION_LONG)
 }
@@ -363,7 +360,7 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 	fmt.Println(err)
 
 	if err == nil {
-		res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_SELL, MARKET_ORDER, strat)
+		res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_SELL, MARKET_ORDER)
 		UpdatePredServerAfterTradeOpen(
 			strat, res, DIRECTION_SHORT,
 		)
@@ -402,7 +399,6 @@ func closeOffAllExcessiveLongLeverage(
 		sellOffQuantity,
 		ORDER_SELL,
 		MARKET_ORDER,
-		strat,
 	)
 	UpdatePredServerOnTradeClose(strat, res)
 	marginAssetsRes := bc.FetchMarginBalances()

@@ -87,6 +87,16 @@ func (client *HttpClient) FetchStrategies() []Strategy {
 	}
 }
 
+func (client *HttpClient) UpdatePairTradeEnterError(pairId int) {
+	body := map[string]interface{}{
+		"error_in_entering": true,
+	}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		client.Put(GetLongShortPairEndpoint(pairId), jsonBody)
+	}
+}
+
 func (client *HttpClient) FetchLongShortStrategies() []LongShortGroup {
 	response, err := client.Get(PRED_SERV_V1_LONGSHORT)
 	if err != nil {
@@ -128,7 +138,7 @@ func (client *HttpClient) FetchLongShortTickers(id int) []LongShortTicker {
 }
 
 func (client *HttpClient) FetchLongShortPairs(id int) []LongShortPair {
-	response, err := client.Get(GetLongShortTickersEndpoint(id))
+	response, err := client.Get(GetLongShortPairsEndpoint(id))
 	if err != nil {
 		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
 		return []LongShortPair{}
@@ -145,6 +155,15 @@ func (client *HttpClient) FetchLongShortPairs(id int) []LongShortPair {
 	} else {
 		return []LongShortPair{}
 	}
+}
+
+func UpdatePairTradeEnterError(pairId int) {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	predServClient.UpdatePairTradeEnterError(pairId)
 }
 
 func FetchStrategies() []Strategy {

@@ -100,8 +100,16 @@ type LongShortPair struct {
 	SellTickerID          int     `json:"sell_ticker_id"`
 	BuyTickerDatasetName  string  `json:"buy_ticker_dataset_name"`
 	SellTickerDatasetName string  `json:"sell_ticker_dataset_name"`
+	BuySymbol             string  `json:"buy_symbol"`
+	SellSymbol            string  `json:"sell_symbol"`
+	BuyBaseAsset          string  `json:"buy_base_asset"`
+	SellBaseAsset         string  `json:"sell_base_asset"`
+	BuyQuoteAsset         string  `json:"buy_quote_asset"`
+	SellQuoteAsset        string  `json:"sell_quote_asset"`
 	BuyOpenTime           int     `json:"buy_open_time"`
 	SellOpenTime          int     `json:"sell_open_time"`
+	BuyQtyPrecision       int     `json:"buy_qty_precision"`
+	SellQtyPrecision      int     `json:"sell_qty_precision"`
 	BuyOpenPrice          float64 `json:"buy_open_price"`
 	SellOpenPrice         float64 `json:"sell_open_price"`
 	BuyOpenQtyInBase      float64 `json:"buy_open_qty_in_base"`
@@ -109,6 +117,8 @@ type LongShortPair struct {
 	DebtOpenQtyInBase     float64 `json:"debt_open_qty_in_base"`
 	InPosition            bool    `json:"in_position"`
 	ShouldClose           bool    `json:"should_close"`
+	IsTradeFinished       bool    `json:"is_trade_finished"`
+	ErrorInEntering       bool    `json:"error_in_entering"`
 }
 
 type CloudLogBody struct {

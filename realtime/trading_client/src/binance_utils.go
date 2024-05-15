@@ -373,7 +373,6 @@ func (bc *BinanceClient) NewMarginOrder(
 	quantity float64,
 	side string,
 	orderType string,
-	strat Strategy,
 ) *binance_connector.MarginAccountNewOrderResponseFULL {
 	if !GetAllowedToSendOrders() {
 		ret := errors.New("Environment is not allowed to send orders")
