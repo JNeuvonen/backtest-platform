@@ -31,6 +31,8 @@ pred-service-run-migr-file:
 	./scripts/alembic_migrate_pred_service.sh $(DATABASE_URI)
 
 
+close-all-positions:
+	./scripts/close_all_positions.sh -k $(API_KEY) -s $(API_SECRET)
 
 test-pred-server:
 	./scripts/test_prediction_server.sh
