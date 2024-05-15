@@ -195,3 +195,17 @@ def long_short_body_basic():
             gen_data_transformation_dict(ROCP_CODE_TRANSFORM),
         ],
     )
+
+
+def long_short_test_enter_trade():
+    return {
+        "buy_open_qty_in_base": 0.6,
+        "buy_open_price": 400,
+        "sell_open_price": 600,
+        "sell_open_qty_in_quote": 600 * 0.4,
+        "debt_open_qty_in_base": 0.4,
+        "buy_open_time_ms": 1715757773413,
+        "sell_open_time_ms": 1715757773413,
+        "sell_symbol": "BTCUSDT",
+        "buy_symbol": "ETHUSDT",
+    }
