@@ -7,7 +7,7 @@ from api.v1.request_types import (
     UpdateLongShortPairBody,
 )
 from context import HttpResponseContext
-from realtime.prediction_server.src.trade_utils import enter_longshort_trade
+from trade_utils import enter_longshort_trade
 from schema.longshortpair import LongShortPairQuery
 from schema.data_transformation import DataTransformationQuery
 from schema.longshortgroup import LongShortGroupQuery

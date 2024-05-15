@@ -37,6 +37,7 @@ class LongShortPair(Base):
     sell_open_qty_in_quote = Column(Float)
     debt_open_qty_in_base = Column(Float)
 
+    is_no_loan_available_err = Column(Boolean, default=False)
     error_in_entering = Column(Boolean, default=False)
     in_position = Column(Boolean, default=False)
     should_close = Column(Boolean, default=False)

@@ -131,4 +131,3 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
                 "sell_side_trade_id": sell_side_trade_id,
             },
         )
-        pass

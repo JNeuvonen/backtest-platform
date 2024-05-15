@@ -130,6 +130,8 @@ def long_short_loop(stop_event):
         for strategy in strategies:
             update_long_short_enters(strategy)
 
+        logger.info("Finished long short loop")
+
 
 class PredictionService:
     def __init__(self):
