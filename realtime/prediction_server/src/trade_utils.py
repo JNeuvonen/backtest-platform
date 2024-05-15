@@ -1,6 +1,15 @@
 import json
-from api.v1.request_types import BodyUpdateTradeClose
-from schema.cloudlog import slack_log_close_trade_notif
+from api.v1.request_types import (
+    BodyCreateTrade,
+    BodyUpdateTradeClose,
+    EnterLongShortPairBody,
+)
+from constants import TradeDirection
+from schema.longshortpair import (
+    LongShortPair,
+    LongShortPairQuery,
+)
+from schema.cloudlog import slack_log_close_trade_notif, slack_log_enter_trade_notif
 from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
 from log import LogExceptionContext, get_logger
@@ -83,3 +92,43 @@ def close_long_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClo
             f"Closing short trade on strat {strat.id} with payload: {stringified_dict}"
         )
         TradeQuery.update_trade(trade.id, update_dict)
+
+
+def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody):
+    with LogExceptionContext():
+        sell_side_trade_body = {
+            "open_time_ms": req_body.sell_open_time_ms,
+            "quantity": req_body.debt_open_qty_in_base,
+            "open_price": req_body.sell_open_price,
+            "symbol": req_body.sell_symbol,
+            "direction": TradeDirection.SHORT,
+        }
+        sell_side_trade_id = TradeQuery.create_entry(sell_side_trade_body)
+
+        buy_side_trade_body = {
+            "open_time_ms": req_body.buy_open_time_ms,
+            "quantity": req_body.buy_open_qty_in_base,
+            "open_price": req_body.buy_open_price,
+            "symbol": req_body.buy_symbol,
+            "direction": TradeDirection.LONG,
+        }
+        buy_side_trade_id = TradeQuery.create_entry(buy_side_trade_body)
+
+        slack_log_enter_trade_notif(BodyCreateTrade(**sell_side_trade_body))
+        slack_log_enter_trade_notif(BodyCreateTrade(**buy_side_trade_body))
+
+        LongShortPairQuery.update_entry(
+            pair.id,
+            {
+                "buy_open_price": req_body.buy_open_price,
+                "sell_open_price": req_body.sell_open_price,
+                "buy_open_qty_in_base": req_body.buy_open_qty_in_base,
+                "buy_open_qty_in_quote": req_body.buy_open_qty_in_base
+                * req_body.buy_open_price,
+                "sell_open_qty_in_quote": req_body.sell_open_qty_in_quote,
+                "debt_open_qty_in_base": req_body.debt_open_qty_in_base,
+                "buy_side_trade_id": buy_side_trade_id,
+                "sell_side_trade_id": sell_side_trade_id,
+            },
+        )
+        pass
