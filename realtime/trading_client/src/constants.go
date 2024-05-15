@@ -9,6 +9,13 @@ const (
 	ASSET_USDT = "USDT"
 )
 
+const USDT_QUOTE_BUFFER = 5
+
+const (
+	CLOSE_SHORT_FEES_COEFF   = 1.00075
+	FEES_REDUCE_AMOUNT_COEFF = 0.99925
+)
+
 const (
 	ORDER_BUY  = "BUY"
 	ORDER_SELL = "SELL"

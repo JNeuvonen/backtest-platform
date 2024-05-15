@@ -92,7 +92,14 @@ func (client *HttpClient) UpdatePairTradeEnterError(pairId int) {
 		"error_in_entering": true,
 	}
 	jsonBody, err := json.Marshal(body)
-	if err != nil {
+	if err == nil {
+		client.Put(GetLongShortPairEndpoint(pairId), jsonBody)
+	}
+}
+
+func (client *HttpClient) UpdatePair(pairId int, body map[string]interface{}) {
+	jsonBody, err := json.Marshal(body)
+	if err == nil {
 		client.Put(GetLongShortPairEndpoint(pairId), jsonBody)
 	}
 }
@@ -288,6 +295,15 @@ func CreateTradeEntry(fields map[string]interface{}) *int32 {
 	predServClient := NewHttpClient(predServConfig.URI, headers)
 
 	return predServClient.CreateTradeEntry(fields)
+}
+
+func UpdatePair(id int, body map[string]interface{}) {
+	predServConfig := GetPredServerConfig()
+	headers := map[string]string{
+		"X-API-KEY": predServConfig.API_KEY,
+	}
+	predServClient := NewHttpClient(predServConfig.URI, headers)
+	predServClient.UpdatePair(id, body)
 }
 
 func CreateCloudLog(msg string, level string) {

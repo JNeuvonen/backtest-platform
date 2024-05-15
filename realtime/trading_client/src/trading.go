@@ -98,15 +98,18 @@ func getQuoteLoanToCloseShortTrade(
 ) {
 	quoteLoanSize := RoundToPrecision(
 		(stratLiabilities-currMaxCloseQuantity)*price,
-		int32(strat.TradeQuantityPrecision),
-	)
+		0,
+	) + USDT_QUOTE_BUFFER
 
 	err := bc.TakeMarginLoan(strat.QuoteAsset, quoteLoanSize)
 
 	if err == nil {
 		res := bc.NewMarginOrder(
 			strat.Symbol,
-			RoundToPrecision(stratLiabilities, int32(strat.TradeQuantityPrecision)),
+			RoundToPrecision(
+				stratLiabilities*CLOSE_SHORT_FEES_COEFF,
+				int32(strat.TradeQuantityPrecision),
+			),
 			ORDER_BUY,
 			MARKET_ORDER,
 		)
