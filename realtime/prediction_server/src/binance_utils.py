@@ -299,6 +299,14 @@ def long_short_create_pairs(
                 "sell_ticker_id": sell_ticker_id,
                 "buy_ticker_dataset_name": buy_ticker.dataset_name,
                 "sell_ticker_dataset_name": sell_ticker.dataset_name,
+                "buy_symbol": buy_ticker.symbol,
+                "buy_base_asset": buy_ticker.base_asset,
+                "buy_quote_asset": buy_ticker.quote_asset,
+                "sell_symbol": sell_ticker.symbol,
+                "sell_base_asset": sell_ticker.base_asset,
+                "sell_quote_asset": sell_ticker.quote_asset,
+                "buy_qty_precision": buy_ticker.trade_quantity_precision,
+                "sell_qty_precision": sell_ticker.trade_quantity_precision,
             }
         )
 
