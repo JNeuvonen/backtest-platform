@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Depends, Response, status
 
 from middleware import api_key_auth
-from api.v1.request_types import BodyCreateLongShortStrategy
+from api.v1.request_types import (
+    BodyCreateLongShortStrategy,
+    EnterLongShortPairBody,
+    UpdateLongShortPairBody,
+)
 from context import HttpResponseContext
+from realtime.prediction_server.src.trade_utils import enter_longshort_trade
 from schema.longshortpair import LongShortPairQuery
 from schema.data_transformation import DataTransformationQuery
 from schema.longshortgroup import LongShortGroupQuery
@@ -17,6 +22,8 @@ class RoutePaths:
     LONG_SHORT = "/"
     LONG_SHORT_TICKERS = "/tickers/{longshort_group_id}"
     LONG_SHORT_PAIRS = "/pairs/{longshort_group_id}"
+    LONG_SHORT_PAIR = "/pair/{pair_id}"
+    LONG_SHORT_PAIR_ENTER = "/pair/{pair_id}/enter"
 
 
 @router.post(RoutePaths.LONG_SHORT, dependencies=[Depends(api_key_auth)])
@@ -101,3 +108,22 @@ async def route_get_longshort_pairs_by_group(longshort_group_id):
     with HttpResponseContext():
         tickers = LongShortPairQuery.get_pairs_by_group_id(longshort_group_id)
         return {"data": tickers}
+
+
+@router.put(RoutePaths.LONG_SHORT_PAIR, dependencies=[Depends(api_key_auth)])
+async def route_put_longshort_pair(pair_id: int, body: UpdateLongShortPairBody):
+    with HttpResponseContext():
+        LongShortPairQuery.update_entry(pair_id, body.model_dump())
+        return Response(
+            content="OK",
+            status_code=status.HTTP_200_OK,
+            media_type="text/plain",
+        )
+
+
+@router.post(RoutePaths.LONG_SHORT_PAIR_ENTER, dependencies=[Depends(api_key_auth)])
+async def route_post_longshort_enter(pair_id: int, body: EnterLongShortPairBody):
+    with HttpResponseContext():
+        longshort_pair = LongShortPairQuery.get_pair_by_id(pair_id)
+        enter_longshort_trade(longshort_pair, body)
+        pass

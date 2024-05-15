@@ -89,7 +89,7 @@ class BodyCreateAccount(BaseModel):
 
 class BodyCreateTrade(BaseModel):
     open_time_ms: int
-    strategy_id: int
+    strategy_id: Optional[int] = None
     quantity: float
     open_price: float
     symbol: str
@@ -167,3 +167,48 @@ class BodyPutTrade(BaseModel):
         if v not in (None, "LONG", "SHORT"):
             raise ValueError("Invalid trade direction. Valid values are: [LONG, SHORT]")
         return v
+
+
+class UpdateLongShortPairBody(BaseModel):
+    id: Optional[int] = None
+    long_short_group_id: Optional[int] = None
+    buy_ticker_id: Optional[int] = None
+    sell_ticker_id: Optional[int] = None
+
+    buy_ticker_dataset_name: Optional[str] = None
+    sell_ticker_dataset_name: Optional[str] = None
+
+    buy_symbol: Optional[str] = None
+    sell_symbol: Optional[str] = None
+    buy_base_asset: Optional[str] = None
+    sell_base_asset: Optional[str] = None
+    buy_quote_asset: Optional[str] = None
+    sell_quote_asset: Optional[str] = None
+
+    buy_qty_precision: Optional[int] = None
+    sell_qty_precision: Optional[int] = None
+    buy_open_time: Optional[int] = None
+    sell_open_time: Optional[int] = None
+
+    buy_open_price: Optional[float] = None
+    sell_open_price: Optional[float] = None
+    buy_open_qty_in_base: Optional[float] = None
+    sell_open_qty_in_quote: Optional[float] = None
+    debt_open_qty_in_base: Optional[float] = None
+
+    error_in_entering: Optional[bool] = None
+    in_position: Optional[bool] = None
+    should_close: Optional[bool] = None
+    is_trade_finished: Optional[bool] = None
+
+
+class EnterLongShortPairBody(BaseModel):
+    buy_open_qty_in_base: float
+    buy_open_price: float
+    sell_open_price: float
+    sell_open_qty_in_quote: float
+    debt_open_qty_in_base: float
+    buy_open_time_ms: int
+    sell_open_time_ms: int
+    sell_symbol: str
+    buy_symbol: str
