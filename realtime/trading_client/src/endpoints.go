@@ -17,6 +17,7 @@ const (
 	PRED_SERV_V1_LONGSHORT_PAIRS      = "v1/longshort/pairs/{id}"
 	PRED_SERV_V1_LONGSHORT_PAIR       = "v1/longshort/pair/{id}"
 	PRED_SERV_V1_LONGSHORT_PAIR_ENTER = "v1/longshort/pair/{id}/enter"
+	PRED_SERV_V1_LONGSHORT_PAIR_EXIT  = "v1/longshort/pair/{id}/exit"
 	PRED_SERV_V1_TRADE_ON_CLOSE       = "v1/strategy/{id}/close-trade"
 	PRED_SERV_V1_LOG                  = "v1/log"
 	PRED_SERV_V1_ACC                  = "v1/acc"
@@ -45,4 +46,8 @@ func GetLongShortPairEndpoint(id int) string {
 
 func GetLongShortEnterTradeEndpoint(id int) string {
 	return strings.Replace(PRED_SERV_V1_LONGSHORT_PAIR_ENTER, "{id}", strconv.Itoa(id), 1)
+}
+
+func GetLongShortExitTradeEndpoint(id int) string {
+	return strings.Replace(PRED_SERV_V1_LONGSHORT_PAIR_EXIT, "{id}", strconv.Itoa(id), 1)
 }
