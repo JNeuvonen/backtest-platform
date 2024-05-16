@@ -417,7 +417,7 @@ func ProcessLongShortGroup(bc *BinanceClient, predServClient *HttpClient, group 
 		}
 
 		if !pair.InPosition && !pair.IsTradeFinished && !pair.ErrorInEntering {
-			// enterLongShortTrade(bc, predServClient, group, &pair)
+			enterLongShortTrade(bc, predServClient, group, &pair)
 		}
 	}
 }
