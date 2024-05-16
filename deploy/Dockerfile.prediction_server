@@ -16,4 +16,5 @@ RUN pip install --no-cache-dir -r realtime/prediction_server/requirements.txt
 
 EXPOSE 8000
 
-CMD ["python", "realtime/prediction_server/src/main.py"]
+WORKDIR /usr/src/app/realtime/prediction_server/src
+CMD ["python", "-m", "main"]
