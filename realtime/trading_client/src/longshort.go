@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
-	"strconv"
 
 	binance_connector "live/trading-client/src/thirdparty/binance-connector-go"
 )
@@ -67,12 +65,18 @@ func initPairTradeShort(
 			return res, nil, quantity
 		}
 		UpdatePairTradeEnterError(pair.ID)
-		return nil, errors.New("Failed to submit sell order for long/short strategy"), 0.0
+		return nil, errors.New(
+			"Failed to submit sell order for long/short strategy. Symbol: " + pair.SellSymbol,
+		), 0.0
 	}
 
 	UpdatePair(pair.ID, map[string]interface{}{
 		"is_no_loan_available_err": true,
 	})
+	CreateCloudLog(
+		"Failed to take loan for long/short strategy. Symbol: "+pair.SellSymbol,
+		LOG_EXCEPTION,
+	)
 	return nil, errors.New("Failed to take loan for long/short strategy"), 0.0
 }
 
@@ -83,7 +87,7 @@ func initPairTradeLong(
 ) (*binance_connector.MarginAccountNewOrderResponseFULL, error) {
 	price, _ := bc.FetchLatestPrice(pair.BuySymbol)
 
-	quantity := GetBaseQuantity(usdtEnterSize, price, int32(pair.SellQtyPrecision))
+	quantity := GetBaseQuantity(usdtEnterSize, price, int32(pair.BuyQtyPrecision))
 
 	res := bc.NewMarginOrder(pair.BuySymbol, quantity, ORDER_BUY, MARKET_ORDER)
 
@@ -92,6 +96,11 @@ func initPairTradeLong(
 	}
 
 	UpdatePairTradeEnterError(pair.ID)
+
+	CreateCloudLog(
+		"Failed to enter long position for long/short strategy. Symbol: "+pair.SellSymbol,
+		LOG_EXCEPTION,
+	)
 	return nil, errors.New("Failed to enter to long position for long/short strategy")
 }
 
@@ -182,15 +191,18 @@ func closeShort(
 			MARKET_ORDER,
 		)
 		if res != nil {
-			bc.RepayMarginLoan(
-				pair.SellBaseAsset,
-				RoundToPrecisionCloseLoan(
-					ParseToFloat64(res.ExecutedQty, 0.0),
-					int32(pair.SellQtyPrecision),
-				),
-			)
+			closeLoanWithAvailableBalance(bc, pair.SellBaseAsset, int32(pair.SellQtyPrecision))
 			return res
 		}
+		CreateCloudLog(
+			NewFmtError(
+				errors.New(
+					"Failed to submit buy order to close short for long/short strategy. Symbol: "+pair.SellSymbol,
+				),
+				CaptureStack(),
+			).Error(),
+			LOG_EXCEPTION,
+		)
 		return nil
 	}
 
@@ -205,15 +217,8 @@ func updatePredServOnLongShortEnter(
 	debtQuantity float64,
 ) {
 	reqBody := map[string]interface{}{
-		"buy_open_qty_in_base":   ParseToFloat64(buySideRes.ExecutedQty, 0.0),
-		"buy_open_price":         ParseToFloat64(buySideRes.Price, 0.0),
-		"sell_open_price":        ParseToFloat64(sellSideRes.Price, 0.0),
-		"sell_open_qty_in_quote": ParseToFloat64(sellSideRes.CumulativeQuoteQty, 0.0),
-		"debt_open_qty_in_base":  debtQuantity,
-		"buy_open_time_ms":       buySideRes.TransactTime,
-		"sell_open_time_ms":      sellSideRes.TransactTime,
-		"sell_symbol":            pair.SellSymbol,
-		"buy_symbol":             pair.BuySymbol,
+		"long_side_order":  buySideRes,
+		"short_side_order": sellSideRes,
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
@@ -238,7 +243,7 @@ func enterLongShortTrade(
 	sellSideRes, err, debtQuantity := initPairTradeShort(bc, usdtEnterSize, pair)
 
 	if err == nil {
-		sellOrderQuoteQty, _ := strconv.ParseFloat(sellSideRes.CumulativeQuoteQty, 64)
+		sellOrderQuoteQty := ParseToFloat64(sellSideRes.CumulativeQuoteQty, 0.0)
 		buySideRes, err := initPairTradeLong(bc, sellOrderQuoteQty, pair)
 
 		if err == nil {
@@ -256,23 +261,32 @@ func enterLongShortTrade(
 func exitLongShortTrade(
 	bc *BinanceClient,
 	predServClient *HttpClient,
-	group *LongShortGroup,
 	pair *LongShortPair,
 ) {
 	closeLongRes := closeLong(bc, pair)
 	closeShortRes := closeShort(bc, pair)
 
-	fmt.Println(closeLongRes)
-	fmt.Println(closeShortRes)
+	reqBody := map[string]interface{}{
+		"long_side_order":  closeLongRes,
+		"short_side_order": closeShortRes,
+	}
+	jsonBody, err := json.Marshal(reqBody)
+
+	if err == nil {
+		predServClient.Post(
+			GetLongShortExitTradeEndpoint(pair.ID), APPLICATION_JSON, jsonBody,
+		)
+	} else {
+		CreateCloudLog("Failed to unmarshal request body while trying to close long/short trade", LOG_EXCEPTION)
+	}
 }
 
 func ProcessLongShortGroup(bc *BinanceClient, predServClient *HttpClient, group *LongShortGroup) {
 	pairs := predServClient.FetchLongShortPairs(group.ID)
 
 	for _, pair := range pairs {
-
 		if pair.InPosition && !pair.IsTradeFinished && pair.ShouldClose {
-			exitLongShortTrade(bc, predServClient, group, &pair)
+			exitLongShortTrade(bc, predServClient, &pair)
 		}
 
 		if !pair.InPosition && !pair.IsTradeFinished && !pair.ErrorInEntering {
