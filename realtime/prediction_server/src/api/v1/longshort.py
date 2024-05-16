@@ -4,10 +4,11 @@ from middleware import api_key_auth
 from api.v1.request_types import (
     BodyCreateLongShortStrategy,
     EnterLongShortPairBody,
+    ExitLongShortPairBody,
     UpdateLongShortPairBody,
 )
 from context import HttpResponseContext
-from trade_utils import enter_longshort_trade
+from trade_utils import enter_longshort_trade, exit_longshort_trade
 from schema.longshortpair import LongShortPairQuery
 from schema.data_transformation import DataTransformationQuery
 from schema.longshortgroup import LongShortGroupQuery
@@ -24,6 +25,7 @@ class RoutePaths:
     LONG_SHORT_PAIRS = "/pairs/{longshort_group_id}"
     LONG_SHORT_PAIR = "/pair/{pair_id}"
     LONG_SHORT_PAIR_ENTER = "/pair/{pair_id}/enter"
+    LONG_SHORT_PAIR_EXIT = "/pair/{pair_id}/exit"
 
 
 @router.post(RoutePaths.LONG_SHORT, dependencies=[Depends(api_key_auth)])
@@ -126,4 +128,24 @@ async def route_post_longshort_enter(pair_id: int, body: EnterLongShortPairBody)
     with HttpResponseContext():
         longshort_pair = LongShortPairQuery.get_pair_by_id(pair_id)
         enter_longshort_trade(longshort_pair, body)
-        pass
+        return Response(
+            content="OK",
+            status_code=status.HTTP_200_OK,
+            media_type="text/plain",
+        )
+
+
+@router.post(RoutePaths.LONG_SHORT_PAIR_EXIT, dependencies=[Depends(api_key_auth)])
+async def route_post_longshort_exit(pair_id: int, body: ExitLongShortPairBody):
+    with HttpResponseContext():
+        longshort_pair = LongShortPairQuery.get_pair_by_id(pair_id)
+
+        if longshort_pair is None:
+            raise Exception(f"Longshort pair was not found for id {pair_id}")
+
+        exit_longshort_trade(longshort_pair, body)
+        return Response(
+            content="OK",
+            status_code=status.HTTP_200_OK,
+            media_type="text/plain",
+        )
