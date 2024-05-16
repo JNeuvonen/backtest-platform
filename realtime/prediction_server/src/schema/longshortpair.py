@@ -86,3 +86,16 @@ class LongShortPairQuery:
                     .filter(LongShortPair.id == pair_id)
                     .first()
                 )
+
+    @staticmethod
+    def delete_entry(pair_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                pair = (
+                    session.query(LongShortPair)
+                    .filter(LongShortPair.id == pair_id)
+                    .first()
+                )
+                if pair:
+                    session.delete(pair)
+                    session.commit()
