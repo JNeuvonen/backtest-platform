@@ -119,6 +119,7 @@ type LongShortPair struct {
 	ShouldClose           bool    `json:"should_close"`
 	IsTradeFinished       bool    `json:"is_trade_finished"`
 	ErrorInEntering       bool    `json:"error_in_entering"`
+	IsNoLoanAvailableErr  bool    `json:"is_no_loan_available_err"`
 }
 
 type CloudLogBody struct {
