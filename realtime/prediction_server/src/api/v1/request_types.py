@@ -196,19 +196,44 @@ class UpdateLongShortPairBody(BaseModel):
     sell_open_qty_in_quote: Optional[float] = None
     debt_open_qty_in_base: Optional[float] = None
 
+    is_no_loan_available_err: Optional[bool] = None
     error_in_entering: Optional[bool] = None
     in_position: Optional[bool] = None
     should_close: Optional[bool] = None
     is_trade_finished: Optional[bool] = None
 
 
+class Fill(BaseModel):
+    price: str
+    qty: str
+    commission: str
+    commissionAsset: str
+
+
+class MarginAccountNewOrderResponseFULL(BaseModel):
+    symbol: str
+    orderId: int
+    clientOrderId: str
+    transactTime: int
+    price: str
+    origQty: str
+    executedQty: str
+    cummulativeQuoteQty: str
+    status: str
+    timeInForce: str
+    type: str
+    side: str
+    marginBuyBorrowAmount: float
+    marginBuyBorrowAsset: str
+    isIsolated: bool
+    fills: List[Fill]
+
+
 class EnterLongShortPairBody(BaseModel):
-    buy_open_qty_in_base: float
-    buy_open_price: float
-    sell_open_price: float
-    sell_open_qty_in_quote: float
-    debt_open_qty_in_base: float
-    buy_open_time_ms: int
-    sell_open_time_ms: int
-    sell_symbol: str
-    buy_symbol: str
+    long_side_order: MarginAccountNewOrderResponseFULL
+    short_side_order: MarginAccountNewOrderResponseFULL
+
+
+class ExitLongShortPairBody(BaseModel):
+    long_side_order: MarginAccountNewOrderResponseFULL
+    short_side_order: MarginAccountNewOrderResponseFULL
