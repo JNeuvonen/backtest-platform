@@ -129,5 +129,7 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
                 "debt_open_qty_in_base": req_body.debt_open_qty_in_base,
                 "buy_side_trade_id": buy_side_trade_id,
                 "sell_side_trade_id": sell_side_trade_id,
+                "in_position": True,
+                "is_no_loan_available_err": False,
             },
         )
