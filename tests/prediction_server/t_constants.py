@@ -63,6 +63,12 @@ class URL:
         )
 
     @classmethod
+    def exit_longshort_trade(cls, id):
+        return cls._longshort_route() + LongshortRouter.LONG_SHORT_PAIR_EXIT.format(
+            pair_id=id
+        )
+
+    @classmethod
     def fetch_strategies(cls):
         return cls._strategy_route() + StrategyRouter.STRATEGY
 

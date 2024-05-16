@@ -178,7 +178,7 @@ def long_short_body_basic():
         sell_cond=SELL_COND_BASIC,
         exit_cond=EXIT_COND_BASIC,
         num_req_klines=60,
-        max_simultaneous_positions=65,
+        max_simultaneous_positions=2,
         kline_size_ms=86400000,
         klines_until_close=2,
         max_leverage_ratio=1.2,
@@ -209,3 +209,42 @@ def long_short_test_enter_trade():
         "sell_symbol": "BTCUSDT",
         "buy_symbol": "ETHUSDT",
     }
+
+
+def create_binance_trade_response(
+    symbol: str,
+    orderId: int,
+    clientOrderId: str,
+    transactTime: int,
+    price: str,
+    origQty: str,
+    executedQty: str,
+    cummulativeQuoteQty: str,
+    status: str,
+    timeInForce: str,
+    type: str,
+    side: str,
+    marginBuyBorrowAmount: float,
+    marginBuyBorrowAsset: str,
+    isIsolated: bool,
+    fills: List = [],
+) -> dict:
+    response = {
+        "symbol": symbol,
+        "orderId": orderId,
+        "clientOrderId": clientOrderId,
+        "transactTime": transactTime,
+        "price": price,
+        "origQty": origQty,
+        "executedQty": executedQty,
+        "cummulativeQuoteQty": cummulativeQuoteQty,
+        "status": status,
+        "timeInForce": timeInForce,
+        "type": type,
+        "side": side,
+        "marginBuyBorrowAmount": marginBuyBorrowAmount,
+        "marginBuyBorrowAsset": marginBuyBorrowAsset,
+        "isIsolated": isIsolated,
+        "fills": fills,
+    }
+    return response

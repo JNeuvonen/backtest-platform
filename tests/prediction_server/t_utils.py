@@ -44,6 +44,11 @@ class Post:
         with Req("post", URL.create_longshort_trade(id), api_key, json=body) as res:
             return res
 
+    @staticmethod
+    def exit_longshort_trade(api_key: str, id, body):
+        with Req("post", URL.exit_longshort_trade(id), api_key, json=body) as res:
+            return res
+
 
 class Get:
     @staticmethod
