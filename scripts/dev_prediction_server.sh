@@ -9,5 +9,7 @@ cd realtime
 cd prediction_server
 cd src
 
+
 npx kill-port $SERVICE_PORT && python -m uvicorn main:app --reload
+# npx kill-port $SERVICE_PORT && python -m main
 
