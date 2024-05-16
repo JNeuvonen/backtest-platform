@@ -106,13 +106,14 @@ type LongShortPair struct {
 	SellBaseAsset         string  `json:"sell_base_asset"`
 	BuyQuoteAsset         string  `json:"buy_quote_asset"`
 	SellQuoteAsset        string  `json:"sell_quote_asset"`
-	BuyOpenTime           int     `json:"buy_open_time"`
-	SellOpenTime          int     `json:"sell_open_time"`
+	BuyOpenTime           int     `json:"buy_open_time_ms"`
+	SellOpenTime          int     `json:"sell_open_time_ms"`
 	BuyQtyPrecision       int     `json:"buy_qty_precision"`
 	SellQtyPrecision      int     `json:"sell_qty_precision"`
 	BuyOpenPrice          float64 `json:"buy_open_price"`
 	SellOpenPrice         float64 `json:"sell_open_price"`
 	BuyOpenQtyInBase      float64 `json:"buy_open_qty_in_base"`
+	BuyOpenQtyInQuote     float64 `json:"buy_open_qty_in_quote"`
 	SellOpenQtyInQuote    float64 `json:"sell_open_qty_in_quote"`
 	DebtOpenQtyInBase     float64 `json:"debt_open_qty_in_base"`
 	InPosition            bool    `json:"in_position"`

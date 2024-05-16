@@ -281,11 +281,138 @@ func exitLongShortTrade(
 	}
 }
 
+func findLsTicker(id int, lsTickers []LongShortTicker) *LongShortTicker {
+	for _, ticker := range lsTickers {
+		if ticker.ID == id {
+			return &ticker
+		}
+	}
+	return nil
+}
+
+func getTradeCurrNetResult(
+	openPrice float64,
+	currPrice float64,
+	openQtyBase float64,
+	isShort bool,
+) float64 {
+	openQuoteQty := openQtyBase * openPrice
+	currQuoteQty := openQtyBase * currPrice
+
+	if isShort {
+		return openQuoteQty - currQuoteQty
+	}
+	return currQuoteQty - openQuoteQty
+}
+
+func lsGetPairCurrNetResult(
+	bc *BinanceClient,
+	pair *LongShortPair,
+	sellSymbolPrice float64,
+	buySymbolPrice float64,
+) float64 {
+	longNetResult := getTradeCurrNetResult(
+		pair.BuyOpenPrice,
+		buySymbolPrice,
+		pair.BuyOpenQtyInBase,
+		false,
+	)
+
+	shortNetResult := getTradeCurrNetResult(
+		pair.SellOpenPrice,
+		sellSymbolPrice,
+		pair.DebtOpenQtyInBase,
+		false,
+	)
+
+	return longNetResult + shortNetResult
+}
+
+func shouldLsProfitBasedClose(bc *BinanceClient, group *LongShortGroup, pair *LongShortPair) bool {
+	if !group.UseProfitBasedClose {
+		return false
+	}
+
+	sellSymbolPrice, fetchSellSymbolErr := bc.FetchLatestPrice(pair.SellSymbol)
+	buySymbolPrice, fetchBuySymbolErr := bc.FetchLatestPrice(pair.BuySymbol)
+
+	if fetchSellSymbolErr != nil || fetchBuySymbolErr != nil {
+		return false
+	}
+	currNetResult := lsGetPairCurrNetResult(bc, pair, sellSymbolPrice, buySymbolPrice)
+	percResult := SafeDivide(currNetResult, pair.BuyOpenQtyInQuote+pair.SellOpenQtyInQuote) * 100
+
+	if percResult > 0 {
+		return percResult >= group.TakeProfitThresholdPerc
+	}
+	return false
+}
+
+func shouldLsStopLossBasedClose(
+	bc *BinanceClient,
+	group *LongShortGroup,
+	pair *LongShortPair,
+) bool {
+	if !group.UseStopLossBasedClose {
+		return false
+	}
+
+	sellSymbolPrice, fetchSellSymbolErr := bc.FetchLatestPrice(pair.SellSymbol)
+	buySymbolPrice, fetchBuySymbolErr := bc.FetchLatestPrice(pair.BuySymbol)
+
+	if fetchSellSymbolErr != nil || fetchBuySymbolErr != nil {
+		return false
+	}
+
+	currNetResult := lsGetPairCurrNetResult(bc, pair, sellSymbolPrice, buySymbolPrice)
+	percResult := SafeDivide(currNetResult, pair.BuyOpenQtyInQuote+pair.SellOpenQtyInQuote) * 100
+
+	if percResult < 0 {
+		return math.Abs(percResult) >= group.StopLossThresholdPerc
+	}
+
+	return false
+}
+
+func shouldLsTimeBasedClose(
+	group *LongShortGroup,
+	pair *LongShortPair,
+) bool {
+	if !group.UseTimeBasedClose {
+		return false
+	}
+	currTimeMs := GetTimeInMs()
+	maxKlines := group.KlinesUntilClose
+	if currTimeMs >= int64(pair.BuyOpenTime)+(int64(group.KlineSizeMs)*int64(maxKlines)) {
+		return true
+	}
+	return false
+}
+
+func shouldClosePairTrade(
+	bc *BinanceClient,
+	group *LongShortGroup,
+	pair *LongShortPair,
+	lsTickers []LongShortTicker,
+) bool {
+	sellSideTicker := findLsTicker(pair.SellTickerID, lsTickers)
+	buySideTicker := findLsTicker(pair.BuyTickerID, lsTickers)
+
+	if sellSideTicker.IsValidSell && buySideTicker.IsValidBuy {
+		return false
+	}
+
+	return shouldLsTimeBasedClose(group, pair) || shouldLsProfitBasedClose(bc, group, pair) ||
+		shouldLsStopLossBasedClose(bc, group, pair)
+}
+
 func ProcessLongShortGroup(bc *BinanceClient, predServClient *HttpClient, group *LongShortGroup) {
 	pairs := predServClient.FetchLongShortPairs(group.ID)
+	lsTickers := predServClient.FetchLongShortTickers(group.ID)
 
 	for _, pair := range pairs {
-		if pair.InPosition && !pair.IsTradeFinished && pair.ShouldClose {
+		if pair.InPosition && !pair.IsTradeFinished &&
+			shouldClosePairTrade(bc, group, &pair, lsTickers) {
 			exitLongShortTrade(bc, predServClient, &pair)
 		}
 
