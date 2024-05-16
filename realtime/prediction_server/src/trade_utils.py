@@ -3,13 +3,22 @@ from api.v1.request_types import (
     BodyCreateTrade,
     BodyUpdateTradeClose,
     EnterLongShortPairBody,
+    ExitLongShortPairBody,
+    MarginAccountNewOrderResponseFULL,
 )
 from constants import TradeDirection
+from schema.longshorttrade import (
+    LongShortTradeQuery,
+)
 from schema.longshortpair import (
     LongShortPair,
     LongShortPairQuery,
 )
-from schema.cloudlog import slack_log_close_trade_notif, slack_log_enter_trade_notif
+from schema.cloudlog import (
+    slack_log_close_ls_trade_notif,
+    slack_log_close_trade_notif,
+    slack_log_enter_trade_notif,
+)
 from schema.trade import Trade, TradeQuery
 from schema.strategy import Strategy, StrategyQuery
 from log import LogExceptionContext, get_logger
@@ -19,6 +28,7 @@ from math_utils import (
     calc_long_trade_perc_result,
     calc_short_trade_net_result,
     calc_short_trade_perc_result,
+    safe_divide,
 )
 
 
@@ -96,20 +106,43 @@ def close_long_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClo
 
 def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody):
     with LogExceptionContext():
+        short_order = req_body.short_side_order
+        long_order = req_body.long_side_order
+
+        buy_open_price = safe_divide(
+            float(long_order.executedQty),
+            float(long_order.cummulativeQuoteQty),
+            0.0,
+        )
+
+        sell_open_price = safe_divide(
+            float(short_order.executedQty),
+            float(short_order.cummulativeQuoteQty),
+            0.0,
+        )
+
         sell_side_trade_body = {
-            "open_time_ms": req_body.sell_open_time_ms,
-            "quantity": req_body.debt_open_qty_in_base,
-            "open_price": req_body.sell_open_price,
-            "symbol": req_body.sell_symbol,
+            "open_time_ms": short_order.transactTime,
+            "quantity": short_order.executedQty,
+            "open_price": safe_divide(
+                float(short_order.executedQty),
+                float(short_order.cummulativeQuoteQty),
+                0.0,
+            ),
+            "symbol": short_order.symbol,
             "direction": TradeDirection.SHORT,
         }
         sell_side_trade_id = TradeQuery.create_entry(sell_side_trade_body)
 
         buy_side_trade_body = {
-            "open_time_ms": req_body.buy_open_time_ms,
-            "quantity": req_body.buy_open_qty_in_base,
-            "open_price": req_body.buy_open_price,
-            "symbol": req_body.buy_symbol,
+            "open_time_ms": long_order.transactTime,
+            "quantity": long_order.executedQty,
+            "open_price": safe_divide(
+                float(long_order.executedQty),
+                float(long_order.cummulativeQuoteQty),
+                0.0,
+            ),
+            "symbol": long_order.symbol,
             "direction": TradeDirection.LONG,
         }
         buy_side_trade_id = TradeQuery.create_entry(buy_side_trade_body)
@@ -120,16 +153,121 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
         LongShortPairQuery.update_entry(
             pair.id,
             {
-                "buy_open_price": req_body.buy_open_price,
-                "sell_open_price": req_body.sell_open_price,
-                "buy_open_qty_in_base": req_body.buy_open_qty_in_base,
-                "buy_open_qty_in_quote": req_body.buy_open_qty_in_base
-                * req_body.buy_open_price,
-                "sell_open_qty_in_quote": req_body.sell_open_qty_in_quote,
-                "debt_open_qty_in_base": req_body.debt_open_qty_in_base,
+                "buy_open_price": buy_open_price,
+                "sell_open_price": sell_open_price,
+                "buy_open_qty_in_base": float(long_order.executedQty),
+                "buy_open_qty_in_quote": float(long_order.cummulativeQuoteQty),
+                "sell_open_qty_in_quote": float(short_order.cummulativeQuoteQty),
+                "debt_open_qty_in_base": float(short_order.executedQty),
                 "buy_side_trade_id": buy_side_trade_id,
+                "buy_open_time_ms": long_order.transactTime,
+                "sell_open_time_ms": short_order.transactTime,
                 "sell_side_trade_id": sell_side_trade_id,
                 "in_position": True,
                 "is_no_loan_available_err": False,
             },
+        )
+
+
+def get_trade_net_result(
+    open_qty: float, order: MarginAccountNewOrderResponseFULL, is_short: bool
+):
+    if is_short is True:
+        return open_qty - float(order.cummulativeQuoteQty)
+    else:
+        return float(order.cummulativeQuoteQty) - open_qty
+
+
+def get_trade_perc_result(net_result: float, size: float):
+    return (safe_divide(net_result, size, 0)) * 100
+
+
+def update_trade_close(
+    trade_id: int,
+    open_qty: float,
+    order: MarginAccountNewOrderResponseFULL,
+    is_short: bool,
+):
+    if is_short:
+        net_result = open_qty - float(order.cummulativeQuoteQty)
+    else:
+        net_result = float(order.cummulativeQuoteQty) - open_qty
+
+    perc_result = (safe_divide(net_result, open_qty, 0)) * 100
+
+    TradeQuery.update_trade(
+        trade_id,
+        {
+            "close_price": float(order.price),
+            "close_time_ms": order.transactTime,
+            "net_result": net_result,
+            "percent_result": perc_result,
+        },
+    )
+
+
+def exit_longshort_trade(pair: LongShortPair, req_body: ExitLongShortPairBody):
+    with LogExceptionContext():
+        short_side_trade = TradeQuery.get_trade_by_id(pair.sell_side_trade_id)
+        long_side_trade = TradeQuery.get_trade_by_id(pair.buy_side_trade_id)
+
+        if short_side_trade is None or long_side_trade is None:
+            return
+
+        long_side_order = req_body.long_side_order
+        short_side_order = req_body.short_side_order
+
+        update_trade_close(
+            short_side_trade.id, pair.sell_open_qty_in_quote, short_side_order, True
+        )
+        update_trade_close(
+            long_side_trade.id, pair.buy_open_qty_in_quote, long_side_order, False
+        )
+
+        long_side_net_result = get_trade_net_result(
+            pair.buy_open_qty_in_quote, long_side_order, False
+        )
+        short_side_net_result = get_trade_net_result(
+            pair.sell_open_qty_in_quote, short_side_order, True
+        )
+
+        combined_result = long_side_net_result + short_side_net_result
+        combined_perc_result = (
+            safe_divide(
+                combined_result,
+                pair.buy_open_qty_in_quote + pair.sell_open_qty_in_quote,
+                0,
+            )
+        ) * 100
+
+        LongShortTradeQuery.create_entry(
+            {
+                "long_short_group_id": pair.long_short_group_id,
+                "long_side_trade_id": long_side_trade.id,
+                "short_side_trade_id": short_side_trade.id,
+                "net_result": combined_result,
+                "percent_result": combined_perc_result,
+                "close_time_ms": req_body.short_side_order.transactTime,
+                "open_time_ms": pair.buy_open_time_ms,
+            }
+        )
+        LongShortPairQuery.delete_entry(pair.id)
+
+        slack_log_close_ls_trade_notif(
+            {
+                "long_side_symbol": pair.buy_symbol,
+                "short_side_symbol": pair.sell_symbol,
+                "net_result": combined_result,
+                "combined_perc_result": combined_perc_result,
+                "close_time_ms": req_body.short_side_order.transactTime,
+                "open_time_ms": pair.buy_open_time_ms,
+                "long_side_net_result": long_side_net_result,
+                "short_side_net_result": short_side_net_result,
+                "long_side_perc_result": get_trade_perc_result(
+                    long_side_net_result, pair.buy_open_qty_in_quote
+                ),
+                "short_side_perc_result": get_trade_perc_result(
+                    short_side_net_result, pair.sell_open_qty_in_quote
+                ),
+            }
         )
