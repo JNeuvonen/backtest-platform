@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 
@@ -181,8 +182,16 @@ func closeShort(
 			MARKET_ORDER,
 		)
 		if res != nil {
-			bc.RepayMarginLoan(pair.SellBaseAsset, ParseToFloat64(res.ExecutedQty, 0.0))
+			bc.RepayMarginLoan(
+				pair.SellBaseAsset,
+				RoundToPrecisionCloseLoan(
+					ParseToFloat64(res.ExecutedQty, 0.0),
+					int32(pair.SellQtyPrecision),
+				),
+			)
+			return res
 		}
+		return nil
 	}
 
 	return getQuoteLoanToClosePairTrade(bc, pair, price, currMaxCloseQuantity, stratLiabilities)
@@ -250,7 +259,11 @@ func exitLongShortTrade(
 	group *LongShortGroup,
 	pair *LongShortPair,
 ) {
-	closeLong(bc, pair)
+	closeLongRes := closeLong(bc, pair)
+	closeShortRes := closeShort(bc, pair)
+
+	fmt.Println(closeLongRes)
+	fmt.Println(closeShortRes)
 }
 
 func ProcessLongShortGroup(bc *BinanceClient, predServClient *HttpClient, group *LongShortGroup) {
