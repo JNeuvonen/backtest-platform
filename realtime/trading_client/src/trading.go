@@ -79,6 +79,12 @@ func ShouldEnterTrade(strat Strategy) bool {
 	return false
 }
 
+func closeLoanWithAvailableBalance(bc *BinanceClient, asset string, precision int32) {
+	res := bc.FetchMarginBalances()
+	freeBalance := GetFreeBalanceForMarginAsset(res, asset)
+	bc.RepayMarginLoan(asset, RoundToPrecision(freeBalance, precision))
+}
+
 func handleRepaymentOfShortMarginLoan(
 	bc *BinanceClient,
 	strat Strategy,
