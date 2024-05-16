@@ -17,6 +17,7 @@ from middleware import ValidateIPMiddleware
 from constants import LogLevel
 from binance_utils import (
     gen_trading_decisions,
+    remove_is_no_loan_available_err_pair,
     update_long_short_enters,
     update_long_short_exits,
 )
@@ -130,7 +131,12 @@ def long_short_loop(stop_event):
         for strategy in strategies:
             update_long_short_enters(strategy)
 
-        logger.info("Finished long short loop")
+        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+            create_log(
+                msg="Finished long/short loop",
+                level=LogLevel.INFO,
+            )
+            last_slack_message_timestamp = get_current_timestamp_ms()
 
 
 class PredictionService:

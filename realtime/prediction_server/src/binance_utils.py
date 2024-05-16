@@ -336,15 +336,42 @@ def long_short_process_pair_exit(longshort_strategy, pair):
     LongShortPairQuery.update_entry(pair.id, {"should_close": should_close_trade})
 
 
-def update_long_short_exits(longshort_strategy):
-    current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
+def find_ls_ticker_based_on_is(id, tickers):
+    for item in tickers:
+        if id == item.id:
+            return item
+    return None
 
-    for item in current_pairs:
-        long_short_process_pair_exit(longshort_strategy, item)
+
+def remove_is_no_loan_available_err_pair(pair, tickers):
+    if pair.is_no_loan_available_err is True and pair.in_position is False:
+        long_side_ticker = find_ls_ticker_based_on_is(pair.buy_ticker_id, tickers)
+        short_side_ticker = find_ls_ticker_based_on_is(pair.sell_ticker_id, tickers)
+
+        if long_side_ticker is None or short_side_ticker is None:
+            return
+
+        if (
+            long_side_ticker.is_valid is False
+            or short_side_ticker.is_valid_sell is False
+        ):
+            LongShortPairQuery.delete_entry(pair.id)
+
+
+def update_long_short_exits(longshort_strategy):
+    with LogExceptionContext(re_raise=False):
+        current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
+        current_tickers = LongShortTickerQuery.get_all_by_group_id(
+            longshort_strategy.id
+        )
+
+        for item in current_pairs:
+            long_short_process_pair_exit(longshort_strategy, item)
+            remove_is_no_loan_available_err_pair(item, current_tickers)
 
 
 def update_long_short_enters(longshort_strategy):
-    with LogExceptionContext():
+    with LogExceptionContext(re_raise=False):
         tickers = LongShortTickerQuery.get_all_by_group_id(longshort_strategy.id)
         current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
         transformations = (
