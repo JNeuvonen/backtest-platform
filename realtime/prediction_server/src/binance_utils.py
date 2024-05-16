@@ -364,10 +364,10 @@ def update_long_short_enters(longshort_strategy):
             is_valid_buy = results["is_valid_buy"]
             is_valid_sell = results["is_valid_sell"]
 
-            if is_valid_buy is False:
+            if is_valid_buy is True:
                 buy_candidates.add(ticker.id)
 
-            if is_valid_sell is False:
+            if is_valid_sell is True:
                 sell_candidates.add(ticker.id)
 
         long_short_create_pairs(

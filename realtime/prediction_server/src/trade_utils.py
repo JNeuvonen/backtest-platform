@@ -110,14 +110,14 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
         long_order = req_body.long_side_order
 
         buy_open_price = safe_divide(
-            float(long_order.executedQty),
             float(long_order.cummulativeQuoteQty),
+            float(long_order.executedQty),
             0.0,
         )
 
         sell_open_price = safe_divide(
-            float(short_order.executedQty),
             float(short_order.cummulativeQuoteQty),
+            float(short_order.executedQty),
             0.0,
         )
 
@@ -125,8 +125,8 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
             "open_time_ms": short_order.transactTime,
             "quantity": short_order.executedQty,
             "open_price": safe_divide(
-                float(short_order.executedQty),
                 float(short_order.cummulativeQuoteQty),
+                float(short_order.executedQty),
                 0.0,
             ),
             "symbol": short_order.symbol,
@@ -138,8 +138,8 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
             "open_time_ms": long_order.transactTime,
             "quantity": long_order.executedQty,
             "open_price": safe_divide(
-                float(long_order.executedQty),
                 float(long_order.cummulativeQuoteQty),
+                float(long_order.executedQty),
                 0.0,
             ),
             "symbol": long_order.symbol,
