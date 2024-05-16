@@ -66,7 +66,7 @@ func initPairTradeShort(
 		}
 		UpdatePairTradeEnterError(pair.ID)
 		return nil, errors.New(
-			"Failed to submit sell order for long/short strategy. Symbol: " + pair.SellSymbol,
+			"Failed to submit sell order for long/short strategy after  taking a loan. Symbol: " + pair.SellSymbol,
 		), 0.0
 	}
 
@@ -98,7 +98,7 @@ func initPairTradeLong(
 	UpdatePairTradeEnterError(pair.ID)
 
 	CreateCloudLog(
-		"Failed to enter long position for long/short strategy. Symbol: "+pair.SellSymbol,
+		"Failed to enter long position for long/short strategy after short selling. Symbol: "+pair.SellSymbol,
 		LOG_EXCEPTION,
 	)
 	return nil, errors.New("Failed to enter to long position for long/short strategy")
@@ -223,7 +223,10 @@ func updatePredServOnLongShortEnter(
 
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		CreateCloudLog(
+			"Potentially dangerous exception: failed to marshal request body for updating server on L/S enter",
+			LOG_EXCEPTION,
+		)
 		return
 	}
 	predServClient.Post(GetLongShortEnterTradeEndpoint(pair.ID), APPLICATION_JSON, jsonBody)
@@ -277,7 +280,7 @@ func exitLongShortTrade(
 			GetLongShortExitTradeEndpoint(pair.ID), APPLICATION_JSON, jsonBody,
 		)
 	} else {
-		CreateCloudLog("Failed to unmarshal request body while trying to close long/short trade", LOG_EXCEPTION)
+		CreateCloudLog("Potentially dangerous: Failed to marshal request body while trying to close long/short trade after sending orders", LOG_EXCEPTION)
 	}
 }
 
