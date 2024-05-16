@@ -1,6 +1,5 @@
 import threading
 from typing import Dict
-from fastapi import Body
 from sqlalchemy import Column, DateTime, Integer, String, func
 from orm import Base, Session
 
@@ -86,6 +85,37 @@ def create_trade_enter_notif_msg(body: BodyCreateTrade) -> str:
     )
 
 
+def create_ls_trade_close_notif_msg(info_dict: dict) -> str:
+    close_time = datetime.fromtimestamp(info_dict["close_time_ms"] / 1000).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    open_time = datetime.fromtimestamp(info_dict["open_time_ms"] / 1000).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+    hold_time_seconds = (info_dict["close_time_ms"] - info_dict["open_time_ms"]) / 1000
+    if hold_time_seconds < 86400:
+        hold_time = f"{int(hold_time_seconds / 60)} minutes"
+    else:
+        hold_time = f"{int(hold_time_seconds / 86400)} days"
+
+    return (
+        f"```Long/Short Trade Close Alert```"
+        f"\n------------"
+        f"\n- Long Side Symbol: `{info_dict['long_side_symbol']}`"
+        f"\n- Short Side Symbol: `{info_dict['short_side_symbol']}`"
+        f"\n- Hold Time: `{hold_time}`"
+        f"\n- Opened at: `{open_time}`"
+        f"\n- Closed at: `{close_time}`"
+        f"\n- Net Result: `{info_dict['net_result']}`"
+        f"\n- Percent Result: `{info_dict['combined_perc_result']}%`"
+        f"\n- Long Side Net Result: `{info_dict['long_side_net_result']}`"
+        f"\n- Short Side Net Result: `{info_dict['short_side_net_result']}`"
+        f"\n- Long Side Percent Result: `{info_dict['long_side_perc_result']}%`"
+        f"\n- Short Side Percent Result: `{info_dict['short_side_perc_result']}%`"
+    )
+
+
 def create_trade_close_notif_msg(strat, trade_update_dict: dict) -> str:
     direction_emoji = "📉" if strat.is_short_selling_strategy else "📈"
     close_time = datetime.fromtimestamp(
@@ -125,6 +155,22 @@ def slack_log_close_trade_notif(strat, trade_update_dict):
         post_slack_message(
             hook.webhook_uri, create_trade_close_notif_msg(strat, trade_update_dict)
         )
+
+    thread = threading.Thread(target=func_helper)
+    thread.start()
+
+
+def slack_log_close_ls_trade_notif(info_dict):
+    def func_helper():
+        hook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.TRADE_NOTIFS)
+
+        if hook is None:
+            create_log(
+                "Hook for TRADE_NOTIFS is not correctly set", level=LogLevel.EXCEPTION
+            )
+            return
+
+        post_slack_message(hook.webhook_uri, create_ls_trade_close_notif_msg(info_dict))
 
     thread = threading.Thread(target=func_helper)
     thread.start()
@@ -184,27 +230,17 @@ def slack_log(msg: str, source_program: int, level: str):
     thread.start()
 
 
-last_log_message_time_ms = None
-
-
 def create_log(msg: str, level: str, source_program=LogSourceProgram.PRED_SERVER):
-    global last_log_message_time_ms
-    current_time_ms = get_current_timestamp_ms()
+    slack_log(msg, source_program, level)
 
-    if last_log_message_time_ms is None or (
-        current_time_ms - last_log_message_time_ms >= 5000
-    ):
-        last_log_message_time_ms = current_time_ms
-        slack_log(msg, source_program, level)
+    def func_helper():
+        CloudLogQuery.create_log_entry(
+            {
+                "message": msg,
+                "level": level,
+                "source_program": source_program,
+            }
+        )
 
-        def func_helper():
-            CloudLogQuery.create_log_entry(
-                {
-                    "message": msg,
-                    "level": level,
-                    "source_program": source_program,
-                }
-            )
-
-        thread = threading.Thread(target=func_helper)
-        thread.start()
+    thread = threading.Thread(target=func_helper)
+    thread.start()
