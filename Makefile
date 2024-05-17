@@ -15,6 +15,10 @@ test-platform:
 loc:
 	./scripts/loc.sh
 
+
+dev-analytics:
+	./scripts/dev_analyticsweb.sh
+
 dev-pred-server:
 	./scripts/dev_prediction_server.sh
 
