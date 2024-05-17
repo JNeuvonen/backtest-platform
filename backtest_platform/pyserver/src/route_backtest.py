@@ -4,6 +4,8 @@ import json
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
+from query_data_transformation import DataTransformationQuery
+from query_symbol import SymbolQuery
 from backtest_utils import (
     get_backtest_id_to_dataset_name_map,
     get_mass_sim_backtests_equity_curves,
@@ -53,6 +55,10 @@ class RoutePaths:
     LONG_SHORT_BACKTEST = "/long-short-backtest"
     FETCH_LONG_SHORT_BACKTEST = "/mass-backtest/long-short/fetch"
     ML_BASED_BACKTEST = "/ml-based"
+    FETCH_MASS_BACKTEST_SYMBOLS = "/mass-backtest/long-short/symbols/{backtest_id}"
+    FETCH_MASS_BACKTEST_TRANSFORMATIONS = (
+        "/mass-backtest/long-short/transformations/{backtest_id}"
+    )
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -297,3 +303,19 @@ async def route_create_ml_based_backtest(body: BodyMLBasedBacktest):
         else:
             asyncio.create_task(run_ml_based_backtest(body))
         pass
+
+
+@router.get(RoutePaths.FETCH_MASS_BACKTEST_SYMBOLS)
+async def route_fetch_mass_backtest_symbols(backtest_id: int):
+    with HttpResponseContext():
+        symbols = SymbolQuery.get_symbols_by_backtest(backtest_id)
+        return {"data": symbols}
+
+
+@router.get(RoutePaths.FETCH_MASS_BACKTEST_TRANSFORMATIONS)
+async def route_fetch_mass_backtest_transformations(backtest_id: int):
+    with HttpResponseContext():
+        transformations = DataTransformationQuery.get_transformations_by_backtest(
+            backtest_id
+        )
+        return {"data": transformations}
