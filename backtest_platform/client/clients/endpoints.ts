@@ -38,6 +38,7 @@ export const PRED_SERV_API = {
   v1_logs: "/v1/log",
   v1_account: "/v1/acc",
   v1_api_key: "/v1/api-key",
+  v1_longshort: "/v1/longshort",
 };
 
 export let PRED_SERV_BASE_URL: string;
@@ -147,6 +148,14 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI +
     LOCAL_API.backtest.root +
     `/mass-backtest/by-backtest/${backtestId}`,
+  massBacktestSymbols: (backtestId: number) =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    `/mass-backtest/long-short/symbols/${backtestId}`,
+  massBacktestTransformations: (backtestId: number) =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    `/mass-backtest/long-short/transformations/${backtestId}`,
   massBacktestById: (massBacktestId: number) =>
     LOCAL_API_URI +
     LOCAL_API.backtest.root +
@@ -189,4 +198,6 @@ export const LOCAL_API_URL = {
 export const PRED_SERVER_URLS = {
   strategyEndpoint: () => PRED_SERV_BASE_URL + PRED_SERV_API.v1_strategy,
   createApiKeyEndpoint: () => PRED_SERV_BASE_URL + PRED_SERV_API.v1_api_key,
+  deployPairtradeEndpoint: () =>
+    PRED_SERV_BASE_URL + PRED_SERV_API.v1_longshort,
 };

@@ -26,6 +26,7 @@ import {
   CloneIndicatorsBodyBackendFormat,
   CloneIndicatorsFormValues,
 } from "../components/CloneIndicatorsForm";
+import { LongShortDeployForm } from "../pages/simulate/bulk/deployform";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -657,6 +658,45 @@ export const cloneIndicators = async (
     method: "POST",
     url: LOCAL_API_URL.cloneIndicators(datasetName),
     payload: body,
+  });
+  return res;
+};
+
+export const fetchMassbacktestSymbols = async (backtestId: number) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.massBacktestSymbols(backtestId),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};
+
+export const fetchMassbacktestTransformations = async (backtestId: number) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.massBacktestTransformations(backtestId),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};
+
+export const deployPairtradeSystem = async (
+  apiKey: string,
+  body: LongShortDeployForm
+) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: PRED_SERVER_URLS.deployPairtradeEndpoint(),
+    payload: body,
+    options: {
+      headers: predServerHeaders(apiKey),
+    },
   });
   return res;
 };

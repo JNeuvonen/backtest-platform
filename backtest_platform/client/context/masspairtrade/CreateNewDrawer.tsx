@@ -17,7 +17,10 @@ import {
   SelectWithTextFilter,
 } from "../../components/SelectFilter";
 import { binanceTickSelectOptions } from "../../pages/Datasets";
-import { useBinanceTickersQuery } from "../../clients/queries/queries";
+import {
+  useBinanceTickersQuery,
+  useDataTransformations,
+} from "../../clients/queries/queries";
 import { MultiValue } from "react-select";
 import {
   Button,
@@ -135,6 +138,7 @@ export const BulkLongShortCreateNew = () => {
   const formikRef = useRef<FormikProps<any>>(null);
   const presetsPopover = useDisclosure();
   const toast = useToast();
+  const dataTransformationsQuery = useDataTransformations();
 
   if (!binanceTickersQuery.data) {
     return (
@@ -149,6 +153,15 @@ export const BulkLongShortCreateNew = () => {
   }
 
   const onSubmit = async (values: FormValues) => {
+    values.data_transformations = values.data_transformations.filter((a) => {
+      let found = false;
+      dataTransformationsQuery.data?.forEach((b) => {
+        if (a == b.id) {
+          found = true;
+        }
+      });
+      return found;
+    });
     const body = {
       datasets: values.pairs.map((item) => item.value),
       name: values.backtestName,

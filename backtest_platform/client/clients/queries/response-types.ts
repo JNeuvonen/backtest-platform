@@ -119,6 +119,12 @@ export interface EpochPredictionTick {
   prediction: number;
 }
 
+export interface BacktestSymbol {
+  backtest_id?: number;
+  symbol: string;
+  id: number;
+}
+
 export interface EpochInfo {
   epoch: number;
   id: number;

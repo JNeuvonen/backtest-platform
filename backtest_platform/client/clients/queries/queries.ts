@@ -17,6 +17,8 @@ import {
   fetchLongShortBacktests,
   fetchManyBacktestsById,
   fetchMassBacktestById,
+  fetchMassbacktestSymbols,
+  fetchMassbacktestTransformations,
   fetchMassbacktestsById,
   fetchModelById,
   fetchModelTrainColumns,
@@ -25,6 +27,7 @@ import {
 } from "../requests";
 import {
   BacktestObject,
+  BacktestSymbol,
   BinanceTickersResponse,
   CodePreset,
   ColumnResponse,
@@ -228,5 +231,25 @@ export function useMLModelsColumns(
     queryKey: [QUERY_KEYS.fetch_ml_models_cols, modelId],
     queryFn: () => fetchModelTrainColumns(modelId as number),
     enabled: modelId !== undefined,
+  });
+}
+
+export function useMassbacktestSymbols(
+  backtestId: number | undefined
+): UseQueryResult<BacktestSymbol[], unknown> {
+  return useQuery<BacktestSymbol[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_mass_backtest_symbols, backtestId],
+    queryFn: () => fetchMassbacktestSymbols(backtestId as number),
+    enabled: backtestId !== undefined,
+  });
+}
+
+export function useMassbacktestTransformations(
+  backtestId: number | undefined
+): UseQueryResult<DataTransformation[], unknown> {
+  return useQuery<DataTransformation[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_mass_backtest_transformations, backtestId],
+    queryFn: () => fetchMassbacktestTransformations(backtestId as number),
+    enabled: backtestId !== undefined,
   });
 }

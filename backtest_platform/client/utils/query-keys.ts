@@ -18,4 +18,6 @@ export const QUERY_KEYS = {
   fetch_long_short_backtests: "fetch_long_short_backtests",
   fetch_epoch_validation_preds: "fetch_epoch_validation_preds",
   fetch_ml_models_cols: "fetch_ml_models_cols",
+  fetch_mass_backtest_symbols: "fetch_mass_backtest_symbols",
+  fetch_mass_backtest_transformations: "fetch_mass_backtest_transformations",
 };

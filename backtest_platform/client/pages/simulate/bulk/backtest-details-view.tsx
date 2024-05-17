@@ -1,13 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
-import { useBacktestById } from "../../../clients/queries/queries";
 import {
+  useBacktestById,
+  useMassbacktestSymbols,
+  useMassbacktestTransformations,
+} from "../../../clients/queries/queries";
+import {
+  Button,
   Heading,
   Spinner,
   Stat,
   StatLabel,
   StatNumber,
   Switch,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { BacktestSummaryCard } from "../dataset/backtest/SummaryCard";
 import {
@@ -27,6 +33,9 @@ import { TradesBarChartData } from "../dataset/backtest";
 import { roundNumberDropRemaining, safeDivide } from "../../../utils/number";
 import { GenericRangeSlider } from "../../../components/chakra/RangeSlider";
 import { ChakraCard } from "../../../components/chakra/Card";
+import { GrDeploy } from "react-icons/gr";
+import { ChakraDrawer } from "../../../components/chakra/Drawer";
+import { DeployLongShortStrategyForm } from "./deployform";
 
 interface PathParams {
   massPairTradeBacktestId: number;
@@ -192,8 +201,10 @@ const LongShortSummaryCard = ({ backtest }: { backtest: BacktestObject }) => {
 export const LongShortBacktestsDetailsView = () => {
   const { massPairTradeBacktestId } = usePathParams<PathParams>();
   const backtestQuery = useBacktestById(Number(massPairTradeBacktestId));
+
   const [hideBenchmark, setHideBenchmark] = useState(false);
   const [filterTradesRange, setFilterTradesRange] = useState([-500, 500]);
+  const deployFormDisclosure = useDisclosure();
 
   const portfolioTicks = useMemo(
     () => getPortfolioChartData(backtestQuery.data as FetchBacktestByIdRes),
@@ -237,124 +248,155 @@ export const LongShortBacktestsDetailsView = () => {
   const backtest = backtestQuery.data.data;
 
   return (
-    <div>
+    <>
+      <ChakraDrawer
+        {...deployFormDisclosure}
+        title={"Deploy L/S strategy"}
+        drawerContentStyles={{ maxWidth: "80%" }}
+      >
+        <DeployLongShortStrategyForm
+          onSuccessCallback={() => {
+            deployFormDisclosure.onClose();
+          }}
+        />
+      </ChakraDrawer>
       <div>
-        <Heading size={"lg"}>Pair-trade backtest {backtest.name}</Heading>
-      </div>
-      <BacktestSummaryCard
-        backtest={backtest}
-        dateRange={getDateRange(portfolioTicks)}
-      />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <Heading size={"lg"}>Pair-trade backtest {backtest.name}</Heading>
+          </div>
+          <div>
+            <Button
+              leftIcon={<GrDeploy />}
+              onClick={deployFormDisclosure.onOpen}
+            >
+              Deploy
+            </Button>
+          </div>
+        </div>
+        <BacktestSummaryCard
+          backtest={backtest}
+          dateRange={getDateRange(portfolioTicks)}
+        />
 
-      <div>
-        <WithLabel label={"Hide benchmark"}>
-          <Switch
-            isChecked={hideBenchmark}
-            onChange={() => setHideBenchmark(!hideBenchmark)}
-          />
-        </WithLabel>
-        <div style={{ marginTop: "16px" }}>
-          <ShareYAxisMultilineChart
-            height={500}
-            data={portfolioTicks}
-            xAxisKey={"kline_open_time"}
-            xAxisTickFormatter={(tick: number) => {
-              return new Date(tick).toLocaleDateString("default", {
-                year: "numeric",
-                month: "short",
-              });
-            }}
-          >
-            {!hideBenchmark && (
+        <div>
+          <WithLabel label={"Hide benchmark"}>
+            <Switch
+              isChecked={hideBenchmark}
+              onChange={() => setHideBenchmark(!hideBenchmark)}
+            />
+          </WithLabel>
+          <div style={{ marginTop: "16px" }}>
+            <ShareYAxisMultilineChart
+              height={500}
+              data={portfolioTicks}
+              xAxisKey={"kline_open_time"}
+              xAxisTickFormatter={(tick: number) => {
+                return new Date(tick).toLocaleDateString("default", {
+                  year: "numeric",
+                  month: "short",
+                });
+              }}
+            >
+              {!hideBenchmark && (
+                <Line
+                  type="monotone"
+                  dataKey={"benchmark"}
+                  stroke={COLOR_BRAND_SECONDARY}
+                  dot={false}
+                />
+              )}
               <Line
                 type="monotone"
-                dataKey={"benchmark"}
-                stroke={COLOR_BRAND_SECONDARY}
+                dataKey={"strategy"}
+                stroke={COLOR_BRAND_PRIMARY}
                 dot={false}
               />
-            )}
-            <Line
-              type="monotone"
-              dataKey={"strategy"}
-              stroke={COLOR_BRAND_PRIMARY}
-              dot={false}
-            />
-          </ShareYAxisMultilineChart>
+            </ShareYAxisMultilineChart>
+          </div>
         </div>
-      </div>
 
-      <div style={{ marginTop: "16px" }}>
-        <div></div>
         <div style={{ marginTop: "16px" }}>
-          <ChakraCard heading={<Heading size={"md"}>Trade results</Heading>}>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div>
-                <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Result mean</StatLabel>
-                  <StatNumber>{tradeDetailsData["mean"]}%</StatNumber>
-                </Stat>
+          <div></div>
+          <div style={{ marginTop: "16px" }}>
+            <ChakraCard heading={<Heading size={"md"}>Trade results</Heading>}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "16px" }}
+              >
+                <div>
+                  <Stat color={COLOR_CONTENT_PRIMARY}>
+                    <StatLabel>Result mean</StatLabel>
+                    <StatNumber>{tradeDetailsData["mean"]}%</StatNumber>
+                  </Stat>
+                </div>
+                <div>
+                  <Stat color={COLOR_CONTENT_PRIMARY}>
+                    <StatLabel>Winning trades</StatLabel>
+                    <StatNumber>
+                      {tradeDetailsData["winningTradesRatio"]}%
+                    </StatNumber>
+                  </Stat>
+                </div>
+                <div>
+                  <Stat color={COLOR_CONTENT_PRIMARY}>
+                    <StatLabel>Losing trades</StatLabel>
+                    <StatNumber>
+                      {tradeDetailsData["losingTradesRatio"]}%
+                    </StatNumber>
+                  </Stat>
+                </div>
+                <div>
+                  <Stat color={COLOR_CONTENT_PRIMARY}>
+                    <StatLabel>Share of all trades</StatLabel>
+                    <StatNumber>
+                      {tradeDetailsData["shareOfAllTrades"]}%
+                    </StatNumber>
+                  </Stat>
+                </div>
+                <div>
+                  <Stat color={COLOR_CONTENT_PRIMARY}>
+                    <StatLabel>Num trades</StatLabel>
+                    <StatNumber>
+                      {tradeDetailsData["chartData"].length}
+                    </StatNumber>
+                  </Stat>
+                </div>
               </div>
-              <div>
-                <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Winning trades</StatLabel>
-                  <StatNumber>
-                    {tradeDetailsData["winningTradesRatio"]}%
-                  </StatNumber>
-                </Stat>
-              </div>
-              <div>
-                <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Losing trades</StatLabel>
-                  <StatNumber>
-                    {tradeDetailsData["losingTradesRatio"]}%
-                  </StatNumber>
-                </Stat>
-              </div>
-              <div>
-                <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Share of all trades</StatLabel>
-                  <StatNumber>
-                    {tradeDetailsData["shareOfAllTrades"]}%
-                  </StatNumber>
-                </Stat>
-              </div>
-              <div>
-                <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Num trades</StatLabel>
-                  <StatNumber>
-                    {tradeDetailsData["chartData"].length}
-                  </StatNumber>
-                </Stat>
-              </div>
-            </div>
-          </ChakraCard>
+            </ChakraCard>
+          </div>
+          <div style={{ width: "500px", marginTop: "16px" }}>
+            <GenericRangeSlider
+              minValue={tradeDetailsData["worstTradePerc"]}
+              maxValue={tradeDetailsData["bestTradePerc"]}
+              values={filterTradesRange}
+              onChange={(newValues: number[]) => {
+                setFilterTradesRange(newValues);
+              }}
+              formatLabelCallback={(values) =>
+                `Trades from ${roundNumberDropRemaining(
+                  values[0],
+                  2
+                )}% to ${roundNumberDropRemaining(values[1], 2)}%`
+              }
+            />
+          </div>
+          <div>
+            <GenericBarChart
+              data={tradeDetailsData["chartData"]}
+              yAxisKey="perc_result"
+              xAxisKey=""
+              containerStyles={{ marginTop: "16px" }}
+            />
+          </div>
         </div>
-        <div style={{ width: "500px", marginTop: "16px" }}>
-          <GenericRangeSlider
-            minValue={tradeDetailsData["worstTradePerc"]}
-            maxValue={tradeDetailsData["bestTradePerc"]}
-            values={filterTradesRange}
-            onChange={(newValues: number[]) => {
-              setFilterTradesRange(newValues);
-            }}
-            formatLabelCallback={(values) =>
-              `Trades from ${roundNumberDropRemaining(
-                values[0],
-                2
-              )}% to ${roundNumberDropRemaining(values[1], 2)}%`
-            }
-          />
-        </div>
-        <div>
-          <GenericBarChart
-            data={tradeDetailsData["chartData"]}
-            yAxisKey="perc_result"
-            xAxisKey=""
-            containerStyles={{ marginTop: "16px" }}
-          />
-        </div>
+        <LongShortSummaryCard backtest={backtest} />
       </div>
-      <LongShortSummaryCard backtest={backtest} />
-    </div>
+    </>
   );
 };

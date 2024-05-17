@@ -72,3 +72,39 @@ export async function getTradeQuantityPrecision(
   }
   throw new Error("Symbol doesn't exist");
 }
+
+export type TradeQuantityPrecision = {
+  symbol: string;
+  tradeQuantityPrecision: number;
+};
+
+export async function getSymbolsWithPrecision(
+  symbols: string[]
+): Promise<TradeQuantityPrecision[]> {
+  const response = await fetch(SPOT_EXCHANGE_INFO_ENDPOINT);
+  const data = await response.json();
+
+  const result: TradeQuantityPrecision[] = [];
+
+  for (const symbol of symbols) {
+    const item = data.symbols.find((item: any) => item.symbol === symbol);
+    if (item) {
+      for (const filter of item.filters) {
+        if (filter.filterType === "LOT_SIZE") {
+          const tradeQuantityPrecision = filter.minQty.includes(".")
+            ? filter.minQty.split(".")[1].replace(/0+$/, "").length
+            : 0;
+          result.push({
+            symbol,
+            tradeQuantityPrecision: Number(tradeQuantityPrecision),
+          });
+          break;
+        }
+      }
+    } else {
+      throw new Error(`Symbol ${symbol} doesn't exist`);
+    }
+  }
+
+  return result;
+}
