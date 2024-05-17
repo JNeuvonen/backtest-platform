@@ -2,7 +2,8 @@ import logging
 import math
 from typing import Dict, List, Set
 
-from api_binance import non_async_save_historical_klines, save_historical_klines
+from api_binance import non_async_save_historical_klines
+from query_symbol import SymbolQuery
 from backtest_utils import (
     calc_long_short_profit_factor,
     calc_max_drawdown,
@@ -226,7 +227,6 @@ def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
             long_short_backtest.process_bar(
                 kline_open_time=kline_open_time, kline_state=kline_state
             )
-
             print(idx)
 
         profit_factor_dict = calc_long_short_profit_factor(
@@ -282,6 +282,15 @@ def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         }
 
         backtest_id = BacktestQuery.create_entry(backtest_dict)
+
+        for data_transform_id in backtest_info.data_transformations:
+            DataTransformationQuery.update_backtest_id(data_transform_id, backtest_id)
+
+        symbols = []
+        for item in backtest_info.datasets:
+            symbols.append({"symbol": item})
+
+        SymbolQuery.create_many(backtest_id, symbols)
 
         backtest_statistics_dict = {
             "backtest_id": backtest_id,
