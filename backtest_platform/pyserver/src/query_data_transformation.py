@@ -8,6 +8,7 @@ class DataTransformation(Base):
     __tablename__ = "data_transformation"
     id = Column(Integer, primary_key=True)
     dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    backtest_id = Column(Integer, ForeignKey("backtest.id"))
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -88,5 +89,30 @@ class DataTransformationQuery:
                     .filter(
                         DataTransformation.name is not None,
                     )
+                    .all()
+                )
+
+    @staticmethod
+    def update_backtest_id(id, backtest_id):
+        with LogExceptionContext():
+            with Session() as session:
+                transformation = (
+                    session.query(DataTransformation).filter_by(id=id).first()
+                )
+                if transformation:
+                    transformation.backtest_id = backtest_id
+                    session.commit()
+                    return True
+                else:
+                    return False
+
+    @staticmethod
+    def get_transformations_by_backtest(backtest_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(DataTransformation)
+                    .filter(DataTransformation.backtest_id == backtest_id)
+                    .order_by(DataTransformation.id)
                     .all()
                 )
