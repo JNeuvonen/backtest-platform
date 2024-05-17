@@ -31,9 +31,6 @@ class RoutePaths:
 @router.post(RoutePaths.LONG_SHORT, dependencies=[Depends(api_key_auth)])
 async def route_create_long_short_strategy(body: BodyCreateLongShortStrategy):
     with HttpResponseContext():
-        if "{SYMBOL}" not in body.name:
-            raise Exception("Strategy must contain string {SYMBOL}")
-
         long_short_group_id = LongShortGroupQuery.create_entry(
             {
                 "name": body.name,

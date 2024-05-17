@@ -17,7 +17,6 @@ from middleware import ValidateIPMiddleware
 from constants import LogLevel
 from binance_utils import (
     gen_trading_decisions,
-    remove_is_no_loan_available_err_pair,
     update_long_short_enters,
     update_long_short_exits,
 )

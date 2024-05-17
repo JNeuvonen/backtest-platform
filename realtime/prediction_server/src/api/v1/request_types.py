@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, validator
 from datetime import datetime
 
 
@@ -67,6 +67,12 @@ class BodyCreateLongShortStrategy(BaseModel):
 
     asset_universe: List[Dict]
     data_transformations: List[DataTransformation] = Field(default_factory=list)
+
+    @validator("name")
+    def name_must_contain_symbol(cls, v):
+        if "{SYMBOL}" not in v:
+            raise ValueError('name must contain "{SYMBOL}"')
+        return v
 
 
 class BodyCreateCloudLog(BaseModel):
