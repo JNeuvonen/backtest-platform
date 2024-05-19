@@ -29,6 +29,7 @@ class LongShortPair(Base):
     sell_qty_precision = Column(Integer)
     buy_open_time_ms = Column(BigInteger)
     sell_open_time_ms = Column(BigInteger)
+    last_loan_attempt_fail_time_ms = Column(BigInteger)
 
     buy_open_price = Column(Float)
     sell_open_price = Column(Float)

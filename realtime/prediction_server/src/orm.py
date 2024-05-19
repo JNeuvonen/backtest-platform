@@ -47,6 +47,7 @@ class LongShortGroup(Base):
     max_simultaneous_positions = Column(Integer)
     klines_until_close = Column(Integer)
     kline_size_ms = Column(Integer)
+    loan_retry_wait_time_ms = Column(Integer)
 
     max_leverage_ratio = Column(Float)
     take_profit_threshold_perc = Column(Float)
