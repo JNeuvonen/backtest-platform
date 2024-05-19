@@ -252,7 +252,12 @@ def find_ticker(tickers, ticker_id):
 
 
 def long_short_create_pairs(
-    current_pairs, buy_candidates, sell_candidates, long_short_group_id, tickers
+    current_pairs,
+    buy_candidates,
+    sell_candidates,
+    long_short_group_id,
+    tickers,
+    current_state_dict,
 ):
     used_buy_ids = {pair.buy_ticker_id for pair in current_pairs}
     used_sell_ids = {pair.sell_ticker_id for pair in current_pairs}
@@ -263,6 +268,7 @@ def long_short_create_pairs(
     valid_sells = [sell for sell in sell_candidates if sell not in used_ids]
 
     n_valid_pairs = min(len(valid_buys), len(valid_sells))
+    current_state_dict["total_available_pairs"] = n_valid_pairs
     exhausted_ids = set()
 
     for i in range(n_valid_pairs):
@@ -343,22 +349,23 @@ def find_ls_ticker_based_on_is(id, tickers):
     return None
 
 
-def remove_is_no_loan_available_err_pair(pair, tickers):
+def remove_is_no_loan_available_err_pair(pair, tickers, current_state_dict):
     if pair.is_no_loan_available_err is True and pair.in_position is False:
         long_side_ticker = find_ls_ticker_based_on_is(pair.buy_ticker_id, tickers)
         short_side_ticker = find_ls_ticker_based_on_is(pair.sell_ticker_id, tickers)
+        current_state_dict["no_loan_available_err"] += 1
 
         if long_side_ticker is None or short_side_ticker is None:
             return
 
         if (
-            long_side_ticker.is_valid is False
+            long_side_ticker.is_valid_buy is False
             or short_side_ticker.is_valid_sell is False
         ):
             LongShortPairQuery.delete_entry(pair.id)
 
 
-def update_long_short_exits(longshort_strategy):
+def update_long_short_exits(longshort_strategy, current_state_dict):
     with LogExceptionContext(re_raise=False):
         current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
         current_tickers = LongShortTickerQuery.get_all_by_group_id(
@@ -367,10 +374,12 @@ def update_long_short_exits(longshort_strategy):
 
         for item in current_pairs:
             long_short_process_pair_exit(longshort_strategy, item)
-            remove_is_no_loan_available_err_pair(item, current_tickers)
+            remove_is_no_loan_available_err_pair(
+                item, current_tickers, current_state_dict
+            )
 
 
-def update_long_short_enters(longshort_strategy):
+def update_long_short_enters(longshort_strategy, current_state_dict):
     with LogExceptionContext(re_raise=False):
         tickers = LongShortTickerQuery.get_all_by_group_id(longshort_strategy.id)
         current_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_strategy.id)
@@ -382,6 +391,7 @@ def update_long_short_enters(longshort_strategy):
 
         buy_candidates = set()
         sell_candidates = set()
+        current_state_dict["total_num_symbols"] += len(tickers)
 
         for ticker in tickers:
             results = long_short_process_ticker(
@@ -392,9 +402,11 @@ def update_long_short_enters(longshort_strategy):
             is_valid_sell = results["is_valid_sell"]
 
             if is_valid_buy is True:
+                current_state_dict["buy_symbols"].append(ticker.symbol)
                 buy_candidates.add(ticker.id)
 
             if is_valid_sell is True:
+                current_state_dict["sell_symbols"].append(ticker.symbol)
                 sell_candidates.add(ticker.id)
 
         long_short_create_pairs(
@@ -403,6 +415,7 @@ def update_long_short_enters(longshort_strategy):
             sell_candidates,
             longshort_strategy.id,
             tickers,
+            current_state_dict,
         )
 
 

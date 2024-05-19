@@ -70,6 +70,47 @@ def get_trading_decisions(strategy: Strategy):
         }
 
 
+def format_pair_trade_loop_msg(
+    current_state_dict, last_trade_loop_completed_timestamp_ms
+):
+    total_pairs = current_state_dict["total_available_pairs"]
+    no_loan_err = current_state_dict["no_loan_available_err"]
+    sell_symbols = current_state_dict["sell_symbols"]
+    buy_symbols = current_state_dict["buy_symbols"]
+    strategies = current_state_dict["strategies"]
+    total_num_symbols = current_state_dict["total_num_symbols"]
+
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_timestamp_ms = get_current_timestamp_ms()
+    time_to_complete_sec = (
+        current_timestamp_ms - last_trade_loop_completed_timestamp_ms
+    ) / 1000
+
+    log_msg = f"```Pair Trade Service (v{SOFTWARE_VERSION}) L/S loop info - Timestamp (UTC): {current_time} - Time to complete: {time_to_complete_sec:.2f} sec```"
+
+    log_msg += "\n------------"
+    log_msg += f"\nPair trade loop completed.\nTotal available pairs: {total_pairs}.\nNo loan available errors: {no_loan_err}"
+
+    log_msg += "\n------------"
+    log_msg += "\nTrade symbols breakdown:"
+    log_msg += f"\nNum of sell symbols: `{len(sell_symbols)}`"
+    log_msg += f"\nNum of buy symbols: `{len(buy_symbols)}`"
+
+    formatted_sell_symbols = ", ".join([f"`{symbol}`" for symbol in sell_symbols])
+    formatted_buy_symbols = ", ".join([f"`{symbol}`" for symbol in buy_symbols])
+    formatted_strategies = ", ".join([f"`{strat}`" for strat in strategies])
+
+    log_msg += "\n------------"
+    log_msg += f"\nTotal num symbols: {total_num_symbols}"
+    log_msg += f"\nSell symbols: {formatted_sell_symbols}"
+    log_msg += f"\nBuy symbols: {formatted_buy_symbols}"
+
+    log_msg += "\n------------"
+    log_msg += f"\nActive strategies: {formatted_strategies}"
+
+    return log_msg
+
+
 def format_pred_loop_log_msg(
     current_state_dict, strategies_info, last_trade_loop_completed_timestamp_ms
 ):
@@ -81,7 +122,7 @@ def format_pred_loop_log_msg(
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_timestamp_ms = get_current_timestamp_ms()
-    log_msg = f"```Prediction service (v{SOFTWARE_VERSION}) loop info - Timestamp (UTC): {current_time} - Time to complete {(current_timestamp_ms - last_trade_loop_completed_timestamp_ms) / 1000} sec```"
+    log_msg = f"```Prediction Service  (v{SOFTWARE_VERSION}) loop info - Timestamp (UTC): {current_time} - Time to complete {(current_timestamp_ms - last_trade_loop_completed_timestamp_ms) / 1000} sec```"
 
     log_msg += "\n------------"
     log_msg += f"\nPrediction loop completed.\nActive strategies: {active_strats}.\nStrategies in error state: {strats_on_error}"
