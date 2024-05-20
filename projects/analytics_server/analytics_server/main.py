@@ -33,7 +33,7 @@ def webserver_root():
 
 def start_server():
     create_tables()
-    uvicorn.run("main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
+    uvicorn.run("analytics_server.main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
 
 
 if __name__ == "__main__":
