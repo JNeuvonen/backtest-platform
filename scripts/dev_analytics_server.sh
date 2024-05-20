@@ -6,6 +6,6 @@ export ENV=DEV
 
 cd projects 
 cd analytics_server 
-cd src
+cd analytics_server
 
 npx kill-port $SERVICE_PORT && python -m uvicorn main:app --reload
