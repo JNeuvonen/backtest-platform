@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Response, status
 from common_python.pred_serv_orm import create_tables, test_db_conn
-from api.v1.user import router as v1_user_router
+from analytics_server.api.v1.user import router as v1_user_router
 from common_python.server_config import get_service_port
 
 
