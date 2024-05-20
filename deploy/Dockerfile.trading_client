@@ -18,9 +18,9 @@ ENV ACCOUNT_NAME=master_acc
 
 WORKDIR /app
 
-COPY realtime/trading_client/go.mod realtime/trading_client/go.sum ./
+COPY projects/trading_client/go.mod projects/trading_client/go.sum ./
 RUN sed -i 's/^go 1\.22\.1/go 1.18/' go.mod && go mod tidy && go mod download
 
-COPY realtime/trading_client /app
+COPY projects/trading_client /app
 
 CMD ["go", "run", "./src"]

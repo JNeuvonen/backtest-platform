@@ -5,7 +5,7 @@ from conf import SERVICE_CODE_SOURCE_DIR
 
 sys.path.append(SERVICE_CODE_SOURCE_DIR)
 import main
-import orm
+import common_python.pred_serv_orm as orm
 from api.v1.strategy import RoutePaths as strat_router
 from api.v1.log import RoutePaths as logs_router
 from api.v1.account import RoutePaths as acc_router

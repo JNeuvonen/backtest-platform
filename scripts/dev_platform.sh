@@ -1,3 +1,4 @@
+cd projects
 cd backtest_platform
 
 #no trailing slash!

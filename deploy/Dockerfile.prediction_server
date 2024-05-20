@@ -12,9 +12,9 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN pip install --no-cache-dir -r realtime/prediction_server/requirements.txt
+RUN pip install --no-cache-dir -r projects/prediction_server/requirements.txt
 
 EXPOSE 8000
 
-WORKDIR /usr/src/app/realtime/prediction_server/src
+WORKDIR /usr/src/app/realtime/projects/src
 CMD ["python", "-m", "main"]

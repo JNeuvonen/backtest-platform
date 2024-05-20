@@ -7,7 +7,6 @@ import time
 import sys
 from tests.backtest_platform.fixtures import (
     close_long_trade_cond_basic,
-    close_short_trade_cond_basic,
     create_code_preset_body,
     create_manual_backtest,
     create_train_job_basic,
