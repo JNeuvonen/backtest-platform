@@ -49,6 +49,7 @@ async def route_create_long_short_strategy(body: BodyCreateLongShortStrategy):
                 "use_profit_based_close": body.use_profit_based_close,
                 "use_stop_loss_based_close": body.use_stop_loss_based_close,
                 "use_taker_order": body.use_taker_order,
+                "loan_retry_wait_time_ms": body.loan_retry_wait_time_ms,
             }
         )
 

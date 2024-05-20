@@ -54,6 +54,7 @@ class BodyCreateLongShortStrategy(BaseModel):
     max_simultaneous_positions: int
     kline_size_ms: int
     klines_until_close: int
+    loan_retry_wait_time_ms: int
 
     max_leverage_ratio: float
     take_profit_threshold_perc: float
