@@ -1,5 +1,6 @@
 from typing import Dict
-from common_python.pred_serv_orm import Base, Session
+from common_python.pred_serv_orm import Session
+from common_python.pred_serv_models.datatransformation import DataTransformation
 from log import LogExceptionContext
 
 
