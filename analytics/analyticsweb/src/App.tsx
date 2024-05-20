@@ -1,12 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { LayoutContainer } from "./layout";
+import { AppRoutes } from "./Routes";
 
 function App() {
   return (
     <Router>
       <LayoutContainer>
-        <div>Test</div>
+        <AppRoutes />
       </LayoutContainer>
     </Router>
   );
