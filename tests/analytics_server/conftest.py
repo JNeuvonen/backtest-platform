@@ -6,7 +6,7 @@ import time
 from pandas.compat import platform
 from common_python.pred_serv_orm import drop_tables
 from common_python.test_utils.conf import DROP_TABLES, TEST_RUN_PORT
-from common_python.pred_serv_orm import create_tables
+from common_python.pred_serv_orm import create_tables, engine
 from analytics_server.main import start_server
 
 
@@ -34,11 +34,11 @@ def kill_process_on_port(port):
 @pytest.fixture
 def cleanup_db():
     if DROP_TABLES == 1:
-        drop_tables()
+        drop_tables(engine)
     create_tables()
     yield
     if DROP_TABLES == 1:
-        drop_tables()
+        drop_tables(engine)
     create_tables()
 
 
@@ -52,7 +52,7 @@ def setup_test_environment():
         raise Exception("Provide DROP_TABLES (0 or 1) env variable to the test run.")
 
     if int(DROP_TABLES) == 1:
-        drop_tables()
+        drop_tables(engine)
 
     create_tables()
     kill_process_on_port(TEST_RUN_PORT)
