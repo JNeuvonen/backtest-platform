@@ -7,9 +7,9 @@ interface Props {
 
 export const LayoutContainer = ({ children }: Props) => {
   return (
-    <div>
+    <div className="layout">
       <SideNav />
-      <div>{children}</div>
+      <div className="layout__content">{children}</div>
     </div>
   );
 };
