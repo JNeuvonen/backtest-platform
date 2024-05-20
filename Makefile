@@ -40,6 +40,9 @@ test-platform:
 test-pred-server:
 	./scripts/test_prediction_server.sh
 
+test-analytics-server:
+	./scripts/test_analytics_server.sh
+
 
 
 #MIGRATIONS
