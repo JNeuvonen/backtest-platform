@@ -22,9 +22,11 @@ dev-trading-client:
 	./scripts/dev_trading_client.sh
 
 
-dev-analytics:
+dev-analytics-www:
 	./scripts/dev_analyticsweb.sh
 
+dev-analytics-server:
+	./scripts/dev_analytics_server.sh
 
 dev-pred-serv:
 	./scripts/dev_prediction_server.sh
