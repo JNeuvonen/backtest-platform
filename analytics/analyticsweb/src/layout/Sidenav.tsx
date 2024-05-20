@@ -3,9 +3,10 @@ import { MdDashboardCustomize } from "react-icons/md";
 import { FaChartLine } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useActivePath, useWinDimensions } from "src/hooks";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { Button, IconButton } from "@chakra-ui/react";
 import { Blur } from "src/components";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 const SIDE_NAV_ITEMS = [
   {
@@ -24,7 +25,6 @@ export const SideNav = () => {
   const { activePath } = useActivePath({ tabPathDepth: 1 });
   const { width } = useWinDimensions();
   const [hideSidenav, setHideSidenav] = useState(width < MOBILE_WIDTH_CUTOFF);
-  const blurRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (width < MOBILE_WIDTH_CUTOFF) {
@@ -42,12 +42,18 @@ export const SideNav = () => {
           setHideSidenav(true);
         }}
       />
-      <Button
-        style={{ position: "absolute" }}
-        onClick={() => setHideSidenav(false)}
-      >
-        Test btn
-      </Button>
+
+      {hideSidenav && (
+        <IconButton
+          icon={<RxHamburgerMenu />}
+          style={{ position: "fixed" }}
+          onClick={() => setHideSidenav(false)}
+          aria-label={"Menu button"}
+          marginLeft={"8px"}
+          marginTop={"8px"}
+        />
+      )}
+
       {!hideSidenav && (
         <nav className="side-nav">
           <div className="side-nav__nav-items">
