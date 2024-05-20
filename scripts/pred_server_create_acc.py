@@ -8,7 +8,7 @@ sys.path.append(PATH_TO_PRED_SERVER)
 
 from fixtures.account import create_master_acc
 from orm import Session
-from schema.account import AccountQuery
+from common_python.pred_serv_models.account import AccountQuery
 
 master_acc = create_master_acc()
 

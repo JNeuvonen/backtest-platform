@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from constants import LogLevel, LogSourceProgram, SlackWebhooks, TradeDirection
 from api.v1.request_types import BodyCreateTrade
 from slack import post_slack_message
-from schema.slack_bots import SlackWebhookQuery
+from common_python.pred_serv_models.slack_bots import SlackWebhookQuery
 
 
 class LogLevels:

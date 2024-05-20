@@ -12,7 +12,7 @@ from api.v1.account import RoutePaths as acc_router
 from api.v1.trade import RoutePaths as trade_router_helper
 from api.v1.longshort import RoutePaths as longshort_router_helper
 from schema.api_key import APIKeyQuery
-from schema.slack_bots import SlackWebhookQuery
+from common_python.pred_serv_models.slack_bots import SlackWebhookQuery
 from constants import SlackWebhooks
 
 
