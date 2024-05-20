@@ -97,7 +97,7 @@ func getQuoteLoanToCloseShortTrade(
 		0,
 	) + USDT_QUOTE_BUFFER
 
-	err := bc.TakeMarginLoan(strat.QuoteAsset, quoteLoanSize)
+	err := bc.TakeMarginLoan(strat.QuoteAsset, quoteLoanSize, nil)
 
 	if err == nil {
 		res := bc.NewMarginOrder(
@@ -354,7 +354,7 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 
-	err = bc.TakeMarginLoan(strat.BaseAsset, quantity)
+	err = bc.TakeMarginLoan(strat.BaseAsset, quantity, nil)
 
 	fmt.Println(err)
 

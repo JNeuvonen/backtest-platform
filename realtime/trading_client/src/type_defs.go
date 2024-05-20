@@ -69,6 +69,7 @@ type LongShortGroup struct {
 	MaxSimultaneousPositions int     `json:"max_simultaneous_positions"`
 	KlinesUntilClose         int     `json:"klines_until_close"`
 	KlineSizeMs              int     `json:"kline_size_ms"`
+	LoanRetryWaitTimeMs      int     `json:"loan_retry_wait_time_ms"`
 	MaxLeverageRatio         float64 `json:"max_leverage_ratio"`
 	TakeProfitThresholdPerc  float64 `json:"take_profit_threshold_perc"`
 	StopLossThresholdPerc    float64 `json:"stop_loss_threshold_perc"`
@@ -94,33 +95,34 @@ type LongShortTicker struct {
 }
 
 type LongShortPair struct {
-	ID                    int     `json:"id"`
-	LongShortGroupID      int     `json:"long_short_group_id"`
-	BuyTickerID           int     `json:"buy_ticker_id"`
-	SellTickerID          int     `json:"sell_ticker_id"`
-	BuyTickerDatasetName  string  `json:"buy_ticker_dataset_name"`
-	SellTickerDatasetName string  `json:"sell_ticker_dataset_name"`
-	BuySymbol             string  `json:"buy_symbol"`
-	SellSymbol            string  `json:"sell_symbol"`
-	BuyBaseAsset          string  `json:"buy_base_asset"`
-	SellBaseAsset         string  `json:"sell_base_asset"`
-	BuyQuoteAsset         string  `json:"buy_quote_asset"`
-	SellQuoteAsset        string  `json:"sell_quote_asset"`
-	BuyOpenTime           int     `json:"buy_open_time_ms"`
-	SellOpenTime          int     `json:"sell_open_time_ms"`
-	BuyQtyPrecision       int     `json:"buy_qty_precision"`
-	SellQtyPrecision      int     `json:"sell_qty_precision"`
-	BuyOpenPrice          float64 `json:"buy_open_price"`
-	SellOpenPrice         float64 `json:"sell_open_price"`
-	BuyOpenQtyInBase      float64 `json:"buy_open_qty_in_base"`
-	BuyOpenQtyInQuote     float64 `json:"buy_open_qty_in_quote"`
-	SellOpenQtyInQuote    float64 `json:"sell_open_qty_in_quote"`
-	DebtOpenQtyInBase     float64 `json:"debt_open_qty_in_base"`
-	InPosition            bool    `json:"in_position"`
-	ShouldClose           bool    `json:"should_close"`
-	IsTradeFinished       bool    `json:"is_trade_finished"`
-	ErrorInEntering       bool    `json:"error_in_entering"`
-	IsNoLoanAvailableErr  bool    `json:"is_no_loan_available_err"`
+	ID                        int     `json:"id"`
+	LongShortGroupID          int     `json:"long_short_group_id"`
+	BuyTickerID               int     `json:"buy_ticker_id"`
+	SellTickerID              int     `json:"sell_ticker_id"`
+	BuyTickerDatasetName      string  `json:"buy_ticker_dataset_name"`
+	SellTickerDatasetName     string  `json:"sell_ticker_dataset_name"`
+	BuySymbol                 string  `json:"buy_symbol"`
+	SellSymbol                string  `json:"sell_symbol"`
+	BuyBaseAsset              string  `json:"buy_base_asset"`
+	SellBaseAsset             string  `json:"sell_base_asset"`
+	BuyQuoteAsset             string  `json:"buy_quote_asset"`
+	SellQuoteAsset            string  `json:"sell_quote_asset"`
+	BuyOpenTime               int     `json:"buy_open_time_ms"`
+	SellOpenTime              int     `json:"sell_open_time_ms"`
+	BuyQtyPrecision           int     `json:"buy_qty_precision"`
+	SellQtyPrecision          int     `json:"sell_qty_precision"`
+	LastLoanAttemptFailTimeMs int     `json:"last_loan_attempt_fail_time_ms"`
+	BuyOpenPrice              float64 `json:"buy_open_price"`
+	SellOpenPrice             float64 `json:"sell_open_price"`
+	BuyOpenQtyInBase          float64 `json:"buy_open_qty_in_base"`
+	BuyOpenQtyInQuote         float64 `json:"buy_open_qty_in_quote"`
+	SellOpenQtyInQuote        float64 `json:"sell_open_qty_in_quote"`
+	DebtOpenQtyInBase         float64 `json:"debt_open_qty_in_base"`
+	InPosition                bool    `json:"in_position"`
+	ShouldClose               bool    `json:"should_close"`
+	IsTradeFinished           bool    `json:"is_trade_finished"`
+	ErrorInEntering           bool    `json:"error_in_entering"`
+	IsNoLoanAvailableErr      bool    `json:"is_no_loan_available_err"`
 }
 
 type CloudLogBody struct {

@@ -342,7 +342,13 @@ func (bc *BinanceClient) GetAccountDebtRatio() (float64, error) {
 	return totalAccountDebtUSDT / totalAccountValueUSDT, nil
 }
 
-func (bc *BinanceClient) TakeMarginLoan(asset string, quantity float64) error {
+type CallbackNoArgs func()
+
+func (bc *BinanceClient) TakeMarginLoan(
+	asset string,
+	quantity float64,
+	callback CallbackNoArgs,
+) error {
 	if !GetAllowedToSendOrders() {
 		ret := errors.New("Environment is not allowed to make borrows")
 		CreateCloudLog(
@@ -355,13 +361,14 @@ func (bc *BinanceClient) TakeMarginLoan(asset string, quantity float64) error {
 		return ret
 	}
 
-	fmt.Println(asset, quantity)
 	_, err := bc.client.NewBorrowService().
 		Asset(asset).
 		Amount(quantity).
 		Do(context.Background())
 	if err != nil {
-		CreateCloudLog(NewFmtError(err, CaptureStack()).Error(), LOG_EXCEPTION)
+		if callback != nil {
+			callback()
+		}
 		return err
 	}
 

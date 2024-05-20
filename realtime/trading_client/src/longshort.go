@@ -57,7 +57,13 @@ func initPairTradeShort(
 
 	quantity := GetBaseQuantity(usdtEnterSize, price, int32(pair.SellQtyPrecision))
 
-	err = bc.TakeMarginLoan(pair.SellBaseAsset, quantity)
+	err = bc.TakeMarginLoan(pair.SellBaseAsset, quantity,
+		func() {
+			UpdatePair(pair.ID, map[string]interface{}{
+				"last_loan_attempt_fail_time_ms": GetTimeInMs(),
+			})
+		},
+	)
 
 	if err == nil {
 		res := bc.NewMarginOrder(pair.SellSymbol, quantity, ORDER_SELL, MARKET_ORDER)
@@ -137,7 +143,7 @@ func getQuoteLoanToClosePairTrade(
 		0,
 	) + USDT_QUOTE_BUFFER
 
-	err := bc.TakeMarginLoan(pair.SellQuoteAsset, quoteLoanSize)
+	err := bc.TakeMarginLoan(pair.SellQuoteAsset, quoteLoanSize, nil)
 
 	if err == nil {
 		res := bc.NewMarginOrder(
@@ -238,6 +244,11 @@ func enterLongShortTrade(
 	group *LongShortGroup,
 	pair *LongShortPair,
 ) {
+	currTimeMs := GetTimeInMs()
+	if currTimeMs <= int64(pair.LastLoanAttemptFailTimeMs)+int64(group.LoanRetryWaitTimeMs) {
+		return
+	}
+
 	accountName := GetAccountName()
 	account, _ := predServClient.FetchAccount(accountName)
 	maxAllocationRatio := group.MaxLeverageRatio / float64(group.MaxSimultaneousPositions)
