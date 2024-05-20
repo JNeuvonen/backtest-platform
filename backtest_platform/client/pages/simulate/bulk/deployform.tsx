@@ -8,12 +8,7 @@ import {
 import { Field, Form, Formik, FormikProps } from "formik";
 import { WithLabel } from "../../../components/form/WithLabel";
 import { ChakraInput } from "../../../components/chakra/input";
-import {
-  Button,
-  NumberInput,
-  NumberInputField,
-  useToast,
-} from "@chakra-ui/react";
+import { NumberInput, NumberInputField, useToast } from "@chakra-ui/react";
 import { ChakraNumberStepper } from "../../../components/ChakraNumberStepper";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
 import {
@@ -21,10 +16,6 @@ import {
   getIntervalLengthInMs,
   getSymbolsWithPrecision,
 } from "../../../utils/binance";
-import {
-  BacktestSymbol,
-  DataTransformation,
-} from "../../../clients/queries/response-types";
 import { deployPairtradeSystem } from "../../../clients/requests";
 import { useAppContext } from "../../../context/app";
 
@@ -38,6 +29,7 @@ const formKeys = {
   numReqKlines: "numReqKlines",
   maximumKlinesHoldTime: "maximumKlinesHoldTime",
   maxLeverageRatio: "maxLeverageRatio",
+  loanFailRetryCooldown: "loanFailRetryCooldown",
 };
 
 export interface LongShortDeployForm {
@@ -67,6 +59,7 @@ const getFormInitialValues = () => {
     [formKeys.maxSimultaneousPositions]: 65,
     [formKeys.numReqKlines]: 100,
     [formKeys.maxLeverageRatio]: 1.2,
+    [formKeys.loanFailRetryCooldown]: 3600000,
   };
 };
 
@@ -112,6 +105,7 @@ export const DeployLongShortStrategyForm = ({ onSuccessCallback }: Props) => {
       kline_size_ms: getIntervalLengthInMs(backtest.candle_interval),
       klines_until_close: backtest.klines_until_close,
       max_leverage_ratio: values[formKeys.maxLeverageRatio],
+      loan_retry_wait_time_ms: values[formKeys.loanFailRetryCooldown],
       take_profit_threshold_perc: backtest.take_profit_threshold_perc,
       stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
       use_time_based_close: backtest.use_time_based_close,
@@ -249,6 +243,37 @@ export const DeployLongShortStrategyForm = ({ onSuccessCallback }: Props) => {
                           onChange={(valueString) =>
                             form.setFieldValue(
                               formKeys.maximumKlinesHoldTime,
+                              parseInt(valueString)
+                            )
+                          }
+                        >
+                          <NumberInputField />
+                          <ChakraNumberStepper />
+                        </NumberInput>
+                      </WithLabel>
+                    );
+                  }}
+                </Field>
+              </div>
+              <div>
+                <Field name={formKeys.loanFailRetryCooldown}>
+                  {({ field, form }) => {
+                    return (
+                      <WithLabel
+                        label={`Loan fail retry cooldown (${
+                          field.value / 1000 / 60
+                        } mins)`}
+                        containerStyles={{
+                          maxWidth: "350px",
+                        }}
+                      >
+                        <NumberInput
+                          step={300000}
+                          min={0}
+                          value={field.value}
+                          onChange={(valueString) =>
+                            form.setFieldValue(
+                              formKeys.loanFailRetryCooldown,
                               parseInt(valueString)
                             )
                           }
