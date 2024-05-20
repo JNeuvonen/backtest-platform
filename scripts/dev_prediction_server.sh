@@ -5,7 +5,7 @@ export ENV=DEV
 export AUTO_WHITELISTED_IP="185.11.209.117"
 
 # npx kill-port $SERVICE_PORT && python realtime/prediction_server/src/main.py
-cd realtime
+cd project 
 cd prediction_server
 cd src
 

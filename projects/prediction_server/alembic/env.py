@@ -12,6 +12,7 @@ from sqlalchemy import pool
 from alembic import context
 import main
 import common_python.pred_serv_orm as orm
+import common_python.pred_serv_models.user
 
 
 load_dotenv()

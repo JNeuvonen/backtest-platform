@@ -22,6 +22,6 @@ fi
 
 export DATABASE_URL="$DATABASE_URI"
 
-cd realtime/prediction_server
+cd projects/prediction_server
 
 ALEMBIC_CONFIG=./alembic.ini alembic revision --autogenerate -m "$MIGRATION_MESSAGE"

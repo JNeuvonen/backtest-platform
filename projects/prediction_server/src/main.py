@@ -6,7 +6,9 @@ from contextlib import asynccontextmanager
 from common_python.pred_serv_orm import create_tables, test_db_conn
 from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
-from config import get_auto_whitelisted_ip, get_service_port
+from common_python.server_config import get_service_port
+
+from config import get_auto_whitelisted_ip
 from fastapi import FastAPI, Response, status
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
