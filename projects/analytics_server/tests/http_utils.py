@@ -24,9 +24,20 @@ class URL:
     def create_user():
         return URL._user_route() + UserRoutePaths.ROOT
 
+    @staticmethod
+    def get_user_root():
+        return URL._user_route() + UserRoutePaths.ROOT
+
 
 class Post:
     @staticmethod
     def create_user(body):
         with Req("post", URL.create_user(), json=body) as res:
+            return res
+
+
+class Get:
+    @staticmethod
+    def call_user_root():
+        with Req("get", URL.get_user_root()) as res:
             return res

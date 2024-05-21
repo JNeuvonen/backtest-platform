@@ -8,6 +8,8 @@ from common_python.pred_serv_orm import drop_tables
 from common_python.test_utils.conf import DROP_TABLES, TEST_RUN_PORT
 from common_python.pred_serv_orm import create_tables, engine
 from analytics_server.main import start_server
+from projects.analytics_server.tests.fixtures.user import admin_user
+from projects.analytics_server.tests.http_utils import Post
 
 
 def kill_process_on_port(port):
@@ -40,6 +42,11 @@ def cleanup_db():
     if DROP_TABLES == 1:
         drop_tables(engine)
     create_tables()
+
+
+@pytest.fixture
+def create_admin_user():
+    user_id = Post.create_user(admin_user)
 
 
 def start_service():
