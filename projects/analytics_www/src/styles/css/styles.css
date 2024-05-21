@@ -1,13 +1,15 @@
 .side-nav {
   top: 0;
   background-color: #282828;
-  width: 110px;
+  width: 140px;
   min-height: 100vh;
   position: fixed;
-  padding: 8px;
-  padding-right: 9px;
   border-right: 1px solid #3c3c3c;
   z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  padding-bottom: 16px;
 }
 .side-nav__nav-items {
   margin-top: 30px;
@@ -19,7 +21,8 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin-top: 32px;
+  width: 60%;
+  margin: 16px auto;
 }
 .side-nav__item-active {
   background-color: #3a3a3a;
@@ -33,11 +36,48 @@
 }
 .layout__content {
   border-bottom-right-radius: 15px !important;
-  margin-left: 110px;
+  margin-left: 140px;
   padding: 16px;
   background-color: #212121;
   min-height: 100vh;
   z-index: 1;
+}
+
+.profile-button {
+  background-color: #3c3c3c; /* Customize your button color */
+  border: none;
+  border-radius: 50px;
+  padding: 5px 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  margin: 0 auto;
+  width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-button:hover {
+  background-color: #707070; /* Customize hover effect */
+}
+
+.profile-picture {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.profile-button span {
+  font-size: 16px;
+  color: #333; /* Customize text color */
+}
+
+.fallback-icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
 }
 
 *,
