@@ -27,7 +27,7 @@ $inner-side-nav: 120px;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    width: 60%;
+    width: 70%;
     margin: 16px auto;
   }
 
@@ -52,7 +52,6 @@ $inner-side-nav: 120px;
 }
 
 .profile-button {
-  background-color: $bg-primary-shade-two; /* Customize your button color */
   border: none;
   border-radius: 50px;
   padding: 5px 10px;

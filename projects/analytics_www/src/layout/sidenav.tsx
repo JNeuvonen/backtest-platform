@@ -1,12 +1,14 @@
 import { MOBILE_WIDTH_CUTOFF, PATHS } from "../utils";
 import { MdDashboardCustomize } from "react-icons/md";
-import { FaChartLine } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { FaChartLine, FaUserCircle } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import { useActivePath, useWinDimensions } from "src/hooks";
 import { useEffect, useState } from "react";
-import { Button, IconButton } from "@chakra-ui/react";
+import { IconButton } from "@chakra-ui/react";
 import { Blur } from "src/components";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { useAuth0 } from "@auth0/auth0-react";
+import { COLOR_BG_SECONDARY_SHADE_ONE } from "src/theme";
 
 const SIDE_NAV_ITEMS = [
   {
@@ -20,6 +22,38 @@ const SIDE_NAV_ITEMS = [
     path: PATHS.strategies,
   },
 ];
+
+const ProfileButton = () => {
+  const { user } = useAuth0();
+  const navigate = useNavigate();
+  const { activePath } = useActivePath({ tabPathDepth: 1 });
+
+  return (
+    <button
+      className="profile-button"
+      onClick={() => navigate(PATHS.profile)}
+      style={{
+        backgroundColor:
+          `/${activePath}` === PATHS.profile
+            ? COLOR_BG_SECONDARY_SHADE_ONE
+            : "",
+      }}
+    >
+      <div>Settings</div>
+      <div>
+        {user?.picture ? (
+          <img
+            src={user?.picture}
+            alt={user?.name}
+            className="profile-picture"
+          />
+        ) : (
+          <FaUserCircle className="fallback-icon" width={32} height={32} />
+        )}
+      </div>
+    </button>
+  );
+};
 
 export const SideNav = () => {
   const { activePath } = useActivePath({ tabPathDepth: 1 });
@@ -74,6 +108,9 @@ export const SideNav = () => {
                 </Link>
               );
             })}
+          </div>
+          <div>
+            <ProfileButton />
           </div>
         </nav>
       )}

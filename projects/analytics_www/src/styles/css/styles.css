@@ -21,7 +21,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  width: 60%;
+  width: 70%;
   margin: 16px auto;
 }
 .side-nav__item-active {
@@ -44,7 +44,6 @@
 }
 
 .profile-button {
-  background-color: #3c3c3c; /* Customize your button color */
   border: none;
   border-radius: 50px;
   padding: 5px 10px;
