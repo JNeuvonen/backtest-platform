@@ -1,9 +1,9 @@
 from typing import Dict
 from fastapi import APIRouter, Depends, status, Response
 from common_python.http_utils import HttpResponse
-from common_python.pred_serv_models.user import UserQuery
+from common_python.pred_serv_models.user import User, UserQuery
 from common_python.http_utils import verify_ip_whitelisted
-from common_python.auth.oauth import oauth2_scheme, get_user_info
+from common_python.auth.oauth2 import get_user
 from fastapi.security import HTTPBearer
 from analytics_server.api.v1.request_types import BodyCreateuser
 
@@ -17,8 +17,7 @@ class RoutePaths:
 
 
 @router.get(RoutePaths.ROOT)
-async def route_get_root(token: str = Depends(oauth2_scheme)):
-    user_info = get_user_info(token)
+async def route_get_root(user: dict = Depends(get_user)):
     with HttpResponse():
         return Response(
             content="Curious?", media_type="text/plain", status_code=status.HTTP_200_OK
