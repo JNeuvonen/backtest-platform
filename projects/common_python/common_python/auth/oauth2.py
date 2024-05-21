@@ -7,9 +7,11 @@ from fastapi import Depends, HTTPException
 from pydantic import BaseModel
 
 from common_python.pred_serv_models.user import UserQuery
+from common_python.server_config import is_dev
 
 load_dotenv()
 
+TEST_USER_EMAIL = "neuvonenjarno@gmail.com"
 
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "")
 API_IDENTIFIER = os.getenv("AUTH0_API_IDENTIFIER", "")
@@ -68,11 +70,17 @@ def get_user_info(token: str):
 
 
 def verify_access_token(token: str = Depends(oauth2_scheme)):
+    if is_dev():
+        return ""
+
     decode_jwt(token)
     return token
 
 
 def get_user(token: str = Depends(verify_access_token)):
+    if is_dev():
+        return UserQuery.get_user_by_email(TEST_USER_EMAIL)
+
     user_info = get_user_info(token)
     email = user_info["email"]
     user = UserQuery.get_user_by_email(email)
