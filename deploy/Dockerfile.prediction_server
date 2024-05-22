@@ -20,7 +20,7 @@ COPY verify_install.py .
 WORKDIR /usr/src/app
 
 RUN pip install --no-cache-dir -r projects/prediction_server/requirements.txt
-RUN python verify_install.py
+RUN python scripts/verify_local_package_install.py
 
 EXPOSE 8000
 
