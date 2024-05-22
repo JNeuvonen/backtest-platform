@@ -196,6 +196,7 @@ class UpdateLongShortPairBody(BaseModel):
     sell_qty_precision: Optional[int] = None
     buy_open_time: Optional[int] = None
     sell_open_time: Optional[int] = None
+    last_loan_attempt_fail_time_ms: Optional[int] = None
 
     buy_open_price: Optional[float] = None
     sell_open_price: Optional[float] = None
