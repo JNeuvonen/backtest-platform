@@ -170,7 +170,10 @@ def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
                 python_program = PythonCode.on_dataset(
                     dataset_name, transformation.transformation_code
                 )
-                exec_python(python_program)
+                try:
+                    exec_python(python_program)
+                except Exception:
+                    pass
 
         longest_dataset_id = get_longest_dataset_id(backtest_info)
         if longest_dataset_id is None:
