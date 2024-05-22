@@ -11,7 +11,7 @@ from context import HttpResponseContext
 from trade_utils import enter_longshort_trade, exit_longshort_trade
 from schema.longshortpair import LongShortPairQuery
 from schema.data_transformation import DataTransformationQuery
-from schema.longshortgroup import LongShortGroupQuery
+from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from schema.longshortticker import LongShortTickerQuery
 from binance_utils import infer_assets
 
