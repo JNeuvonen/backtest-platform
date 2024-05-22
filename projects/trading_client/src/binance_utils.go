@@ -424,8 +424,9 @@ func (bc *BinanceClient) RepayMarginLoan(asset string, quantity float64) {
 		CreateCloudLog(
 			NewFmtError(
 				errors.New(fmt.Sprintf(
-					"%s: repaying margin loan failed. Err: %s",
+					"%s: repaying margin loan failed. Symbol: %s \n\nErr: %s",
 					GetCurrentFunctionName(),
+					asset,
 					err.Error(),
 				)),
 				CaptureStack(),
