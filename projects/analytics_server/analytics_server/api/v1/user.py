@@ -14,10 +14,11 @@ token_auth_scheme = HTTPBearer()
 
 class RoutePaths:
     ROOT = "/"
+    GET_USER_FROM_TOKEN = "/user/{token}"
 
 
 @router.get(RoutePaths.ROOT)
-async def route_get_root(user: dict = Depends(get_user)):
+async def route_get_root(user: User = Depends(get_user)):
     with HttpResponse():
         return Response(
             content="Curious?", media_type="text/plain", status_code=status.HTTP_200_OK
@@ -34,3 +35,9 @@ async def route_create_entry(body: BodyCreateuser):
             media_type="text/plain",
             status_code=status.HTTP_200_OK,
         )
+
+
+@router.get(RoutePaths.GET_USER_FROM_TOKEN)
+async def route_get_user_from_token(user: User = Depends(get_user)):
+    with HttpResponse():
+        return {"data": user}

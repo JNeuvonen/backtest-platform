@@ -15,8 +15,6 @@ const Auth0ProviderWithHistory: React.FC<Auth0ProviderWithHistoryProps> = ({
     navigate(appState?.returnTo || window.location.pathname);
   };
 
-  console.log(process.env.REACT_APP_AUTH0_DOMAIN!);
-
   return (
     <Auth0Provider
       domain={process.env.REACT_APP_AUTH0_DOMAIN!}
