@@ -39,7 +39,7 @@ import { ChakraPopover } from "../../../components/chakra/popover";
 import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { useModal } from "../../../hooks/useOpen";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
-import { ChakraInput } from "common_js";
+import { ChakraInput } from "../../../components/chakra/input";
 
 type PathParams = {
   datasetName: string;
