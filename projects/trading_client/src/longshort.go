@@ -416,6 +416,10 @@ func shouldClosePairTrade(
 		return false
 	}
 
+	if pair.ShouldClose {
+		return true
+	}
+
 	return shouldLsTimeBasedClose(group, pair) || shouldLsProfitBasedClose(bc, group, pair) ||
 		shouldLsStopLossBasedClose(bc, group, pair)
 }
