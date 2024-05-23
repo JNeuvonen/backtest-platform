@@ -112,3 +112,10 @@ class StrategyQuery:
                 session.commit()
                 return True
             return False
+
+    @staticmethod
+    def count_strategies_in_position():
+        with Session() as session:
+            return (
+                session.query(Strategy).filter(Strategy.is_in_position == True).count()
+            )
