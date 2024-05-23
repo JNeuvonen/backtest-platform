@@ -14,7 +14,7 @@ token_auth_scheme = HTTPBearer()
 
 class RoutePaths:
     ROOT = "/"
-    GET_USER_FROM_TOKEN = "/user/{token}"
+    GET_USER_FROM_TOKEN = "/token"
 
 
 @router.get(RoutePaths.ROOT)

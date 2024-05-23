@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response, status
 from common_python.pred_serv_orm import create_tables, test_db_conn
 from analytics_server.api.v1.user import router as v1_user_router
+from fastapi.middleware.cors import CORSMiddleware
 from common_python.server_config import get_service_port
 
 
@@ -19,6 +20,13 @@ async def lifespan(
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(v1_user_router, prefix=Routers.V1_USER)
@@ -33,7 +41,12 @@ def webserver_root():
 
 def start_server():
     create_tables()
-    uvicorn.run("analytics_server.main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
+    uvicorn.run(
+        "analytics_server.main:app",
+        host="0.0.0.0",
+        port=get_service_port(),
+        log_level="info",
+    )
 
 
 if __name__ == "__main__":

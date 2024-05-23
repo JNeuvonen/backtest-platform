@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import {
   createContext,
@@ -6,6 +7,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import { fetchUserParams } from "../http";
+import { useAccessTokenReq } from "src/hooks/useAccessTokenReq";
+import { useToast } from "@chakra-ui/react";
 
 interface UserContextType {
   user: any;
@@ -22,6 +26,8 @@ export const UserContext = createContext<UserContextType>(
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const { isAuthenticated, user, getAccessTokenSilently } = useAuth0();
   const [userFromDb, setUserFromDb] = useState(null);
+  const accessTokenReq = useAccessTokenReq();
+  const toast = useToast();
 
   useEffect(() => {
     const asyncHelper = async () => {
@@ -31,9 +37,18 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           scope: "read:current_user",
         },
       });
+      const user = await accessTokenReq({ ...fetchUserParams() });
+      console.log(user);
     };
 
     asyncHelper();
+
+    toast({
+      title: "Title",
+      status: "info",
+      duration: 5000,
+      isClosable: true,
+    });
   }, [isAuthenticated, user]);
 
   return (
