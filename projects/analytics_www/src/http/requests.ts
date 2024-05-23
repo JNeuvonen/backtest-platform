@@ -1,4 +1,5 @@
-import { httpReq, ANALYTICS_SERV_API, HttpRequestOptions } from "common_js";
+import { httpReq, ANALYTICS_SERV_API } from ".";
+import { HttpRequestOptions } from "./utils";
 
 export const fetchUserUsingToken = async () => {
   const res = await httpReq({

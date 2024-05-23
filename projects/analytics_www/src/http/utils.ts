@@ -1,6 +1,3 @@
-import { createStandaloneToast } from "@chakra-ui/react";
-const { toast } = createStandaloneToast();
-
 interface ErrorOptions {
   errorNotifyUI?: boolean;
   customErrorMsgGeneratorCallback?: (error: string) => string;
@@ -33,12 +30,7 @@ export const httpReq = async <T = any>({
   errorOptions = {},
   onSuccessCallback,
 }: HttpRequestOptions): Promise<HttpResponse<T>> => {
-  const {
-    errorNotifyUI = true,
-    customErrorMsgGeneratorCallback,
-    errorTitle = "Error",
-    onErrorCallback = undefined,
-  } = errorOptions;
+  const { onErrorCallback = undefined } = errorOptions;
 
   try {
     const urlWithParams = new URL(url);
@@ -68,18 +60,6 @@ export const httpReq = async <T = any>({
         response.statusText
       }, Error Message: ${errorData.message || ""}`;
 
-      if (errorNotifyUI) {
-        console.log("exec here");
-        toast({
-          title: errorTitle,
-          description: customErrorMsgGeneratorCallback
-            ? customErrorMsgGeneratorCallback(errorMsg)
-            : errorMsg,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
       throw new Error(errorMsg);
     }
 

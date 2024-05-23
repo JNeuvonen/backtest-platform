@@ -1,6 +1,6 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { httpReq, HttpRequestOptions, HttpResponse } from "common_js";
 import { useState, useEffect } from "react";
+import { httpReq, HttpRequestOptions, HttpResponse } from "src/http";
 
 export const useAccessTokenReq = () => {
   const { getAccessTokenSilently } = useAuth0();

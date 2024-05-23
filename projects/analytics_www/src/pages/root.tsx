@@ -1,15 +1,8 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { useToast } from "@chakra-ui/react";
+import { toast, ToastContainer } from "react-toastify";
 
 export const RootPage = () => {
-  const {
-    loginWithRedirect,
-    logout,
-    isAuthenticated,
-    user,
-    getAccessTokenSilently,
-  } = useAuth0();
-  const toast = useToast();
+  const { loginWithRedirect, getAccessTokenSilently } = useAuth0();
   const getToken = async () => {
     const token = await getAccessTokenSilently({
       authorizationParams: {
@@ -31,13 +24,8 @@ export const RootPage = () => {
   };
 
   const testToast = () => {
-    toast({
-      title: "Title",
-      status: "info",
-      duration: 5000,
-      isClosable: true,
-    });
-    console.log("exec here");
+    toast("yooo");
+    console.log("click here");
   };
   return (
     <div>
