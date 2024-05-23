@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "esnext", // Use ES Modules
+    "moduleResolution": "node",
+    "target": "es6", // Target modern JavaScript version
+    "jsx": "react", 
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true, // Generate declaration files (.d.ts)
+    "sourceMap": true // Generate source maps
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
