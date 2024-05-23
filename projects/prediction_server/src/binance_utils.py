@@ -10,7 +10,7 @@ from schema.data_transformation import (
 )
 from common_python.pred_serv_models.strategy import StrategyQuery
 from schema.longshortticker import LongShortTickerQuery
-from schema.longshortpair import LongShortPairQuery
+from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 
 from utils import (
     NUM_REQ_KLINES_BUFFER,
