@@ -30,7 +30,6 @@ import {
 } from "../../../components/form/CheckBoxMulti";
 import { useForceUpdate } from "../../../hooks/useForceUpdate";
 import { FormSubmitBar } from "../../../components/form/FormSubmitBar";
-import { ChakraInput } from "../../../components/chakra/input";
 import { createModel, setTargetColumn } from "../../../clients/requests";
 import {
   nullFillStratToInt,
@@ -40,6 +39,7 @@ import { ChakraPopover } from "../../../components/chakra/popover";
 import { SelectColumnPopover } from "../../../components/SelectTargetColumnPopover";
 import { useModal } from "../../../hooks/useOpen";
 import { getDatasetColumnOptions } from "../../../utils/dataset";
+import { ChakraInput } from "common_js";
 
 type PathParams = {
   datasetName: string;

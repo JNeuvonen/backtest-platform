@@ -20,7 +20,7 @@ import {
 } from "../../../../clients/queries/response-types";
 import { DISK_KEYS, DiskManager } from "../../../../utils/disk";
 import { WithLabel } from "../../../../components/form/WithLabel";
-import { ChakraInput } from "../../../../components/chakra/input";
+import { ChakraInput } from "common_js";
 import { CodeEditor } from "../../../../components/CodeEditor";
 import { CODE_PRESET_CATEGORY } from "../../../../utils/constants";
 import { BUTTON_VARIANTS } from "../../../../theme";
