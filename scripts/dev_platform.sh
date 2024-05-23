@@ -1,3 +1,6 @@
+chmod +x ./scripts/node_link_common_js.sh
+./scripts/node_link_common_js.sh
+
 cd projects
 cd backtest_platform
 
