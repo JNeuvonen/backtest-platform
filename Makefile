@@ -72,3 +72,6 @@ cleanup-bot-msgs-slack:
 
 loc:
 	./scripts/loc.sh
+
+link-common-js:
+	./scripts/node_link_common_js.sh
