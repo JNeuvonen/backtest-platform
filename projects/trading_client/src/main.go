@@ -1,9 +1,5 @@
 package main
 
-import (
-	"time"
-)
-
 func main() {
 	predServConfig := GetPredServerConfig()
 	tradingConfig := GetTradingConfig()
@@ -14,6 +10,8 @@ func main() {
 	}
 	predServClient := NewHttpClient(predServConfig.URI, headers)
 	binanceClient := NewBinanceClient(tradingConfig)
+
+	lastLogMsg := int64(0)
 
 	for {
 		strategies := predServClient.FetchStrategies()
@@ -52,7 +50,10 @@ func main() {
 		for _, longshortGroup := range longShortGroups {
 			ProcessLongShortGroup(binanceClient, predServClient, &longshortGroup)
 		}
-		predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
-		time.Sleep(time.Minute)
+
+		if GetTimeInMs() >= lastLogMsg+MINUTE_IN_MS {
+			predServClient.CreateCloudLog("Trading loop completed", LOG_INFO)
+			lastLogMsg = GetTimeInMs()
+		}
 	}
 }
