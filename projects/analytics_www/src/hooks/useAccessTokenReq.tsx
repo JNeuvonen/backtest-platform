@@ -16,6 +16,7 @@ export const useAccessTokenReq = () => {
           },
         });
         setToken(token);
+        console.log(token);
       } catch (error) {
         console.error("Error getting access token:", error);
       }

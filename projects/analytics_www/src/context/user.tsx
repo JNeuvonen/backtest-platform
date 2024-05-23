@@ -10,6 +10,7 @@ import {
 import { fetchUserParams } from "../http";
 import { useAccessTokenReq } from "src/hooks/useAccessTokenReq";
 import { useToast } from "@chakra-ui/react";
+import { LoginPage } from "src/pages/login";
 
 interface UserContextType {
   user: any;
@@ -24,21 +25,17 @@ export const UserContext = createContext<UserContextType>(
 );
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const { isAuthenticated, user, getAccessTokenSilently } = useAuth0();
-  const [userFromDb, setUserFromDb] = useState(null);
+  const { isAuthenticated, user } = useAuth0();
+  const [userFromDb, setUserFromDb] = useState<any>(null);
   const accessTokenReq = useAccessTokenReq();
   const toast = useToast();
 
   useEffect(() => {
     const asyncHelper = async () => {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
-          scope: "read:current_user",
-        },
-      });
-      const user = await accessTokenReq({ ...fetchUserParams() });
-      console.log(user);
+      const userRes = await accessTokenReq({ ...fetchUserParams() });
+      if (userRes.success) {
+        setUserFromDb(userRes);
+      }
     };
 
     asyncHelper();
@@ -50,6 +47,10 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       isClosable: true,
     });
   }, [isAuthenticated, user]);
+
+  if (!userFromDb) {
+    return <LoginPage />;
+  }
 
   return (
     <UserContext.Provider value={{ user: null }}>
