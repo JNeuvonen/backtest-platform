@@ -29,7 +29,7 @@ dev-trading-client:
 dev-analytics-www:
 	./scripts/dev_analyticsweb.sh
 
-dev-analytics-server:
+dev-analytics-serv:
 	./scripts/dev_analytics_server.sh
 
 dev-pred-serv:
