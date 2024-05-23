@@ -1,11 +1,35 @@
 import uvicorn
 from contextlib import asynccontextmanager
+from multiprocessing import Process, Event
 
 from fastapi import FastAPI, Response, status
 from common_python.pred_serv_orm import create_tables, test_db_conn
 from analytics_server.api.v1.user import router as v1_user_router
 from fastapi.middleware.cors import CORSMiddleware
 from common_python.server_config import get_service_port
+from common_python.pred_serv_models.strategy import StrategyQuery
+
+from analytics_server.binance.collect_data import collect_data_loop
+
+
+class DataCollectionSservice:
+    def __init__(self):
+        self.stop_event = Event()
+        self.balance_snapshot_loop = None
+
+    def start(self):
+        if self.balance_snapshot_loop is None:
+            self.balance_snapshot_loop = Process(
+                target=collect_data_loop, args=(self.stop_event,), daemon=False
+            )
+            self.balance_snapshot_loop.start()
+
+    def stop(self):
+        if self.balance_snapshot_loop:
+            self.stop_event.set()
+
+            if self.balance_snapshot_loop:
+                self.balance_snapshot_loop.join()
 
 
 class Routers:
@@ -31,6 +55,8 @@ app.add_middleware(
 
 app.include_router(v1_user_router, prefix=Routers.V1_USER)
 
+data_collection_service = DataCollectionSservice()
+
 
 @app.get("/", response_class=Response)
 def webserver_root():
@@ -41,6 +67,7 @@ def webserver_root():
 
 def start_server():
     create_tables()
+    data_collection_service.start()
     uvicorn.run(
         "analytics_server.main:app",
         host="0.0.0.0",
