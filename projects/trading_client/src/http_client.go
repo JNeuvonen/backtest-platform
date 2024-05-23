@@ -307,12 +307,14 @@ func UpdatePair(id int, body map[string]interface{}) {
 }
 
 func CreateCloudLog(msg string, level string) {
-	predServConfig := GetPredServerConfig()
-	headers := map[string]string{
-		"X-API-KEY": predServConfig.API_KEY,
-	}
-	predServClient := NewHttpClient(predServConfig.URI, headers)
-	predServClient.CreateCloudLog(msg, level)
+	go func() {
+		predServConfig := GetPredServerConfig()
+		headers := map[string]string{
+			"X-API-KEY": predServConfig.API_KEY,
+		}
+		predServClient := NewHttpClient(predServConfig.URI, headers)
+		predServClient.CreateCloudLog(msg, level)
+	}()
 }
 
 func (client *HttpClient) CreateCloudLog(msg string, level string) error {
