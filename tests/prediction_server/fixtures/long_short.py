@@ -23,6 +23,7 @@ def create_long_short_group_body(
     use_stop_loss_based_close: float,
     use_taker_order: bool,
     asset_universe: List[Dict],
+    loan_retry_wait_time_ms: int,
     data_transformations: List[Dict],
 ):
     return {
@@ -43,6 +44,7 @@ def create_long_short_group_body(
         "use_stop_loss_based_close": use_stop_loss_based_close,
         "use_taker_order": use_taker_order,
         "asset_universe": asset_universe,
+        "loan_retry_wait_time_ms": loan_retry_wait_time_ms,
         "data_transformations": data_transformations,
     }
 
@@ -189,6 +191,7 @@ def long_short_body_basic():
         use_stop_loss_based_close=False,
         use_taker_order=True,
         asset_universe=asset_universe,
+        loan_retry_wait_time_ms=3600000,
         data_transformations=[
             gen_data_transformation_dict(SMA_CODE_TRANSFORM),
             gen_data_transformation_dict(RSI_CODE_TRANSFORM),

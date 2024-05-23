@@ -13,6 +13,8 @@ from tests.prediction_server.t_utils import Post
 def test_setup_sanity(cleanup_db, fixt_create_master_acc):
     longshort_body = long_short_body_basic()
 
+    time.sleep(5)
+
     Post.create_long_short_strategy(fixt_create_master_acc, longshort_body)
 
     time.sleep(1000000)
