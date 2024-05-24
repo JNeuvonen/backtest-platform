@@ -1781,6 +1781,55 @@ direction = "up"
 create_change_flag(dataset, close_col=close_col, flag_col=flag_col, change_threshold=change_threshold, direction=direction)
 """
 
+INCREASING_STREAK = """
+import pandas as pd
+
+def calculate_increasing_streak(df, column='close_price', period=3):
+    increasing_streak_label = f"increasing_streak_{period}_{column}"
+    
+    # Create a helper column to check if current value is greater than previous value
+    df['increasing'] = (df[column] > df[column].shift(1)).astype(int)
+    
+    # Calculate rolling sum of the 'increasing' helper column
+    df[increasing_streak_label] = df['increasing'].rolling(window=period).sum()
+    
+    # Set indicator: 1 if rolling sum equals period (all previous values were increasing), else 0
+    df[increasing_streak_label] = (df[increasing_streak_label] == period).astype(int)
+    
+    # Drop the helper column
+    df.drop(columns=['increasing'], inplace=True)
+
+# Usage example:
+column = "RSI_30_MA_50_close_price"
+period = 3
+calculate_increasing_streak(dataset, column=column, period=period)
+"""
+
+
+DECREASING_STREAK = """
+import pandas as pd
+
+def calculate_decreasing_streak(df, column='close_price', period=3):
+    decreasing_streak_label = f"decreasing_streak_{period}_{column}"
+    
+    # Create a helper column to check if current value is less than previous value
+    df['decreasing'] = (df[column] < df[column].shift(1)).astype(int)
+    
+    # Calculate rolling sum of the 'decreasing' helper column
+    df[decreasing_streak_label] = df['decreasing'].rolling(window=period).sum()
+    
+    # Set indicator: 1 if rolling sum equals period (all previous values were decreasing), else 0
+    df[decreasing_streak_label] = (df[decreasing_streak_label] == period).astype(int)
+    
+    # Drop the helper column
+    df.drop(columns=['decreasing'], inplace=True)
+
+# Usage example:
+column = "close_price"
+period = 3
+calculate_decreasing_streak(dataset, column=column, period=period)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -2341,6 +2390,20 @@ DEFAULT_CODE_PRESETS = [
         name="PRICE_CHANGE_ON_EVENT_FLAG",
         category=CodePresetCategories.INDICATOR,
         description="Function that is provided a binary column (0 or 1) and computes whether significant enough ROCP happened on cases where the binary column's value is 1.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=INCREASING_STREAK,
+        name="INCREASING_STREAK",
+        category=CodePresetCategories.INDICATOR,
+        description="The indicator sets the value to 1 if the specified column has been increasing for the previous N rows consecutively; otherwise, it sets the value to 0. This helps identify periods of consistent upward movement in the given column.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=DECREASING_STREAK,
+        name="DECREASING_STREAK",
+        category=CodePresetCategories.INDICATOR,
+        description="The indicator sets the value to 1 if the specified column has been decreasing for the previous N rows consecutively; otherwise, it sets the value to 0. This helps identify periods of consistent downward movement in the given column.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]
