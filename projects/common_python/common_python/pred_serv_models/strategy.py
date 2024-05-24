@@ -132,3 +132,13 @@ class StrategyQuery:
                     .filter(Strategy.is_in_position == True)
                     .count()
                 )
+
+    @staticmethod
+    def get_strategies_in_position():
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy)
+                    .filter(Strategy.is_in_position == True)
+                    .all()
+                )

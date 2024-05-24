@@ -18,7 +18,8 @@ class BalanceSnapshot(Base):
     margin_level = Column(Float)
     btc_price = Column(Float)
 
-    num_directional_positions = Column(Integer)
+    num_long_positions = Column(Integer)
+    num_short_positions = Column(Integer)
     num_ls_positions = Column(Integer)
 
 
