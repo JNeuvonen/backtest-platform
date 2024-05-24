@@ -1,0 +1,119 @@
+import { Heading, Stat, StatLabel, StatNumber } from "@chakra-ui/react";
+import {
+  BalanceSnapshot,
+  getRateOfChangePerc,
+  roundNumberFloor,
+} from "common_js";
+import { COLOR_CONTENT_PRIMARY } from "src/theme";
+import { ChakraCard } from "./chakra";
+import ChakraStatHelpText from "./chakra/StatHelpText";
+
+interface InfoCardProps {
+  heading: React.ReactNode;
+  lastTick: BalanceSnapshot;
+  comparisonTick: BalanceSnapshot;
+  showOnlyNav?: boolean;
+}
+
+const BalanceInfoCard: React.FC<InfoCardProps> = ({
+  heading,
+  lastTick,
+  comparisonTick,
+  showOnlyNav = false,
+}) => {
+  return (
+    <ChakraCard heading={<Heading size="md">{heading}</Heading>}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>NAV</StatLabel>
+            <StatNumber>${roundNumberFloor(lastTick.value, 2)}</StatNumber>
+            <ChakraStatHelpText
+              num={roundNumberFloor(
+                getRateOfChangePerc(lastTick.value, comparisonTick?.value),
+                2,
+              )}
+            />
+          </Stat>
+        </div>
+        {!showOnlyNav && (
+          <>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Debt</StatLabel>
+                <StatNumber>${roundNumberFloor(lastTick.debt, 2)}</StatNumber>
+                <ChakraStatHelpText
+                  num={roundNumberFloor(
+                    getRateOfChangePerc(lastTick.debt, comparisonTick.debt),
+                    2,
+                  )}
+                />
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Longs</StatLabel>
+                <StatNumber>
+                  ${roundNumberFloor(lastTick.long_assets_value, 2)}
+                </StatNumber>
+                <ChakraStatHelpText
+                  num={roundNumberFloor(
+                    getRateOfChangePerc(
+                      lastTick.long_assets_value,
+                      comparisonTick.long_assets_value,
+                    ),
+                    2,
+                  )}
+                />
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Margin level</StatLabel>
+                <StatNumber>
+                  {roundNumberFloor(lastTick.margin_level, 2)}
+                </StatNumber>
+                <ChakraStatHelpText
+                  num={roundNumberFloor(
+                    getRateOfChangePerc(
+                      lastTick.margin_level,
+                      comparisonTick.margin_level,
+                    ),
+                    2,
+                  )}
+                />
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Long positions</StatLabel>
+                <StatNumber>{lastTick.num_directional_positions}</StatNumber>
+                <ChakraStatHelpText
+                  num={
+                    comparisonTick.num_directional_positions -
+                    lastTick.num_directional_positions
+                  }
+                  percentage={false}
+                />
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Pair trade positions</StatLabel>
+                <StatNumber>{lastTick.num_ls_positions}</StatNumber>
+                <ChakraStatHelpText
+                  num={
+                    comparisonTick.num_ls_positions - lastTick.num_ls_positions
+                  }
+                  percentage={false}
+                />
+              </Stat>
+            </div>
+          </>
+        )}
+      </div>
+    </ChakraCard>
+  );
+};
+
+export default BalanceInfoCard;
