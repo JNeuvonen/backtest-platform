@@ -33,35 +33,39 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <Stat color={COLOR_CONTENT_PRIMARY}>
-            <StatLabel>NAV</StatLabel>
-            {!showOnlyDiff && (
-              <StatNumber>${roundNumberFloor(lastTick.value, 2)}</StatNumber>
-            )}
-            <ChakraStatHelpText
-              num={roundNumberFloor(
-                getRateOfChangePerc(lastTick.value, comparisonTick?.value),
-                2,
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>NAV</StatLabel>
+              {!showOnlyDiff && (
+                <StatNumber>${roundNumberFloor(lastTick.value, 2)}</StatNumber>
               )}
-            />
-          </Stat>
-          <Stat color={COLOR_CONTENT_PRIMARY}>
-            <StatLabel>BTC price</StatLabel>
-            {!showOnlyDiff && (
-              <StatNumber>
-                ${roundNumberFloor(lastTick.btc_price, 2)}
-              </StatNumber>
-            )}
-            <ChakraStatHelpText
-              num={roundNumberFloor(
-                getRateOfChangePerc(
-                  lastTick.btc_price,
-                  comparisonTick?.btc_price,
-                ),
-                2,
+              <ChakraStatHelpText
+                num={roundNumberFloor(
+                  getRateOfChangePerc(lastTick.value, comparisonTick?.value),
+                  2,
+                )}
+              />
+            </Stat>
+          </div>
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>BTC price</StatLabel>
+              {!showOnlyDiff && (
+                <StatNumber>
+                  ${roundNumberFloor(lastTick.btc_price, 2)}
+                </StatNumber>
               )}
-            />
-          </Stat>
+              <ChakraStatHelpText
+                num={roundNumberFloor(
+                  getRateOfChangePerc(
+                    lastTick.btc_price,
+                    comparisonTick?.btc_price,
+                  ),
+                  2,
+                )}
+              />
+            </Stat>
+          </div>
         </div>
         {!showOnlyNav && (
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -114,11 +118,11 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Long positions</StatLabel>
-                <StatNumber>{lastTick.num_directional_positions}</StatNumber>
+                <StatNumber>{lastTick.num_long_positions}</StatNumber>
                 <ChakraStatHelpText
                   num={
-                    comparisonTick.num_directional_positions -
-                    lastTick.num_directional_positions
+                    lastTick.num_long_positions -
+                    comparisonTick.num_long_positions
                   }
                   percentage={false}
                 />
@@ -126,11 +130,24 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
             </div>
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Pair trade positions</StatLabel>
+                <StatLabel>Short positions</StatLabel>
+                <StatNumber>{lastTick.num_long_positions}</StatNumber>
+                <ChakraStatHelpText
+                  num={
+                    lastTick.num_short_positions -
+                    comparisonTick.num_short_positions
+                  }
+                  percentage={false}
+                />
+              </Stat>
+            </div>
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Active pair trades</StatLabel>
                 <StatNumber>{lastTick.num_ls_positions}</StatNumber>
                 <ChakraStatHelpText
                   num={
-                    comparisonTick.num_ls_positions - lastTick.num_ls_positions
+                    lastTick.num_ls_positions - comparisonTick.num_ls_positions
                   }
                   percentage={false}
                 />

@@ -30,14 +30,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const asyncHelper = async () => {
       const userRes = await httpReq({ ...fetchUserParams() });
       if (userRes && userRes.success) {
-        setUserFromDb(userRes);
+        setUserFromDb(userRes.data.data);
       }
     };
 
     asyncHelper();
   }, [isAuthenticated, user]);
 
-  if (!userFromDb) {
+  if (userFromDb === null) {
     return <LoginPage />;
   }
 

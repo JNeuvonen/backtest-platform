@@ -142,12 +142,105 @@ export const RootPage = () => {
             justifyContent: "space-between",
           }}
         >
-          <Heading size={"lg"}>Equity</Heading>
+          <Heading size={"lg"}>Live dashboard</Heading>
           <Text fontSize={"13px"}>
             Last account snapshot:{" "}
             {getDiffToPresentFormatted(new Date(lastTick.created_at))} ago
           </Text>
         </div>
+        <div style={{ marginTop: "16px" }}>
+          <BalanceInfoCard
+            heading={"24h changes"}
+            lastTick={lastTick}
+            comparisonTick={oneDayAgoTick as BalanceSnapshot}
+          />
+        </div>
+        <div style={{ marginTop: "16px" }}></div>
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+          }}
+        >
+          <BalanceInfoCard
+            heading={"1 week"}
+            lastTick={lastTick}
+            comparisonTick={oneWeekAgoTick as BalanceSnapshot}
+            showOnlyNav={true}
+            showOnlyDiff={true}
+          />
+          <BalanceInfoCard
+            heading={"MTD"}
+            lastTick={lastTick}
+            comparisonTick={monthFirstTick as BalanceSnapshot}
+            showOnlyNav={true}
+            showOnlyDiff={true}
+          />
+          <BalanceInfoCard
+            heading={"YTD"}
+            lastTick={lastTick}
+            comparisonTick={yearsFirstTick as BalanceSnapshot}
+            showOnlyNav={true}
+            showOnlyDiff={true}
+          />
+        </div>
+        <div style={{ marginTop: "24px" }}>
+          <Heading size={"md"}>Equity graph</Heading>
+          <ShareYAxisMultilineChart
+            containerStyles={{ marginTop: "16px" }}
+            height={500}
+            data={balanceSnapShots.data}
+            xAxisKey={"created_at"}
+            yAxisTickFormatter={(value: number) => `${value}$`}
+            xAxisTickFormatter={(tick: number) =>
+              new Date(tick).toLocaleDateString("default", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+              })
+            }
+          >
+            <YAxis
+              yAxisId="btc_price"
+              orientation="right"
+              label={{ value: "btc_price", angle: 90, position: "insideRight" }}
+              domain={["auto", "auto"]}
+              tickFormatter={(value: number) => `${value}$`}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="btc_price"
+              stroke="#82ca9d"
+              yAxisId="btc_price"
+              dot={false}
+            />
+            <Line
+              type="monotone"
+              dataKey={"debt"}
+              stroke={COLOR_BRAND_PRIMARY_SHADE_FOUR}
+              dot={false}
+            />
+            <Line
+              type="monotone"
+              dataKey={"value"}
+              stroke={COLOR_BRAND_PRIMARY}
+              dot={false}
+            />
+            <Line
+              type="monotone"
+              dataKey={"long_assets_value"}
+              stroke={COLOR_BRAND_SECONDARY}
+              dot={false}
+            />
+          </ShareYAxisMultilineChart>
+        </div>
+      </div>
+      <div style={{ marginTop: "16px" }}>
+        <Heading size={"md"}>Positions</Heading>
         <ShareYAxisMultilineChart
           containerStyles={{ marginTop: "16px" }}
           height={500}
@@ -180,61 +273,23 @@ export const RootPage = () => {
           />
           <Line
             type="monotone"
-            dataKey={"debt"}
-            stroke={COLOR_BRAND_PRIMARY_SHADE_FOUR}
-            dot={false}
-          />
-          <Line
-            type="monotone"
-            dataKey={"value"}
+            dataKey={"num_long_positions"}
             stroke={COLOR_BRAND_PRIMARY}
             dot={false}
           />
           <Line
             type="monotone"
-            dataKey={"long_assets_value"}
+            dataKey={"num_short_positions"}
+            stroke={COLOR_BRAND_PRIMARY_SHADE_FOUR}
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey={"num_ls_positions"}
             stroke={COLOR_BRAND_SECONDARY}
             dot={false}
           />
         </ShareYAxisMultilineChart>
-      </div>
-      <div style={{ marginTop: "16px" }}>
-        <BalanceInfoCard
-          heading={"24h changes"}
-          lastTick={lastTick}
-          comparisonTick={oneDayAgoTick as BalanceSnapshot}
-        />
-      </div>
-      <div style={{ marginTop: "16px" }}></div>
-      <div
-        style={{
-          marginTop: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-        }}
-      >
-        <BalanceInfoCard
-          heading={"1 week"}
-          lastTick={lastTick}
-          comparisonTick={oneWeekAgoTick as BalanceSnapshot}
-          showOnlyNav={true}
-          showOnlyDiff={true}
-        />
-        <BalanceInfoCard
-          heading={"MTD"}
-          lastTick={lastTick}
-          comparisonTick={monthFirstTick as BalanceSnapshot}
-          showOnlyNav={true}
-          showOnlyDiff={true}
-        />
-        <BalanceInfoCard
-          heading={"YTD"}
-          lastTick={lastTick}
-          comparisonTick={yearsFirstTick as BalanceSnapshot}
-          showOnlyNav={true}
-          showOnlyDiff={true}
-        />
       </div>
     </div>
   );
