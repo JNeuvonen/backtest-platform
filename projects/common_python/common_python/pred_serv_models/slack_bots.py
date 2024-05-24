@@ -1,5 +1,6 @@
 from typing import Dict
 from sqlalchemy import Column, DateTime, Integer, String, func
+from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
 
 
@@ -18,43 +19,48 @@ class SlackWebhook(Base):
 class SlackWebhookQuery:
     @staticmethod
     def create_entry(fields: Dict):
-        with Session() as session:
-            entry = SlackWebhook(**fields)
-            session.add(entry)
-            session.commit()
-            return entry.id
+        with LogExceptionContext():
+            with Session() as session:
+                entry = SlackWebhook(**fields)
+                session.add(entry)
+                session.commit()
+                return entry.id
 
     @staticmethod
     def get_webhooks():
-        with Session() as session:
-            return session.query(SlackWebhook).all()
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(SlackWebhook).all()
 
     @staticmethod
     def update_webhook(webhook_id, update_fields: Dict):
-        with Session() as session:
-            update_fields.pop("id", None)
-            non_null_update_fields = {
-                k: v for k, v in update_fields.items() if v is not None
-            }
-            session.query(SlackWebhook).filter(SlackWebhook.id == webhook_id).update(
-                non_null_update_fields, synchronize_session="fetch"
-            )
-            session.commit()
+        with LogExceptionContext():
+            with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(SlackWebhook).filter(
+                    SlackWebhook.id == webhook_id
+                ).update(non_null_update_fields, synchronize_session="fetch")
+                session.commit()
 
     @staticmethod
     def get_webhook_by_id(webhook_id: int):
-        with Session() as session:
-            return (
-                session.query(SlackWebhook)
-                .filter(SlackWebhook.id == webhook_id)
-                .first()
-            )
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(SlackWebhook)
+                    .filter(SlackWebhook.id == webhook_id)
+                    .first()
+                )
 
     @staticmethod
     def get_webhook_by_name(webhook_name: str):
-        with Session() as session:
-            return (
-                session.query(SlackWebhook)
-                .filter(SlackWebhook.name == webhook_name)
-                .first()
-            )
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(SlackWebhook)
+                    .filter(SlackWebhook.name == webhook_name)
+                    .first()
+                )

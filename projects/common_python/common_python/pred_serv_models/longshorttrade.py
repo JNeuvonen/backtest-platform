@@ -1,5 +1,6 @@
 from typing import Dict
 from sqlalchemy import BigInteger, Column, Float, ForeignKey, Integer
+from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
 
 
@@ -20,20 +21,22 @@ class LongShortTrade(Base):
 class LongShortTradeQuery:
     @staticmethod
     def create_entry(fields: Dict):
-        with Session() as session:
-            trade = LongShortTrade(**fields)
-            session.add(trade)
-            session.commit()
-            return trade.id
+        with LogExceptionContext():
+            with Session() as session:
+                trade = LongShortTrade(**fields)
+                session.add(trade)
+                session.commit()
+                return trade.id
 
     @staticmethod
     def update(trade_id, update_fields: Dict):
-        with Session() as session:
-            update_fields.pop("id", None)
-            non_null_update_fields = {
-                k: v for k, v in update_fields.items() if v is not None
-            }
-            session.query(LongShortTrade).filter(LongShortTrade.id == trade_id).update(
-                non_null_update_fields, synchronize_session="fetch"
-            )
-            session.commit()
+        with LogExceptionContext():
+            with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(LongShortTrade).filter(
+                    LongShortTrade.id == trade_id
+                ).update(non_null_update_fields, synchronize_session="fetch")
+                session.commit()

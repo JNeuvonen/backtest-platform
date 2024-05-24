@@ -1,4 +1,5 @@
 from typing import Dict
+from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session, engine
 from sqlalchemy import (
     BigInteger,
@@ -65,41 +66,40 @@ class Strategy(Base):
 
 class StrategyQuery:
     @staticmethod
-    def create_table():
-        try:
-            Strategy.__table__.create(bind=engine, checkfirst=True)
-        except Exception:
-            pass
-
-    @staticmethod
     def create_entry(fields: Dict):
-        with Session() as session:
-            entry = Strategy(**fields)
-            session.add(entry)
-            session.commit()
-            return entry.id
+        with LogExceptionContext():
+            with Session() as session:
+                entry = Strategy(**fields)
+                session.add(entry)
+                session.commit()
+                return entry.id
 
     @staticmethod
     def get_strategies():
-        with Session() as session:
-            return session.query(Strategy).all()
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Strategy).all()
 
     @staticmethod
     def update_strategy(strategy_id, update_fields: Dict):
-        with Session() as session:
-            update_fields.pop("id", None)
-            non_null_update_fields = {
-                k: v for k, v in update_fields.items() if v is not None
-            }
-            session.query(Strategy).filter(Strategy.id == strategy_id).update(
-                non_null_update_fields, synchronize_session=False
-            )
-            session.commit()
+        with LogExceptionContext():
+            with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(Strategy).filter(Strategy.id == strategy_id).update(
+                    non_null_update_fields, synchronize_session=False
+                )
+                session.commit()
 
     @staticmethod
     def get_strategy_by_id(strategy_id: int):
-        with Session() as session:
-            return session.query(Strategy).filter(Strategy.id == strategy_id).first()
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy).filter(Strategy.id == strategy_id).first()
+                )
 
     @staticmethod
     def update_trade_flags(
@@ -109,23 +109,26 @@ class StrategyQuery:
         is_on_pred_serv_err: bool,
         last_kline_open_time_sec: int,
     ):
-        with Session() as session:
-            entry = session.query(Strategy).filter(Strategy.id == strategy_id).first()
-            if entry:
-                entry.should_enter_trade = should_open_trade
-                entry.should_close_trade = should_close_trade
-                entry.is_on_pred_serv_err = is_on_pred_serv_err
-                entry.last_kline_open_time_sec = last_kline_open_time_sec
-                session.commit()
-                return True
-            return False
+        with LogExceptionContext():
+            with Session() as session:
+                entry = (
+                    session.query(Strategy).filter(Strategy.id == strategy_id).first()
+                )
+                if entry:
+                    entry.should_enter_trade = should_open_trade
+                    entry.should_close_trade = should_close_trade
+                    entry.is_on_pred_serv_err = is_on_pred_serv_err
+                    entry.last_kline_open_time_sec = last_kline_open_time_sec
+                    session.commit()
+                    return True
+                return False
 
     @staticmethod
     def count_strategies_in_position():
-        with Session() as session:
-            return (
-                session.query(Strategy).filter(Strategy.is_in_position == True).count()
-            )
-
-
-StrategyQuery.create_table()
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy)
+                    .filter(Strategy.is_in_position == True)
+                    .count()
+                )

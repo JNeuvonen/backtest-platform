@@ -11,8 +11,8 @@ from common_python.constants import (
     SlackWebhooks,
     TradeDirection,
 )
-from slack import post_slack_message
 from common_python.pred_serv_models.slack_bots import SlackWebhookQuery
+from common_python.slack import post_slack_message
 
 
 class CloudLog(Base):
@@ -216,6 +216,21 @@ def slack_log(msg: str, source_program: int, level: str):
                     SlackWebhooks.TRADE_CLIENT_EXCEPTIONS
                 )
 
+                if exception_channel_hook is not None:
+                    post_slack_message(exception_channel_hook.webhook_uri, msg)
+
+            if all_channel_hook is not None:
+                post_slack_message(all_channel_hook.webhook_uri, msg)
+
+        if LogSourceProgram.ANALYTICS_SERVER:
+            all_channel_hook = SlackWebhookQuery.get_webhook_by_name(
+                SlackWebhooks.ANALYTICS_ALL
+            )
+
+            if LogLevel.EXCEPTION == level:
+                exception_channel_hook = SlackWebhookQuery.get_webhook_by_name(
+                    SlackWebhooks.ANALYTICS_EXCEPTIONS
+                )
                 if exception_channel_hook is not None:
                     post_slack_message(exception_channel_hook.webhook_uri, msg)
 

@@ -1,5 +1,6 @@
 from typing import Dict
 from sqlalchemy import BigInteger, Boolean, Column, Float, ForeignKey, Integer, String
+from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
 
 
@@ -47,55 +48,65 @@ class LongShortPair(Base):
 class LongShortPairQuery:
     @staticmethod
     def create_entry(fields: Dict):
-        with Session() as session:
-            pair = LongShortPair(**fields)
-            session.add(pair)
-            session.commit()
-            return pair.id
+        with LogExceptionContext():
+            with Session() as session:
+                pair = LongShortPair(**fields)
+                session.add(pair)
+                session.commit()
+                return pair.id
 
     @staticmethod
     def get_pairs_by_group_id(group_id: int):
-        with Session() as session:
-            return (
-                session.query(LongShortPair)
-                .filter(LongShortPair.long_short_group_id == group_id)
-                .all()
-            )
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(LongShortPair)
+                    .filter(LongShortPair.long_short_group_id == group_id)
+                    .all()
+                )
 
     @staticmethod
     def update_entry(pair_id, update_fields: Dict):
-        with Session() as session:
-            update_fields.pop("id", None)
-            non_null_update_fields = {
-                k: v for k, v in update_fields.items() if v is not None
-            }
-            session.query(LongShortPair).filter(LongShortPair.id == pair_id).update(
-                non_null_update_fields, synchronize_session="fetch"
-            )
-            session.commit()
-
-    @staticmethod
-    def get_pair_by_id(pair_id: int):
-        with Session() as session:
-            return (
-                session.query(LongShortPair).filter(LongShortPair.id == pair_id).first()
-            )
-
-    @staticmethod
-    def delete_entry(pair_id: int):
-        with Session() as session:
-            pair = (
-                session.query(LongShortPair).filter(LongShortPair.id == pair_id).first()
-            )
-            if pair:
-                session.delete(pair)
+        with LogExceptionContext():
+            with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(LongShortPair).filter(LongShortPair.id == pair_id).update(
+                    non_null_update_fields, synchronize_session="fetch"
+                )
                 session.commit()
 
     @staticmethod
+    def get_pair_by_id(pair_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(LongShortPair)
+                    .filter(LongShortPair.id == pair_id)
+                    .first()
+                )
+
+    @staticmethod
+    def delete_entry(pair_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                pair = (
+                    session.query(LongShortPair)
+                    .filter(LongShortPair.id == pair_id)
+                    .first()
+                )
+                if pair:
+                    session.delete(pair)
+                    session.commit()
+
+    @staticmethod
     def count_pairs_in_position():
-        with Session() as session:
-            return (
-                session.query(LongShortPair)
-                .filter(LongShortPair.in_position == True)
-                .count()
-            )
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(LongShortPair)
+                    .filter(LongShortPair.in_position == True)
+                    .count()
+                )

@@ -13,6 +13,7 @@ from analytics_server.binance.collect_data import collect_data_loop
 from common_python.pred_serv_models.trade import TradeQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
+from common_python.pred_serv_models.cloudlog import CloudLogQuery
 
 
 class DataCollectionSservice:

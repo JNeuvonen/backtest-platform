@@ -1,5 +1,6 @@
 from typing import Dict
 from sqlalchemy import Column, DateTime, Integer, String, func
+from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
 
 
@@ -26,19 +27,22 @@ class WhiteListedIPQuery:
 
     @staticmethod
     def get_whitelisted_ips():
-        with Session() as session:
-            return session.query(WhiteListedIP).all()
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(WhiteListedIP).all()
 
     @staticmethod
     def remove_whitelisted_ip_by_ip(ip: str):
-        with Session() as session:
-            session.query(WhiteListedIP).filter(WhiteListedIP.ip == ip).delete()
-            session.commit()
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(WhiteListedIP).filter(WhiteListedIP.ip == ip).delete()
+                session.commit()
 
     @staticmethod
     def is_allowed_ip(ip: str) -> bool:
-        with Session() as session:
-            return (
-                session.query(WhiteListedIP).filter(WhiteListedIP.ip == ip).first()
-                is not None
-            )
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(WhiteListedIP).filter(WhiteListedIP.ip == ip).first()
+                    is not None
+                )

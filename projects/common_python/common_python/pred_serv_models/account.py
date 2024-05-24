@@ -1,4 +1,5 @@
 from typing import Dict
+from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.sql import func
@@ -21,38 +22,41 @@ class Account(Base):
 class AccountQuery:
     @staticmethod
     def create_entry(fields: Dict):
-        try:
+        with LogExceptionContext(re_raise=False):
             with Session() as session:
                 account = Account(**fields)
                 session.add(account)
                 session.commit()
                 return account.id
-        except Exception:
-            pass
 
     @staticmethod
     def get_accounts():
-        with Session() as session:
-            return session.query(Account).all()
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Account).all()
 
     @staticmethod
     def update_account(id: int, fields: Dict):
-        with Session() as session:
-            session.query(Account).filter(Account.id == id).update(fields)
-            session.commit()
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Account).filter(Account.id == id).update(fields)
+                session.commit()
 
     @staticmethod
     def delete_account(id: int):
-        with Session() as session:
-            session.query(Account).filter(Account.id == id).delete()
-            session.commit()
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Account).filter(Account.id == id).delete()
+                session.commit()
 
     @staticmethod
     def get_account_by_id(id: int):
-        with Session() as session:
-            return session.query(Account).filter(Account.id == id).first()
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Account).filter(Account.id == id).first()
 
     @staticmethod
     def get_account_by_name(name: str):
-        with Session() as session:
-            return session.query(Account).filter(Account.name == name).first()
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Account).filter(Account.name == name).first()

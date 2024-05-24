@@ -18,8 +18,8 @@ class SlackWebhooks:
     PRED_SERV_EXCEPTIONS = "pred_serv_exceptions"
     PRED_SERV_ALL = "pred_serv_all"
 
-    ANALYTICS_EXCEPTIONS = "analytics_exceptions"
-    ANALYTICS_ALL = "analytics_all"
+    ANALYTICS_EXCEPTIONS = "analytics_serv_exceptions"
+    ANALYTICS_ALL = "analytics_serv_all"
 
     TRADE_CLIENT_EXCEPTIONS = "trade_client_exceptions"
     TRADE_CLIENT_ALL = "trade_client_all"

@@ -1,6 +1,6 @@
 import secrets
 from typing import Dict
-from log import LogExceptionContext
+from common_python.log import LogExceptionContext
 from sqlalchemy import Column, DateTime, Integer, String, func
 from common_python.pred_serv_orm import Base, Session
 
