@@ -10,8 +10,17 @@ def collect_data_loop(stop_event):
     while not stop_event.is_set():
         with LogExceptionContext(re_raise=False):
             balance_snapshot = get_binance_acc_balance_snapshot()
-            num_normal_strategies_in_pos = StrategyQuery.count_strategies_in_position()
+            strategies_in_pos = StrategyQuery.get_strategies_in_position()
             num_ls_strategies_in_pos = LongShortPairQuery.count_pairs_in_position()
+
+            num_long_strats = 0
+            num_short_strats = 0
+
+            for item in strategies_in_pos:
+                if item.is_short_selling_strategy:
+                    num_short_strats += 1
+                else:
+                    num_long_strats += 1
 
             BalanceSnapshotQuery.create_entry(
                 {
@@ -20,7 +29,8 @@ def collect_data_loop(stop_event):
                     "long_assets_value": balance_snapshot["total_asset_usdt"],
                     "margin_level": balance_snapshot["margin_level"],
                     "btc_price": balance_snapshot["btc_price"],
-                    "num_directional_positions": num_normal_strategies_in_pos,
+                    "num_long_positions": num_long_strats,
+                    "num_short_positions": num_short_strats,
                     "num_ls_positions": num_ls_strategies_in_pos,
                 }
             )
