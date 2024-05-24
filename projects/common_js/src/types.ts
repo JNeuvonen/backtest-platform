@@ -6,6 +6,7 @@ export interface BalanceSnapshot {
   btc_price: number;
   long_assets_value: number;
   margin_level: number;
-  num_directional_positions: number;
+  num_long_positions: number;
+  num_short_positions: number;
   num_ls_positions: number;
 }
