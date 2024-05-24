@@ -190,13 +190,6 @@ export const RootPage = () => {
           comparisonTick={oneDayAgoTick as BalanceSnapshot}
         />
       </div>
-      <div style={{ marginTop: "16px" }}>
-        <BalanceInfoCard
-          heading={"One week changes"}
-          lastTick={lastTick}
-          comparisonTick={oneWeekAgoTick as BalanceSnapshot}
-        />
-      </div>
       <div style={{ marginTop: "16px" }}></div>
       <div
         style={{
@@ -206,6 +199,12 @@ export const RootPage = () => {
           gap: "16px",
         }}
       >
+        <BalanceInfoCard
+          heading={"1 week"}
+          lastTick={lastTick}
+          comparisonTick={oneWeekAgoTick as BalanceSnapshot}
+          showOnlyNav={true}
+        />
         <BalanceInfoCard
           heading={"MTD"}
           lastTick={lastTick}
