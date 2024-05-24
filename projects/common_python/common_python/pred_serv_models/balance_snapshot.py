@@ -54,5 +54,9 @@ class BalanceSnapshotQuery:
     def read_all_entries():
         with LogExceptionContext():
             with Session() as session:
-                accounts = session.query(BalanceSnapshot).all()
+                accounts = (
+                    session.query(BalanceSnapshot)
+                    .order_by(BalanceSnapshot.id.asc())
+                    .all()
+                )
                 return accounts
