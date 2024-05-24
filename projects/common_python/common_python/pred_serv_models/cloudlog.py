@@ -5,17 +5,14 @@ from sqlalchemy import Column, DateTime, Integer, String, func
 from common_python.pred_serv_orm import Base, Session
 from datetime import datetime, timedelta
 
-from constants import LogLevel, LogSourceProgram, SlackWebhooks, TradeDirection
-from api.v1.request_types import BodyCreateTrade
+from common_python.constants import (
+    LogLevel,
+    LogSourceProgram,
+    SlackWebhooks,
+    TradeDirection,
+)
 from slack import post_slack_message
 from common_python.pred_serv_models.slack_bots import SlackWebhookQuery
-
-
-class LogLevels:
-    EXCEPTION = "exception"
-    INFO = "info"
-    SYS = "system"
-    DEBUG = "debug"
 
 
 class CloudLog(Base):
@@ -74,7 +71,7 @@ class CloudLogQuery:
             )
 
 
-def create_trade_enter_notif_msg(body: BodyCreateTrade) -> str:
+def create_trade_enter_notif_msg(body) -> str:
     direction_emoji = "📈" if body.direction == TradeDirection.LONG else "📉"
     return (
         f"```Trade Alert - {body.symbol} {direction_emoji}```\n"
@@ -175,7 +172,7 @@ def slack_log_close_ls_trade_notif(info_dict):
     thread.start()
 
 
-def slack_log_enter_trade_notif(body: BodyCreateTrade):
+def slack_log_enter_trade_notif(body):
     def func_helper():
         hook = SlackWebhookQuery.get_webhook_by_name(SlackWebhooks.TRADE_NOTIFS)
 

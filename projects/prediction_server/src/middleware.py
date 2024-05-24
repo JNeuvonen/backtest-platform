@@ -1,6 +1,6 @@
 from fastapi.security import APIKeyHeader
 from config import is_dev
-from schema.api_key import APIKeyQuery
+from common_python.pred_serv_models.api_key import APIKeyQuery
 from common_python.pred_serv_models.whitelisted_ip import WhiteListedIPQuery
 from fastapi import Request, Security, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware

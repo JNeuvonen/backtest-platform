@@ -14,7 +14,7 @@ from fixtures.strategy import (
     create_strategy_with_syntax_err,
 )
 from orm import Session
-from schema.strategy import StrategyQuery
+from common_python.pred_serv_models.strategy import StrategyQuery
 
 simple_strat = strategy_simple_1()
 simple_short_strat = create_short_strategy_simple_1()

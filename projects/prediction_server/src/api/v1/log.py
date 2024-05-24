@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, status
 
 from middleware import api_key_auth
 from context import HttpResponseContext
-from schema.cloudlog import CloudLogQuery, create_log
+from common_python.pred_serv_models.cloudlog import CloudLogQuery, create_log
 from datetime import timedelta
 
 from api.v1.request_types import BodyCreateCloudLog

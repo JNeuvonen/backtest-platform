@@ -7,9 +7,9 @@ from api.v1.request_types import (
 )
 from middleware import api_key_auth
 from common_python.pred_serv_models.strategy import StrategyQuery
-from schema.trade import TradeQuery
+from common_python.pred_serv_models.trade import TradeQuery
 from log import get_logger
-from schema.data_transformation import DataTransformationQuery
+from common_python.pred_serv_models.data_transformation import DataTransformationQuery
 from trade_utils import close_long_trade, close_short_trade, update_strategy_state
 
 

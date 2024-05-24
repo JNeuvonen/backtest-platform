@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Response, status
 from context import HttpResponseContext
 from api.v1.request_types import BodyCreateTrade, BodyPutTrade
 from middleware import api_key_auth
-from schema.cloudlog import slack_log_enter_trade_notif
-from schema.trade import TradeQuery
+from common_python.pred_serv_models.cloudlog import slack_log_enter_trade_notif
+from common_python.pred_serv_models.trade import TradeQuery
 
 
 router = APIRouter()

@@ -6,7 +6,7 @@ import os
 from config import is_dev, LOG_FILE
 from logging.handlers import RotatingFileHandler
 
-from schema.cloudlog import create_log
+from common_python.pred_serv_models.cloudlog import create_log
 from constants import LogLevel
 
 

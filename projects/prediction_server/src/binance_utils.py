@@ -5,11 +5,11 @@ from log import LogExceptionContext
 from common_python.pred_serv_orm import engine
 from dataset_utils import read_dataset_to_mem, read_latest_row
 from code_gen_templates import CodeTemplates
-from schema.data_transformation import (
+from common_python.pred_serv_models.data_transformation import (
     DataTransformationQuery,
 )
 from common_python.pred_serv_models.strategy import StrategyQuery
-from schema.longshortticker import LongShortTickerQuery
+from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 
 from utils import (

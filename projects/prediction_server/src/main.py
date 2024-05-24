@@ -31,7 +31,7 @@ from strategy import (
     update_strategies_state_dict,
 )
 from common_python.pred_serv_models.whitelisted_ip import WhiteListedIPQuery
-from schema.cloudlog import CloudLogQuery, create_log
+from common_python.pred_serv_models.cloudlog import CloudLogQuery, create_log
 from fastapi.middleware.cors import CORSMiddleware
 
 

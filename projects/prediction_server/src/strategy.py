@@ -2,7 +2,7 @@ from code_gen_templates import CodeTemplates
 from log import LogExceptionContext
 from binance_utils import fetch_binance_klines
 from constants import SOFTWARE_VERSION
-from schema.data_transformation import DataTransformationQuery
+from common_python.pred_serv_models.data_transformation import DataTransformationQuery
 from utils import (
     calculate_timestamp_for_kline_fetch,
     gen_data_transformations_code,

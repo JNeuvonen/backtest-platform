@@ -1,58 +1,15 @@
 import pytest
-import os
 import subprocess
+import os
 import multiprocessing
 import time
-import secrets
-
 from pandas.compat import platform
-from dotenv import load_dotenv
-
-from conf import TEST_RUN_PORT, DROP_TABLES
-from import_helper import (
-    start_server,
-    drop_tables,
-    stop_server,
-    create_api_key_entry,
-    create_tables,
-)
-from fixtures.account import create_master_acc
-from t_utils import Post
-
-load_dotenv()
-
-
-def start_service():
-    start_server()
-
-
-def generate_api_key_for_testrun():
-    pass
-
-
-@pytest.fixture
-def fixt_create_master_acc(create_api_key):
-    master_acc = create_master_acc()
-    Post.create_account(create_api_key, master_acc)
-    return create_api_key
-
-
-@pytest.fixture
-def create_api_key():
-    api_key = secrets.token_urlsafe(32)
-    create_api_key_entry(api_key)
-    return api_key
-
-
-@pytest.fixture
-def cleanup_db():
-    if DROP_TABLES == 1:
-        drop_tables()
-    create_tables()
-    yield
-    if DROP_TABLES == 1:
-        drop_tables()
-    create_tables()
+from common_python.pred_serv_orm import drop_tables
+from common_python.test_utils.conf import DROP_TABLES, TEST_RUN_PORT
+from common_python.pred_serv_orm import create_tables, engine
+from analytics_server.main import start_server
+from tests.analytics_server.fixtures.user import admin_user
+from tests.analytics_server.http_utils import Post
 
 
 def kill_process_on_port(port):
@@ -76,22 +33,41 @@ def kill_process_on_port(port):
         pass
 
 
+@pytest.fixture
+def cleanup_db():
+    if DROP_TABLES == 1:
+        drop_tables(engine)
+    create_tables()
+    yield
+    if DROP_TABLES == 1:
+        drop_tables(engine)
+    create_tables()
+
+
+@pytest.fixture
+def create_admin_user():
+    user_id = Post.create_user(admin_user)
+
+
+def start_service():
+    start_server()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
     if DROP_TABLES is None:
         raise Exception("Provide DROP_TABLES (0 or 1) env variable to the test run.")
 
     if int(DROP_TABLES) == 1:
-        drop_tables()
+        drop_tables(engine)
+
     create_tables()
     kill_process_on_port(TEST_RUN_PORT)
+
     server_process = multiprocessing.Process(target=start_service, daemon=False)
     server_process.start()
     time.sleep(5)  # Allow server to start
     yield
-    stop_server()
     server_process.terminate()
     server_process.join(timeout=5)
     kill_process_on_port(TEST_RUN_PORT)  # Ensure the process is killed
-    if DROP_TABLES == 1:
-        drop_tables()

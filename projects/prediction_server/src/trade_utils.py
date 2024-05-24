@@ -7,16 +7,16 @@ from api.v1.request_types import (
     MarginAccountNewOrderResponseFULL,
 )
 from constants import TradeDirection
-from schema.longshorttrade import (
+from common_python.pred_serv_models.longshorttrade import (
     LongShortTradeQuery,
 )
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
-from schema.cloudlog import (
+from common_python.pred_serv_models.cloudlog import (
     slack_log_close_ls_trade_notif,
     slack_log_close_trade_notif,
     slack_log_enter_trade_notif,
 )
-from schema.trade import Trade, TradeQuery
+from common_python.pred_serv_models.trade import Trade, TradeQuery
 from common_python.pred_serv_models.strategy import Strategy, StrategyQuery
 from log import LogExceptionContext, get_logger
 

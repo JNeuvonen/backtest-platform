@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from schema.api_key import APIKeyQuery
+from common_python.pred_serv_models.api_key import APIKeyQuery
 from context import HttpResponseContext
 
 

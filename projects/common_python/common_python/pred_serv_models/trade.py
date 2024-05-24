@@ -11,7 +11,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSON
 from common_python.pred_serv_orm import Base, Session
-from log import LogExceptionContext
 
 
 class Trade(Base):
@@ -42,38 +41,32 @@ class Trade(Base):
 class TradeQuery:
     @staticmethod
     def create_entry(fields: Dict):
-        with LogExceptionContext():
-            with Session() as session:
-                entry = Trade(**fields)
-                session.add(entry)
-                session.commit()
-                return entry.id
+        with Session() as session:
+            entry = Trade(**fields)
+            session.add(entry)
+            session.commit()
+            return entry.id
 
     @staticmethod
     def get_trades():
-        with LogExceptionContext():
-            with Session() as session:
-                return session.query(Trade).all()
+        with Session() as session:
+            return session.query(Trade).all()
 
     @staticmethod
     def update_trade(trade_id, update_fields: Dict, filter_nulls=False):
-        with LogExceptionContext():
-            with Session() as session:
-                if filter_nulls is True:
-                    non_null_update_fields = {
-                        k: v for k, v in update_fields.items() if v is not None
-                    }
-                    session.query(Trade).filter(Trade.id == trade_id).update(
-                        non_null_update_fields
-                    )
-                else:
-                    session.query(Trade).filter(Trade.id == trade_id).update(
-                        update_fields
-                    )
-                session.commit()
+        with Session() as session:
+            if filter_nulls is True:
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(Trade).filter(Trade.id == trade_id).update(
+                    non_null_update_fields
+                )
+            else:
+                session.query(Trade).filter(Trade.id == trade_id).update(update_fields)
+            session.commit()
 
     @staticmethod
     def get_trade_by_id(trade_id: int):
-        with LogExceptionContext():
-            with Session() as session:
-                return session.query(Trade).filter(Trade.id == trade_id).first()
+        with Session() as session:
+            return session.query(Trade).filter(Trade.id == trade_id).first()

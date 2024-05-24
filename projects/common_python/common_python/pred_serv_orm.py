@@ -59,11 +59,9 @@ def drop_tables(engine):
 
 
 def create_tables():
-    try:
-        LongShortGroup.__table__.create(bind=engine, checkfirst=True)
-        Base.metadata.create_all(engine)
-    except Exception:
-        pass
+    LongShortGroup.__table__.create(bind=engine, checkfirst=True)
+    tables = Base.metadata.tables
+    Base.metadata.create_all(engine)
 
 
 def test_db_conn():

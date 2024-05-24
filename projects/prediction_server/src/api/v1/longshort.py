@@ -10,9 +10,9 @@ from api.v1.request_types import (
 from context import HttpResponseContext
 from trade_utils import enter_longshort_trade, exit_longshort_trade
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
-from schema.data_transformation import DataTransformationQuery
+from common_python.pred_serv_models.data_transformation import DataTransformationQuery
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
-from schema.longshortticker import LongShortTickerQuery
+from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from binance_utils import infer_assets
 
 

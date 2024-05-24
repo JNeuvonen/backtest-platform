@@ -1,3 +1,4 @@
+import time
 import uvicorn
 from contextlib import asynccontextmanager
 from multiprocessing import Process, Event
@@ -7,9 +8,11 @@ from common_python.pred_serv_orm import create_tables, test_db_conn
 from analytics_server.api.v1.user import router as v1_user_router
 from fastapi.middleware.cors import CORSMiddleware
 from common_python.server_config import get_service_port
-from common_python.pred_serv_models.strategy import StrategyQuery
 
 from analytics_server.binance.collect_data import collect_data_loop
+from common_python.pred_serv_models.trade import TradeQuery
+from common_python.pred_serv_models.longshortpair import LongShortPairQuery
+from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 
 
 class DataCollectionSservice:
@@ -18,6 +21,7 @@ class DataCollectionSservice:
         self.balance_snapshot_loop = None
 
     def start(self):
+        time.sleep(5)
         if self.balance_snapshot_loop is None:
             self.balance_snapshot_loop = Process(
                 target=collect_data_loop, args=(self.stop_event,), daemon=False

@@ -1,5 +1,5 @@
 from typing import Dict
-from common_python.pred_serv_orm import Base, Session
+from common_python.pred_serv_orm import Base, Session, engine
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -65,6 +65,13 @@ class Strategy(Base):
 
 class StrategyQuery:
     @staticmethod
+    def create_table():
+        try:
+            Strategy.__table__.create(bind=engine, checkfirst=True)
+        except Exception:
+            pass
+
+    @staticmethod
     def create_entry(fields: Dict):
         with Session() as session:
             entry = Strategy(**fields)
@@ -119,3 +126,6 @@ class StrategyQuery:
             return (
                 session.query(Strategy).filter(Strategy.is_in_position == True).count()
             )
+
+
+StrategyQuery.create_table()
