@@ -9,7 +9,10 @@ const (
 	ASSET_USDT = "USDT"
 )
 
-const USDT_QUOTE_BUFFER = 5
+const (
+	USDT_QUOTE_BUFFER     = 5
+	USDT_MIN_SIZE_FOR_POS = 12
+)
 
 const (
 	CLOSE_SHORT_FEES_COEFF   = 1.00075

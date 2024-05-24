@@ -372,6 +372,10 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 func EnterStrategyTrade(bc *BinanceClient, strat Strategy, account Account) {
 	sizeUSDT := GetStrategyAvailableBetsizeUSDT(bc, strat, account)
 
+	if sizeUSDT <= USDT_MIN_SIZE_FOR_POS {
+		return
+	}
+
 	if strat.IsShortSellingStrategy {
 		OpenShortTrade(strat, bc, sizeUSDT)
 	} else {
