@@ -32,4 +32,5 @@ def get_binance_acc_balance_snapshot():
         "liability_usdt": liabilityInBtc * btc_price,
         "total_asset_usdt": totalAssetInBtc * btc_price,
         "margin_level": margin_level,
+        "btc_price": btc_price,
     }

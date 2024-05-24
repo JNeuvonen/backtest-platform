@@ -16,6 +16,7 @@ class BalanceSnapshot(Base):
     debt = Column(Float)
     long_assets_value = Column(Float)
     margin_level = Column(Float)
+    btc_price = Column(Float)
 
     num_directional_positions = Column(Integer)
     num_ls_positions = Column(Integer)
