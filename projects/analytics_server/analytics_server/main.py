@@ -6,6 +6,9 @@ from multiprocessing import Process, Event
 from fastapi import FastAPI, Response, status
 from common_python.pred_serv_orm import create_tables, test_db_conn
 from analytics_server.api.v1.user import router as v1_user_router
+from analytics_server.api.v1.balance_snapshot import (
+    router as v1_balance_snapshot_router,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from common_python.server_config import get_service_port
 
@@ -39,6 +42,7 @@ class DataCollectionSservice:
 
 class Routers:
     V1_USER = "/v1/user"
+    V1_BALANCE_SNAPSHOT = "/v1/balance-snapshot"
 
 
 @asynccontextmanager
@@ -59,6 +63,7 @@ app.add_middleware(
 
 
 app.include_router(v1_user_router, prefix=Routers.V1_USER)
+app.include_router(v1_balance_snapshot_router, prefix=Routers.V1_BALANCE_SNAPSHOT)
 
 data_collection_service = DataCollectionSservice()
 
