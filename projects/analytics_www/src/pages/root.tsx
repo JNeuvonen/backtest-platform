@@ -7,7 +7,7 @@ import {
   StatNumber,
   Text,
 } from "@chakra-ui/react";
-import { Line } from "recharts";
+import { Line, YAxis } from "recharts";
 import { ShareYAxisMultilineChart } from "src/components";
 import {
   COLOR_BRAND_PRIMARY,
@@ -163,6 +163,21 @@ export const RootPage = () => {
             })
           }
         >
+          <YAxis
+            yAxisId="btc_price"
+            orientation="right"
+            label={{ value: "btc_price", angle: 90, position: "insideRight" }}
+            domain={["auto", "auto"]}
+            tickFormatter={(value: number) => `${value}$`}
+          />
+
+          <Line
+            type="monotone"
+            dataKey="btc_price"
+            stroke="#82ca9d"
+            yAxisId="btc_price"
+            dot={false}
+          />
           <Line
             type="monotone"
             dataKey={"debt"}
@@ -204,18 +219,21 @@ export const RootPage = () => {
           lastTick={lastTick}
           comparisonTick={oneWeekAgoTick as BalanceSnapshot}
           showOnlyNav={true}
+          showOnlyDiff={true}
         />
         <BalanceInfoCard
           heading={"MTD"}
           lastTick={lastTick}
           comparisonTick={monthFirstTick as BalanceSnapshot}
           showOnlyNav={true}
+          showOnlyDiff={true}
         />
         <BalanceInfoCard
           heading={"YTD"}
           lastTick={lastTick}
           comparisonTick={yearsFirstTick as BalanceSnapshot}
           showOnlyNav={true}
+          showOnlyDiff={true}
         />
       </div>
     </div>

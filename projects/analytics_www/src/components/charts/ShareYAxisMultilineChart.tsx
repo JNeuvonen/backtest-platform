@@ -34,7 +34,7 @@ export const ShareYAxisMultilineChart = ({
       <ComposedChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={xAxisKey} tickFormatter={xAxisTickFormatter} />
-        <YAxis tickFormatter={yAxisTickFormatter} />
+        <YAxis tickFormatter={yAxisTickFormatter} domain={["auto", "auto"]} />
         <Tooltip
           formatter={(value: any, name: string) => {
             return name === "kline_open_time"
@@ -42,6 +42,7 @@ export const ShareYAxisMultilineChart = ({
               : value;
           }}
           labelFormatter={(label: any) => new Date(label).toLocaleString()}
+          contentStyle={{ color: "black" }}
         />
 
         <Legend />

@@ -13,6 +13,7 @@ interface InfoCardProps {
   lastTick: BalanceSnapshot;
   comparisonTick: BalanceSnapshot;
   showOnlyNav?: boolean;
+  showOnlyDiff?: boolean;
 }
 
 const BalanceInfoCard: React.FC<InfoCardProps> = ({
@@ -20,14 +21,23 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
   lastTick,
   comparisonTick,
   showOnlyNav = false,
+  showOnlyDiff = false,
 }) => {
   return (
     <ChakraCard heading={<Heading size="md">{heading}</Heading>}>
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <Stat color={COLOR_CONTENT_PRIMARY}>
             <StatLabel>NAV</StatLabel>
-            <StatNumber>${roundNumberFloor(lastTick.value, 2)}</StatNumber>
+            {!showOnlyDiff && (
+              <StatNumber>${roundNumberFloor(lastTick.value, 2)}</StatNumber>
+            )}
             <ChakraStatHelpText
               num={roundNumberFloor(
                 getRateOfChangePerc(lastTick.value, comparisonTick?.value),
@@ -35,9 +45,26 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
               )}
             />
           </Stat>
+          <Stat color={COLOR_CONTENT_PRIMARY}>
+            <StatLabel>BTC price</StatLabel>
+            {!showOnlyDiff && (
+              <StatNumber>
+                ${roundNumberFloor(lastTick.btc_price, 2)}
+              </StatNumber>
+            )}
+            <ChakraStatHelpText
+              num={roundNumberFloor(
+                getRateOfChangePerc(
+                  lastTick.btc_price,
+                  comparisonTick?.btc_price,
+                ),
+                2,
+              )}
+            />
+          </Stat>
         </div>
         {!showOnlyNav && (
-          <>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Debt</StatLabel>
@@ -109,7 +136,7 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
                 />
               </Stat>
             </div>
-          </>
+          </div>
         )}
       </div>
     </ChakraCard>
