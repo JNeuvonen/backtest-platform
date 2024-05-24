@@ -25,10 +25,10 @@ export const fetchBalanceSnapshots = async () => {
     const res = await httpReq({ ...fetchBalanceSnapshotsOptions() });
 
     if (res.success) {
-      return res.data;
+      return res.data.data;
     }
-    return null;
+    return [];
   } catch {
-    return null;
+    return [];
   }
 };
