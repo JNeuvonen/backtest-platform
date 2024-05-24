@@ -1,3 +1,6 @@
+import { DiskManager } from "common_js";
+import { DISK_KEYS } from "src/utils/keys";
+
 interface ErrorOptions {
   errorNotifyUI?: boolean;
   customErrorMsgGeneratorCallback?: (error: string) => string;
@@ -21,6 +24,8 @@ export interface HttpResponse<T = any> {
   error?: string;
 }
 
+const diskManager = new DiskManager(DISK_KEYS.access_token);
+
 export const httpReq = async <T = any>({
   url,
   method = "GET",
@@ -40,11 +45,15 @@ export const httpReq = async <T = any>({
       );
     }
 
+    const tokenFromDisk = diskManager.read();
+    const token = tokenFromDisk ? tokenFromDisk.token : null;
+
     const options: RequestInit = {
       method,
       headers: {
         "Content-Type": "application/json",
         ...headers,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     };
 

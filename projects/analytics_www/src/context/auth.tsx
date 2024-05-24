@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { Auth0Provider, AppState } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+import { AccessTokenProvider } from "./token";
 
 interface Auth0ProviderWithHistoryProps {
   children: ReactNode;
@@ -27,7 +28,7 @@ const Auth0ProviderWithHistory: React.FC<Auth0ProviderWithHistoryProps> = ({
       }}
       onRedirectCallback={onRedirectCallback}
     >
-      {children}
+      <AccessTokenProvider>{children}</AccessTokenProvider>
     </Auth0Provider>
   );
 };

@@ -13,3 +13,22 @@ export const fetchUserParams = (): HttpRequestOptions => {
     url: ANALYTICS_SERV_API.user_from_token(),
   };
 };
+
+export const fetchBalanceSnapshotsOptions = (): HttpRequestOptions => {
+  return {
+    url: ANALYTICS_SERV_API.read_balance_snapshots(),
+  };
+};
+
+export const fetchBalanceSnapshots = async () => {
+  try {
+    const res = await httpReq({ ...fetchBalanceSnapshotsOptions() });
+
+    if (res.success) {
+      return res.data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
