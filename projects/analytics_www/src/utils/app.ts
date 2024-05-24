@@ -1,10 +1,9 @@
-const LIVE_PATH = "/live";
 const STRATEGIES_PATH = "/strategies";
 const PROFILE_PATH = "/profile";
 
 export const PATHS = {
   root: "/",
-  dashboard: LIVE_PATH,
+  dashboard: "/",
   strategies: STRATEGIES_PATH,
   profile: PROFILE_PATH,
 };

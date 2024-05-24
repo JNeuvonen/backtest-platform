@@ -68,6 +68,16 @@ export const SideNav = () => {
     }
   }, [width]);
 
+  const isPathActive = (path: string) => {
+    if (activePath === "/" && path === "/") {
+      return true;
+    }
+    if (activePath === "/" && path !== "/") {
+      return false;
+    }
+    return path.includes(activePath);
+  };
+
   return (
     <>
       <Blur
@@ -97,7 +107,7 @@ export const SideNav = () => {
                 <Link to={item.path} key={item.path}>
                   <div
                     className={
-                      item.path.includes(activePath)
+                      isPathActive(item.path)
                         ? "side-nav__item side-nav__item-active"
                         : "side-nav__item"
                     }

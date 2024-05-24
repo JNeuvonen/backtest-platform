@@ -214,7 +214,7 @@ export const RootPage = () => {
         <BalanceInfoCard
           heading={"YTD"}
           lastTick={lastTick}
-          comparisonTick={monthFirstTick as BalanceSnapshot}
+          comparisonTick={yearsFirstTick as BalanceSnapshot}
           showOnlyNav={true}
         />
       </div>
