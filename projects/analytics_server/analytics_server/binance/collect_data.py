@@ -19,6 +19,7 @@ def collect_data_loop(stop_event):
                     "debt": balance_snapshot["liability_usdt"],
                     "long_assets_value": balance_snapshot["total_asset_usdt"],
                     "margin_level": balance_snapshot["margin_level"],
+                    "btc_price": balance_snapshot["btc_price"],
                     "num_directional_positions": num_normal_strategies_in_pos,
                     "num_ls_positions": num_ls_strategies_in_pos,
                 }
