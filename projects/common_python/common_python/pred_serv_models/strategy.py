@@ -55,6 +55,7 @@ class Strategy(Base):
 
     should_enter_trade = Column(Boolean, default=False)
     should_close_trade = Column(Boolean, default=False)
+    should_calc_stops_on_pred_serv = Column(Boolean, default=False)
 
     is_on_pred_serv_err = Column(Boolean, default=False)
     is_paper_trade_mode = Column(Boolean, default=False)
