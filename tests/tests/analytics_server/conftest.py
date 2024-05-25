@@ -7,9 +7,13 @@ from pandas.compat import platform
 from common_python.pred_serv_orm import drop_tables
 from common_python.test_utils.conf import DROP_TABLES, TEST_RUN_PORT
 from common_python.pred_serv_orm import create_tables, engine
+from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
+from common_python.pred_serv_models.strategy import StrategyQuery
 from analytics_server.main import start_server
 from tests.analytics_server.fixtures.user import admin_user
 from tests.analytics_server.http_utils import Post
+from tests.prediction_server.fixtures.long_short import long_short_body_basic
+from tests.prediction_server.fixtures.strategy import strategy_simple_1
 
 
 def kill_process_on_port(port):
@@ -47,6 +51,22 @@ def cleanup_db():
 @pytest.fixture
 def create_admin_user():
     user_id = Post.create_user(admin_user)
+
+
+@pytest.fixture
+def create_ls_strategy():
+    longshort_body = long_short_body_basic()
+    del longshort_body["asset_universe"]
+    del longshort_body["data_transformations"]
+    LongShortGroupQuery.create_entry(longshort_body)
+
+
+@pytest.fixture
+def create_directional_strategy():
+    strategy = strategy_simple_1()
+    del strategy["data_transformations_code"]
+    del strategy["data_transformations"]
+    StrategyQuery.create_entry(strategy)
 
 
 def start_service():

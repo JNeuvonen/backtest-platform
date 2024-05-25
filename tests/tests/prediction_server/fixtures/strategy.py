@@ -1,5 +1,5 @@
 import datetime
-from t_constants import ONE_DAY_IN_MS
+from common_python.constants import ONE_DAY_IN_MS
 
 
 transformation_id = 0
@@ -360,6 +360,7 @@ def create_strategy_body(
     take_profit_threshold_perc: float,
     stop_loss_threshold_perc: float,
     use_time_based_close: bool,
+    num_req_klines: int,
     use_profit_based_close: bool,
     use_stop_loss_based_close: bool,
     use_taker_order: bool,
@@ -388,6 +389,7 @@ def create_strategy_body(
         "use_time_based_close": use_time_based_close,
         "use_profit_based_close": use_profit_based_close,
         "use_stop_loss_based_close": use_stop_loss_based_close,
+        "num_req_klines": num_req_klines,
         "use_taker_order": use_taker_order,
         "is_leverage_allowed": is_leverage_allowed,
         "is_short_selling_strategy": is_short_selling_strategy,
@@ -414,6 +416,7 @@ def strategy_simple_1():
         take_profit_threshold_perc=0,
         stop_loss_threshold_perc=0,
         minimum_time_between_trades_ms=1000,
+        num_req_klines=100,
         use_time_based_close=False,
         use_profit_based_close=False,
         use_stop_loss_based_close=False,
