@@ -24,6 +24,12 @@ class LongShortGroupQuery:
                 )
 
     @staticmethod
+    def get_all_strategies():
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(LongShortGroup).all()
+
+    @staticmethod
     def update(id, update_fields: Dict):
         with LogExceptionContext():
             with Session() as session:

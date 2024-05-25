@@ -33,3 +33,8 @@ KLINES_MAX_TIME_RANGE = "1 Jan, 2017"
 class TradeDirection:
     LONG = "LONG"
     SHORT = "SHORT"
+
+
+MINUTE_IN_MS = 1000 * 60
+HOUR_IN_MS = MINUTE_IN_MS * 60
+ONE_DAY_IN_MS = HOUR_IN_MS * 24
