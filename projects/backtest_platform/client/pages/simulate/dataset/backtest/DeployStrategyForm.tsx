@@ -62,8 +62,9 @@ const formKeys = {
   takeProfitThresholdPerc: "take_profit_threshold_perc",
   stopLossThresholdPerc: "stop_loss_threshold_perc",
   minimumTimeBetweenTradesMs: "minimum_time_between_trades_ms",
+  shouldCalcStopsOnPredServ: "should_calc_stops_on_pred_serv",
   useTimeBasedClose: "use_time_based_close",
-  useProfitBasedClose: "use_profit_based_Close",
+  useProfitBasedClose: "use_profit_based_close",
   useStopLossBasedClose: "use_stop_loss_based_close",
   useTakerOrder: "use_taker_order",
   isLeverageAllowed: "is_leverage_allowed",
@@ -88,6 +89,7 @@ export interface DeployStratForm {
   allocated_size_perc: number;
   take_profit_threshold_perc: number;
   stop_loss_threshold_perc: number;
+  should_calc_stops_on_pred_serv: boolean;
   minimum_time_between_trades_ms: number;
   use_time_based_close: boolean;
   use_profit_based_close: boolean;
@@ -122,6 +124,7 @@ const getFormInitialValues = (
       allocated_size_perc: 25,
       take_profit_threshold_perc: backtest.take_profit_threshold_perc,
       stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
+      should_calc_stops_on_pred_serv: false,
       minimum_time_between_trades_ms: 0,
       use_time_based_close: backtest.use_time_based_close,
       use_profit_based_close: backtest.use_profit_based_close,
@@ -447,6 +450,7 @@ export const DeployStrategyForm = (props: Props) => {
                                 step={5}
                                 min={0}
                                 value={field.value}
+                                isDisabled={true}
                                 onChange={(valueString) =>
                                   form.setFieldValue(
                                     formKeys.maximumKlinesHoldTime,
@@ -491,37 +495,6 @@ export const DeployStrategyForm = (props: Props) => {
                         }}
                       </Field>
                     </div>
-
-                    <div>
-                      <Field name={formKeys.takeProfitThresholdPerc}>
-                        {({ field, form }) => {
-                          return (
-                            <WithLabel
-                              label={"Take profit threshold (%)"}
-                              containerStyles={{
-                                maxWidth: "200px",
-                              }}
-                            >
-                              <NumberInput
-                                step={1}
-                                min={0}
-                                value={field.value}
-                                onChange={(valueString) =>
-                                  form.setFieldValue(
-                                    formKeys.takeProfitThresholdPerc,
-                                    parseInt(valueString)
-                                  )
-                                }
-                              >
-                                <NumberInputField />
-                                <ChakraNumberStepper />
-                              </NumberInput>
-                            </WithLabel>
-                          );
-                        }}
-                      </Field>
-                    </div>
-
                     <div>
                       <Field name={formKeys.minimumTimeBetweenTradesMs}>
                         {({ field, form }) => {
@@ -568,9 +541,29 @@ export const DeployStrategyForm = (props: Props) => {
                             <WithLabel label={"Use time based close"}>
                               <Switch
                                 isChecked={field.value}
+                                isDisabled={true}
                                 onChange={() =>
                                   form.setFieldValue(
                                     formKeys.useTimeBasedClose,
+                                    !field.value
+                                  )
+                                }
+                              />
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                    <div>
+                      <Field name={formKeys.shouldCalcStopsOnPredServ}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel label={"Calculate stops on new kline"}>
+                              <Switch
+                                isChecked={field.value}
+                                onChange={() =>
+                                  form.setFieldValue(
+                                    formKeys.shouldCalcStopsOnPredServ,
                                     !field.value
                                   )
                                 }
@@ -587,6 +580,7 @@ export const DeployStrategyForm = (props: Props) => {
                             <WithLabel label={"Use stop loss based close (%)"}>
                               <Switch
                                 isChecked={field.value}
+                                isDisabled={true}
                                 onChange={() =>
                                   form.setFieldValue(
                                     formKeys.useStopLossBasedClose,
@@ -606,6 +600,7 @@ export const DeployStrategyForm = (props: Props) => {
                             <WithLabel label={"Use profit based close (%)"}>
                               <Switch
                                 isChecked={field.value}
+                                isDisabled={true}
                                 onChange={() =>
                                   form.setFieldValue(
                                     formKeys.useProfitBasedClose,
@@ -672,6 +667,7 @@ export const DeployStrategyForm = (props: Props) => {
                             <WithLabel label={"Short selling strategy"}>
                               <Switch
                                 isChecked={field.value}
+                                isDisabled={true}
                                 onChange={() =>
                                   form.setFieldValue(
                                     formKeys.isShortSellingStrategy,
