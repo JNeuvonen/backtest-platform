@@ -1830,6 +1830,352 @@ period = 3
 calculate_decreasing_streak(dataset, column=column, period=period)
 """
 
+CONDITIONAL_FLAG = """
+import pandas as pd
+import numpy as np
+
+def create_market_indicator(df, col1='close_price', col2='MA_4032_close_price', threshold=1.2, indicator_label='bull_market_flag'):
+    # Safely create the indicator column based on the given condition
+    df[indicator_label] = np.where(df[col1] > threshold * df[col2], 1, 0)
+    return df
+
+# Define the dependent variables
+col1 = 'close_price'
+col2 = 'MA_4032_close_price'
+threshold = 1.2
+indicator_label = 'is_bull_market'
+
+# Create the indicator column
+df = create_market_indicator(dataset, col1=col1, col2=col2, threshold=threshold, indicator_label=indicator_label)
+"""
+
+ALL_CONDS_TRUE = """
+import pandas as pd
+
+def calculate_combined_indicator(df, condition_cols=['cond1', 'cond2'], invert_flags=['bull_market_flag']):
+    # Create a copy of the DataFrame to avoid modifying the original
+    temp_df = df.copy()
+    
+    # Initialize the list for final condition column names
+    final_condition_cols = condition_cols.copy()
+    
+    # Invert the specified flags and update the final condition column names
+    for flag in invert_flags:
+        if flag in temp_df.columns:
+            temp_df[flag] = 1 - temp_df[flag]
+            final_condition_cols[final_condition_cols.index(flag)] = f"not_{flag}"
+    
+    combined_label = f"combined_{'_'.join(final_condition_cols)}"
+    
+    # Generate the combined indicator
+    temp_df[combined_label] = temp_df[condition_cols].all(axis=1).astype(int)
+    
+    # Drop temporary columns if any were added
+    df[combined_label] = temp_df[combined_label]
+
+# Usage example:
+condition_cols = ['is_thurs_5_utc', 'bull_market_flag']
+invert_flags = ['bull_market_flag']
+calculate_combined_indicator(dataset, condition_cols=condition_cols, invert_flags=invert_flags)
+"""
+
+CONTAINS_TRUE_N_LOOKBACK = """
+import pandas as pd
+
+def calculate_indicator(df, source_col='source_column', n=5):
+    indicator_label = f"indicator_last_{n}_rows_{source_col}"
+    df[indicator_label] = df[source_col].rolling(window=n, min_periods=1).apply(lambda x: 1 if 1 in x.values else 0)
+
+source_col = "source_column"
+n = 5
+calculate_indicator(dataset, source_col=source_col, n=n)
+"""
+
+CDL3BLACKCROWS = """
+import pandas as pd
+
+def calculate_three_black_crows(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    # Initialize the column for the pattern
+    df['CDL3BLACKCROWS'] = 0
+
+    # Define the condition for Three Black Crows
+    for i in range(2, len(df)):
+        if (df[close_col][i] < df[open_col][i] and  # Today's close is lower than today's open
+            df[close_col][i-1] < df[open_col][i-1] and  # Yesterday's close was lower than yesterday's open
+            df[close_col][i-2] < df[open_col][i-2] and  # Day before yesterday's close was lower than day before yesterday's open
+            df[close_col][i] < df[low_col][i-1] and  # Today's close is lower than yesterday's low
+            df[close_col][i-1] < df[low_col][i-2]):  # Yesterday's close is lower than day before yesterday's low
+            
+            df['CDL3BLACKCROWS'][i] = 1
+
+    # Drop any helper columns if added
+    # In this case, no helper columns were added
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_three_black_crows(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDL3INSIDE = """
+import pandas as pd
+
+def calculate_cdl3inside(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    # Create helper columns for previous two days
+    df['prev_close'] = df[close_col].shift(1)
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_high'] = df[high_col].shift(1)
+    df['prev_low'] = df[low_col].shift(1)
+    
+    df['prev2_close'] = df[close_col].shift(2)
+    df['prev2_open'] = df[open_col].shift(2)
+    df['prev2_high'] = df[high_col].shift(2)
+    df['prev2_low'] = df[low_col].shift(2)
+    
+    # Identify Bullish and Bearish patterns
+    df['bullish_pattern'] = ((df['prev2_close'] > df['prev2_open']) &  # First candle is bullish
+                             (df['prev_open'] < df['prev_close']) &    # Second candle is bearish
+                             (df[close_col] > df[open_col]) &          # Third candle is bullish
+                             (df[open_col] < df['prev_close']) &       # Third candle opens within the second candle
+                             (df[close_col] > df['prev_open']))        # Third candle closes above the second candle
+
+    df['bearish_pattern'] = ((df['prev2_close'] < df['prev2_open']) &  # First candle is bearish
+                             (df['prev_open'] > df['prev_close']) &    # Second candle is bullish
+                             (df[close_col] < df[open_col]) &          # Third candle is bearish
+                             (df[open_col] > df['prev_close']) &       # Third candle opens within the second candle
+                             (df[close_col] < df['prev_open']))        # Third candle closes below the second candle
+
+    # Combine the patterns into one column
+    df['CDL3INSIDE'] = df['bullish_pattern'].astype(int) - df['bearish_pattern'].astype(int)
+    
+    # Drop helper columns
+    df.drop(['prev_close', 'prev_open', 'prev_high', 'prev_low', 
+             'prev2_close', 'prev2_open', 'prev2_high', 'prev2_low', 
+             'bullish_pattern', 'bearish_pattern'], axis=1, inplace=True)
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_cdl3inside(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDL3LINESTRIKE = """
+import pandas as pd
+
+def calculate_cdl3linestrike(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    # Create helper columns for bullish and bearish conditions
+    df['bullish1'] = (df[close_col].shift(3) > df[open_col].shift(3)) & (df[close_col].shift(2) > df[open_col].shift(2)) & (df[close_col].shift(1) > df[open_col].shift(1))
+    df['bearish1'] = (df[close_col].shift(3) < df[open_col].shift(3)) & (df[close_col].shift(2) < df[open_col].shift(2)) & (df[close_col].shift(1) < df[open_col].shift(1))
+
+    df['bullish2'] = (df[open_col] < df[close_col].shift(1)) & (df[close_col] > df[open_col].shift(3))
+    df['bearish2'] = (df[open_col] > df[close_col].shift(1)) & (df[close_col] < df[open_col].shift(3))
+    
+    df['three_line_strike_bullish'] = (df['bullish1'] & df['bullish2']).astype(int)
+    df['three_line_strike_bearish'] = (df['bearish1'] & df['bearish2']).astype(int)
+
+    # Drop helper columns
+    df.drop(columns=['bullish1', 'bearish1', 'bullish2', 'bearish2'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+calculate_cdl3linestrike(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDL3OUTSIDE = """
+import pandas as pd
+
+def calculate_cdl3outside(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['bullish_candle'] = df[close_col] > df[open_col]
+    df['bearish_candle'] = df[close_col] < df[open_col]
+
+    # Three Outside Up
+    df['three_outside_up'] = (
+        (df['bearish_candle'].shift(2)) &
+        (df['bullish_candle'].shift(1)) &
+        (df[close_col].shift(1) > df[open_col].shift(2)) &
+        (df[open_col].shift(1) < df[close_col].shift(2)) &
+        (df[close_col] > df[high_col].shift(1))
+    ).astype(int)
+
+    # Three Outside Down
+    df['three_outside_down'] = (
+        (df['bullish_candle'].shift(2)) &
+        (df['bearish_candle'].shift(1)) &
+        (df[close_col].shift(1) < df[open_col].shift(2)) &
+        (df[open_col].shift(1) > df[close_col].shift(2)) &
+        (df[close_col] < df[low_col].shift(1))
+    ).astype(int)
+
+    # Drop helper columns
+    df.drop(columns=['bullish_candle', 'bearish_candle'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+calculate_cdl3outside(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDL3STARINSOUTH = """
+import pandas as pd
+
+def calculate_cdl3starsinthesouth(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['CDL3STARSINSOUTH'] = 0
+
+    for i in range(2, len(df)):
+        first_candle = df.iloc[i - 2]
+        second_candle = df.iloc[i - 1]
+        third_candle = df.iloc[i]
+
+        if (first_candle[close_col] < first_candle[open_col] and 
+            second_candle[close_col] < second_candle[open_col] and 
+            third_candle[close_col] > third_candle[open_col] and 
+            third_candle[low_col] < second_candle[low_col] < first_candle[low_col] and 
+            third_candle[high_col] < second_candle[high_col] < first_candle[high_col]):
+            df.at[i, 'CDL3STARSINSOUTH'] = 1
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+calculate_cdl3starsinthesouth(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDL3WHITESOLDIERS = """
+def calculate_cdl3whitesoldiers(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['white_soldier1'] = ((df[close_col] > df[open_col]) &
+                            (df[close_col].shift(1) > df[open_col].shift(1)) &
+                            (df[close_col].shift(2) > df[open_col].shift(2)) &
+                            (df[open_col] > df[close_col].shift(1)) &
+                            (df[open_col].shift(1) > df[close_col].shift(2)) &
+                            ((df[close_col] - df[open_col]) > (df[close_col].shift(1) - df[open_col].shift(1))) &
+                            ((df[close_col].shift(1) - df[open_col].shift(1)) > (df[close_col].shift(2) - df[open_col].shift(2))))
+
+    df['CDL3WHITESOLDIERS'] = df['white_soldier1'].astype(int)
+
+    # Drop the helper column
+    df.drop(columns=['white_soldier1'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+calculate_cdl3whitesoldiers(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLABANDONEDBABY = """
+import pandas as pd
+
+def calculate_abandoned_baby(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    # Abandoned Baby: Bullish and Bearish
+    df['prev_close'] = df[close_col].shift(1)
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_low'] = df[low_col].shift(1)
+    df['prev_high'] = df[high_col].shift(1)
+    
+    df['next_open'] = df[open_col].shift(-1)
+    df['next_close'] = df[close_col].shift(-1)
+    
+    df['is_bullish_abandoned_baby'] = (
+        (df['prev_close'] < df['prev_open']) & 
+        (df[open_col] > df['prev_close']) & 
+        (df[open_col] < df['prev_open']) & 
+        (df[close_col] > df[open_col]) & 
+        (df['next_open'] > df[close_col]) &
+        (df['next_open'] < df[high_col]) & 
+        (df['next_close'] > df['next_open'])
+    ).astype(int)
+    
+    df['is_bearish_abandoned_baby'] = (
+        (df['prev_close'] > df['prev_open']) & 
+        (df[open_col] < df['prev_close']) & 
+        (df[open_col] > df['prev_open']) & 
+        (df[close_col] < df[open_col]) & 
+        (df['next_open'] < df[close_col]) &
+        (df['next_open'] > df[low_col]) & 
+        (df['next_close'] < df['next_open'])
+    ).astype(int)
+    
+    df.drop(['prev_close', 'prev_open', 'prev_low', 'prev_high', 'next_open', 'next_close'], axis=1, inplace=True)
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_abandoned_baby(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLADVANCEDBLOCK = """
+import pandas as pd
+
+def calculate_advance_block(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    # Calculate the candle bodies
+    body_1 = df[close_col].shift(3) - df[open_col].shift(3)
+    body_2 = df[close_col].shift(2) - df[open_col].shift(2)
+    body_3 = df[close_col].shift(1) - df[open_col].shift(1)
+
+    # Determine if all three candles are bullish
+    bullish_1 = body_1 > 0
+    bullish_2 = body_2 > 0
+    bullish_3 = body_3 > 0
+
+    # Determine if each candle opens within the previous candle's body
+    open_within_2 = df[open_col].shift(2) < df[close_col].shift(3)
+    open_within_3 = df[open_col].shift(1) < df[close_col].shift(2)
+
+    # Determine if each candle's body is smaller than the previous one
+    smaller_body_2 = body_2 < body_1
+    smaller_body_3 = body_3 < body_2
+
+    # Calculate the advance block condition
+    advance_block = (bullish_1 & bullish_2 & bullish_3 &
+                     open_within_2 & open_within_3 &
+                     smaller_body_2 & smaller_body_3)
+
+    # Add the result to the dataframe
+    df['CDL_ADVANCE_BLOCK'] = advance_block.astype(int)
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_advance_block(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLBELTHOLD = """
+import pandas as pd
+
+def calculate_belthold(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price'):
+    # Create helper columns
+    df['bullish'] = (df[close_col] > df[open_col]) & (df[open_col] == df[low_col])
+    df['bearish'] = (df[close_col] < df[open_col]) & (df[open_col] == df[high_col])
+    
+    # Assign Belt-hold pattern labels
+    df['Bullish_Belt_Hold'] = df['bullish'].astype(int)
+    df['Bearish_Belt_Hold'] = df['bearish'].astype(int)
+    
+    # Drop helper columns
+    df.drop(columns=['bullish', 'bearish'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+calculate_belthold(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col)
+"""
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -2405,6 +2751,90 @@ DEFAULT_CODE_PRESETS = [
         category=CodePresetCategories.INDICATOR,
         description="The indicator sets the value to 1 if the specified column has been decreasing for the previous N rows consecutively; otherwise, it sets the value to 0. This helps identify periods of consistent downward movement in the given column.",
         labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=CONDITIONAL_FLAG,
+        name="CONDITIONAL_FLAG",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator generates a flag indicating a specific market condition based on a customizable condition.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=ALL_CONDS_TRUE,
+        name="ALL_CONDS_TRUE",
+        category=CodePresetCategories.INDICATOR,
+        description="This code generates an indicator column that is 1 if all specified condition columns are 1, and 0 otherwise.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=CONTAINS_TRUE_N_LOOKBACK,
+        name="CONTAINS_TRUE_N_LOOKBACK",
+        category=CodePresetCategories.INDICATOR,
+        description="Indicator Description: This indicator creates a new column that flags a value of 1 if any of the previous n rows (including the current row) contain a 1 in the specified source column. This is useful for detecting recent occurrences of a specific condition over a defined look-back period.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=CDL3BLACKCROWS,
+        name="CDL3BLACKCROWS",
+        category=CodePresetCategories.INDICATOR,
+        description="Three Black Crows (CDL3BLACKCROWS): This pattern identifies a potential bearish reversal in the market. It consists of three consecutive long-bodied candlesticks that have closed progressively lower with each session. Each candle opens within the body of the previous one and closes lower, indicating strong selling pressure.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDL3INSIDE,
+        name="CDL3INSIDE",
+        category=CodePresetCategories.INDICATOR,
+        description="CDL3INSIDE: Identifies the Three Inside Up/Down candlestick pattern. This pattern consists of three consecutive candlesticks and is used to signal potential reversals in the market. A bullish pattern occurs after a downtrend, indicating a potential upward reversal, while a bearish pattern occurs after an uptrend, indicating a potential downward reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDL3LINESTRIKE,
+        name="CDL3LINESTRIKE",
+        category=CodePresetCategories.INDICATOR,
+        description="Three-Line Strike (CDL3LINESTRIKE): Identifies the bullish or bearish Three-Line Strike pattern, which is a four-candle continuation pattern. The first three candles are in the direction of the trend, followed by a fourth candle that reverses the trend direction, but does not invalidate the prior trend.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDL3OUTSIDE,
+        name="CDL3OUTSIDE",
+        category=CodePresetCategories.INDICATOR,
+        description="CDL3OUTSIDE: This indicator identifies the Three Outside Up/Down candlestick pattern. The Three Outside Up pattern is a bullish reversal pattern, indicating that a downtrend may be reversing to an uptrend. Conversely, the Three Outside Down pattern is a bearish reversal pattern, indicating that an uptrend may be reversing to a downtrend.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDL3STARINSOUTH,
+        name="CDL3STARINSOUTH",
+        category=CodePresetCategories.INDICATOR,
+        description="Three Stars in the South: This is a bullish reversal candlestick pattern that consists of three consecutive small-bodied candles with progressively lower highs and lows, often indicating a potential market bottom and a forthcoming upward reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDL3WHITESOLDIERS,
+        name="CDL3WHITESOLDIERS",
+        category=CodePresetCategories.INDICATOR,
+        description="CDL3WHITESOLDIERS: Identifies the 'Three Advancing White Soldiers' pattern, which is a bullish reversal pattern consisting of three consecutive long-bodied candlesticks that open within the previous candle's real body and close progressively higher",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLABANDONEDBABY,
+        name="CDLABANDONEDBABY",
+        category=CodePresetCategories.INDICATOR,
+        description="Abandoned Baby: This pattern can be both bullish and bearish. It typically occurs at the end of a trend and signals a reversal. A bullish abandoned baby pattern consists of a downtrend where a bearish candlestick is followed by a doji (a candlestick with little to no body), which is then followed by a bullish candlestick with a gap in between the doji and the following candlestick. The bearish abandoned baby is the reverse, appearing at the end of an uptrend.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLADVANCEDBLOCK,
+        name="CDLADVANCEDBLOCK",
+        category=CodePresetCategories.INDICATOR,
+        description="Advance Block: The Advance Block pattern is a bearish reversal pattern consisting of three consecutive bullish candles with each successive candle showing signs of weakening. The candles open within the previous candle's body and have progressively smaller real bodies, indicating a loss of bullish momentum and a potential upcoming bearish reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLBELTHOLD,
+        name="CDLBELTHOLD",
+        category=CodePresetCategories.INDICATOR,
+        description="The Belt-hold pattern is a single candlestick pattern that signifies potential reversal. A Bullish Belt-hold appears when the opening price is equal to the lowest price of the day, and the close is significantly higher, indicating a possible upward reversal. Conversely, a Bearish Belt-hold appears when the opening price is equal to the highest price of the day, and the close is significantly lower, indicating a possible downward reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
     ),
 ]
 
