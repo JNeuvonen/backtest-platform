@@ -222,7 +222,7 @@ def slack_log(msg: str, source_program: int, level: str):
             if all_channel_hook is not None:
                 post_slack_message(all_channel_hook.webhook_uri, msg)
 
-        if LogSourceProgram.ANALYTICS_SERVER:
+        if LogSourceProgram.ANALYTICS_SERVER == source_program:
             all_channel_hook = SlackWebhookQuery.get_webhook_by_name(
                 SlackWebhooks.ANALYTICS_ALL
             )
