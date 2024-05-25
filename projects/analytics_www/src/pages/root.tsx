@@ -246,7 +246,6 @@ export const RootPage = () => {
           height={500}
           data={balanceSnapShots.data}
           xAxisKey={"created_at"}
-          yAxisTickFormatter={(value: number) => `${value}$`}
           xAxisTickFormatter={(tick: number) =>
             new Date(tick).toLocaleDateString("default", {
               year: "numeric",
