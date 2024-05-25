@@ -11,7 +11,7 @@ import (
 )
 
 func shouldStopLossClose(strat Strategy, price float64) bool {
-	if !strat.UseStopLossBasedClose {
+	if !strat.UseStopLossBasedClose || strat.ShouldCalcStopsOnPredServ {
 		return false
 	}
 
@@ -38,7 +38,7 @@ func shouldTimebasedClose(strat Strategy) bool {
 }
 
 func shouldProfitBasedClose(strat Strategy, price float64) bool {
-	if !strat.UseProfitBasedClose {
+	if !strat.UseProfitBasedClose || strat.ShouldCalcStopsOnPredServ {
 		return false
 	}
 
@@ -52,13 +52,29 @@ func shouldProfitBasedClose(strat Strategy, price float64) bool {
 }
 
 func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
-	price, err := bc.FetchLatestPrice(strat.Symbol)
-	if err != nil {
+	if strat.ShouldEnterTrade {
 		return false
 	}
 
-	return shouldStopLossClose(strat, price) || shouldTimebasedClose(strat) ||
-		shouldProfitBasedClose(strat, price) || strat.ShouldCloseTrade
+	if (strat.UseProfitBasedClose || strat.UseStopLossBasedClose) &&
+		!strat.ShouldCalcStopsOnPredServ {
+
+		price, err := bc.FetchLatestPrice(strat.Symbol)
+		if err != nil {
+			return false
+		}
+
+		if shouldProfitBasedClose(strat, price) {
+			return true
+		}
+
+		if shouldStopLossClose(strat, price) {
+			return true
+		}
+
+	}
+
+	return shouldTimebasedClose(strat) || strat.ShouldCloseTrade
 }
 
 func ShouldEnterTrade(strat Strategy) bool {
@@ -130,10 +146,10 @@ func getQuoteLoanToCloseShortTrade(
 func closeShortTrade(bc *BinanceClient, strat Strategy) {
 	marginBalancesRes := bc.FetchMarginBalances()
 
-	stratLiabilities := strat.RemainingPositionOnTrade + GetInterestInAsset(
+	stratLiabilities := (strat.RemainingPositionOnTrade + GetInterestInAsset(
 		marginBalancesRes,
 		strat.BaseAsset,
-	)
+	)) * CLOSE_SHORT_FEES_COEFF
 	freeUSDT := GetFreeBalanceForMarginAsset(marginBalancesRes, strat.QuoteAsset)
 
 	price, err := bc.FetchLatestPrice(strat.Symbol)
@@ -157,7 +173,7 @@ func closeShortTrade(bc *BinanceClient, strat Strategy) {
 			ORDER_BUY,
 			MARKET_ORDER,
 		)
-		handleRepaymentOfShortMarginLoan(bc, strat, res)
+		closeLoanWithAvailableBalance(bc, strat.BaseAsset, int32(strat.TradeQuantityPrecision))
 		UpdatePredServerOnTradeClose(strat, res)
 		return
 	}
@@ -358,8 +374,6 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 
 	err = bc.TakeMarginLoan(strat.BaseAsset, quantity, nil)
-
-	fmt.Println(err)
 
 	if err == nil {
 		res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_SELL, MARKET_ORDER)
