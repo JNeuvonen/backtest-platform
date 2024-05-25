@@ -176,10 +176,11 @@ const generateResultsTableRows = (bulkFetchBacktests: FetchBulkBacktests) => {
 
 export const InvidualMassbacktestDetailsPage = () => {
   const { massBacktestId } = usePathParams<PathParams>();
+  const [fetchEquityCurves, setFetchEquityCurves] = useState(false);
   const massBacktestQuery = useMassbacktest(Number(massBacktestId));
   const useManyBacktestsQuery = useManyBacktests(
     massBacktestQuery.data?.backtest_ids || [],
-    true
+    fetchEquityCurves
   );
   const [selectedYearFilter, setSelectedYearFilter] = useState(
     FILTER_NOT_SELECTED_VALUE
@@ -204,6 +205,12 @@ export const InvidualMassbacktestDetailsPage = () => {
       useManyBacktestsQuery.refetch();
     },
   });
+
+  useEffect(() => {
+    if (fetchEquityCurves) {
+      useManyBacktestsQuery.refetch();
+    }
+  }, [fetchEquityCurves]);
 
   useEffect(() => {
     if (useManyBacktestsQuery.data) {
@@ -268,6 +275,17 @@ export const InvidualMassbacktestDetailsPage = () => {
         </div>
 
         <div style={{ gap: "16px", display: "flex", alignItems: "center" }}>
+          <div>
+            <WithLabel label={"Fetch equity curves"}>
+              <Switch
+                isChecked={fetchEquityCurves}
+                onChange={() => {
+                  setFetchEquityCurves(true);
+                }}
+                isDisabled={fetchEquityCurves === true}
+              />
+            </WithLabel>
+          </div>
           <div>
             <ChakraPopover
               {...selectPairsPopover}
