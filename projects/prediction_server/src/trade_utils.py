@@ -10,7 +10,10 @@ from constants import TradeDirection
 from common_python.pred_serv_models.longshorttrade import (
     LongShortTradeQuery,
 )
-from common_python.pred_serv_models.longshortpair import LongShortPairQuery
+from common_python.pred_serv_models.longshortpair import (
+    LongShortPairQuery,
+    LongShortPair,
+)
 from common_python.pred_serv_models.cloudlog import (
     slack_log_close_ls_trade_notif,
     slack_log_close_trade_notif,

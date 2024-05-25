@@ -37,6 +37,8 @@ class BodyCreateStrategy(BaseModel):
     use_stop_loss_based_close: bool
     use_taker_order: bool
 
+    should_calc_stops_on_pred_serv: bool
+
     is_leverage_allowed: bool
     is_short_selling_strategy: bool
 

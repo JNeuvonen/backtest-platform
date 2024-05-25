@@ -419,6 +419,33 @@ def update_long_short_enters(longshort_strategy, current_state_dict):
         )
 
 
+def update_trading_decisions_based_on_stops(results_dict, df, strategy):
+    if strategy.should_calc_stops_on_pred_serv is False:
+        return
+
+    last_price = df.iloc[-1]["close_price"]
+
+    if strategy.use_stop_loss_based_close:
+        if strategy.is_short_selling_strategy is True:
+            threshold = 1 + (strategy.stop_loss_threshold_perc / 100)
+            if last_price >= strategy.price_on_trade_open * threshold:
+                results_dict["should_close_trade"] = True
+        else:
+            threshold = 1 - (strategy.stop_loss_threshold_perc / 100)
+            if last_price <= strategy.price_on_trade_open * threshold:
+                results_dict["should_close_trade"] = True
+
+    if strategy.use_profit_based_close:
+        if strategy.is_short_selling_strategy is True:
+            threshold = 1 - (strategy.profit_threshold_perc / 100)
+            if last_price <= strategy.price_on_trade_open * threshold:
+                results_dict["should_close_trade"] = True
+        else:
+            threshold = 1 + (strategy.profit_threshold_perc / 100)
+            if last_price >= strategy.price_on_trade_open * threshold:
+                results_dict["should_close_trade"] = True
+
+
 def gen_trading_decisions(strategy):
     with LogExceptionContext(re_raise=False):
         if strategy.last_kline_open_time_sec is None:
@@ -462,6 +489,8 @@ def gen_trading_decisions(strategy):
             convert_orig_cols_to_numeric(df)
 
             results = transform_and_predict(strategy, df)
+
+            update_trading_decisions_based_on_stops(results, df, strategy)
 
             df = df.tail(strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
 
