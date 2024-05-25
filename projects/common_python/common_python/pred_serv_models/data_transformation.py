@@ -1,7 +1,20 @@
 from typing import Dict
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from common_python.log import LogExceptionContext
-from common_python.pred_serv_orm import Session
-from common_python.pred_serv_models.datatransformation import DataTransformation
+from common_python.pred_serv_orm import Base, Session
+
+
+class DataTransformation(Base):
+    __tablename__ = "data_transformation"
+    id = Column(Integer, primary_key=True)
+    long_short_group_id = Column(Integer, ForeignKey("long_short_group.id"))
+    strategy_id = Column(Integer, ForeignKey("strategy.id"))
+
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    transformation_code = Column(String, nullable=False)
 
 
 class DataTransformationQuery:
