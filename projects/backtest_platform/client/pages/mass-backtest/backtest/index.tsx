@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { usePathParams } from "../../../hooks/usePathParams";
 import {
+  useBacktestById,
   useManyBacktests,
   useMassbacktest,
 } from "../../../clients/queries/queries";
@@ -20,6 +21,7 @@ import {
 import { FetchBulkBacktests } from "../../../clients/queries/response-types";
 import { LINE_CHART_COLORS, MAX_NUMBER_OF_LINES } from "../../../utils/algo";
 import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
+import { GrDeploy } from "react-icons/gr";
 import { Line } from "recharts";
 import { useMessageListener } from "../../../hooks/useMessageListener";
 import { DOM_EVENT_CHANNELS } from "../../../utils/constants";
@@ -48,12 +50,14 @@ import {
 import { ChakraMenu } from "../../../components/chakra/Menu";
 import { FaFileImport } from "react-icons/fa6";
 import { saveMassBacktestReport } from "../../../clients/requests";
+import { BulkDeployDirectionalStratForm } from "../../simulate/bulk/bulkdeployform";
 
 interface PathParams {
   massBacktestId: number;
 }
 
 const COLUMNS_FOR_RESULTS_TABLE = [
+  "",
   "Dataset",
   "Backtest",
   "Net ret. (%)",
@@ -140,10 +144,17 @@ const SelectDatasetsPopoverBody = ({
 };
 
 const generateResultsTableRows = (bulkFetchBacktests: FetchBulkBacktests) => {
-  const ret: (string | number | JSX.Element)[][] = [];
+  // Sort the data by result_perc before creating rows
+  const sortedData = bulkFetchBacktests.data.sort(
+    (a, b) => b.result_perc - a.result_perc
+  );
 
-  bulkFetchBacktests.data.forEach((item) => {
+  const ret: (string | number | JSX.Element)[][] = [];
+  const numItems = sortedData.length;
+
+  sortedData.forEach((item, idx) => {
     const row = [
+      `${idx + 1}/${numItems}`,
       <Link
         to={getDatasetInfoPagePath(item.dataset_name)}
         className={"link-default"}
@@ -166,11 +177,7 @@ const generateResultsTableRows = (bulkFetchBacktests: FetchBulkBacktests) => {
     ];
     ret.push(row);
   });
-  ret.sort((a, b) => {
-    const resultB = b[2] as number;
-    const resultA = a[2] as number;
-    return resultB - resultA;
-  });
+
   return ret;
 };
 
@@ -178,6 +185,10 @@ export const InvidualMassbacktestDetailsPage = () => {
   const { massBacktestId } = usePathParams<PathParams>();
   const [fetchEquityCurves, setFetchEquityCurves] = useState(false);
   const massBacktestQuery = useMassbacktest(Number(massBacktestId));
+  const backtestQuery = useBacktestById(
+    Number(massBacktestQuery.data?.original_backtest_id)
+  );
+
   const useManyBacktestsQuery = useManyBacktests(
     massBacktestQuery.data?.backtest_ids || [],
     fetchEquityCurves
@@ -189,6 +200,7 @@ export const InvidualMassbacktestDetailsPage = () => {
     FILTER_NOT_SELECTED_VALUE
   );
   const selectPairsPopover = useDisclosure();
+  const bulkDeployDrawer = useDisclosure();
 
   const [showOnlyCombinedEqFilter, setShowOnlyCombinedEqFilter] =
     useState(false);
@@ -248,6 +260,7 @@ export const InvidualMassbacktestDetailsPage = () => {
   ]);
 
   if (
+    !backtestQuery.data ||
     massBacktestQuery.isLoading ||
     !massBacktestQuery.data ||
     useManyBacktestsQuery.isLoading ||
@@ -259,6 +272,11 @@ export const InvidualMassbacktestDetailsPage = () => {
 
   return (
     <div>
+      <BulkDeployDirectionalStratForm
+        originalBacktest={backtestQuery.data.data}
+        bulkDeployDrawer={bulkDeployDrawer}
+        backtests={useManyBacktestsQuery.data.data}
+      />
       <div
         style={{
           display: "flex",
@@ -270,6 +288,9 @@ export const InvidualMassbacktestDetailsPage = () => {
           <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
             <MenuItem icon={<FaFileImport />} onClick={downloadCombinedSummary}>
               Download combined equity summary
+            </MenuItem>
+            <MenuItem icon={<GrDeploy />} onClick={bulkDeployDrawer.onOpen}>
+              Deploy
             </MenuItem>
           </ChakraMenu>
         </div>

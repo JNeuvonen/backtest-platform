@@ -462,7 +462,8 @@ export const deleteManyBacktests = async (listOfBacktestIds: number[]) => {
 
 export const deployStrategyReq = async (
   apiKey: string,
-  form: DeployStratForm
+  form: DeployStratForm,
+  showErrorOnUI: boolean = true
 ) => {
   const res = await buildRequest({
     method: "POST",
@@ -471,6 +472,7 @@ export const deployStrategyReq = async (
     options: {
       headers: predServerHeaders(apiKey),
     },
+    errorShouldNotifyUI: showErrorOnUI,
   });
   return res;
 };
