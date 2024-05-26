@@ -2,6 +2,7 @@ export const DISK_KEYS = {
   backtest_form: "BACKTEST_FORM",
   long_short_form: "LONG_SHORT_FORM",
   deploy_strategy_form: "DEPLOY_STRATEGY_FORM",
+  bulk_deploy_strategy_form: "BULK_DEPLOY_STRATEGY_FORM",
   app_settings: "APP_SETTINGS",
   mass_long_short_form: "MASS_LONG_SHORT_FORM",
   ml_backtest_form: "ML_BASED_BACKTEST_FORM",
