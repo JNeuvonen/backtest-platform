@@ -78,6 +78,10 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 }
 
 func ShouldEnterTrade(strat Strategy) bool {
+	if strat.IsInCloseOnly {
+		return false
+	}
+
 	currTimeMs := int64(GetTimeInMs())
 	if currTimeMs-strat.TimeOnTradeOpenMs >= int64(strat.MinimumTimeBetweenTradesMs) {
 		return strat.ShouldEnterTrade
@@ -384,6 +388,10 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 }
 
 func EnterStrategyTrade(bc *BinanceClient, strat Strategy, account Account) {
+	if strat.IsInCloseOnly {
+		return
+	}
+
 	sizeUSDT := GetStrategyAvailableBetsizeUSDT(bc, strat, account)
 
 	if sizeUSDT <= USDT_MIN_SIZE_FOR_POS {

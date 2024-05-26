@@ -57,6 +57,7 @@ type Strategy struct {
 	IsShortSellingStrategy     bool    `json:"is_short_selling_strategy"`
 	IsDisabled                 bool    `json:"is_disabled"`
 	IsInPosition               bool    `json:"is_in_position"`
+	IsInCloseOnly              bool    `json:"is_in_close_only"`
 }
 
 type LongShortGroup struct {
