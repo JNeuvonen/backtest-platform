@@ -41,3 +41,14 @@ class LongShortGroupQuery:
                     non_null_update_fields, synchronize_session=False
                 )
                 session.commit()
+
+    @staticmethod
+    def get_by_id(id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = (
+                    session.query(LongShortGroup)
+                    .filter(LongShortGroup.id == id)
+                    .first()
+                )
+                return entry

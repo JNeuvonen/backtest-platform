@@ -20,6 +20,7 @@ class Strategy(Base):
     id = Column(Integer, primary_key=True)
     active_trade_id = Column(Integer, ForeignKey("trade.id"))
     name = Column(String, unique=True)
+    strategy_group = Column(String, nullable=True)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -62,6 +63,7 @@ class Strategy(Base):
     is_leverage_allowed = Column(Boolean, default=False)
     is_short_selling_strategy = Column(Boolean, nullable=False)
     is_disabled = Column(Boolean, default=False)
+    is_in_close_only = Column(Boolean, default=False)
     is_in_position = Column(Boolean, default=False)
 
 
