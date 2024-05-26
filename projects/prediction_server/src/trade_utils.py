@@ -131,6 +131,7 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
             ),
             "symbol": short_order.symbol,
             "direction": TradeDirection.SHORT,
+            "pair_trade_group_id": pair.long_short_group_id,
         }
         sell_side_trade_id = TradeQuery.create_entry(sell_side_trade_body)
 
@@ -144,6 +145,7 @@ def enter_longshort_trade(pair: LongShortPair, req_body: EnterLongShortPairBody)
             ),
             "symbol": long_order.symbol,
             "direction": TradeDirection.LONG,
+            "pair_trade_group_id": pair.long_short_group_id,
         }
         buy_side_trade_id = TradeQuery.create_entry(buy_side_trade_body)
 

@@ -12,6 +12,7 @@ class DataTransformation(BaseModel):
 
 class BodyCreateStrategy(BaseModel):
     name: str
+    strategy_group: Optional[str] = None
     symbol: str
     base_asset: str
     quote_asset: str

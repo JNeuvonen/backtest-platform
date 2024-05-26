@@ -420,7 +420,10 @@ def update_long_short_enters(longshort_strategy, current_state_dict):
 
 
 def update_trading_decisions_based_on_stops(results_dict, df, strategy):
-    if strategy.should_calc_stops_on_pred_serv is False:
+    if (
+        strategy.should_calc_stops_on_pred_serv is False
+        or strategy.price_on_trade_open is None
+    ):
         return
 
     last_price = df.iloc[-1]["close_price"]
