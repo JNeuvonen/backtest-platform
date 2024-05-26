@@ -34,7 +34,7 @@ func main() {
 		}
 
 		for _, strat := range strategies {
-			if strat.IsOnPredServErr {
+			if strat.IsOnPredServErr || strat.IsDisabled {
 				continue
 			}
 
