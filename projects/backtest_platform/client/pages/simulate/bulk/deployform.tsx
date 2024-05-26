@@ -237,13 +237,13 @@ export const DeployLongShortStrategyForm = ({ onSuccessCallback }: Props) => {
                         }}
                       >
                         <NumberInput
-                          step={5}
+                          step={0.1}
                           min={0}
                           value={field.value}
                           onChange={(valueString) =>
                             form.setFieldValue(
-                              formKeys.maximumKlinesHoldTime,
-                              parseInt(valueString)
+                              formKeys.maxLeverageRatio,
+                              parseFloat(valueString)
                             )
                           }
                         >
