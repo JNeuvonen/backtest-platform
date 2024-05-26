@@ -78,6 +78,14 @@ class StrategyQuery:
                 return entry.id
 
     @staticmethod
+    def get_active_strategies():
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy).filter(Strategy.is_disabled == False).all()
+                )
+
+    @staticmethod
     def get_strategies():
         with LogExceptionContext():
             with Session() as session:

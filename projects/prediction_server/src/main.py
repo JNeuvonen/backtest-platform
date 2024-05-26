@@ -80,7 +80,7 @@ def rule_based_loop(stop_event):
     last_logs_cleared_timestamp = get_current_timestamp_ms()
 
     while not stop_event.is_set():
-        strategies = StrategyQuery.get_strategies()
+        strategies = StrategyQuery.get_active_strategies()
 
         current_state_dict = {
             "active_strategies": 0,
