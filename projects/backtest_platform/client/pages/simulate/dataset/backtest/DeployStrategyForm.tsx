@@ -17,6 +17,7 @@ import { Field, Form, Formik } from "formik";
 import {
   BacktestObject,
   DataTransformation,
+  Dataset,
 } from "../../../../clients/queries/response-types";
 import { DISK_KEYS, DiskManager } from "../../../../utils/disk";
 import { WithLabel } from "../../../../components/form/WithLabel";
@@ -74,6 +75,7 @@ const formKeys = {
 
 export interface DeployStratForm {
   name: string;
+  strategy_group?: string;
   symbol: string;
   base_asset: string;
   quote_asset: string;
