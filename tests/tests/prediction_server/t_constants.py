@@ -49,6 +49,10 @@ class URL:
         return cls._strategy_route() + StrategyRouter.STRATEGY
 
     @classmethod
+    def create_strategy_group(cls):
+        return cls._strategy_route() + StrategyRouter.CREATE_STRATEGY_GROUP
+
+    @classmethod
     def create_longshort_strategy(cls):
         return cls._longshort_route() + LongshortRouter.LONG_SHORT
 

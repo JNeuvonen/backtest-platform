@@ -10,6 +10,13 @@ class DataTransformation(BaseModel):
     transformation_code: str
 
 
+class SymbolInfo(BaseModel):
+    symbol: str
+    base_asset: str
+    quote_asset: str
+    trade_quantity_precision: int
+
+
 class BodyCreateStrategy(BaseModel):
     name: str
     strategy_group: Optional[str] = None
@@ -43,6 +50,39 @@ class BodyCreateStrategy(BaseModel):
     is_leverage_allowed: bool
     is_short_selling_strategy: bool
 
+    data_transformations: List[DataTransformation] = Field(default_factory=list)
+
+
+class BodyCreateStrategyGroup(BaseModel):
+    strategy_group: str
+    enter_trade_code: str
+    exit_trade_code: str
+    fetch_datasources_code: str
+    candle_interval: str
+
+    priority: int
+    kline_size_ms: int
+    maximum_klines_hold_time: int
+    minimum_time_between_trades_ms: int
+    num_req_klines: int
+    trade_quantity_precision: int
+
+    allocated_size_perc: float
+    take_profit_threshold_perc: float
+    stop_loss_threshold_perc: float
+
+    is_paper_trade_mode: bool
+    use_time_based_close: bool
+    use_profit_based_close: bool
+    use_stop_loss_based_close: bool
+    use_taker_order: bool
+
+    should_calc_stops_on_pred_serv: bool
+
+    is_leverage_allowed: bool
+    is_short_selling_strategy: bool
+
+    symbols: List[SymbolInfo] = Field(default_factory=list)
     data_transformations: List[DataTransformation] = Field(default_factory=list)
 
 

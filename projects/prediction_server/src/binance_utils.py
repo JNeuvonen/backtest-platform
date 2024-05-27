@@ -449,7 +449,7 @@ def update_trading_decisions_based_on_stops(results_dict, df, strategy):
                 results_dict["should_close_trade"] = True
 
 
-def gen_trading_decisions(strategy):
+def gen_trading_decisions(strategy, state_manager):
     with LogExceptionContext(re_raise=False):
         if strategy.last_kline_open_time_sec is None:
             klines = fetch_binance_klines(

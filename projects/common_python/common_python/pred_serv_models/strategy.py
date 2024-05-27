@@ -19,8 +19,9 @@ class Strategy(Base):
     __tablename__ = "strategy"
     id = Column(Integer, primary_key=True)
     active_trade_id = Column(Integer, ForeignKey("trade.id"))
+    strategy_group_id = Column(Integer, ForeignKey("strategy_group.id"))
     name = Column(String, unique=True)
-    strategy_group = Column(String, nullable=True)
+    strategy_group = Column(String)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

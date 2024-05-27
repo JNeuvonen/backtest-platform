@@ -368,9 +368,12 @@ def create_strategy_body(
     is_short_selling_strategy: bool,
     is_paper_trade_mode: bool,
     data_transformations=[],
+    candle_interval: str = "1D",
+    should_calc_stops_on_pred_serv: bool = False,
 ):
     return {
         "name": name,
+        "strategy_group": "testtt",
         "symbol": symbol,
         "base_asset": base_asset,
         "quote_asset": quote_asset,
@@ -395,6 +398,8 @@ def create_strategy_body(
         "is_short_selling_strategy": is_short_selling_strategy,
         "is_paper_trade_mode": is_paper_trade_mode,
         "data_transformations": data_transformations,
+        "candle_interval": candle_interval,
+        "should_calc_stops_on_pred_serv": should_calc_stops_on_pred_serv,
     }
 
 
@@ -456,6 +461,7 @@ def create_short_strategy_simple_1():
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
         is_paper_trade_mode=False,
+        num_req_klines=200,
         data_transformations=[
             gen_data_transformation_dict(TRANSFORMATION_1),
             gen_data_transformation_dict(TRANSFORMATION_2),
@@ -487,6 +493,7 @@ def create_short_strategy_simple_2():
         use_taker_order=False,
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
+        num_req_klines=200,
         is_paper_trade_mode=False,
         data_transformations=[
             gen_data_transformation_dict(TRANSFORMATION_1),
@@ -512,6 +519,7 @@ def create_strategy_with_syntax_err():
         maximum_klines_hold_time=24,
         take_profit_threshold_perc=2,
         stop_loss_threshold_perc=2,
+        num_req_klines=200,
         minimum_time_between_trades_ms=1000,
         use_time_based_close=False,
         use_profit_based_close=False,

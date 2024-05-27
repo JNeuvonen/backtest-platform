@@ -11,7 +11,14 @@ DATABASE_URI = os.getenv("DATABASE_URI", "")
 SERVICE_PORT = os.getenv("SERVICE_PORT", "")
 AUTO_WHITELISTED_IP = os.getenv("AUTO_WHITELISTED_IP", "")
 ENV = os.getenv("ENV", "")
+RUN_BACKGROUND_PROCESSES = os.getenv("RUN_BACKGROUND_PROCESSES", 1)
 LOG_FILE = "logs"
+
+
+def run_background_processes():
+    if RUN_BACKGROUND_PROCESSES == 1:
+        return True
+    return False
 
 
 def get_auto_whitelisted_ip():

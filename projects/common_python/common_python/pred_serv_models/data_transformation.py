@@ -10,6 +10,7 @@ class DataTransformation(Base):
     id = Column(Integer, primary_key=True)
     long_short_group_id = Column(Integer, ForeignKey("long_short_group.id"))
     strategy_id = Column(Integer, ForeignKey("strategy.id"))
+    strategy_group_id = Column(Integer, ForeignKey("strategy_group.id"))
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -64,6 +65,17 @@ class DataTransformationQuery:
                     .filter(
                         DataTransformation.long_short_group_id == longshort_group_id
                     )
+                    .order_by(DataTransformation.id)
+                    .all()
+                )
+
+    @staticmethod
+    def get_all_strategy_group_transformations():
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(DataTransformation)
+                    .filter(DataTransformation.strategy_group_id != None)
                     .order_by(DataTransformation.id)
                     .all()
                 )

@@ -1,5 +1,6 @@
 import time
 import pytest
+from tests.prediction_server.fixtures.binance_mock import ORDER_RES_1, ORDER_RES_2
 
 from tests.prediction_server.fixtures.long_short import (
     create_binance_trade_response,
@@ -7,69 +8,73 @@ from tests.prediction_server.fixtures.long_short import (
     long_short_test_enter_trade,
 )
 from tests.prediction_server.t_utils import Post
+from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 
 
-@pytest.mark.long_short_dev
+@pytest.mark.acceptance
 def test_setup_sanity(cleanup_db, fixt_create_master_acc):
     longshort_body = long_short_body_basic()
-
-    time.sleep(5)
-
-    Post.create_long_short_strategy(fixt_create_master_acc, longshort_body)
-
-    time.sleep(1000000)
+    id = Post.create_long_short_strategy(fixt_create_master_acc, longshort_body)
+    print(id)
 
 
 @pytest.mark.acceptance
 def test_longshort_enter_trade(cleanup_db, fixt_create_master_acc):
-    # longshort_body = long_short_body_basic()
-    # Post.create_long_short_strategy(fixt_create_master_acc, longshort_body)
-    # time.sleep(20)
-    # longshort_enter_trade_body = long_short_test_enter_trade()
-    # Post.enter_longshort_trade(fixt_create_master_acc, 1, longshort_enter_trade_body)
-    pass
+    longshort_body = long_short_body_basic()
+    Post.create_long_short_strategy(fixt_create_master_acc, longshort_body)
+
+    LongShortPairQuery.create_entry(
+        {
+            "long_short_group_id": 1,
+            "buy_ticker_id": 1,
+            "sell_ticker_id": 2,
+            "buy_ticker_dataset_name": "DUSKUSDT_TEST_LONG_SHORT",
+            "sell_ticker_dataset_name": "TRXUSDT_TEST_LONG_SHORT",
+            "buy_symbol": "TRXUSDT",
+            "buy_base_asset": "TRX",
+            "buy_quote_asset": "USDT",
+            "sell_symbol": "DUSKUSDT",
+            "sell_base_asset": "DUSK",
+            "sell_quote_asset": "USDT",
+            "buy_qty_precision": 2,
+            "sell_qty_precision": 2,
+        }
+    )
+
+    body = {}
+    body["long_side_order"] = ORDER_RES_1
+    body["short_side_order"] = ORDER_RES_2
+    enter_res = Post.enter_longshort_trade(fixt_create_master_acc, 1, body)
+    print("test")
 
 
 @pytest.mark.acceptance
 def test_longshort_exit_trade(cleanup_db, fixt_create_master_acc):
-    order_res_1 = create_binance_trade_response(
-        symbol="BTCUSDT",
-        orderId=12345,
-        clientOrderId="testOrder123",
-        transactTime=1622547801000,
-        price="50000.00",
-        origQty="0.002",
-        executedQty="0.002",
-        cummulativeQuoteQty="100.00",
-        status="FILLED",
-        timeInForce="GTC",
-        type="LIMIT",
-        side="BUY",
-        marginBuyBorrowAmount=50.0,
-        marginBuyBorrowAsset="USDT",
-        isIsolated=True,
+    longshort_body = long_short_body_basic()
+    Post.create_long_short_strategy(fixt_create_master_acc, longshort_body)
+    LongShortPairQuery.create_entry(
+        {
+            "long_short_group_id": 1,
+            "buy_ticker_id": 1,
+            "sell_ticker_id": 2,
+            "buy_ticker_dataset_name": "DUSKUSDT_TEST_LONG_SHORT",
+            "sell_ticker_dataset_name": "TRXUSDT_TEST_LONG_SHORT",
+            "buy_symbol": "TRXUSDT",
+            "buy_base_asset": "TRX",
+            "buy_quote_asset": "USDT",
+            "sell_symbol": "DUSKUSDT",
+            "sell_base_asset": "DUSK",
+            "sell_quote_asset": "USDT",
+            "buy_qty_precision": 2,
+            "sell_qty_precision": 2,
+        }
     )
-
-    order_res_2 = create_binance_trade_response(
-        symbol="ETHUSDT",
-        orderId=12346,
-        clientOrderId="testOrder124",
-        transactTime=1622547901000,
-        price="2500.00",
-        origQty="0.1",
-        executedQty="0.1",
-        cummulativeQuoteQty="250.00",
-        status="PARTIALLY_FILLED",
-        timeInForce="IOC",
-        type="MARKET",
-        side="SELL",
-        marginBuyBorrowAmount=25.0,
-        marginBuyBorrowAsset="USDT",
-        isIsolated=False,
-    )
-
+    body = {}
+    body["long_side_order"] = ORDER_RES_1
+    body["short_side_order"] = ORDER_RES_2
+    enter_res = Post.enter_longshort_trade(fixt_create_master_acc, 1, body)
     Post.exit_longshort_trade(
         fixt_create_master_acc,
-        3,
-        {"long_side_order": order_res_1, "short_side_order": order_res_2},
+        1,
+        {"long_side_order": ORDER_RES_1, "short_side_order": ORDER_RES_2},
     )

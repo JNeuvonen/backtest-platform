@@ -20,6 +20,7 @@ class Trade(Base):
     symbol = Column(String)
     strategy_id = Column(Integer, ForeignKey("strategy.id"), nullable=True)
     pair_trade_group_id = Column(Integer, ForeignKey("long_short_group.id"))
+    strategy_group_id = Column(Integer, ForeignKey("strategy_group.id"))
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

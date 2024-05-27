@@ -1,3 +1,8 @@
+from common_python.pred_serv_models.data_transformation import DataTransformationQuery
+from common_python.pred_serv_models.strategy_group import (
+    StrategyGroup,
+    StrategyGroupQuery,
+)
 import uvicorn
 import os
 from multiprocessing import Process, Event
@@ -8,7 +13,7 @@ from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.server_config import get_service_port
 
-from config import get_auto_whitelisted_ip
+from config import get_auto_whitelisted_ip, run_background_processes
 from fastapi import FastAPI, Response, status
 from log import get_logger
 from api.v1.strategy import router as v1_strategy_router
@@ -24,6 +29,7 @@ from binance_utils import (
     update_long_short_enters,
     update_long_short_exits,
 )
+from src.rule_based_loop_utils import RuleBasedLoopManager
 from utils import get_current_timestamp_ms
 from strategy import (
     format_pair_trade_loop_msg,
@@ -79,9 +85,9 @@ def rule_based_loop(stop_event):
     last_slack_message_timestamp = get_current_timestamp_ms()
     last_logs_cleared_timestamp = get_current_timestamp_ms()
 
-    while not stop_event.is_set():
-        strategies = StrategyQuery.get_active_strategies()
+    loop_state_manager = RuleBasedLoopManager()
 
+    while not stop_event.is_set():
         current_state_dict = {
             "active_strategies": 0,
             "strats_on_error": 0,
@@ -92,7 +98,7 @@ def rule_based_loop(stop_event):
         }
         strategies_info = []
 
-        for strategy in strategies:
+        for strategy in loop_state_manager.strategies:
             trading_decisions = gen_trading_decisions(strategy)
             update_strategies_state_dict(
                 strategy, trading_decisions, current_state_dict, strategies_info
@@ -145,7 +151,7 @@ def long_short_loop(stop_event):
         for strategy in strategies:
             update_long_short_enters(strategy, current_state_dict)
 
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000 * 15:
             create_log(
                 msg=format_pair_trade_loop_msg(
                     current_state_dict, last_loop_complete_timestamp
@@ -196,7 +202,8 @@ def webserver_root():
 def start_server():
     create_tables()
     logger = get_logger()
-    prediction_service.start()
+    if run_background_processes() is True:
+        prediction_service.start()
     logger.info("Starting server")
     uvicorn.run("main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
 
