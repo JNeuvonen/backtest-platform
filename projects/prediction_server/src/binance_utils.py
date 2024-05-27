@@ -1,4 +1,3 @@
-from typing import Set
 import pandas as pd
 from binance import Client
 from log import LogExceptionContext
@@ -11,6 +10,7 @@ from common_python.pred_serv_models.data_transformation import (
 from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
+from rule_based_loop_utils import LocalDataset, RuleBasedLoopManager
 
 from utils import (
     NUM_REQ_KLINES_BUFFER,
@@ -82,10 +82,8 @@ def get_last_kline_open_time(klines_df):
     return None
 
 
-def transform_and_predict(strategy, df):
-    data_transformations = DataTransformationQuery.get_transformations_by_strategy(
-        strategy.id
-    )
+def transform_and_predict(strategy, df, local_dataset: LocalDataset):
+    data_transformations = local_dataset.transformations
 
     results_dict = {
         "transformed_data": None,
@@ -449,9 +447,10 @@ def update_trading_decisions_based_on_stops(results_dict, df, strategy):
                 results_dict["should_close_trade"] = True
 
 
-def gen_trading_decisions(strategy, state_manager):
+def gen_trading_decisions(strategy, state_manager: RuleBasedLoopManager):
     with LogExceptionContext(re_raise=False):
-        if strategy.last_kline_open_time_sec is None:
+        local_dataset = state_manager.datasets[strategy.name]
+        if local_dataset.last_kline_open_time_sec is None:
             klines = fetch_binance_klines(
                 strategy.symbol,
                 strategy.candle_interval,
@@ -459,20 +458,23 @@ def gen_trading_decisions(strategy, state_manager):
                     strategy.num_req_klines, strategy.kline_size_ms
                 ),
             )
-            klines.to_sql(strategy.name, con=engine, if_exists="replace", index=False)
 
             last_kline_open_time_sec = get_last_kline_open_time(klines)
-            results = transform_and_predict(strategy, klines)
-            StrategyQuery.update_trade_flags(
-                strategy.id,
-                results["should_enter_trade"],
-                results["should_close_trade"],
-                results["is_on_pred_serv_err"],
-                last_kline_open_time_sec,
+            results = transform_and_predict(strategy, klines, local_dataset)
+
+            trading_state_dict = {
+                **results,
+                "last_kline_open_time_sec": last_kline_open_time_sec,
+            }
+            state_manager.update_local_dataset(
+                strategy=strategy,
+                klines=klines,
+                last_kline_open_time_sec=last_kline_open_time_sec,
+                trading_state_dict=trading_state_dict,
             )
             return results
 
-        last_kline_open_time_ms = (strategy.last_kline_open_time_sec * 1000) + 1
+        last_kline_open_time_ms = (local_dataset.last_kline_open_time_sec * 1000) + 1
         current_time_ms = get_current_timestamp_ms()
 
         if current_time_ms >= last_kline_open_time_ms + strategy.kline_size_ms * 2:
@@ -484,34 +486,36 @@ def gen_trading_decisions(strategy, state_manager):
 
         if not klines.empty:
             last_kline_open_time_sec = get_last_kline_open_time(klines)
-            df = read_dataset_to_mem(engine, strategy.name)
+            df = local_dataset.dataset
             df = pd.concat([df, klines], ignore_index=True)
             df = df.align(klines, axis=1)[0]
             df.sort_values(by="kline_open_time", ascending=True, inplace=True)
 
             convert_orig_cols_to_numeric(df)
 
-            results = transform_and_predict(strategy, df)
+            results = transform_and_predict(strategy, df, local_dataset)
 
             update_trading_decisions_based_on_stops(results, df, strategy)
 
             df = df.tail(strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
 
-            df.to_sql(strategy.name, con=engine, if_exists="replace", index=False)
+            trading_state_dict = {
+                **results,
+                "last_kline_open_time_sec": last_kline_open_time_sec,
+            }
 
-            StrategyQuery.update_trade_flags(
-                strategy.id,
-                results["should_enter_trade"],
-                results["should_close_trade"],
-                results["is_on_pred_serv_err"],
-                last_kline_open_time_sec,
+            state_manager.update_local_dataset(
+                strategy=strategy,
+                klines=df,
+                last_kline_open_time_sec=last_kline_open_time_sec,
+                trading_state_dict=trading_state_dict,
             )
             return results
 
         return {
-            "should_enter_trade": strategy.should_enter_trade,
-            "should_close_trade": strategy.should_close_trade,
-            "is_on_pred_serv_err": strategy.is_on_pred_serv_err,
+            "should_enter_trade": local_dataset.should_enter_trade,
+            "should_close_trade": local_dataset.should_close_trade,
+            "is_on_pred_serv_err": local_dataset.is_on_pred_serv_err,
         }
 
 

@@ -29,7 +29,7 @@ from binance_utils import (
     update_long_short_enters,
     update_long_short_exits,
 )
-from src.rule_based_loop_utils import RuleBasedLoopManager
+from rule_based_loop_utils import RuleBasedLoopManager
 from utils import get_current_timestamp_ms
 from strategy import (
     format_pair_trade_loop_msg,
@@ -85,7 +85,7 @@ def rule_based_loop(stop_event):
     last_slack_message_timestamp = get_current_timestamp_ms()
     last_logs_cleared_timestamp = get_current_timestamp_ms()
 
-    loop_state_manager = RuleBasedLoopManager()
+    state_manager = RuleBasedLoopManager()
 
     while not stop_event.is_set():
         current_state_dict = {
@@ -98,13 +98,13 @@ def rule_based_loop(stop_event):
         }
         strategies_info = []
 
-        for strategy in loop_state_manager.strategies:
-            trading_decisions = gen_trading_decisions(strategy)
+        for strategy in state_manager.strategies:
+            trading_decisions = gen_trading_decisions(strategy, state_manager)
             update_strategies_state_dict(
                 strategy, trading_decisions, current_state_dict, strategies_info
             )
 
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000 * 15:
             create_log(
                 msg=format_pred_loop_log_msg(
                     current_state_dict,
@@ -118,6 +118,9 @@ def rule_based_loop(stop_event):
         if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
             CloudLogQuery.clear_outdated_logs()
             last_logs_cleared_timestamp = get_current_timestamp_ms()
+
+        state_manager.update_changed_strategies()
+        state_manager.update_local_state()
 
         last_loop_complete_timestamp = get_current_timestamp_ms()
 

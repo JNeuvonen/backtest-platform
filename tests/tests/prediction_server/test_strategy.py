@@ -16,9 +16,10 @@ def test_setup_sanity(cleanup_db, create_api_key):
     assert len(strategies) == 1, "test_setup_sanity: no strategy was created"
 
 
-@pytest.mark.acceptance
+@pytest.mark.dev
 def test_creating_strategy_group(cleanup_db, create_api_key):
     id = Post.create_strategy_group(create_api_key, body=test_case_dump)
+    time.sleep(100000)
     print(id)
 
 

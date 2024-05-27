@@ -1,4 +1,5 @@
 from typing import Dict
+
 from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session, engine
 from sqlalchemy import (
@@ -154,3 +155,17 @@ class StrategyQuery:
                     .filter(Strategy.is_in_position == True)
                     .all()
                 )
+
+    @staticmethod
+    def update_multiple_strategies(update_fields_list: Dict[int, Dict]):
+        with LogExceptionContext():
+            with Session() as session:
+                for strategy_id, update_fields in update_fields_list.items():
+                    update_fields.pop("id", None)
+                    non_null_update_fields = {
+                        k: v for k, v in update_fields.items() if v is not None
+                    }
+                    session.query(Strategy).filter(Strategy.id == strategy_id).update(
+                        non_null_update_fields, synchronize_session=False
+                    )
+                session.commit()
