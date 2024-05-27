@@ -488,16 +488,12 @@ def gen_trading_decisions(strategy, state_manager: RuleBasedLoopManager):
             last_kline_open_time_sec = get_last_kline_open_time(klines)
             df = local_dataset.dataset
             df = pd.concat([df, klines], ignore_index=True)
-            df = df.align(klines, axis=1)[0]
-            df.sort_values(by="kline_open_time", ascending=True, inplace=True)
-
-            convert_orig_cols_to_numeric(df)
-
             results = transform_and_predict(strategy, df, local_dataset)
-
             update_trading_decisions_based_on_stops(results, df, strategy)
 
             df = df.tail(strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
+
+            df.to_csv("test_dump.csv", index=False)
 
             trading_state_dict = {
                 **results,
