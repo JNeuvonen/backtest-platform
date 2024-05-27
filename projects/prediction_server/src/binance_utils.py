@@ -479,7 +479,7 @@ def gen_trading_decisions(strategy, state_manager: RuleBasedLoopManager):
 
         if current_time_ms >= last_kline_open_time_ms + strategy.kline_size_ms * 2:
             klines = fetch_binance_klines(
-                strategy.symbol, strategy.candle_interval, last_kline_open_time_ms
+                strategy.symbol, strategy.candle_interval, int(last_kline_open_time_ms)
             )
         else:
             klines = pd.DataFrame()
