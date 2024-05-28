@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from sqlalchemy import (
     BigInteger,
     Column,
@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSON
 from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
+from sqlalchemy.orm import joinedload, relationship
 
 
 class Trade(Base):
@@ -38,6 +39,8 @@ class Trade(Base):
     direction = Column(String, nullable=False)
 
     profit_history = Column(JSON, nullable=False, default=lambda: [])
+
+    info_ticks = relationship("TradeInfoTick", backref="trade", lazy="joined")
 
 
 class TradeQuery:
@@ -78,3 +81,21 @@ class TradeQuery:
         with LogExceptionContext():
             with Session() as session:
                 return session.query(Trade).filter(Trade.id == trade_id).first()
+
+    @staticmethod
+    def get_open_trades():
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Trade)
+                    .options(joinedload(Trade.info_ticks))
+                    .filter(Trade.close_price == None)
+                    .filter(Trade.strategy_id != None)
+                    .all()
+                )
+
+    @staticmethod
+    def fetch_many_by_id(trade_ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(Trade).filter(Trade.id.in_(trade_ids)).all()

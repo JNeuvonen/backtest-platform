@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session, engine
@@ -205,3 +205,11 @@ class StrategyQuery:
                     {"strategy_group_id": strategy_group_id}, synchronize_session=False
                 )
                 session.commit()
+
+    @staticmethod
+    def fetch_many_by_id(strategy_ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy).filter(Strategy.id.in_(strategy_ids)).all()
+                )

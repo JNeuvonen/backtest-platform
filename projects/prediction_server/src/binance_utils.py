@@ -1,3 +1,4 @@
+from typing import List
 import pandas as pd
 from binance import Client
 from log import LogExceptionContext
@@ -417,6 +418,89 @@ def update_long_short_enters(longshort_strategy, current_state_dict):
         )
 
 
+def is_stop_loss_hit(prices: List[int], stop_loss_threshold, is_short_selling_strategy):
+    if len(prices) == 0:
+        return False
+    if is_short_selling_strategy:
+        price_ath = prices[0]
+
+        for item in prices:
+            if ((price_ath / item) - 1) * 100 > stop_loss_threshold:
+                return True
+            if item > price_ath:
+                price_ath = item
+    else:
+        price_atl = prices[0]
+
+        for item in prices:
+            if ((item / price_atl) - 1) * 100 > stop_loss_threshold:
+                return True
+            if item < price_atl:
+                price_atl = item
+    return False
+
+
+def is_take_profit_hit(
+    last_price, open_price, take_profit_threshold, is_short_selling_strategy
+):
+    if is_short_selling_strategy:
+        profit_percentage = ((open_price - last_price) / open_price) * 100
+    else:
+        profit_percentage = ((last_price - open_price) / open_price) * 100
+
+    return profit_percentage >= take_profit_threshold
+
+
+def update_trading_decisions_based_on_stops_v2(results_dict, local_dataset, last_price):
+    if (
+        local_dataset.strategy.is_in_position
+        and local_dataset.strategy.should_calc_stops_on_pred_serv is True
+    ):
+        if results_dict["should_enter_trade"] is True:
+            return
+
+        if (
+            local_dataset.strategy.use_profit_based_close is False
+            and local_dataset.strategy.use_stop_loss_based_close is False
+        ):
+            return
+
+        prices = []
+        prices.append(local_dataset.strategy.price_on_trade_open)
+
+        info_ticks = local_dataset.active_trade.info_ticks
+        for item in info_ticks:
+            prices.append(item.price)
+        prices.append(last_price)
+
+        is_short_selling = (
+            True if local_dataset.strategy.is_short_selling_strategy else False
+        )
+
+        if (
+            local_dataset.strategy.use_stop_loss_based_close is True
+            and is_stop_loss_hit(
+                prices,
+                local_dataset.strategy.stop_loss_threshold_perc,
+                is_short_selling,
+            )
+            is True
+        ):
+            results_dict["should_close_trade"] = True
+
+        if (
+            local_dataset.strategy.use_profit_based_close is True
+            and is_take_profit_hit(
+                last_price,
+                local_dataset.strategy.price_on_trade_open,
+                local_dataset.strategy.take_profit_threshold_perc,
+                is_short_selling,
+            )
+            is True
+        ):
+            results_dict["should_close_trade"] = True
+
+
 def update_trading_decisions_based_on_stops(results_dict, df, strategy):
     if (
         strategy.should_calc_stops_on_pred_serv is False
@@ -462,10 +546,18 @@ def gen_trading_decisions(strategy, state_manager: RuleBasedLoopManager):
             last_kline_open_time_sec = get_last_kline_open_time(klines)
             results = transform_and_predict(strategy, klines, local_dataset)
 
+            price = klines.iloc[-1]["close_price"]
+            update_trading_decisions_based_on_stops_v2(results, local_dataset, price)
             trading_state_dict = {
                 **results,
                 "last_kline_open_time_sec": last_kline_open_time_sec,
             }
+            if strategy.is_in_position is True and strategy.active_trade_id is not None:
+                last_kline_open_time_ms = last_kline_open_time_sec * 1000
+                state_manager.add_trade_info_tick(
+                    price, last_kline_open_time_ms, strategy.active_trade_id
+                )
+
             state_manager.update_local_dataset(
                 strategy=strategy,
                 klines=klines,
@@ -489,17 +581,23 @@ def gen_trading_decisions(strategy, state_manager: RuleBasedLoopManager):
             df = local_dataset.dataset
             df = pd.concat([df, klines], ignore_index=True)
             results = transform_and_predict(strategy, df, local_dataset)
-            update_trading_decisions_based_on_stops(results, df, strategy)
+
+            price = klines.iloc[-1]["close_price"]
+            update_trading_decisions_based_on_stops_v2(results, local_dataset, price)
 
             df = df.tail(strategy.num_req_klines + NUM_REQ_KLINES_BUFFER)
-
-            df.to_csv("test_dump.csv", index=False)
 
             trading_state_dict = {
                 **results,
                 "last_kline_open_time_sec": last_kline_open_time_sec,
             }
 
+            if strategy.is_in_position is True and strategy.active_trade_id is not None:
+                price = df.iloc[-1]["close_price"]
+                last_kline_open_time_ms = last_kline_open_time_sec * 1000
+                state_manager.add_trade_info_tick(
+                    price, last_kline_open_time_ms, strategy.active_trade_id
+                )
             state_manager.update_local_dataset(
                 strategy=strategy,
                 klines=df,

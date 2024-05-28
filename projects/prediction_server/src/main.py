@@ -10,6 +10,10 @@ from contextlib import asynccontextmanager
 
 from common_python.pred_serv_orm import create_tables, test_db_conn
 from common_python.pred_serv_models.strategy import StrategyQuery
+from common_python.pred_serv_models.trade_info_tick import TradeInfoTickQuery
+from common_python.pred_serv_models.refetch_strategy_signal import (
+    RefetchStrategySignal,
+)
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.server_config import get_service_port
 
@@ -131,6 +135,8 @@ def rule_based_loop(stop_event):
 
         state_manager.update_changed_strategies()
         state_manager.update_local_state()
+        state_manager.check_refetch_signal()
+        state_manager.create_trade_info_ticks()
 
         loop_complete_time_ms = (
             get_current_timestamp_ms() - last_loop_complete_timestamp

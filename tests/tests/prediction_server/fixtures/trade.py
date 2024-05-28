@@ -5,6 +5,7 @@ def create_trade_body(
     direction: str,
     quantity: float,
     cumulative_quote_quantity: float,
+    symbol: str,
 ):
     return {
         "open_time_ms": open_time_ms,
@@ -13,6 +14,7 @@ def create_trade_body(
         "direction": direction,
         "quantity": quantity,
         "cumulative_quote_quantity": cumulative_quote_quantity,
+        "symbol": symbol,
     }
 
 
@@ -34,4 +36,5 @@ def trade_test_backend_sanity(strategy_id):
         quantity=10000 / 65000,
         cumulative_quote_quantity=10000,
         direction="LONG",
+        symbol="BTCUSDT",
     )

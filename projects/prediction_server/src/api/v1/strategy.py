@@ -1,4 +1,7 @@
 import copy
+from common_python.pred_serv_models.refetch_strategy_signal import (
+    RefetchStrategySignalQuery,
+)
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from context import HttpResponseContext
 from api.v1.request_types import (

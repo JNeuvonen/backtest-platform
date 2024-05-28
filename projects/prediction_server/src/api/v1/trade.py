@@ -4,6 +4,9 @@ from api.v1.request_types import BodyCreateTrade, BodyPutTrade
 from middleware import api_key_auth
 from common_python.pred_serv_models.cloudlog import slack_log_enter_trade_notif
 from common_python.pred_serv_models.trade import TradeQuery
+from common_python.pred_serv_models.refetch_strategy_signal import (
+    RefetchStrategySignalQuery,
+)
 
 
 router = APIRouter()
@@ -26,6 +29,10 @@ async def route_create_trade(body: BodyCreateTrade):
         id = TradeQuery.create_entry(body.model_dump())
         if id is not None:
             slack_log_enter_trade_notif(body)
+            if body.strategy_id is not None:
+                RefetchStrategySignalQuery.create_entry(
+                    {"strategy_id": body.strategy_id}
+                )
         return Response(
             content=f"{str(id)}",
             status_code=status.HTTP_200_OK,
