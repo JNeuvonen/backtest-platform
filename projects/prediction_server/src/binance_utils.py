@@ -440,11 +440,11 @@ def update_trading_decisions_based_on_stops(results_dict, df, strategy):
 
     if strategy.use_profit_based_close:
         if strategy.is_short_selling_strategy is True:
-            threshold = 1 - (strategy.profit_threshold_perc / 100)
+            threshold = 1 - (strategy.take_profit_threshold_perc / 100)
             if last_price <= strategy.price_on_trade_open * threshold:
                 results_dict["should_close_trade"] = True
         else:
-            threshold = 1 + (strategy.profit_threshold_perc / 100)
+            threshold = 1 + (strategy.take_profit_threshold_perc / 100)
             if last_price >= strategy.price_on_trade_open * threshold:
                 results_dict["should_close_trade"] = True
 
