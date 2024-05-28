@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from sqlalchemy import (
     Boolean,
     Column,
@@ -88,3 +89,16 @@ def test_db_conn():
         print("Connection to the DB successful.")
     except Exception as e:
         raise Exception(f"Unable to connect to the DB: {str(e)}")
+
+
+@contextmanager
+def TransactionContext():
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise
+    finally:
+        session.close()

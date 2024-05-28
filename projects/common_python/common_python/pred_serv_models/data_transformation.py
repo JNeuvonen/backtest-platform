@@ -1,6 +1,6 @@
 from typing import Dict
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, and_, func
 from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session
 
@@ -29,6 +29,19 @@ class DataTransformationQuery:
                 return transformation.id
         except Exception as e:
             return str(e)
+
+    @staticmethod
+    def update(strategy_id, update_fields: Dict):
+        with LogExceptionContext():
+            with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(DataTransformation).filter(
+                    DataTransformation.id == strategy_id
+                ).update(non_null_update_fields, synchronize_session=False)
+                session.commit()
 
     @staticmethod
     def get_transformations():
@@ -79,3 +92,17 @@ class DataTransformationQuery:
                     .order_by(DataTransformation.id)
                     .all()
                 )
+
+    @staticmethod
+    def delete_transformations_not_in_list(ids: list):
+        try:
+            with Session() as session:
+                session.query(DataTransformation).filter(
+                    and_(
+                        DataTransformation.id.notin_(ids),
+                        DataTransformation.long_short_group_id == None,
+                    )
+                ).delete(synchronize_session=False)
+                session.commit()
+        except Exception as e:
+            return str(e)

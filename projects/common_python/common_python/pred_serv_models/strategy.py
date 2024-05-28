@@ -169,3 +169,39 @@ class StrategyQuery:
                         non_null_update_fields, synchronize_session=False
                     )
                 session.commit()
+
+    @staticmethod
+    def get_all_distinct_strategy_groups():
+        with LogExceptionContext():
+            with Session() as session:
+                distinct_groups = (
+                    session.query(Strategy.strategy_group).distinct().all()
+                )
+                return [group[0] for group in distinct_groups]
+
+    @staticmethod
+    def get_one_strategy_per_group():
+        with LogExceptionContext():
+            with Session() as session:
+                distinct_groups = StrategyQuery.get_all_distinct_strategy_groups()
+                strategies = []
+                for group in distinct_groups:
+                    strategy = (
+                        session.query(Strategy)
+                        .filter(Strategy.strategy_group == group)
+                        .first()
+                    )
+                    if strategy:
+                        strategies.append(strategy)
+                return strategies
+
+    @staticmethod
+    def update_strategy_group_id(strategy_group: str, strategy_group_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Strategy).filter(
+                    Strategy.strategy_group == strategy_group
+                ).update(
+                    {"strategy_group_id": strategy_group_id}, synchronize_session=False
+                )
+                session.commit()

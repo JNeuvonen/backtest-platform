@@ -112,13 +112,17 @@ def format_pair_trade_loop_msg(
 
 
 def format_pred_loop_log_msg(
-    current_state_dict, strategies_info, last_trade_loop_completed_timestamp_ms
+    current_state_dict,
+    strategies_info,
+    last_trade_loop_completed_timestamp_ms,
+    longest_loop_complete_time_ms,
 ):
     active_strats = current_state_dict["active_strategies"]
     strats_on_error = current_state_dict["strats_on_error"]
     in_position = current_state_dict["strats_in_pos"]
     strats_wanting_to_enter = current_state_dict["strats_wanting_to_enter"]
     strats_wanting_to_close = current_state_dict["strats_wanting_to_close"]
+    longest_loop_complete_time_sec = longest_loop_complete_time_ms / 1000
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_timestamp_ms = get_current_timestamp_ms()
@@ -145,6 +149,9 @@ def format_pred_loop_log_msg(
 
     log_msg += "\n------------"
     log_msg += f"\nStrategies currently in a position: {formatted_strategies}"
+    log_msg += (
+        f"\nLongest loop completion time: {longest_loop_complete_time_sec:.2f} sec"
+    )
 
     return log_msg
 

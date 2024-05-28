@@ -78,8 +78,8 @@ link-common-js:
 
 
 gen-db-dump:
-	./scripts/gen_db_dump.py ${DATABASE_URI} ${OUTPUT_FILE}
+	python scripts/gen_db_dump.py ${DATABASE_URI} ${OUTPUT_FILE}
 
 
 restore-db-dump:
-	./scripts/restore_db_from_dump.py ${DATABASE_URI} ${DB_DUMP_PATH}
+	python scripts/restore_db_from_dump.py ${DATABASE_URI} ${DB_DUMP_PATH}

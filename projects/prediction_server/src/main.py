@@ -84,6 +84,9 @@ def rule_based_loop(stop_event):
     last_loop_complete_timestamp = get_current_timestamp_ms()
     last_slack_message_timestamp = get_current_timestamp_ms()
     last_logs_cleared_timestamp = get_current_timestamp_ms()
+    last_longest_loop_completion_time_reset = get_current_timestamp_ms()
+
+    longest_loop_completion_time = 0
 
     state_manager = RuleBasedLoopManager()
 
@@ -104,16 +107,23 @@ def rule_based_loop(stop_event):
                 strategy, trading_decisions, current_state_dict, strategies_info
             )
 
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000 * 15:
+        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
             create_log(
                 msg=format_pred_loop_log_msg(
                     current_state_dict,
                     strategies_info,
                     last_loop_complete_timestamp,
+                    longest_loop_completion_time,
                 ),
                 level=LogLevel.INFO,
             )
             last_slack_message_timestamp = get_current_timestamp_ms()
+
+        if (
+            get_current_timestamp_ms()
+            >= last_longest_loop_completion_time_reset + 60000 * 60 * 64
+        ):
+            longest_loop_completion_time = 0
 
         if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
             CloudLogQuery.clear_outdated_logs()
@@ -122,10 +132,18 @@ def rule_based_loop(stop_event):
         state_manager.update_changed_strategies()
         state_manager.update_local_state()
 
+        loop_complete_time_ms = (
+            get_current_timestamp_ms() - last_loop_complete_timestamp
+        )
+
+        if loop_complete_time_ms >= longest_loop_completion_time:
+            longest_loop_completion_time = loop_complete_time_ms
+
         last_loop_complete_timestamp = get_current_timestamp_ms()
 
 
 def long_short_loop(stop_event):
+    return
     logger = get_logger()
     logger.info("Starting longshort loop")
 
