@@ -1,3 +1,4 @@
+import psutil
 from code_gen_templates import CodeTemplates
 from log import LogExceptionContext
 from binance_utils import fetch_binance_klines
@@ -125,6 +126,7 @@ def format_pred_loop_log_msg(
     longest_loop_complete_time_sec = longest_loop_complete_time_ms / 1000
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ram_usage_percent = psutil.virtual_memory().percent
     current_timestamp_ms = get_current_timestamp_ms()
     log_msg = f"```Prediction Service  (v{SOFTWARE_VERSION}) loop info - Timestamp (UTC): {current_time} - Time to complete {(current_timestamp_ms - last_trade_loop_completed_timestamp_ms) / 1000} sec```"
 
@@ -152,6 +154,7 @@ def format_pred_loop_log_msg(
     log_msg += (
         f"\nLongest loop completion time: {longest_loop_complete_time_sec:.2f} sec"
     )
+    log_msg += f"\nCurrent RAM usage: {ram_usage_percent:.2f}%"
 
     return log_msg
 
