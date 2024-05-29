@@ -3,6 +3,7 @@ from typing import Dict
 from sqlalchemy import Column, DateTime, Integer, String, func
 
 from common_python.pred_serv_orm import Base, Session
+from common_python.threading import run_in_thread
 from datetime import datetime, timedelta
 
 from common_python.constants import (
@@ -55,12 +56,15 @@ class CloudLogQuery:
 
     @staticmethod
     def clear_outdated_logs():
-        ninety_days_ago = datetime.now() - timedelta(days=3)
-        with Session() as session:
-            session.query(CloudLog).filter(
-                CloudLog.created_at < ninety_days_ago
-            ).delete()
-            session.commit()
+        def helper_func():
+            ninety_days_ago = datetime.now() - timedelta(days=1)
+            with Session() as session:
+                session.query(CloudLog).filter(
+                    CloudLog.created_at < ninety_days_ago
+                ).delete()
+                session.commit()
+
+        run_in_thread(helper_func)
 
     @staticmethod
     def get_recent_logs(time_delta: timedelta):
