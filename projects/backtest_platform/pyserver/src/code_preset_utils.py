@@ -2177,6 +2177,685 @@ low_col = 'low_price'
 calculate_belthold(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col)
 """
 
+CDLHIKKAKE = """
+import pandas as pd
+
+def calculate_hikkake_pattern(df, high_col='high_price', low_col='low_price', open_col='open_price', close_col='close_price'):
+    df['inside_bar'] = ((df[high_col].shift(1) > df[high_col]) & (df[low_col].shift(1) < df[low_col])).astype(int)
+    
+    df['hikkake_pattern'] = 0
+    for i in range(2, len(df)):
+        if df['inside_bar'].iloc[i-1] == 1:
+            if (df[high_col].iloc[i] > df[high_col].iloc[i-1]) and (df[low_col].iloc[i] < df[low_col].iloc[i-1]):
+                df['hikkake_pattern'].iloc[i] = 1
+
+    df.drop(columns=['inside_bar'], inplace=True)
+
+# Usage example:
+high_col = "high_price"
+low_col = "low_price"
+open_col = "open_price"
+close_col = "close_price"
+calculate_hikkake_pattern(dataset, high_col=high_col, low_col=low_col, open_col=open_col, close_col=close_col)
+"""
+
+CDLPIERCING = """
+import pandas as pd
+
+def calculate_piercing_pattern(df, open_col='open_price', close_col='close_price', low_col='low_price', high_col='high_price'):
+    df['piercing_pattern'] = 0
+    
+    for i in range(1, len(df)):
+        # Check if there is a bearish candle followed by a bullish candle
+        if df[close_col].iloc[i-1] < df[open_col].iloc[i-1]:  # Previous day is bearish
+            if df[close_col].iloc[i] > df[open_col].iloc[i]:  # Current day is bullish
+                # Check if the bullish candle opens below the previous day's low
+                if df[open_col].iloc[i] < df[low_col].iloc[i-1]:
+                    # Check if the bullish candle closes above the midpoint of the previous day's body
+                    prev_midpoint = (df[open_col].iloc[i-1] + df[close_col].iloc[i-1]) / 2
+                    if df[close_col].iloc[i] > prev_midpoint:
+                        df['piercing_pattern'].iloc[i] = 1
+
+# Usage example:
+open_col = "open_price"
+close_col = "close_price"
+low_col = "low_price"
+high_col = "high_price"
+calculate_piercing_pattern(dataset, open_col=open_col, close_col=close_col, low_col=low_col, high_col=high_col)
+"""
+
+CDLBREAKAWAY = """
+def calculate_cdlbreakaway(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['Breakaway'] = 0
+
+    for i in range(4, len(df)):
+        if (
+            df[open_col].iloc[i-4] < df[close_col].iloc[i-4] and  # Bullish day 1
+            df[open_col].iloc[i-3] > df[close_col].iloc[i-3] and  # Bearish day 2
+            df[open_col].iloc[i-2] > df[close_col].iloc[i-2] and  # Bearish day 3
+            df[open_col].iloc[i-1] > df[close_col].iloc[i-1] and  # Bearish day 4
+            df[close_col].iloc[i] > df[open_col].iloc[i] and      # Bullish day 5
+            df[close_col].iloc[i] > df[open_col].iloc[i-4]        # Close of day 5 above open of day 1
+        ):
+            df.at[i, 'Breakaway'] = 1  # Bullish Breakaway
+
+        elif (
+            df[open_col].iloc[i-4] > df[close_col].iloc[i-4] and  # Bearish day 1
+            df[open_col].iloc[i-3] < df[close_col].iloc[i-3] and  # Bullish day 2
+            df[open_col].iloc[i-2] < df[close_col].iloc[i-2] and  # Bullish day 3
+            df[open_col].iloc[i-1] < df[close_col].iloc[i-1] and  # Bullish day 4
+            df[close_col].iloc[i] < df[open_col].iloc[i] and      # Bearish day 5
+            df[close_col].iloc[i] < df[open_col].iloc[i-4]        # Close of day 5 below open of day 1
+        ):
+            df.at[i, 'Breakaway'] = -1  # Bearish Breakaway
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_cdlbreakaway(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLCLOSINGMARUBOZU = """
+def calculate_cdlclosingmarubozu(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['Closing_Marubozu'] = 0
+
+    for i in range(len(df)):
+        if (
+            df[close_col].iloc[i] == df[high_col].iloc[i] and  # Closing price equals the high price
+            df[open_col].iloc[i] < df[close_col].iloc[i]       # Open price is less than the closing price
+        ):
+            df.at[i, 'Closing_Marubozu'] = 1  # Bullish Closing Marubozu
+
+        elif (
+            df[close_col].iloc[i] == df[low_col].iloc[i] and   # Closing price equals the low price
+            df[open_col].iloc[i] > df[close_col].iloc[i]       # Open price is greater than the closing price
+        ):
+            df.at[i, 'Closing_Marubozu'] = -1  # Bearish Closing Marubozu
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_cdlclosingmarubozu(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLCONCEALBABYSWALL = """
+def calculate_cdlconcealbabyswall(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['Concealing_Baby_Swallow'] = 0
+
+    for i in range(3, len(df)):
+        if (
+            df[close_col].iloc[i-3] < df[open_col].iloc[i-3] and      # First candle is bearish
+            df[close_col].iloc[i-2] < df[open_col].iloc[i-2] and      # Second candle is bearish
+            df[low_col].iloc[i-2] < df[low_col].iloc[i-3] and         # Second candle's low is lower than the first candle's low
+            df[close_col].iloc[i-1] < df[open_col].iloc[i-1] and      # Third candle is bearish
+            df[low_col].iloc[i-1] < df[low_col].iloc[i-2] and         # Third candle's low is lower than the second candle's low
+            df[close_col].iloc[i] > df[open_col].iloc[i] and          # Fourth candle is bullish
+            df[close_col].iloc[i] > df[high_col].iloc[i-1] and        # Fourth candle closes above the high of the third candle
+            df[open_col].iloc[i] < df[close_col].iloc[i-1]            # Fourth candle opens below the close of the third candle
+        ):
+            df.at[i, 'Concealing_Baby_Swallow'] = 1  # Concealing Baby Swallow pattern
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_cdlconcealbabyswall(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLCOUNTERATTACK = """
+def calculate_cdlcounterattack(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['Counterattack'] = 0
+
+    for i in range(1, len(df)):
+        # Bullish Counterattack
+        if (
+            df[close_col].iloc[i-1] < df[open_col].iloc[i-1] and  # Previous candle is bearish
+            df[close_col].iloc[i] > df[open_col].iloc[i] and      # Current candle is bullish
+            df[close_col].iloc[i] == df[close_col].iloc[i-1]      # Closing prices are the same
+        ):
+            df.at[i, 'Counterattack'] = 1  # Bullish Counterattack
+
+        # Bearish Counterattack
+        elif (
+            df[close_col].iloc[i-1] > df[open_col].iloc[i-1] and  # Previous candle is bullish
+            df[close_col].iloc[i] < df[open_col].iloc[i] and      # Current candle is bearish
+            df[close_col].iloc[i] == df[close_col].iloc[i-1]      # Closing prices are the same
+        ):
+            df.at[i, 'Counterattack'] = -1  # Bearish Counterattack
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_cdlcounterattack(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+CDLDARKCLOUDCOVER = """
+def calculate_cdldarkcloudcover(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['Dark_Cloud_Cover'] = 0
+
+    for i in range(1, len(df)):
+        if (
+            df[close_col].iloc[i-1] > df[open_col].iloc[i-1] and  # Previous candle is bullish
+            df[open_col].iloc[i] > df[high_col].iloc[i-1] and    # Current candle opens above the high of the previous candle
+            df[close_col].iloc[i] < df[open_col].iloc[i] and     # Current candle is bearish
+            df[close_col].iloc[i] < (df[open_col].iloc[i] + df[close_col].iloc[i-1]) / 2 and  # Closes below the midpoint of the previous candle
+            df[close_col].iloc[i] > df[open_col].iloc[i-1]       # Closes above the open of the previous candle
+        ):
+            df.at[i, 'Dark_Cloud_Cover'] = 1  # Dark Cloud Cover pattern
+
+# Usage example:
+open_col = "open_price"
+high_col = "high_price"
+low_col = "low_price"
+close_col = "close_price"
+calculate_cdldarkcloudcover(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+"""
+
+IS_BEAR_MARKET = """
+import pandas as pd
+
+def calculate_bear_market_indicator(df, column='close_price', sma_column='SMA_50_close_price', coefficient=0.8):
+    bear_market_label = f"IS_BEAR_MARKET_{column}_coeff_{coefficient}"
+    df[bear_market_label] = (df[column] < df[sma_column] * coefficient).astype(int)
+
+# Usage example:
+column = 'close_price'
+sma_column = 'MA_50_close_price'
+coefficient = 0.8
+calculate_bear_market_indicator(dataset, column=column, sma_column=sma_column, coefficient=coefficient)
+"""
+
+CDLDOJI = """
+import pandas as pd
+
+def calculate_doji(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', threshold=0.001):
+    doji_label = 'CDLDOJI'
+    df[doji_label] = ((abs(df[close_col] - df[open_col]) <= ((df[high_col] - df[low_col]) * threshold))).astype(int)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+threshold = 0.001
+calculate_doji(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, threshold=threshold)
+"""
+
+CDLDOJISTAR  = """
+import pandas as pd
+
+def calculate_doji_star(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', threshold=0.001):
+    doji_star_label = 'CDLDOJISTAR'
+    
+    df['doji'] = ((abs(df[close_col] - df[open_col]) <= ((df[high_col] - df[low_col]) * threshold))).astype(int)
+    
+    df['prev_close'] = df[close_col].shift(1)
+    df['prev_open'] = df[open_col].shift(1)
+    
+    df[doji_star_label] = ((df['doji'] == 1) & 
+                           (df['prev_close'] > df['prev_open']) & 
+                           (df[close_col] < df[open_col])).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['doji', 'prev_close', 'prev_open'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+threshold = 0.001
+calculate_doji_star(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, threshold=threshold)
+"""
+
+CDLDRAGONFLYDOJI = """
+import pandas as pd
+
+def calculate_dragonfly_doji(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', threshold=0.001):
+    dragonfly_doji_label = 'CDLDRAGONFLYDOJI'
+    
+    df[dragonfly_doji_label] = (
+        (abs(df[close_col] - df[open_col]) <= ((df[high_col] - df[low_col]) * threshold)) & 
+        ((df[high_col] - df[open_col]) <= (threshold * (df[high_col] - df[low_col]))) & 
+        ((df[high_col] - df[close_col]) <= (threshold * (df[high_col] - df[low_col])))
+    ).astype(int)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+threshold = 0.001
+calculate_dragonfly_doji(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, threshold=threshold)
+"""
+
+CDLENGULFING = """
+import pandas as pd
+
+def calculate_engulfing(df, open_col='open_price', close_col='close_price'):
+    engulfing_label = 'CDLENGULFING'
+    
+    # Shift the open and close prices to compare with the previous day
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    
+    # Bullish Engulfing: Previous close is less than previous open, current close is greater than current open,
+    # and current open is less than previous close, and current close is greater than previous open.
+    bullish_engulfing = ((df['prev_close'] < df['prev_open']) & 
+                         (df[close_col] > df[open_col]) & 
+                         (df[open_col] < df['prev_close']) & 
+                         (df[close_col] > df['prev_open'])).astype(int)
+    
+    # Bearish Engulfing: Previous close is greater than previous open, current close is less than current open,
+    # and current open is greater than previous close, and current close is less than previous open.
+    bearish_engulfing = ((df['prev_close'] > df['prev_open']) & 
+                         (df[close_col] < df[open_col]) & 
+                         (df[open_col] > df['prev_close']) & 
+                         (df[close_col] < df['prev_open'])).astype(int)
+    
+    df[engulfing_label] = bullish_engulfing - bearish_engulfing
+    
+    # Drop the helper columns
+    df.drop(columns=['prev_open', 'prev_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+calculate_engulfing(dataset, open_col=open_col, close_col=close_col)
+"""
+CDLEVENINGDOJISTAR  = """
+import pandas as pd
+
+def calculate_evening_doji_star(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price', threshold=0.001):
+    evening_doji_star_label = 'CDLEVENINGDOJISTAR'
+    
+    # Identify Doji candles
+    df['doji'] = ((abs(df[close_col] - df[open_col]) <= ((df[high_col] - df[low_col]) * threshold))).astype(int)
+    
+    # Identify potential Evening Doji Star patterns
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    df['prev2_open'] = df[open_col].shift(2)
+    df['prev2_close'] = df[close_col].shift(2)
+    
+    # Evening Doji Star: 
+    # - The first candle is a long bullish candle.
+    # - The second candle is a Doji that gaps above the first candle.
+    # - The third candle is a long bearish candle that closes below the midpoint of the first candle.
+    long_bullish_candle = (df['prev2_close'] > df['prev2_open'])
+    long_bearish_candle = (df[close_col] < df[open_col])
+    doji_gapped_above = (df['doji'] == 1) & (df[open_col] > df['prev_close']) & (df[close_col] > df['prev_close'])
+    bearish_close_below_midpoint = (df[close_col] < (df['prev2_open'] + df['prev2_close']) / 2)
+    
+    df[evening_doji_star_label] = (long_bullish_candle & doji_gapped_above & long_bearish_candle & bearish_close_below_midpoint).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['doji', 'prev_open', 'prev_close', 'prev2_open', 'prev2_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+threshold = 0.001
+calculate_evening_doji_star(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col, threshold=threshold)
+"""
+CDLEVENINGSTAR = """
+import pandas as pd
+
+def calculate_evening_star(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price', threshold=0.001):
+    evening_star_label = 'CDLEVENINGSTAR'
+    
+    # Identify potential Evening Star patterns
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    df['prev2_open'] = df[open_col].shift(2)
+    df['prev2_close'] = df[close_col].shift(2)
+    
+    # Evening Star: 
+    # - The first candle is a long bullish candle.
+    # - The second candle has a small real body that gaps above the first candle.
+    # - The third candle is a long bearish candle that closes below the midpoint of the first candle.
+    long_bullish_candle = (df['prev2_close'] > df['prev2_open'])
+    small_body_candle = (abs(df['prev_close'] - df['prev_open']) <= (df[high_col] - df[low_col]) * threshold)
+    long_bearish_candle = (df[close_col] < df[open_col])
+    small_body_gapped_above = (df['prev_open'] > df['prev2_close']) & (df['prev_close'] > df['prev2_close'])
+    bearish_close_below_midpoint = (df[close_col] < (df['prev2_open'] + df['prev2_close']) / 2)
+    
+    df[evening_star_label] = (long_bullish_candle & small_body_candle & small_body_gapped_above & long_bearish_candle & bearish_close_below_midpoint).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['prev_open', 'prev_close', 'prev2_open', 'prev2_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+threshold = 0.001
+calculate_evening_star(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col, threshold=threshold)
+"""
+
+CDLGAPSIDESIDEWHITE = """
+import pandas as pd
+
+def calculate_gap_side_by_side_white(df, open_col='open_price', close_col='close_price'):
+    gap_side_by_side_white_label = 'CDLGAPSIDESIDEWHITE'
+    
+    # Previous two candles' open and close prices
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    df['prev2_open'] = df[open_col].shift(2)
+    df['prev2_close'] = df[close_col].shift(2)
+    
+    # Up-gap side-by-side white lines
+    up_gap = (df[open_col] > df['prev_close']) & (df['prev_open'] > df['prev2_close'])
+    white_lines = (df[close_col] > df[open_col]) & (df['prev_close'] > df['prev_open']) & (df['prev2_close'] > df['prev2_open'])
+    
+    # Down-gap side-by-side white lines
+    down_gap = (df[open_col] < df['prev_close']) & (df['prev_open'] < df['prev2_close'])
+    
+    df[gap_side_by_side_white_label] = ((up_gap & white_lines) | (down_gap & white_lines)).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['prev_open', 'prev_close', 'prev2_open', 'prev2_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+calculate_gap_side_by_side_white(dataset, open_col=open_col, close_col=close_col)
+"""
+
+CDLGRAVESTONEDOJI = """
+import pandas as pd
+
+def calculate_gravestone_doji(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', threshold=0.001):
+    gravestone_doji_label = 'CDLGRAVESTONEDOJI'
+    
+    df[gravestone_doji_label] = (
+        (abs(df[close_col] - df[open_col]) <= (df[high_col] - df[low_col]) * threshold) & 
+        (abs(df[close_col] - df[high_col]) <= (df[high_col] - df[low_col]) * threshold) & 
+        (abs(df[open_col] - df[high_col]) <= (df[high_col] - df[low_col]) * threshold)
+    ).astype(int)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+threshold = 0.001
+calculate_gravestone_doji(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, threshold=threshold)
+"""
+
+CDLHAMMER = """
+import pandas as pd
+
+def calculate_hammer(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', body_threshold=0.001, shadow_ratio=2):
+    hammer_label = 'CDLHAMMER'
+    
+    # Calculate the real body size and the lower shadow size
+    real_body = abs(df[close_col] - df[open_col])
+    lower_shadow = df[open_col].where(df[open_col] < df[close_col], df[close_col]) - df[low_col]
+    
+    df[hammer_label] = (
+        (real_body <= (df[high_col] - df[low_col]) * body_threshold) & 
+        (lower_shadow >= real_body * shadow_ratio) &
+        (df[close_col] > df[open_col])  # To confirm it's a bullish candle
+    ).astype(int)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+body_threshold = 0.001
+shadow_ratio = 2
+calculate_hammer(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, body_threshold=body_threshold, shadow_ratio=shadow_ratio)
+"""
+
+CDLHANGINGMAN = """
+import pandas as pd
+
+def calculate_hanging_man(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', body_threshold=0.001, shadow_ratio=2):
+    hanging_man_label = 'CDLHANGINGMAN'
+    
+    # Calculate the real body size and the lower shadow size
+    real_body = abs(df[close_col] - df[open_col])
+    lower_shadow = df[open_col].where(df[open_col] < df[close_col], df[close_col]) - df[low_col]
+    
+    df[hanging_man_label] = (
+        (real_body <= (df[high_col] - df[low_col]) * body_threshold) & 
+        (lower_shadow >= real_body * shadow_ratio) & 
+        (df[close_col] < df[open_col])  # To confirm it's a bearish candle
+    ).astype(int)
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+body_threshold = 0.001
+shadow_ratio = 2
+calculate_hanging_man(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, body_threshold=body_threshold, shadow_ratio=shadow_ratio)
+"""
+
+CDLHARAMI = """
+import pandas as pd
+
+def calculate_harami(df, open_col='open_price', close_col='close_price'):
+    harami_label = 'CDLHARAMI'
+    
+    # Shift the open and close prices to compare with the previous day
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    
+    # Bullish Harami: Previous candle is bearish, current candle is bullish, and the current candle's body is within the previous candle's body
+    bullish_harami = (
+        (df['prev_close'] < df['prev_open']) &  # Previous candle is bearish
+        (df[close_col] > df[open_col]) &  # Current candle is bullish
+        (df[open_col] > df['prev_close']) & 
+        (df[close_col] < df['prev_open'])
+    ).astype(int)
+    
+    # Bearish Harami: Previous candle is bullish, current candle is bearish, and the current candle's body is within the previous candle's body
+    bearish_harami = (
+        (df['prev_close'] > df['prev_open']) &  # Previous candle is bullish
+        (df[close_col] < df[open_col]) &  # Current candle is bearish
+        (df[open_col] < df['prev_close']) & 
+        (df[close_col] > df['prev_open'])
+    ).astype(int)
+    
+    df[harami_label] = bullish_harami - bearish_harami
+    
+    # Drop the helper columns
+    df.drop(columns=['prev_open', 'prev_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+calculate_harami(dataset, open_col=open_col, close_col=close_col)
+"""
+
+CDLHARAMICROSS = """
+import pandas as pd
+
+def calculate_harami_cross(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price', threshold=0.001):
+    harami_cross_label = 'CDLHARAMICROSS'
+    
+    # Identify Doji candles
+    df['doji'] = ((abs(df[close_col] - df[open_col]) <= ((df[high_col] - df[low_col]) * threshold))).astype(int)
+    
+    # Shift the open, close, and doji columns to compare with the previous day
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    df['doji_shift'] = df['doji'].shift(1)
+    
+    # Bullish Harami Cross: Previous candle is bearish, current candle is a Doji, and the Doji's body is within the previous candle's body
+    bullish_harami_cross = (
+        (df['prev_close'] < df['prev_open']) &  # Previous candle is bearish
+        (df['doji'] == 1) &  # Current candle is Doji
+        (df[open_col] > df['prev_close']) & 
+        (df[close_col] < df['prev_open'])
+    ).astype(int)
+    
+    # Bearish Harami Cross: Previous candle is bullish, current candle is a Doji, and the Doji's body is within the previous candle's body
+    bearish_harami_cross = (
+        (df['prev_close'] > df['prev_open']) &  # Previous candle is bullish
+        (df['doji'] == 1) &  # Current candle is Doji
+        (df[open_col] < df['prev_close']) & 
+        (df[close_col] > df['prev_open'])
+    ).astype(int)
+    
+    df[harami_cross_label] = bullish_harami_cross - bearish_harami_cross
+    
+    # Drop the helper columns
+    df.drop(columns=['doji', 'prev_open', 'prev_close', 'doji_shift'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+threshold = 0.001
+calculate_harami_cross(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col, threshold=threshold)
+"""
+
+CDLHIGHWAVE = """
+import pandas as pd
+
+def calculate_high_wave(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price', body_threshold=0.001, shadow_ratio=2):
+    high_wave_label = 'CDLHIGHWAVE'
+    
+    # Calculate the real body size
+    real_body = abs(df[close_col] - df[open_col])
+    # Calculate the upper and lower shadows
+    upper_shadow = df[high_col] - df[close_col].where(df[close_col] > df[open_col], df[open_col])
+    lower_shadow = df[open_col].where(df[open_col] < df[close_col], df[close_col]) - df[low_col]
+    
+    df[high_wave_label] = (
+        (real_body <= (df[high_col] - df[low_col]) * body_threshold) & 
+        (upper_shadow >= real_body * shadow_ratio) & 
+        (lower_shadow >= real_body * shadow_ratio)
+    ).astype(int)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+body_threshold = 0.001
+shadow_ratio = 2
+calculate_high_wave(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col, body_threshold=body_threshold, shadow_ratio=shadow_ratio)
+"""
+
+CDLHIKKAKEMOD = """
+import pandas as pd
+
+def calculate_modified_hikkake(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price'):
+    modified_hikkake_label = 'CDLHIKKAKEMOD'
+    
+    # Previous two days' high and low prices
+    df['prev_high'] = df[high_col].shift(1)
+    df['prev_low'] = df[low_col].shift(1)
+    df['prev2_high'] = df[high_col].shift(2)
+    df['prev2_low'] = df[low_col].shift(2)
+    
+    # Inside Day: Current high is less than previous high and current low is higher than previous low
+    inside_day = (df[high_col] < df['prev_high']) & (df[low_col] > df['prev_low'])
+    
+    # Modified Hikkake pattern:
+    # - The second day (previous day) has a high lower than the first day (two days ago) and a low higher than the first day
+    # - The current day breaks the previous day's range
+    hikkake_down = (df['prev_high'] < df['prev2_high']) & (df['prev_low'] > df['prev2_low']) & (df[close_col] < df['prev_low'])
+    hikkake_up = (df['prev_high'] < df['prev2_high']) & (df['prev_low'] > df['prev2_low']) & (df[close_col] > df['prev_high'])
+    
+    df[modified_hikkake_label] = (inside_day & (hikkake_down | hikkake_up)).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['prev_high', 'prev_low', 'prev2_high', 'prev2_low'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+high_col = 'high_price'
+low_col = 'low_price'
+calculate_modified_hikkake(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col)
+"""
+
+CDLHOMINGPIGEON = """
+import pandas as pd
+
+def calculate_homing_pigeon(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price'):
+    homing_pigeon_label = 'CDLHOMINGPIGEON'
+    
+    # Shift the open and close prices to compare with the previous day
+    df['prev_open'] = df[open_col].shift(1)
+    df['prev_close'] = df[close_col].shift(1)
+    
+    # Homing Pigeon:
+    # - The previous candle is bearish
+    # - The current candle is bearish
+    # - The current candle's body is within the previous candle's body
+    previous_bearish = df['prev_close'] < df['prev_open']
+    current_bearish = df[close_col] < df[open_col]
+    body_within_previous = (df[open_col] >= df['prev_close']) & (df[close_col] <= df['prev_open'])
+    
+    df[homing_pigeon_label] = (previous_bearish & current_bearish & body_within_previous).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['prev_open', 'prev_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+calculate_homing_pigeon(dataset, open_col=open_col, close_col=close_col)
+"""
+
+CDLIDENTICAL3CROWS = """
+import pandas as pd
+
+def calculate_identical_three_crows(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price'):
+    identical_three_crows_label = 'CDLIDENTICAL3CROWS'
+    
+    # Shift the open and close prices to compare with the previous days
+    df['prev1_open'] = df[open_col].shift(1)
+    df['prev1_close'] = df[close_col].shift(1)
+    df['prev2_open'] = df[open_col].shift(2)
+    df['prev2_close'] = df[close_col].shift(2)
+    
+    # Identical Three Crows:
+    # - Three consecutive long bearish candles
+    # - Each opens within the previous candle's real body
+    # - Each closes lower than the previous candle's close
+    first_bearish = df['prev2_close'] < df['prev2_open']
+    second_bearish = df['prev1_close'] < df['prev1_open']
+    third_bearish = df[close_col] < df[open_col]
+    
+    second_within_first = (df['prev1_open'] <= df['prev2_close']) & (df['prev1_open'] >= df['prev2_open'])
+    third_within_second = (df[open_col] <= df['prev1_close']) & (df[open_col] >= df['prev1_open'])
+    
+    each_lower_close = (df['prev1_close'] < df['prev2_close']) & (df[close_col] < df['prev1_close'])
+    
+    df[identical_three_crows_label] = (first_bearish & second_bearish & third_bearish & second_within_first & third_within_second & each_lower_close).astype(int)
+    
+    # Drop the helper columns
+    df.drop(columns=['prev1_open', 'prev1_close', 'prev2_open', 'prev2_close'], inplace=True)
+
+# Usage example:
+open_col = 'open_price'
+close_col = 'close_price'
+calculate_identical_three_crows(dataset, open_col=open_col, close_col=close_col)
+"""
+
+
+
 DEFAULT_CODE_PRESETS = [
     CodePreset(
         code=GEN_RSI_CODE,
@@ -2836,6 +3515,185 @@ DEFAULT_CODE_PRESETS = [
         description="The Belt-hold pattern is a single candlestick pattern that signifies potential reversal. A Bullish Belt-hold appears when the opening price is equal to the lowest price of the day, and the close is significantly higher, indicating a possible upward reversal. Conversely, a Bearish Belt-hold appears when the opening price is equal to the highest price of the day, and the close is significantly lower, indicating a possible downward reversal.",
         labels=CodePresetLabels.CANDLE_PATTERN,
     ),
+    CodePreset(
+        code=CDLHIKKAKE,
+        name="CDLHIKKAKE",
+        category=CodePresetCategories.INDICATOR,
+        description="The Hikkake Pattern is a price pattern used in technical analysis to identify potential reversals in the market. It involves an inside bar formation followed by a breakout in the opposite direction, which is then considered a false breakout, signaling a reversal. This pattern can indicate a potential change in the trend direction when identified.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLPIERCING,
+        name="CDLPIERCING",
+        category=CodePresetCategories.INDICATOR,
+        description="The Piercing Pattern is a bullish candlestick pattern used in technical analysis to identify potential reversals in a downtrend. It occurs when a bearish candle is followed by a bullish candle that opens lower than the previous low but closes more than halfway up the body of the previous bearish candle. This pattern suggests that the selling pressure is decreasing and buying pressure is increasing, indicating a potential upward reversal.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+     CodePreset(
+        code=CDLBREAKAWAY,
+        name="CDLBREAKAWAY",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Breakaway candlestick pattern, which consists of five candles. In a Bullish Breakaway, the first candle is bullish, followed by three bearish candles, and the fifth candle is bullish, closing above the open of the first candle. In a Bearish Breakaway, the pattern is reversed. This pattern can signal a potential reversal in the market trend.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLCLOSINGMARUBOZU,
+        name="CDLCLOSINGMARUBOZU",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Closing Marubozu candlestick pattern, where the closing price is equal to the high price for a bullish pattern or equal to the low price for a bearish pattern. The bullish Closing Marubozu indicates strong buying pressure, while the bearish Closing Marubozu indicates strong selling pressure",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLCONCEALBABYSWALL,
+        name="CDLCONCEALBABYSWALL",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Concealing Baby Swallow candlestick pattern, which typically consists of three bearish candles followed by a bullish candle that swallows the previous bearish candle. The pattern suggests a potential bullish reversal in the market trend, indicating that the downward pressure may be coming to an end.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLCOUNTERATTACK,
+        name="CDLCOUNTERATTACK",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Counterattack candlestick pattern, which consists of two candles. In a Bullish Counterattack, the first candle is bearish, and the second candle is bullish with both candles having the same closing price. In a Bearish Counterattack, the pattern is reversed with the first candle being bullish and the second candle being bearish with both candles having the same closing price. This pattern suggests a potential reversal in the market trend",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLDARKCLOUDCOVER,
+        name="CDLDARKCLOUDCOVER",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Dark Cloud Cover candlestick pattern, which consists of a bullish candle followed by a bearish candle. The bearish candle opens above the high of the previous bullish candle and closes below the midpoint of the previous candle's body but above its open. This pattern suggests a potential bearish reversal in the market trend, indicating that the upward momentum might be weakening",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=IS_BEAR_MARKET,
+        name="IS_BEAR_MARKET",
+        category=CodePresetCategories.INDICATOR,
+        description="Bear Market Indicator: This indicator signals a bear market by marking 1 if the close price is below a specified coefficient (default 0.8) of an already calculated simple moving average (SMA) column. This helps to identify potential downward trends in the market.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=CDLDOJI,
+        name="CDLDOJI",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies Doji candlestick patterns, which occur when the open and close prices are very close to each other, typically within a small threshold of the total trading range (high - low) of the candle. A Doji candlestick can indicate market indecision and potential trend reversal",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLDOJISTAR,
+        name="CDLDOJISTAR",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies Doji Star candlestick patterns, which are characterized by a Doji that gaps below or above the previous candlestick. The Doji candlestick itself occurs when the open and close prices are very close to each other, within a small threshold of the total trading range (high - low) of the candle. A Doji Star can indicate potential trend reversals",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLDRAGONFLYDOJI,
+        name="CDLDRAGONFLYDOJI",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies Dragonfly Doji candlestick patterns, which occur when the open and close prices are very close to each other at the high of the candle. The Dragonfly Doji often suggests a potential reversal or indecision in the market, and is characterized by a long lower shadow and little to no upper shadow. The threshold parameter helps to define how close the open and close prices should be to be considered a Dragonfly Doji",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLENGULFING,
+        name="CDLENGULFING",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies Engulfing candlestick patterns, which are significant reversal patterns. A bullish engulfing pattern forms when a small bearish candle is followed by a large bullish candle that completely engulfs the previous candle's body, suggesting a potential upward reversal. Conversely, a bearish engulfing pattern forms when a small bullish candle is followed by a large bearish candle that completely engulfs the previous candle's body, indicating a potential downward reversal. The indicator outputs 1 for bullish engulfing and -1 for bearish engulfing patterns",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLEVENINGDOJISTAR,
+        name="CDLEVENINGDOJISTAR",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Evening Doji Star candlestick pattern, a bearish reversal pattern that typically occurs at the top of an uptrend. It consists of three candles A long bullish candle. A Doji that gaps above the previous candle. A long bearish candle that closes below the midpoint of the first candle. The Doji represents market indecision, and the subsequent bearish candle confirms the reversal",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLEVENINGSTAR,
+        name="CDLEVENINGSTAR",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Evening Star candlestick pattern, a bearish reversal pattern that typically occurs at the top of an uptrend. It consists of three candles",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLGAPSIDESIDEWHITE,
+        name="CDLGAPSIDESIDEWHITE",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Up-gap and Down-gap side-by-side white lines pattern, which is a continuation pattern. It consists of two consecutive white (bullish) candlesticks that gap up or down from the previous white bullish candlestick. This pattern suggests a continuation of the current trend. The indicator outputs 1 when the pattern is detected",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLGRAVESTONEDOJI,
+        name="CDLGRAVESTONEDOJI",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Gravestone Doji candlestick pattern, which is a bearish reversal pattern that typically occurs at the top of an uptrend. It is characterized by a long upper shadow and little to no real body and lower shadow. The open, high, and close prices are very close to each other and at the high of the candle. The threshold parameter helps to define how close these prices should be to be considered a Gravestone Doji",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHAMMER,
+        name="CDLHAMMER",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Hammer candlestick pattern, which is a bullish reversal pattern typically found at the bottom of a downtrend. It is characterized by a small real body at the upper end of the trading range, with a long lower shadow at least twice the length of the real body. The threshold parameter helps to define how small the real body should be relative to the trading range, and the shadow_ratio parameter defines the minimum length of the lower shadow relative to the real body.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHANGINGMAN,
+        name="CDLHANGINGMAN",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Hanging Man candlestick pattern, which is a bearish reversal pattern typically found at the top of an uptrend. It is characterized by a small real body at the upper end of the trading range, with a long lower shadow at least twice the length of the real body. The threshold parameter helps to define how small the real body should be relative to the trading range, and the shadow_ratio parameter defines the minimum length of the lower shadow relative to the real body",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHARAMI,
+        name="CDLHARAMI",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Harami candlestick pattern, which is a potential reversal pattern. A Bullish Harami occurs when a small bullish candle forms within the body of the previous bearish candle, suggesting a potential upward reversal. Conversely, a Bearish Harami occurs when a small bearish candle forms within the body of the previous bullish candle, indicating a potential downward reversal. The indicator outputs 1 for bullish harami and -1 for bearish harami patterns",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHARAMICROSS,
+        name="CDLHARAMICROSS",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Harami Cross candlestick pattern, which is a significant reversal pattern. A Bullish Harami Cross occurs when a small Doji candle forms within the body of the previous bearish candle, suggesting a potential upward reversal. Conversely, a Bearish Harami Cross occurs when a small Doji candle forms within the body of the previous bullish candle, indicating a potential downward reversal. The indicator outputs 1 for bullish harami cross and -1 for bearish harami cross patterns",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHIGHWAVE,
+        name="CDLHIGHWAVE",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the High-Wave candlestick pattern, which is characterized by a very small real body and long upper and lower shadows. This pattern indicates a high level of market indecision and is often found at market turning points. The body_threshold parameter defines how small the real body should be relative to the trading range, and the shadow_ratio parameter defines the minimum length of the shadows relative to the real body",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHIKKAKEMOD,
+        name="CDLHIKKAKEMOD",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Modified Hikkake Pattern, which is a complex reversal pattern. It starts with an inside day, where the current day's high is lower than the previous day's high and the current day's low is higher than the previous day's low. The pattern is confirmed if, on the third day, the price breaks out of the range of the inside day. The indicator outputs 1 when the pattern is detected.",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLHOMINGPIGEON,
+        name="CDLHOMINGPIGEON",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Homing Pigeon candlestick pattern, which is a bullish reversal pattern typically found at the bottom of a downtrend. It consists of two consecutive bearish candles, with the second candle's body entirely within the body of the first candle. This pattern suggests that the selling pressure is diminishing and a potential upward reversal may occur. The indicator outputs 1 when the pattern is detected",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    CodePreset(
+        code=CDLIDENTICAL3CROWS,
+        name="CDLIDENTICAL3CROWS",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator identifies the Identical Three Crows candlestick pattern, which is a bearish reversal pattern. It consists of three consecutive long bearish candles where each candle opens within the real body of the previous candle and closes lower than the previous candle's close. This pattern suggests strong and consistent selling pressure, indicating a potential downward reversal. The indicator outputs 1 when the pattern is detected",
+        labels=CodePresetLabels.CANDLE_PATTERN,
+    ),
+    
+
+
+
+
+
+
+
+
+
+
 ]
 
 
