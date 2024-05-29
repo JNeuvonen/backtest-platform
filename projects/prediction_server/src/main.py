@@ -1,3 +1,8 @@
+from common_python.pred_serv_models.data_transformation import DataTransformationQuery
+from common_python.pred_serv_models.strategy_group import (
+    StrategyGroup,
+    StrategyGroupQuery,
+)
 import uvicorn
 import os
 from multiprocessing import Process, Event
@@ -5,12 +10,16 @@ from contextlib import asynccontextmanager
 
 from common_python.pred_serv_orm import create_tables, test_db_conn
 from common_python.pred_serv_models.strategy import StrategyQuery
+from common_python.pred_serv_models.trade_info_tick import TradeInfoTickQuery
+from common_python.pred_serv_models.refetch_strategy_signal import (
+    RefetchStrategySignal,
+)
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.server_config import get_service_port
 
-from config import get_auto_whitelisted_ip
+from config import get_auto_whitelisted_ip, run_background_processes
 from fastapi import FastAPI, Response, status
-from log import get_logger
+from log import LogExceptionContext, get_logger
 from api.v1.strategy import router as v1_strategy_router
 from api.v1.log import router as v1_cloudlogs_router
 from api.v1.account import router as v1_account_router
@@ -24,6 +33,7 @@ from binance_utils import (
     update_long_short_enters,
     update_long_short_exits,
 )
+from rule_based_loop_utils import RuleBasedLoopManager
 from utils import get_current_timestamp_ms
 from strategy import (
     format_pair_trade_loop_msg,
@@ -78,42 +88,65 @@ def rule_based_loop(stop_event):
     last_loop_complete_timestamp = get_current_timestamp_ms()
     last_slack_message_timestamp = get_current_timestamp_ms()
     last_logs_cleared_timestamp = get_current_timestamp_ms()
+    last_longest_loop_completion_time_reset = get_current_timestamp_ms()
+
+    longest_loop_completion_time = 0
+
+    state_manager = RuleBasedLoopManager()
 
     while not stop_event.is_set():
-        strategies = StrategyQuery.get_active_strategies()
+        with LogExceptionContext(re_raise=False):
+            current_state_dict = {
+                "active_strategies": 0,
+                "strats_on_error": 0,
+                "strats_in_pos": 0,
+                "strats_wanting_to_close": 0,
+                "strats_wanting_to_enter": 0,
+                "strats_still": 0,
+            }
+            strategies_info = []
 
-        current_state_dict = {
-            "active_strategies": 0,
-            "strats_on_error": 0,
-            "strats_in_pos": 0,
-            "strats_wanting_to_close": 0,
-            "strats_wanting_to_enter": 0,
-            "strats_still": 0,
-        }
-        strategies_info = []
+            for strategy in state_manager.strategies:
+                trading_decisions = gen_trading_decisions(strategy, state_manager)
+                update_strategies_state_dict(
+                    strategy, trading_decisions, current_state_dict, strategies_info
+                )
 
-        for strategy in strategies:
-            trading_decisions = gen_trading_decisions(strategy)
-            update_strategies_state_dict(
-                strategy, trading_decisions, current_state_dict, strategies_info
+            if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+                create_log(
+                    msg=format_pred_loop_log_msg(
+                        current_state_dict,
+                        strategies_info,
+                        last_loop_complete_timestamp,
+                        longest_loop_completion_time,
+                    ),
+                    level=LogLevel.INFO,
+                )
+                last_slack_message_timestamp = get_current_timestamp_ms()
+
+            if (
+                get_current_timestamp_ms()
+                >= last_longest_loop_completion_time_reset + 60000 * 60 * 64
+            ):
+                longest_loop_completion_time = 0
+
+            if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
+                CloudLogQuery.clear_outdated_logs()
+                last_logs_cleared_timestamp = get_current_timestamp_ms()
+
+            state_manager.update_changed_strategies()
+            state_manager.update_local_state()
+            state_manager.check_refetch_signal()
+            state_manager.create_trade_info_ticks()
+
+            loop_complete_time_ms = (
+                get_current_timestamp_ms() - last_loop_complete_timestamp
             )
 
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
-            create_log(
-                msg=format_pred_loop_log_msg(
-                    current_state_dict,
-                    strategies_info,
-                    last_loop_complete_timestamp,
-                ),
-                level=LogLevel.INFO,
-            )
-            last_slack_message_timestamp = get_current_timestamp_ms()
+            if loop_complete_time_ms >= longest_loop_completion_time:
+                longest_loop_completion_time = loop_complete_time_ms
 
-        if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
-            CloudLogQuery.clear_outdated_logs()
-            last_logs_cleared_timestamp = get_current_timestamp_ms()
-
-        last_loop_complete_timestamp = get_current_timestamp_ms()
+            last_loop_complete_timestamp = get_current_timestamp_ms()
 
 
 def long_short_loop(stop_event):
@@ -196,7 +229,8 @@ def webserver_root():
 def start_server():
     create_tables()
     logger = get_logger()
-    prediction_service.start()
+    if run_background_processes() is True:
+        prediction_service.start()
     logger.info("Starting server")
     uvicorn.run("main:app", host="0.0.0.0", port=get_service_port(), log_level="info")
 

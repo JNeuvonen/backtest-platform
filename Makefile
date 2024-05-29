@@ -75,3 +75,11 @@ loc:
 
 link-common-js:
 	./scripts/node_link_common_js.sh
+
+
+gen-db-dump:
+	python scripts/gen_db_dump.py ${DATABASE_URI} ${OUTPUT_FILE}
+
+
+restore-db-dump:
+	python scripts/restore_db_from_dump.py ${DATABASE_URI} ${DB_DUMP_PATH}

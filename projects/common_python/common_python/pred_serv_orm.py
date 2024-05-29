@@ -1,11 +1,14 @@
+from contextlib import contextmanager
 from sqlalchemy import (
     Boolean,
     Column,
+    DateTime,
     Float,
     Integer,
     MetaData,
     String,
     create_engine,
+    func,
     text,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -45,6 +48,20 @@ class LongShortGroup(Base):
     use_taker_order = Column(Boolean)
 
 
+class StrategyGroup(Base):
+    __tablename__ = "strategy_group"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    transformation_ids = Column(String)
+    is_disabled = Column(Boolean, default=True)
+    is_close_only = Column(Boolean, default=False)
+
+
 def db_delete_all_data():
     with Session() as session:
         for table in reversed(Base.metadata.sorted_tables):
@@ -60,6 +77,7 @@ def drop_tables(engine):
 
 def create_tables():
     LongShortGroup.__table__.create(bind=engine, checkfirst=True)
+    StrategyGroup.__table__.create(bind=engine, checkfirst=True)
     tables = Base.metadata.tables
     Base.metadata.create_all(engine)
 
@@ -71,3 +89,16 @@ def test_db_conn():
         print("Connection to the DB successful.")
     except Exception as e:
         raise Exception(f"Unable to connect to the DB: {str(e)}")
+
+
+@contextmanager
+def TransactionContext():
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise
+    finally:
+        session.close()

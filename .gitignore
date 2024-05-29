@@ -16,6 +16,7 @@ dist
 dist-ssr
 *.local
 *.cpython*
+*.db*
 projects/backtest_platform/src-tauri/binaries
 projects/backtest_platform/pyserver/build
 venv

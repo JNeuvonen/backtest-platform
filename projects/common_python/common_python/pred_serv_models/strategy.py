@@ -1,4 +1,5 @@
-from typing import Dict
+from typing import Dict, List
+
 from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Base, Session, engine
 from sqlalchemy import (
@@ -19,8 +20,9 @@ class Strategy(Base):
     __tablename__ = "strategy"
     id = Column(Integer, primary_key=True)
     active_trade_id = Column(Integer, ForeignKey("trade.id"))
+    strategy_group_id = Column(Integer, ForeignKey("strategy_group.id"))
     name = Column(String, unique=True)
-    strategy_group = Column(String, nullable=True)
+    strategy_group = Column(String)
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -152,4 +154,62 @@ class StrategyQuery:
                     session.query(Strategy)
                     .filter(Strategy.is_in_position == True)
                     .all()
+                )
+
+    @staticmethod
+    def update_multiple_strategies(update_fields_list: Dict[int, Dict]):
+        with LogExceptionContext():
+            with Session() as session:
+                for strategy_id, update_fields in update_fields_list.items():
+                    update_fields.pop("id", None)
+                    non_null_update_fields = {
+                        k: v for k, v in update_fields.items() if v is not None
+                    }
+                    session.query(Strategy).filter(Strategy.id == strategy_id).update(
+                        non_null_update_fields, synchronize_session=False
+                    )
+                session.commit()
+
+    @staticmethod
+    def get_all_distinct_strategy_groups():
+        with LogExceptionContext():
+            with Session() as session:
+                distinct_groups = (
+                    session.query(Strategy.strategy_group).distinct().all()
+                )
+                return [group[0] for group in distinct_groups]
+
+    @staticmethod
+    def get_one_strategy_per_group():
+        with LogExceptionContext():
+            with Session() as session:
+                distinct_groups = StrategyQuery.get_all_distinct_strategy_groups()
+                strategies = []
+                for group in distinct_groups:
+                    strategy = (
+                        session.query(Strategy)
+                        .filter(Strategy.strategy_group == group)
+                        .first()
+                    )
+                    if strategy:
+                        strategies.append(strategy)
+                return strategies
+
+    @staticmethod
+    def update_strategy_group_id(strategy_group: str, strategy_group_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Strategy).filter(
+                    Strategy.strategy_group == strategy_group
+                ).update(
+                    {"strategy_group_id": strategy_group_id}, synchronize_session=False
+                )
+                session.commit()
+
+    @staticmethod
+    def fetch_many_by_id(strategy_ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy).filter(Strategy.id.in_(strategy_ids)).all()
                 )

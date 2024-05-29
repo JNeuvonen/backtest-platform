@@ -125,6 +125,10 @@ async def route_put_longshort_pair(pair_id: int, body: UpdateLongShortPairBody):
 async def route_post_longshort_enter(pair_id: int, body: EnterLongShortPairBody):
     with HttpResponseContext():
         longshort_pair = LongShortPairQuery.get_pair_by_id(pair_id)
+
+        if longshort_pair is None:
+            raise Exception(f"Longshort pair was not found for id {pair_id}")
+
         enter_longshort_trade(longshort_pair, body)
         return Response(
             content="OK",

@@ -1,4 +1,8 @@
 import json
+
+from common_python.pred_serv_models.refetch_strategy_signal import (
+    RefetchStrategySignalQuery,
+)
 from api.v1.request_types import (
     BodyCreateTrade,
     BodyUpdateTradeClose,
@@ -44,6 +48,7 @@ def update_strategy_state(strat: Strategy, req_body: BodyUpdateTradeClose):
                 "is_in_position": False,
             }
             StrategyQuery.update_strategy(strat.id, strategy_update_dict)
+            RefetchStrategySignalQuery.create_entry({"strategy_id": strat.id})
 
         if trade_can_be_accounted_as_closed is False:
             strategy_update_dict = {

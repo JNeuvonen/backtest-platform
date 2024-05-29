@@ -368,9 +368,12 @@ def create_strategy_body(
     is_short_selling_strategy: bool,
     is_paper_trade_mode: bool,
     data_transformations=[],
+    candle_interval: str = "1D",
+    should_calc_stops_on_pred_serv: bool = False,
 ):
     return {
         "name": name,
+        "strategy_group": "testtt",
         "symbol": symbol,
         "base_asset": base_asset,
         "quote_asset": quote_asset,
@@ -395,6 +398,8 @@ def create_strategy_body(
         "is_short_selling_strategy": is_short_selling_strategy,
         "is_paper_trade_mode": is_paper_trade_mode,
         "data_transformations": data_transformations,
+        "candle_interval": candle_interval,
+        "should_calc_stops_on_pred_serv": should_calc_stops_on_pred_serv,
     }
 
 
@@ -456,6 +461,7 @@ def create_short_strategy_simple_1():
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
         is_paper_trade_mode=False,
+        num_req_klines=200,
         data_transformations=[
             gen_data_transformation_dict(TRANSFORMATION_1),
             gen_data_transformation_dict(TRANSFORMATION_2),
@@ -487,6 +493,7 @@ def create_short_strategy_simple_2():
         use_taker_order=False,
         is_leverage_allowed=False,
         is_short_selling_strategy=True,
+        num_req_klines=200,
         is_paper_trade_mode=False,
         data_transformations=[
             gen_data_transformation_dict(TRANSFORMATION_1),
@@ -512,6 +519,7 @@ def create_strategy_with_syntax_err():
         maximum_klines_hold_time=24,
         take_profit_threshold_perc=2,
         stop_loss_threshold_perc=2,
+        num_req_klines=200,
         minimum_time_between_trades_ms=1000,
         use_time_based_close=False,
         use_profit_based_close=False,
@@ -547,7 +555,7 @@ test_case_dump = {
     "data_transformations_code": "def make_data_transformations(fetched_data):\n    def calculate_obv(df):\n        df['OBV'] = 0\n        for i in range(1, len(df)):\n            if df['open_price'][i] > df['open_price'][i-1]:\n                df['OBV'][i] = df['OBV'][i-1] + df['volume'][i]\n            elif df['open_price'][i] < df['open_price'][i-1]:\n                df['OBV'][i] = df['OBV'][i-1] - df['volume'][i]\n            else:\n                df['OBV'][i] = df['OBV'][i-1]\n\n    def calculate_ma(df, column=\"close_price\", periods=[50]):\n        for period in periods:\n            ma_label = f\"MA_{period}_{column}\"\n            df[ma_label] = df[column].rolling(window=period).mean()\n\n    def calculate_rsi(df, column=\"open_price\", periods=[14]):\n        for period in periods:\n            delta = df[column].diff()\n            gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()\n            loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()\n\n            rs = gain / loss\n            df_label = f\"RSI_{period}_{column}\"\n            df[df_label] = 100 - (100 / (1 + rs))\n\n    calculate_obv(fetched_data)\n\n    periods = [720]\n    column = \"OBV\"\n    calculate_ma(fetched_data, column=column, periods=periods)\n\n    periods = [100]\n    column = \"MA_720_OBV\"\n    calculate_rsi(fetched_data, column=column, periods=periods)\n\n    periods = [200]\n    column = \"close_price\"\n    calculate_ma(fetched_data, column=column, periods=periods)\n\n    periods = [160]\n    column = \"MA_200_close_price\"\n    calculate_rsi(fetched_data, column=column, periods=periods)\n\n    return fetched_data",
     "trade_quantity_precision": 5,
     "priority": 1,
-    "kline_size_ms": 86400000,
+    "kline_size_ms": 60000,
     "maximum_klines_hold_time": 30,
     "allocated_size_perc": 100,
     "take_profit_threshold_perc": 20,
@@ -560,7 +568,7 @@ test_case_dump = {
     "is_leverage_allowed": False,
     "is_short_selling_strategy": False,
     "is_paper_trade_mode": False,
-    "candle_interval": "1d",
+    "candle_interval": "1m",
     "num_req_klines": 700,
     "data_transformations": [
         {

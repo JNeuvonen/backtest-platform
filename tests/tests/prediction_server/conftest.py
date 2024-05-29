@@ -46,11 +46,11 @@ def create_api_key():
 
 @pytest.fixture
 def cleanup_db():
-    if DROP_TABLES == 1:
+    if int(DROP_TABLES) == 1:
         drop_tables()
     create_tables()
     yield
-    if DROP_TABLES == 1:
+    if int(DROP_TABLES) == 1:
         drop_tables()
     create_tables()
 
@@ -93,5 +93,5 @@ def setup_test_environment():
     server_process.terminate()
     server_process.join(timeout=5)
     kill_process_on_port(TEST_RUN_PORT)  # Ensure the process is killed
-    if DROP_TABLES == 1:
+    if int(DROP_TABLES) == 1:
         drop_tables()
