@@ -10,3 +10,115 @@ export interface BalanceSnapshot {
   num_short_positions: number;
   num_ls_positions: number;
 }
+
+export interface Strategy {
+  id: number;
+  active_trade_id?: number;
+  strategy_group_id?: number;
+  name: string;
+  strategy_group?: string;
+  created_at: Date;
+  updated_at: Date;
+  symbol: string;
+  base_asset: string;
+  quote_asset: string;
+  enter_trade_code: string;
+  exit_trade_code: string;
+  fetch_datasources_code: string;
+  candle_interval?: string;
+  trade_quantity_precision: number;
+  priority: number;
+  num_req_klines: number;
+  kline_size_ms?: number;
+  last_kline_open_time_sec?: number;
+  minimum_time_between_trades_ms?: number;
+  maximum_klines_hold_time?: number;
+  time_on_trade_open_ms: number;
+  price_on_trade_open?: number;
+  quantity_on_trade_open: number;
+  remaining_position_on_trade: number;
+  allocated_size_perc?: number;
+  take_profit_threshold_perc?: number;
+  stop_loss_threshold_perc?: number;
+  use_time_based_close: boolean;
+  use_profit_based_close: boolean;
+  use_stop_loss_based_close: boolean;
+  use_taker_order?: boolean;
+  should_enter_trade: boolean;
+  should_close_trade: boolean;
+  should_calc_stops_on_pred_serv: boolean;
+  is_on_pred_serv_err: boolean;
+  is_paper_trade_mode: boolean;
+  is_leverage_allowed: boolean;
+  is_short_selling_strategy: boolean;
+  is_disabled: boolean;
+  is_in_close_only: boolean;
+  is_in_position: boolean;
+}
+
+export interface LongShortGroup {
+  id: number;
+  name: string;
+  candle_interval?: string;
+  buy_cond?: string;
+  sell_cond?: string;
+  exit_cond?: string;
+  num_req_klines?: number;
+  max_simultaneous_positions?: number;
+  klines_until_close?: number;
+  kline_size_ms?: number;
+  loan_retry_wait_time_ms?: number;
+  max_leverage_ratio?: number;
+  take_profit_threshold_perc?: number;
+  stop_loss_threshold_perc?: number;
+  is_disabled: boolean;
+  use_time_based_close?: boolean;
+  use_profit_based_close?: boolean;
+  use_stop_loss_based_close?: boolean;
+  use_taker_order?: boolean;
+}
+
+export interface Trade {
+  id: number;
+  symbol: string;
+  strategy_id?: number;
+  pair_trade_group_id: number;
+  strategy_group_id: number;
+  created_at: Date;
+  updated_at: Date;
+  open_time_ms: number;
+  close_time_ms?: number;
+  open_price: number;
+  quantity: number;
+  close_price?: number;
+  net_result?: number;
+  percent_result?: number;
+  direction: string;
+  info_ticks: TradeInfoTick[];
+}
+
+export interface TradeInfoTick {
+  id: number;
+  trade_id: number;
+  price: number;
+  kline_open_time_ms: number;
+}
+
+export interface StrategyGroup {
+  id: number;
+  name: string;
+
+  created_at: Date;
+  updated_at: Date;
+
+  transformation_ids: string;
+  is_disabled: boolean;
+  is_close_only: boolean;
+}
+
+export interface StrategiesResponse {
+  ls_strategies: LongShortGroup[];
+  directional_strategies: Strategy[];
+  trades: Trade[];
+  strategy_groups: StrategyGroup[];
+}

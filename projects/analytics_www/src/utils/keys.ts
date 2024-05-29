@@ -4,4 +4,5 @@ export const DISK_KEYS = {
 
 export const QUERY_KEYS = {
   fetch_balance_snapshots: "FETCH_BALANCE_SNAPSHOTS",
+  fetch_strategies: "FETCH_STRATEGIES",
 };

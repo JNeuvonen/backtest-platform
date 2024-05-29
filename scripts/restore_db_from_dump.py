@@ -3,6 +3,15 @@ import sys
 import os
 
 
+def run_command(command, env=None):
+    """Helper function to run a shell command."""
+    try:
+        subprocess.run(command, check=True, env=env)
+    except subprocess.CalledProcessError as e:
+        print(f"Command '{' '.join(command)}' failed with error: {e}")
+        sys.exit(1)
+
+
 def restore_database(dump_file, connection_string):
     try:
         # Extract the database name from the connection string
@@ -15,7 +24,55 @@ def restore_database(dump_file, connection_string):
         port = connection_string.split(":")[3].split("/")[0]
 
         # Set the environment variable for the password
-        os.environ["PGPASSWORD"] = password
+        env = os.environ.copy()
+        env["PGPASSWORD"] = password
+
+        # Terminate all connections to the database
+        terminate_connections_command = [
+            "psql",
+            "-h",
+            host,
+            "-U",
+            user,
+            "-p",
+            port,
+            "-c",
+            f"""
+            SELECT pg_terminate_backend(pg_stat_activity.pid)
+            FROM pg_stat_activity
+            WHERE pg_stat_activity.datname = '{db_name}'
+              AND pid <> pg_backend_pid();
+            """,
+        ]
+        run_command(terminate_connections_command, env)
+
+        # Drop the existing database
+        drop_command = [
+            "psql",
+            "-h",
+            host,
+            "-U",
+            user,
+            "-p",
+            port,
+            "-c",
+            f"DROP DATABASE IF EXISTS {db_name};",
+        ]
+        run_command(drop_command, env)
+
+        # Create a new database
+        create_command = [
+            "psql",
+            "-h",
+            host,
+            "-U",
+            user,
+            "-p",
+            port,
+            "-c",
+            f"CREATE DATABASE {db_name};",
+        ]
+        run_command(create_command, env)
 
         # Determine the file format (custom, tar, plain)
         if dump_file.endswith(".sql"):
@@ -50,7 +107,7 @@ def restore_database(dump_file, connection_string):
             ]
 
         # Execute the restore command
-        subprocess.run(restore_command, check=True)
+        run_command(restore_command, env)
 
         print(f"Database restoration successful from {dump_file} to {db_name}")
 

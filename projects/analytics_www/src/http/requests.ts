@@ -32,3 +32,16 @@ export const fetchBalanceSnapshots = async () => {
     return [];
   }
 };
+
+export const fetchStrategies = async () => {
+  try {
+    const res = await httpReq({ url: ANALYTICS_SERV_API.fetch_strategies() });
+
+    if (res.success) {
+      return res.data;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
