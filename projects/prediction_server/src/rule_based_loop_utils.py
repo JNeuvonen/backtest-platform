@@ -5,6 +5,7 @@ from common_python.pred_serv_models.refetch_strategy_signal import (
     RefetchStrategySignalQuery,
 )
 from common_python.pred_serv_models.trade_info_tick import TradeInfoTickQuery
+from src.log import LogExceptionContext
 from utils import get_current_timestamp_ms
 import pandas as pd
 from common_python.pred_serv_models.data_transformation import (
@@ -130,27 +131,17 @@ class RuleBasedLoopManager:
             self.init_local_dataset(item)
 
     def update_local_state(self):
-        current_time = get_current_timestamp_ms()
-        if current_time >= self.last_refetch + self.db_refetch_interval:
-            self.last_refetch = current_time
+        with LogExceptionContext(re_raise=False):
+            current_time = get_current_timestamp_ms()
+            if current_time >= self.last_refetch + self.db_refetch_interval:
+                self.last_refetch = current_time
+                self.strategies = StrategyQuery.get_active_strategies()
+                self.strategy_groups = StrategyGroupQuery.get_all_active()
+                self.data_transformations = (
+                    DataTransformationQuery.get_all_strategy_group_transformations()
+                )
 
-            with ProcessPoolExecutor() as executor:
-                futures = {
-                    executor.submit(StrategyQuery.get_active_strategies): "strategies",
-                    executor.submit(
-                        StrategyGroupQuery.get_all_active
-                    ): "strategy_groups",
-                    executor.submit(
-                        DataTransformationQuery.get_all_strategy_group_transformations
-                    ): "data_transformations",
-                }
-
-                for future in as_completed(futures):
-                    result = future.result()
-                    attr = futures[future]
-                    setattr(self, attr, result)
-
-            self.create_new_dataset_objs()
+                self.create_new_dataset_objs()
 
     def replace_in_strategy_arr(self, strategy: Strategy):
         for idx, item in enumerate(self.strategies):
@@ -165,33 +156,34 @@ class RuleBasedLoopManager:
                 break
 
     def check_refetch_signal(self):
-        refetch_signals = RefetchStrategySignalQuery.get_all()
+        with LogExceptionContext(re_raise=False):
+            refetch_signals = RefetchStrategySignalQuery.get_all()
 
-        strategy_ids = []
-        refetch_signal_ids = []
+            strategy_ids = []
+            refetch_signal_ids = []
 
-        for item in refetch_signals:
-            strategy_ids.append(item.strategy_id)
-            refetch_signal_ids.append(item.id)
+            for item in refetch_signals:
+                strategy_ids.append(item.strategy_id)
+                refetch_signal_ids.append(item.id)
 
-        updated_strategies = StrategyQuery.fetch_many_by_id(strategy_ids)
+            updated_strategies = StrategyQuery.fetch_many_by_id(strategy_ids)
 
-        trade_ids = []
+            trade_ids = []
 
-        for item in updated_strategies:
-            self.replace_in_strategy_arr(item)
+            for item in updated_strategies:
+                self.replace_in_strategy_arr(item)
 
-            if item.is_in_position is True and item.active_trade_id is not None:
-                trade_ids.append(item.active_trade_id)
+                if item.is_in_position is True and item.active_trade_id is not None:
+                    trade_ids.append(item.active_trade_id)
 
-        trades = TradeQuery.fetch_many_by_id(trade_ids)
+            trades = TradeQuery.fetch_many_by_id(trade_ids)
 
-        for item in trades:
-            self.replace_in_active_trades_arr(item)
+            for item in trades:
+                self.replace_in_active_trades_arr(item)
 
-        if len(refetch_signals) > 0:
-            self.create_new_dataset_objs()
-            RefetchStrategySignalQuery.delete_entries_by_ids(refetch_signal_ids)
+            if len(refetch_signals) > 0:
+                self.create_new_dataset_objs()
+                RefetchStrategySignalQuery.delete_entries_by_ids(refetch_signal_ids)
 
     def update_local_dataset(
         self,
@@ -235,20 +227,21 @@ class RuleBasedLoopManager:
             self.datasets[strategy.name].new_data_arrived = True
 
     def update_changed_strategies(self):
-        updated_strategies_dict = {}
+        with LogExceptionContext(re_raise=False):
+            updated_strategies_dict = {}
 
-        for _, local_dataset in self.datasets.items():
-            if local_dataset.new_data_arrived is True:
-                updated_fields = local_dataset.updated_fields
-                if updated_fields:
-                    updated_strategies_dict[
-                        local_dataset.strategy.id
-                    ] = updated_fields.copy()
-                    local_dataset.updated_fields = {}
-                    local_dataset.new_data_arrived = False
+            for _, local_dataset in self.datasets.items():
+                if local_dataset.new_data_arrived is True:
+                    updated_fields = local_dataset.updated_fields
+                    if updated_fields:
+                        updated_strategies_dict[
+                            local_dataset.strategy.id
+                        ] = updated_fields.copy()
+                        local_dataset.updated_fields = {}
+                        local_dataset.new_data_arrived = False
 
-        if updated_strategies_dict:
-            StrategyQuery.update_multiple_strategies(updated_strategies_dict)
+            if updated_strategies_dict:
+                StrategyQuery.update_multiple_strategies(updated_strategies_dict)
 
     def add_trade_info_tick(self, price, kline_open_time_ms, trade_id):
         info_tick = {
@@ -259,6 +252,7 @@ class RuleBasedLoopManager:
         self.new_trade_info_ticks.append(info_tick)
 
     def create_trade_info_ticks(self):
-        if len(self.new_trade_info_ticks) > 0:
-            TradeInfoTickQuery.create_many(self.new_trade_info_ticks)
-            self.new_trade_info_ticks = []
+        with LogExceptionContext(re_raise=False):
+            if len(self.new_trade_info_ticks) > 0:
+                TradeInfoTickQuery.create_many(self.new_trade_info_ticks)
+                self.new_trade_info_ticks = []
