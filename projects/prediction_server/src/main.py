@@ -19,7 +19,7 @@ from common_python.server_config import get_service_port
 
 from config import get_auto_whitelisted_ip, run_background_processes
 from fastapi import FastAPI, Response, status
-from log import get_logger
+from log import LogExceptionContext, get_logger
 from api.v1.strategy import router as v1_strategy_router
 from api.v1.log import router as v1_cloudlogs_router
 from api.v1.account import router as v1_account_router
@@ -95,61 +95,61 @@ def rule_based_loop(stop_event):
     state_manager = RuleBasedLoopManager()
 
     while not stop_event.is_set():
-        current_state_dict = {
-            "active_strategies": 0,
-            "strats_on_error": 0,
-            "strats_in_pos": 0,
-            "strats_wanting_to_close": 0,
-            "strats_wanting_to_enter": 0,
-            "strats_still": 0,
-        }
-        strategies_info = []
+        with LogExceptionContext(re_raise=False):
+            current_state_dict = {
+                "active_strategies": 0,
+                "strats_on_error": 0,
+                "strats_in_pos": 0,
+                "strats_wanting_to_close": 0,
+                "strats_wanting_to_enter": 0,
+                "strats_still": 0,
+            }
+            strategies_info = []
 
-        for strategy in state_manager.strategies:
-            trading_decisions = gen_trading_decisions(strategy, state_manager)
-            update_strategies_state_dict(
-                strategy, trading_decisions, current_state_dict, strategies_info
+            for strategy in state_manager.strategies:
+                trading_decisions = gen_trading_decisions(strategy, state_manager)
+                update_strategies_state_dict(
+                    strategy, trading_decisions, current_state_dict, strategies_info
+                )
+
+            if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+                create_log(
+                    msg=format_pred_loop_log_msg(
+                        current_state_dict,
+                        strategies_info,
+                        last_loop_complete_timestamp,
+                        longest_loop_completion_time,
+                    ),
+                    level=LogLevel.INFO,
+                )
+                last_slack_message_timestamp = get_current_timestamp_ms()
+
+            if (
+                get_current_timestamp_ms()
+                >= last_longest_loop_completion_time_reset + 60000 * 60 * 64
+            ):
+                longest_loop_completion_time = 0
+
+            if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
+                CloudLogQuery.clear_outdated_logs()
+                last_logs_cleared_timestamp = get_current_timestamp_ms()
+
+            state_manager.update_changed_strategies()
+            state_manager.update_local_state()
+            state_manager.check_refetch_signal()
+            state_manager.create_trade_info_ticks()
+
+            loop_complete_time_ms = (
+                get_current_timestamp_ms() - last_loop_complete_timestamp
             )
 
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
-            create_log(
-                msg=format_pred_loop_log_msg(
-                    current_state_dict,
-                    strategies_info,
-                    last_loop_complete_timestamp,
-                    longest_loop_completion_time,
-                ),
-                level=LogLevel.INFO,
-            )
-            last_slack_message_timestamp = get_current_timestamp_ms()
+            if loop_complete_time_ms >= longest_loop_completion_time:
+                longest_loop_completion_time = loop_complete_time_ms
 
-        if (
-            get_current_timestamp_ms()
-            >= last_longest_loop_completion_time_reset + 60000 * 60 * 64
-        ):
-            longest_loop_completion_time = 0
-
-        if get_current_timestamp_ms() >= last_logs_cleared_timestamp + 60000 * 60:
-            CloudLogQuery.clear_outdated_logs()
-            last_logs_cleared_timestamp = get_current_timestamp_ms()
-
-        state_manager.update_changed_strategies()
-        state_manager.update_local_state()
-        state_manager.check_refetch_signal()
-        state_manager.create_trade_info_ticks()
-
-        loop_complete_time_ms = (
-            get_current_timestamp_ms() - last_loop_complete_timestamp
-        )
-
-        if loop_complete_time_ms >= longest_loop_completion_time:
-            longest_loop_completion_time = loop_complete_time_ms
-
-        last_loop_complete_timestamp = get_current_timestamp_ms()
+            last_loop_complete_timestamp = get_current_timestamp_ms()
 
 
 def long_short_loop(stop_event):
-    return
     logger = get_logger()
     logger.info("Starting longshort loop")
 
@@ -178,7 +178,7 @@ def long_short_loop(stop_event):
         for strategy in strategies:
             update_long_short_enters(strategy, current_state_dict)
 
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000 * 15:
+        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
             create_log(
                 msg=format_pair_trade_loop_msg(
                     current_state_dict, last_loop_complete_timestamp
