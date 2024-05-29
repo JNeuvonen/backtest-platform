@@ -5,7 +5,7 @@ from common_python.pred_serv_models.refetch_strategy_signal import (
     RefetchStrategySignalQuery,
 )
 from common_python.pred_serv_models.trade_info_tick import TradeInfoTickQuery
-from src.log import LogExceptionContext
+from log import LogExceptionContext
 from utils import get_current_timestamp_ms
 import pandas as pd
 from common_python.pred_serv_models.data_transformation import (
