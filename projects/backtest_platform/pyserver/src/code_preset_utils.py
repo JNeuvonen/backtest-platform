@@ -2914,12 +2914,14 @@ calculate_inverted_hammer(dataset, open_col=open_col, high_col=high_col, low_col
 CDLKICKING = """
 import pandas as pd
 
-def calculate_kicking(df, open_col='open_price', close_col='close_price'):
+def calculate_kicking(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price'):
     kicking_label = 'CDLKICKING'
     
     # Shift the open and close prices to compare with the previous day
     df['prev_open'] = df[open_col].shift(1)
     df['prev_close'] = df[close_col].shift(1)
+    df['prev_high'] = df[high_col].shift(1)
+    df['prev_low'] = df[low_col].shift(1)
     
     # Kicking Pattern:
     # - The previous candle is a marubozu (either bullish or bearish).
@@ -2936,14 +2938,14 @@ def calculate_kicking(df, open_col='open_price', close_col='close_price'):
     df[kicking_label] = (kicking_bullish | kicking_bearish).astype(int)
     
     # Drop the helper columns
-    df.drop(columns=['prev_open', 'prev_close'], inplace=True)
+    df.drop(columns=['prev_open', 'prev_close', 'prev_high', 'prev_low'], inplace=True)
 
 # Usage example:
 open_col = 'open_price'
 close_col = 'close_price'
 high_col = 'high_price'
 low_col = 'low_price'
-calculate_kicking(dataset, open_col=open_col, close_col=close_col)
+calculate_kicking(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col)
 """
 
 CDLKICKINGBYLENGTH = """
