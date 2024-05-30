@@ -1,3 +1,14 @@
+.link-default {
+  color: #097bed;
+  cursor: pointer;
+}
+
+.form-submit-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
 .side-nav {
   top: 0;
   background-color: #282828;

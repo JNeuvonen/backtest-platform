@@ -21,12 +21,21 @@ export const RootPage = () => {
   const balanceSnapShots = useBalanceSnapshotsQuery();
 
   const getTickClosestToOneDayAgo = () => {
-    if (!balanceSnapShots.data || balanceSnapShots.data.length === 0)
+    if (
+      !balanceSnapShots ||
+      !balanceSnapShots.data ||
+      balanceSnapShots.data.length === 0
+    )
       return null;
 
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     let closestTick = balanceSnapShots.data[0];
+
+    if (closestTick === undefined) {
+      return null;
+    }
+
     let closestDiff = Math.abs(
       new Date(balanceSnapShots.data[0].created_at).getTime() -
         oneDayAgo.getTime(),
@@ -53,6 +62,11 @@ export const RootPage = () => {
     const oneDayAgo = new Date(Date.now() - 24 * 7 * 60 * 60 * 1000);
 
     let closestTick = balanceSnapShots.data[0];
+
+    if (closestTick === undefined) {
+      return null;
+    }
+
     let closestDiff = Math.abs(
       new Date(balanceSnapShots.data[0].created_at).getTime() -
         oneDayAgo.getTime(),
@@ -131,6 +145,10 @@ export const RootPage = () => {
   const oneWeekAgoTick = getTickClosestToWeekAgo();
   const monthFirstTick = getFirstTickOfCurrentMonth();
   const yearsFirstTick = getFirstTickOfCurrentYear();
+
+  if (!lastTick) {
+    return <Spinner />;
+  }
 
   return (
     <div>

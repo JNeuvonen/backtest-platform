@@ -1,0 +1,12 @@
+@import "colors";
+
+.link-default {
+  color: $brand-secondary;
+  cursor: pointer;
+}
+
+.form-submit-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
