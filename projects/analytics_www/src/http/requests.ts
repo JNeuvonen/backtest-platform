@@ -1,3 +1,4 @@
+import { BinanceSymbolPrice, SPOT_MARKET_INFO_ENDPOINT } from "common_js";
 import { httpReq, ANALYTICS_SERV_API } from ".";
 import { HttpRequestOptions } from "./utils";
 
@@ -43,5 +44,32 @@ export const fetchStrategies = async () => {
     return {};
   } catch {
     return {};
+  }
+};
+
+export const fetchStrategyGroup = async (groupName: string) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.fetch_strategy_group(groupName),
+    });
+    if (res.success) {
+      return res.data;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
+
+export const fetchBinancePriceInfo = async () => {
+  try {
+    const response = await fetch(SPOT_MARKET_INFO_ENDPOINT);
+    if (response.ok) {
+      const data: BinanceSymbolPrice[] = await response.json();
+      return data;
+    }
+    return [] as BinanceSymbolPrice[];
+  } catch {
+    return [] as BinanceSymbolPrice[];
   }
 };

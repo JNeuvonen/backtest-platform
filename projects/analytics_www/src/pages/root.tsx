@@ -1,14 +1,8 @@
 import { useBalanceSnapshotsQuery } from "src/http/queries";
-import {
-  Heading,
-  Spinner,
-  Stat,
-  StatLabel,
-  StatNumber,
-  Text,
-} from "@chakra-ui/react";
+import { Heading, Spinner, Text } from "@chakra-ui/react";
 import { Line, YAxis } from "recharts";
 import { ShareYAxisMultilineChart } from "src/components";
+import { FiRefreshCw } from "react-icons/fi";
 import {
   COLOR_BRAND_PRIMARY,
   COLOR_BRAND_PRIMARY_SHADE_FOUR,
@@ -161,10 +155,13 @@ export const RootPage = () => {
           }}
         >
           <Heading size={"lg"}>Live dashboard</Heading>
-          <Text fontSize={"13px"}>
-            Last account snapshot:{" "}
-            {getDiffToPresentFormatted(new Date(lastTick.created_at))} ago
-          </Text>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Text fontSize={"13px"}>
+              Last account snapshot:{" "}
+              {getDiffToPresentFormatted(new Date(lastTick.created_at))} ago
+            </Text>
+          </div>
         </div>
         <div style={{ marginTop: "16px" }}>
           <BalanceInfoCard

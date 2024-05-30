@@ -15,4 +15,8 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL + ANALYTICS_SERV_ROUTES.v1_balance_snapshot + "/",
   fetch_strategies: () =>
     ANALYTICS_SERV_BASE_URL + ANALYTICS_SERV_ROUTES.v1_strategy + "/",
+  fetch_strategy_group: (groupName: string) =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_strategy +
+    `/strategy-group/${groupName}`,
 };

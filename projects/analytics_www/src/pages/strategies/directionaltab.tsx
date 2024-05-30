@@ -1,7 +1,10 @@
-import { Heading, Spinner } from "@chakra-ui/react";
+import { Heading, Spinner, Text } from "@chakra-ui/react";
 import { ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import {
+  BinanceSymbolPrice,
+  findCurrentPrice,
+  getNumberDisplayColor,
   roundNumberFloor,
   StrategiesResponse,
   Strategy,
@@ -9,9 +12,14 @@ import {
   Trade,
 } from "common_js";
 import { Link } from "react-router-dom";
+import { useBinanceSpotPriceInfo } from "src/http/queries";
+import { COLOR_CONTENT_PRIMARY } from "src/theme";
 import { getStrategyPath } from "src/utils";
 
 const strategyNameCellRenderer = (params: ICellRendererParams) => {
+  if (!params.value) {
+    return;
+  }
   return (
     <Link
       to={getStrategyPath(params.value.toLowerCase())}
@@ -19,6 +27,14 @@ const strategyNameCellRenderer = (params: ICellRendererParams) => {
     >
       {params.value}
     </Link>
+  );
+};
+
+const profitColumnCellRenderer = (params: ICellRendererParams) => {
+  return (
+    <Text color={getNumberDisplayColor(params.value, COLOR_CONTENT_PRIMARY)}>
+      {roundNumberFloor(params.value, 2)}$
+    </Text>
   );
 };
 
@@ -49,10 +65,18 @@ const COLUMN_DEFS = [
     editable: false,
   },
   {
-    headerName: "Net result",
+    headerName: "Realized profit",
     field: "netResult",
     sortable: true,
     editable: false,
+    cellRenderer: profitColumnCellRenderer,
+  },
+  {
+    headerName: "Unrealized profit",
+    field: "cumulativeUnrealizedProfit",
+    sortable: true,
+    editable: false,
+    cellRenderer: profitColumnCellRenderer,
   },
   {
     headerName: "Mean trade (%)",
@@ -66,6 +90,7 @@ const getStrategyGroupFields = (
   strategyGroup: StrategyGroup,
   strategies: Strategy[],
   trades: Trade[],
+  binanceSymbolPrices: BinanceSymbolPrice[],
 ) => {
   let universeSize = 0;
   let openTrades = 0;
@@ -73,12 +98,18 @@ const getStrategyGroupFields = (
   let numTrades = 0;
   let cumulativePercResult = 0;
   let completedTrades = 0;
+  let cumulativeUnrealizedProfit = 0;
+
+  let isLongStrategy = true;
 
   const strategyIdToStrategyGroupIdMap: { [key: number]: number } = {};
 
   strategies.forEach((item) => {
     if (item.strategy_group_id === strategyGroup.id) {
       universeSize += 1;
+      if (item.is_short_selling_strategy) {
+        isLongStrategy = false;
+      }
     }
 
     if (item.strategy_group_id) {
@@ -92,6 +123,7 @@ const getStrategyGroupFields = (
 
       if (strategyGroupId === strategyGroup.id) {
         numTrades += 1;
+        const latestPrice = findCurrentPrice(item.symbol, binanceSymbolPrices);
 
         if (item.close_price && item.net_result && item.percent_result) {
           netResultTrades += item.net_result;
@@ -101,6 +133,13 @@ const getStrategyGroupFields = (
 
         if (item.open_price && !item.close_price) {
           openTrades += 1;
+        }
+
+        if (latestPrice && !item.close_price) {
+          const unrealizedProfit = isLongStrategy
+            ? (latestPrice - item.open_price) * item.quantity
+            : (item.open_price - latestPrice) * item.quantity;
+          cumulativeUnrealizedProfit += unrealizedProfit;
         }
       }
     }
@@ -116,6 +155,7 @@ const getStrategyGroupFields = (
         ? roundNumberFloor(cumulativePercResult / completedTrades, 2)
         : 0,
     closedTrades: completedTrades,
+    cumulativeUnrealizedProfit,
   };
 };
 
@@ -124,7 +164,8 @@ export const DirectionalStrategiesTab = ({
 }: {
   strategiesRes: StrategiesResponse | undefined;
 }) => {
-  if (!strategiesRes) {
+  const binancePriceQuery = useBinanceSpotPriceInfo();
+  if (!strategiesRes || !binancePriceQuery.data) {
     return <Spinner />;
   }
 
@@ -143,6 +184,7 @@ export const DirectionalStrategiesTab = ({
             item,
             strategiesRes.directional_strategies,
             strategiesRes.trades,
+            binancePriceQuery.data || [],
           ),
         };
       })
