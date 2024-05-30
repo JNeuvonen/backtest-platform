@@ -15,6 +15,7 @@ router = APIRouter()
 
 class RoutePaths:
     ROOT = "/"
+    STRATEGY_BY_GROUP = "/strategy-group/{group_name}"
 
 
 @router.get(RoutePaths.ROOT)
@@ -34,4 +35,25 @@ async def get_strategies(token: str = Depends(verify_access_token)):
             "directional_strategies": directional_strategies,
             "trades": trades,
             "strategy_groups": strategy_groups,
+        }
+
+
+@router.get(RoutePaths.STRATEGY_BY_GROUP)
+async def get_strategies_by_group(
+    group_name: str, token: str = Depends(verify_access_token)
+):
+    with HttpResponse():
+        strategy_group = StrategyGroupQuery.get_by_name(group_name)
+
+        if strategy_group is None:
+            raise Exception(f"Strategy group was not found for name: {group_name}")
+
+        strategies = StrategyQuery.get_strategies_by_strategy_group_id(
+            strategy_group.id
+        )
+        trades = TradeQuery.get_trades()
+        return {
+            "strategy_group": strategy_group,
+            "strategies": strategies,
+            "trades": trades,
         }
