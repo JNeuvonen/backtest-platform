@@ -3612,7 +3612,7 @@ calculate_takuri(dataset, open_col=open_col, close_col=close_col, high_col=high_
 CDLTASUKIGAP = """
 import pandas as pd
 
-def calculate_tasuki_gap(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price']):
+def calculate_tasuki_gap(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price'):
     tasuki_gap_label = 'CDLTASUKIGAP'
     
     # Shift the necessary columns to compare with the previous days
