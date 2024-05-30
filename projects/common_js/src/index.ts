@@ -6,3 +6,4 @@ export * from "./math";
 export * from "./strategy_utils";
 export * from "./binance_utils";
 export * from "./finance_html_utils";
+export * from "./formatting";

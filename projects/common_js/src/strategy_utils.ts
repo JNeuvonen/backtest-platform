@@ -1,6 +1,11 @@
 import { safeDivide } from "./math";
 import { BinanceSymbolPrice, Strategy, StrategyGroup, Trade } from "./types";
 
+export const TRADE_DIRECTIONS = {
+  long: "LONG",
+  short: "SHORT",
+};
+
 export const findCurrentPrice = (
   symbol: string,
   latestPrices: BinanceSymbolPrice[],
