@@ -110,3 +110,9 @@ class LongShortPairQuery:
                     .filter(LongShortPair.in_position == True)
                     .count()
                 )
+
+    @staticmethod
+    def get_all():
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(LongShortPair).all()
