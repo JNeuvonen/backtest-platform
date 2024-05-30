@@ -1,5 +1,5 @@
 import { Spinner } from "@chakra-ui/react";
-import { useBinanceSpotPriceInfo, useStrategiesQuery } from "src/http/queries";
+import { useStrategiesQuery } from "src/http/queries";
 import { ChakraTabs } from "src/components/chakra/Tabs";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";

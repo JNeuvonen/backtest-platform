@@ -19,4 +19,12 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_strategy +
     `/strategy-group/${groupName}`,
+  fetch_balance_snapshot_latest: () =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_balance_snapshot +
+    "/latest",
+  fetch_balance_snapshot_1d_interval: () =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_balance_snapshot +
+    "/1d-interval",
 };

@@ -2,13 +2,18 @@ import { Heading, Spinner } from "@chakra-ui/react";
 import { ColDef, ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import {
+  BinanceSymbolPrice,
+  findCurrentPrice,
   LongShortGroup,
   LongShortTicker,
   StrategiesResponse,
   Trade,
+  TRADE_DIRECTIONS,
 } from "common_js";
 import { Link } from "react-router-dom";
+import { useBinanceSpotPriceInfo } from "src/http/queries";
 import { getLsStrategyPath } from "src/utils";
+import { profitColumnCellRenderer } from "./directionaltab";
 
 const strategyNameCellRenderer = (params: ICellRendererParams) => {
   return (
@@ -34,24 +39,37 @@ const COLUMN_DEFS: ColDef[] = [
     field: "size",
     sortable: true,
     editable: false,
+    aggFunc: "sum",
   },
   {
     headerName: "Open trades",
     field: "openTrades",
     sortable: true,
     editable: false,
+    aggFunc: "sum",
   },
   {
     headerName: "Completed trades",
     field: "closedTrades",
     sortable: true,
     editable: false,
+    aggFunc: "sum",
   },
   {
-    headerName: "Net result",
+    headerName: "Realized profit",
     field: "netResult",
     sortable: true,
     editable: false,
+    cellRenderer: profitColumnCellRenderer,
+    aggFunc: "sum",
+  },
+  {
+    headerName: "Unrealized profit",
+    field: "cumulativeUnrealizedProfit",
+    sortable: true,
+    editable: false,
+    cellRenderer: profitColumnCellRenderer,
+    aggFunc: "sum",
   },
   {
     headerName: "Mean trade (%)",
@@ -65,11 +83,13 @@ const getLsStrategyTableRowFields = (
   strategy: LongShortGroup,
   trades: Trade[],
   longshortTickers: LongShortTicker[],
+  binanceSymbolPrices: BinanceSymbolPrice[],
 ) => {
   let numSymbols = 0;
   let openTrades = 0;
   let completedTrades = 0;
   let cumulativeNetResult = 0;
+  let unrealizedProfit = 0;
 
   longshortTickers.forEach((item) => {
     if (item.long_short_group_id === strategy.id) {
@@ -86,6 +106,18 @@ const getLsStrategyTableRowFields = (
 
       if (!item.close_price) {
         openTrades += 1;
+
+        const latestPrice = findCurrentPrice(item.symbol, binanceSymbolPrices);
+
+        if (!latestPrice) {
+          return;
+        }
+
+        if (item.direction === TRADE_DIRECTIONS.long) {
+          unrealizedProfit += (latestPrice - item.open_price) * item.quantity;
+        } else {
+          unrealizedProfit += (item.open_price - latestPrice) * item.quantity;
+        }
       }
     }
   });
@@ -97,6 +129,7 @@ const getLsStrategyTableRowFields = (
     netResult: cumulativeNetResult,
     meanTradeResultPerc:
       completedTrades !== 0 ? cumulativeNetResult / completedTrades : 0,
+    cumulativeUnrealizedProfit: unrealizedProfit,
   };
 };
 
@@ -113,7 +146,8 @@ export const PairTradeTab = ({
 }: {
   strategiesRes: StrategiesResponse | undefined;
 }) => {
-  if (!strategiesRes) {
+  const binancePriceQuery = useBinanceSpotPriceInfo();
+  if (!strategiesRes || !binancePriceQuery.data) {
     return <Spinner />;
   }
 
@@ -132,6 +166,7 @@ export const PairTradeTab = ({
           item,
           strategiesRes.trades,
           strategiesRes.ls_tickers,
+          binancePriceQuery.data || [],
         ),
       };
 

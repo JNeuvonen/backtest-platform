@@ -2,7 +2,6 @@ import { useBalanceSnapshotsQuery } from "src/http/queries";
 import { Heading, Spinner, Text } from "@chakra-ui/react";
 import { Line, YAxis } from "recharts";
 import { ShareYAxisMultilineChart } from "src/components";
-import { FiRefreshCw } from "react-icons/fi";
 import {
   COLOR_BRAND_PRIMARY,
   COLOR_BRAND_PRIMARY_SHADE_FOUR,

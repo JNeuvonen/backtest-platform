@@ -8,7 +8,9 @@ import {
 import { QUERY_KEYS } from "src/utils";
 import {
   fetchBalanceSnapshots,
+  fetchBalanceSnapshots1DInterval,
   fetchBinancePriceInfo,
+  fetchLatestBalanceSnapshot,
   fetchStrategies,
   fetchStrategyGroup,
 } from "./requests";
@@ -50,5 +52,26 @@ export function useBinanceSpotPriceInfo(): UseQueryResult<
     queryKey: [QUERY_KEYS.fetch_binance_spot_price_info],
     queryFn: () => fetchBinancePriceInfo(),
     refetchInterval: 5000,
+  });
+}
+
+export function useLatestBalanceSnapshot(): UseQueryResult<
+  BalanceSnapshot,
+  unknown
+> {
+  return useQuery<BalanceSnapshot, unknown>({
+    queryKey: [QUERY_KEYS.fetch_latest_balance_snapshot],
+    queryFn: () => fetchLatestBalanceSnapshot(),
+    refetchInterval: 5000,
+  });
+}
+
+export function useBalanceSnapshots1DInterval(): UseQueryResult<
+  BalanceSnapshot[],
+  unknown
+> {
+  return useQuery<BalanceSnapshot[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_latest_balance_snapshot],
+    queryFn: () => fetchBalanceSnapshots1DInterval(),
   });
 }

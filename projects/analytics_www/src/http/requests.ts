@@ -73,3 +73,31 @@ export const fetchBinancePriceInfo = async () => {
     return [] as BinanceSymbolPrice[];
   }
 };
+
+export const fetchLatestBalanceSnapshot = async () => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.fetch_balance_snapshot_latest(),
+    });
+    if (res.success) {
+      return res.data.data;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
+
+export const fetchBalanceSnapshots1DInterval = async () => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.fetch_balance_snapshot_1d_interval(),
+    });
+    if (res.success) {
+      return res.data;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
