@@ -116,8 +116,65 @@ export interface StrategyGroup {
   is_close_only: boolean;
 }
 
+export interface LongShortTicker {
+  id: number;
+  long_short_group_id: number;
+
+  symbol: string;
+  base_asset: string;
+  quote_asset: string;
+  dataset_name: string;
+
+  last_kline_open_time_sec?: number | null;
+  trade_quantity_precision: number;
+
+  is_valid_buy: boolean;
+  is_valid_sell: boolean;
+  is_on_pred_serv_err: boolean;
+}
+
+export interface LongShortPair {
+  id: number;
+  long_short_group_id: number;
+  buy_ticker_id: number;
+  sell_ticker_id: number;
+  buy_side_trade_id: number;
+  sell_side_trade_id: number;
+
+  buy_ticker_dataset_name: string;
+  sell_ticker_dataset_name: string;
+
+  buy_symbol: string;
+  sell_symbol: string;
+  buy_base_asset: string;
+  sell_base_asset: string;
+  buy_quote_asset: string;
+  sell_quote_asset: string;
+
+  buy_qty_precision: number;
+  sell_qty_precision: number;
+  buy_open_time_ms: number;
+  sell_open_time_ms: number;
+  last_loan_attempt_fail_time_ms: number;
+
+  buy_open_price: number;
+  sell_open_price: number;
+  buy_open_qty_in_base: number;
+  buy_open_qty_in_quote: number;
+  sell_open_qty_in_quote: number;
+  debt_open_qty_in_base: number;
+
+  is_no_loan_available_err: boolean;
+  error_in_entering: boolean;
+  in_position: boolean;
+  should_close: boolean;
+  is_trade_finished: boolean;
+}
+
 export interface StrategiesResponse {
   ls_strategies: LongShortGroup[];
+  ls_pairs: LongShortPair[];
+  ls_tickers: LongShortTicker[];
   directional_strategies: Strategy[];
   trades: Trade[];
   strategy_groups: StrategyGroup[];
