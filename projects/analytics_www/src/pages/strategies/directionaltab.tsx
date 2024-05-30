@@ -23,7 +23,6 @@ import {
 import { Link } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
 import {
-  useBalanceSnapshotsQuery,
   useBinanceSpotPriceInfo,
   useLatestBalanceSnapshot,
 } from "src/http/queries";
