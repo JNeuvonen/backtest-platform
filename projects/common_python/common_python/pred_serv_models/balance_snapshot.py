@@ -1,4 +1,5 @@
 from typing import Dict
+from datetime import timedelta
 
 from sqlalchemy import Column, DateTime, Float, Integer, func
 from common_python.pred_serv_orm import Base, Session
@@ -62,3 +63,37 @@ class BalanceSnapshotQuery:
                     .all()
                 )
                 return accounts
+
+    @staticmethod
+    def get_last_snapshot():
+        with LogExceptionContext():
+            with Session() as session:
+                last_snapshot = (
+                    session.query(BalanceSnapshot)
+                    .order_by(BalanceSnapshot.created_at.desc())
+                    .first()
+                )
+                return last_snapshot
+
+    @staticmethod
+    def get_snapshots_with_one_day_interval():
+        with LogExceptionContext():
+            with Session() as session:
+                snapshots = (
+                    session.query(BalanceSnapshot)
+                    .order_by(BalanceSnapshot.created_at.asc())
+                    .all()
+                )
+
+                result = []
+                last_date = None
+
+                for snapshot in snapshots:
+                    if (
+                        last_date is None
+                        or snapshot.created_at >= last_date + timedelta(days=1)
+                    ):
+                        result.append(snapshot)
+                        last_date = snapshot.created_at
+
+                return result
