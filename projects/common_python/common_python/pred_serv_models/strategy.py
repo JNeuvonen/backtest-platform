@@ -213,3 +213,13 @@ class StrategyQuery:
                 return (
                     session.query(Strategy).filter(Strategy.id.in_(strategy_ids)).all()
                 )
+
+    @staticmethod
+    def get_strategies_by_strategy_group_id(strategy_group_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Strategy)
+                    .filter(Strategy.strategy_group_id == strategy_group_id)
+                    .all()
+                )
