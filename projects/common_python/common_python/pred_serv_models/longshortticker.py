@@ -54,3 +54,9 @@ class LongShortTickerQuery:
                     .filter(LongShortTicker.long_short_group_id == group_id)
                     .all()
                 )
+
+    @staticmethod
+    def get_all():
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(LongShortTicker).all()

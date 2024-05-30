@@ -1,12 +1,5 @@
 import { useBalanceSnapshotsQuery } from "src/http/queries";
-import {
-  Heading,
-  Spinner,
-  Stat,
-  StatLabel,
-  StatNumber,
-  Text,
-} from "@chakra-ui/react";
+import { Heading, Spinner, Text } from "@chakra-ui/react";
 import { Line, YAxis } from "recharts";
 import { ShareYAxisMultilineChart } from "src/components";
 import {
@@ -21,12 +14,21 @@ export const RootPage = () => {
   const balanceSnapShots = useBalanceSnapshotsQuery();
 
   const getTickClosestToOneDayAgo = () => {
-    if (!balanceSnapShots.data || balanceSnapShots.data.length === 0)
+    if (
+      !balanceSnapShots ||
+      !balanceSnapShots.data ||
+      balanceSnapShots.data.length === 0
+    )
       return null;
 
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     let closestTick = balanceSnapShots.data[0];
+
+    if (closestTick === undefined) {
+      return null;
+    }
+
     let closestDiff = Math.abs(
       new Date(balanceSnapShots.data[0].created_at).getTime() -
         oneDayAgo.getTime(),
@@ -53,6 +55,11 @@ export const RootPage = () => {
     const oneDayAgo = new Date(Date.now() - 24 * 7 * 60 * 60 * 1000);
 
     let closestTick = balanceSnapShots.data[0];
+
+    if (closestTick === undefined) {
+      return null;
+    }
+
     let closestDiff = Math.abs(
       new Date(balanceSnapShots.data[0].created_at).getTime() -
         oneDayAgo.getTime(),
@@ -132,6 +139,10 @@ export const RootPage = () => {
   const monthFirstTick = getFirstTickOfCurrentMonth();
   const yearsFirstTick = getFirstTickOfCurrentYear();
 
+  if (!lastTick) {
+    return <Spinner />;
+  }
+
   return (
     <div>
       <div>
@@ -143,10 +154,13 @@ export const RootPage = () => {
           }}
         >
           <Heading size={"lg"}>Live dashboard</Heading>
-          <Text fontSize={"13px"}>
-            Last account snapshot:{" "}
-            {getDiffToPresentFormatted(new Date(lastTick.created_at))} ago
-          </Text>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Text fontSize={"13px"}>
+              Last account snapshot:{" "}
+              {getDiffToPresentFormatted(new Date(lastTick.created_at))} ago
+            </Text>
+          </div>
         </div>
         <div style={{ marginTop: "16px" }}>
           <BalanceInfoCard

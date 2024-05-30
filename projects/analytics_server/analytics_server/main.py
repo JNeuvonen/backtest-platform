@@ -9,10 +9,12 @@ from analytics_server.api.v1.user import router as v1_user_router
 from analytics_server.api.v1.balance_snapshot import (
     router as v1_balance_snapshot_router,
 )
+from analytics_server.api.v1.strategies import router as v1_strategy_router
 from fastapi.middleware.cors import CORSMiddleware
 from common_python.server_config import get_service_port
 
 from analytics_server.binance.collect_data import collect_data_loop
+from common_python.pred_serv_models.trade_info_tick import TradeInfoTick
 from common_python.pred_serv_models.trade import TradeQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
@@ -43,6 +45,7 @@ class DataCollectionSservice:
 class Routers:
     V1_USER = "/v1/user"
     V1_BALANCE_SNAPSHOT = "/v1/balance-snapshot"
+    V1_STRATEGY = "/v1/strategy"
 
 
 @asynccontextmanager
@@ -64,6 +67,7 @@ app.add_middleware(
 
 app.include_router(v1_user_router, prefix=Routers.V1_USER)
 app.include_router(v1_balance_snapshot_router, prefix=Routers.V1_BALANCE_SNAPSHOT)
+app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
 
 data_collection_service = DataCollectionSservice()
 

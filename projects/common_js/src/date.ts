@@ -29,3 +29,19 @@ export const getDiffToPresentFormatted = (date: Date) => {
     return `${weeks} ${weeks === 1 ? "week" : "weeks"}`;
   }
 };
+
+export const isSameMonth = (date1: Date, date2: Date) => {
+  if (date1.getFullYear() !== date2.getFullYear()) {
+    return false;
+  }
+  return date1.getMonth() === date2.getMonth();
+};
+
+export const isSameYear = (date1: Date, date2: Date) => {
+  return date1.getFullYear() === date2.getFullYear();
+};
+
+export const isSame24h = (date1: Date, date2: Date) => {
+  const diff = Math.abs(date1.getTime() - date2.getTime());
+  return diff < 24 * 60 * 60 * 1000;
+};

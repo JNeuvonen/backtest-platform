@@ -1,4 +1,4 @@
-export DATABASE_URI="postgresql+psycopg2://postgres:salasana123@localhost/pred_server_integration_tests"
+export DATABASE_URI="postgresql://postgres:salasana123@localhost:5432/live_env_db_dump"
 
 export SERVICE_PORT=8000
 export ENV=DEV
