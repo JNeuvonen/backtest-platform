@@ -179,3 +179,14 @@ export interface StrategiesResponse {
   trades: Trade[];
   strategy_groups: StrategyGroup[];
 }
+
+export interface StrategyGroupResponse {
+  strategy_group: StrategyGroup;
+  strategies: Strategy[];
+  trades: Trade[];
+}
+
+export interface BinanceSymbolPrice {
+  symbol: string;
+  price: string;
+}
