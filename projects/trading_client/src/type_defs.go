@@ -30,6 +30,7 @@ type Strategy struct {
 	QuoteAsset                 string  `json:"quote_asset"`
 	EnterTradeCode             string  `json:"enter_trade_code"`
 	ExitTradeCode              string  `json:"exit_trade_code"`
+	StrategyGroup              string  `json:"strategy_group"`
 	FetchDatasourcesCode       string  `json:"fetch_datasources_code"`
 	DataTransformationsCode    string  `json:"data_transformations_code"`
 	TradeQuantityPrecision     int     `json:"trade_quantity_precision"`
@@ -38,6 +39,7 @@ type Strategy struct {
 	MinimumTimeBetweenTradesMs int     `json:"minimum_time_between_trades_ms"`
 	MaximumKlinesHoldTime      int     `json:"maximum_klines_hold_time"`
 	TimeOnTradeOpenMs          int64   `json:"time_on_trade_open_ms"`
+	LastLoanAttemptFailTimeMs  int64   `json:"last_loan_attempt_fail_time_ms"`
 	QuantityOnTradeOpen        float64 `json:"quantity_on_trade_open"`
 	RemainingPositionOnTrade   float64 `json:"remaining_position_on_trade"`
 	PriceOnTradeOpen           float64 `json:"price_on_trade_open"`
@@ -58,6 +60,7 @@ type Strategy struct {
 	IsDisabled                 bool    `json:"is_disabled"`
 	IsInPosition               bool    `json:"is_in_position"`
 	IsInCloseOnly              bool    `json:"is_in_close_only"`
+	IsNoLoanAvailableErr       bool    `json:"is_no_loan_available_err"`
 }
 
 type LongShortGroup struct {

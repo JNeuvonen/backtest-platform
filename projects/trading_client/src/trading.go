@@ -93,8 +93,10 @@ func closeLoanWithAvailableBalance(bc *BinanceClient, asset string, precision in
 	go func() {
 		time.Sleep(10 * time.Second)
 		res := bc.FetchMarginBalances()
-		freeBalance := GetFreeBalanceForMarginAsset(res, asset)
-		bc.RepayMarginLoan(asset, RoundToPrecisionCloseLoan(freeBalance, precision))
+		if res != nil {
+			freeBalance := GetFreeBalanceForMarginAsset(res, asset)
+			bc.RepayMarginLoan(asset, RoundToPrecisionCloseLoan(freeBalance, precision))
+		}
 	}()
 }
 
@@ -363,6 +365,10 @@ func OpenLongTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 }
 
 func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
+	if strat.IsNoLoanAvailableErr {
+		return
+	}
+
 	price, err := bc.FetchLatestPrice(strat.Symbol)
 	if err != nil {
 		CreateCloudLog(
@@ -377,7 +383,13 @@ func OpenShortTrade(strat Strategy, bc *BinanceClient, sizeUSDT float64) {
 
 	quantity := GetBaseQuantity(sizeUSDT, price, int32(strat.TradeQuantityPrecision))
 
-	err = bc.TakeMarginLoan(strat.BaseAsset, quantity, nil)
+	err = bc.TakeMarginLoan(strat.BaseAsset, quantity, func() {
+		UpdateStrategy(map[string]interface{}{
+			"id":                             int32(strat.ID),
+			"is_no_loan_available_err":       true,
+			"last_loan_attempt_fail_time_ms": GetTimeInMs(),
+		})
+	})
 
 	if err == nil {
 		res := bc.NewMarginOrder(strat.Symbol, quantity, ORDER_SELL, MARKET_ORDER)
