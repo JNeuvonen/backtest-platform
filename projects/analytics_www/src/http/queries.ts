@@ -39,8 +39,9 @@ export function useStrategyGroupQuery(
   groupName: string,
 ): UseQueryResult<StrategyGroupResponse, unknown> {
   return useQuery<StrategyGroupResponse, unknown>({
-    queryKey: [QUERY_KEYS.fetch_balance_snapshots, groupName],
+    queryKey: [QUERY_KEYS.fetch_strategy_group, groupName],
     queryFn: () => fetchStrategyGroup(groupName.toUpperCase()) as any,
+    staleTime: 0,
   });
 }
 

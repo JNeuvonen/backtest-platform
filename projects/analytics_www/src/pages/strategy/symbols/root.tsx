@@ -21,7 +21,7 @@ import {
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChakraInput, ChakraMenu } from "src/components/chakra";
-import { usePathParams } from "src/hooks";
+import { useForceUpdate, usePathParams } from "src/hooks";
 import {
   useBinanceSpotPriceInfo,
   useStrategyGroupQuery,
@@ -118,6 +118,8 @@ export const StrategySymbolsPage = () => {
   const [rowDataInitiated, setRowDataInitiated] = useState(false);
   const [isRowDataChanged, setIsRowDataChanged] = useState(false);
   const filterDrawer = useDisclosure();
+  const bulkChangeAllocationsDrawer = useDisclosure();
+  const forceUpdate = useForceUpdate();
 
   const getRowTradesDict = (strategy: Strategy, trades: Trade[]) => {
     if (!binanceSpotSymbols.data) return {};
@@ -216,24 +218,34 @@ export const StrategySymbolsPage = () => {
   };
 
   useEffect(() => {
-    if (binanceSpotSymbols.data && !rowDataInitiated) {
+    if (
+      binanceSpotSymbols.data &&
+      !rowDataInitiated &&
+      strategyGroupQuery.data &&
+      !strategyGroupQuery.isLoading
+    ) {
       const rows = getSymbolRows();
       setRowData(rows);
       setRowDataCopy(_.cloneDeep(rows));
-      setRowDataInitiated(true);
+      forceUpdate();
+
+      if (rows.length > 0) {
+        setRowDataInitiated(true);
+      }
     }
   }, [strategyGroupQuery.data, binanceSpotSymbols.data]);
 
-  useEffect(() => {
-    if (!symbolFilterInput) {
+  const symbolInputFilterOnChange = (newValue: string) => {
+    if (!newValue) {
       setRowData(_.cloneDeep(rowDataCopy));
     } else {
       const newRowData = rowDataCopy.filter((item) =>
-        item.symbol.toLowerCase().includes(symbolFilterInput.toLowerCase()),
+        item.symbol.toLowerCase().includes(newValue.toLowerCase()),
       );
       setRowData(newRowData);
     }
-  }, [symbolFilterInput]);
+    setSymbolFilterInput(newValue);
+  };
 
   if (!strategyGroupQuery.data || !binanceSpotSymbols.data) {
     return (
@@ -249,7 +261,9 @@ export const StrategySymbolsPage = () => {
         <div>
           <ChakraInput
             label="Filter symbols"
-            onChange={(val) => setSymbolFilterInput(val)}
+            onChange={(val) => {
+              symbolInputFilterOnChange(val);
+            }}
           />
         </div>
       </ChakraDrawer>
@@ -285,23 +299,25 @@ export const StrategySymbolsPage = () => {
           </ChakraMenu>
         </div>
 
-        <div>
-          <div
-            className="ag-theme-alpine-dark"
-            style={{
-              width: "100%",
-              marginTop: "16px",
-            }}
-          >
-            <AgGridReact
-              columnDefs={COLUMN_DEFS as any}
-              paginationAutoPageSize={true}
-              rowData={rowData}
-              domLayout="autoHeight"
-              onCellValueChanged={onCellValueChanged}
-            />
+        {rowData.length > 0 && (
+          <div>
+            <div
+              className="ag-theme-alpine-dark"
+              style={{
+                width: "100%",
+                marginTop: "16px",
+              }}
+            >
+              <AgGridReact
+                columnDefs={COLUMN_DEFS as any}
+                paginationAutoPageSize={true}
+                rowData={rowData}
+                domLayout="autoHeight"
+                onCellValueChanged={onCellValueChanged}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
