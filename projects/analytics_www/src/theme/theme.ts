@@ -1,7 +1,9 @@
 import { extendTheme } from "@chakra-ui/react";
 import { COLOR_BG_PRIMARY_SHADE_ONE, COLOR_CONTENT_PRIMARY } from ".";
+import { buttonTheme } from "./button";
 import { cardTheme } from "./card";
 import { headingTheme } from "./heading";
+import { menuItemTheme } from "./menu";
 
 export const customChakraTheme = extendTheme({
   styles: {
@@ -15,5 +17,7 @@ export const customChakraTheme = extendTheme({
   components: {
     ...headingTheme,
     ...cardTheme,
+    ...buttonTheme,
+    Menu: menuItemTheme,
   },
 });

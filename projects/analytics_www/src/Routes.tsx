@@ -5,7 +5,9 @@ import {
   RootPage,
   StrategiesPage,
   StrategyPage,
+  StrategySymbolsPage,
 } from "./pages";
+import { ViewTradePage } from "./pages/trade";
 import { PATHS } from "./utils";
 
 export const AppRoutes = () => {
@@ -16,6 +18,8 @@ export const AppRoutes = () => {
       <Route path={PATHS.profile} element={<ProfilePage />} />
       <Route path={PATHS.strategy} element={<StrategyPage />} />
       <Route path={PATHS.lsStrategy} element={<LsStrategyPage />} />
+      <Route path={PATHS.strategySymbols} element={<StrategySymbolsPage />} />
+      <Route path={PATHS.viewTradePath} element={<ViewTradePage />} />
     </Routes>
   );
 };

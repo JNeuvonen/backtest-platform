@@ -1,4 +1,5 @@
 import {
+  Button,
   Heading,
   Spinner,
   Stat,
@@ -12,6 +13,7 @@ import {
   getStrategyGroupTradeInfo,
   roundNumberFloor,
 } from "common_js";
+import { useNavigate } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
 import { usePathParams } from "src/hooks";
 import {
@@ -19,13 +21,15 @@ import {
   useBinanceSpotPriceInfo,
   useStrategyGroupQuery,
 } from "src/http/queries";
-import { COLOR_CONTENT_PRIMARY } from "src/theme";
+import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
+import { getStrategySymbolsPath } from "src/utils";
 
 export const StrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
   const strategyGroupQuery = useStrategyGroupQuery(strategyName);
   const binancePriceQuery = useBinanceSpotPriceInfo();
   const balanceSnapShots = useBalanceSnapshotsQuery();
+  const navigate = useNavigate();
 
   if (
     strategyGroupQuery.isLoading ||
@@ -53,17 +57,19 @@ export const StrategyPage = () => {
 
   return (
     <div>
-      <div>
-        <Heading size={"lg"}>
-          {strategyGroupQuery.data.strategy_group.name}
-        </Heading>
-        <Text fontSize={"13px"}>
-          Went live:{" "}
-          {getDiffToPresentFormatted(
-            new Date(strategyGroupQuery.data.strategy_group.created_at),
-          )}{" "}
-          ago
-        </Text>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div>
+          <Heading size={"lg"}>
+            {strategyGroupQuery.data.strategy_group.name}
+          </Heading>
+          <Text fontSize={"13px"}>
+            Went live:{" "}
+            {getDiffToPresentFormatted(
+              new Date(strategyGroupQuery.data.strategy_group.created_at),
+            )}{" "}
+            ago
+          </Text>
+        </div>
       </div>
       <div style={{ marginTop: "8px" }}>
         <ChakraCard>
@@ -137,10 +143,19 @@ export const StrategyPage = () => {
               </Stat>
             </div>
 
+            <div>
+              <Stat color={COLOR_CONTENT_PRIMARY}>
+                <StatLabel>Mean allocation</StatLabel>
+                <StatNumber>
+                  {roundNumberFloor(tradeInfoDict.meanAllocation, 2)}%
+                </StatNumber>
+              </Stat>
+            </div>
+
             {lastBalanceSnapshot && (
               <div>
                 <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Position size</StatLabel>
+                  <StatLabel>Value at risk</StatLabel>
                   <StatNumber>
                     {roundNumberFloor(
                       (tradeInfoDict.positionSize / lastBalanceSnapshot.value) *
@@ -154,6 +169,22 @@ export const StrategyPage = () => {
             )}
           </div>
         </ChakraCard>
+      </div>
+
+      <div
+        style={{
+          marginTop: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={() => navigate(getStrategySymbolsPath(strategyName))}
+        >
+          Strategies
+        </Button>
       </div>
     </div>
   );
