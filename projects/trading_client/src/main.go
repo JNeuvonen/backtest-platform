@@ -1,6 +1,23 @@
 package main
 
+import (
+	"fmt"
+	"os"
+	"runtime/debug"
+)
+
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			stackTrace := string(debug.Stack())
+			CreateCloudLog(
+				fmt.Sprintf("Application panicked: %v\nStack trace: %s", r, stackTrace),
+				LOG_EXCEPTION,
+			)
+			os.Exit(1)
+		}
+	}()
+
 	predServConfig := GetPredServerConfig()
 	tradingConfig := GetTradingConfig()
 	accountName := GetAccountName()
