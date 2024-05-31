@@ -7,3 +7,11 @@ export const getStrategyPath = (strategyName: string) => {
 export const getLsStrategyPath = (strategyName: string) => {
   return PATHS.lsStrategy.replace(PATH_KEYS.strategyName, strategyName);
 };
+
+export const getStrategySymbolsPath = (strategyName: string) => {
+  return PATHS.strategySymbols.replace(PATH_KEYS.strategyName, strategyName);
+};
+
+export const getTradeViewPath = (id: number) => {
+  return PATHS.viewTradePath.replace(PATH_KEYS.id, String(id));
+};
