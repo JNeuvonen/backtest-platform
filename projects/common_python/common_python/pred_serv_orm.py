@@ -42,6 +42,7 @@ class LongShortGroup(Base):
     stop_loss_threshold_perc = Column(Float)
 
     is_disabled = Column(Boolean, default=True)
+    is_in_close_only = Column(Boolean, default=False)
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)
     use_stop_loss_based_close = Column(Boolean)
