@@ -46,6 +46,7 @@ def update_strategy_state(strat: Strategy, req_body: BodyUpdateTradeClose):
             strategy_update_dict = {
                 "remaining_position_on_trade": remaining,
                 "is_in_position": False,
+                "active_trade_id": None,
             }
             StrategyQuery.update_strategy(strat.id, strategy_update_dict)
             RefetchStrategySignalQuery.create_entry({"strategy_id": strat.id})
@@ -54,6 +55,7 @@ def update_strategy_state(strat: Strategy, req_body: BodyUpdateTradeClose):
             strategy_update_dict = {
                 "remaining_position_on_trade": remaining,
                 "is_in_position": True,
+                "active_trade_id": None,
             }
             StrategyQuery.update_strategy(strat.id, strategy_update_dict)
 
