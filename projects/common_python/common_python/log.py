@@ -62,12 +62,6 @@ def LogExceptionContext(
     success_log_msg="",
 ):
     logger = get_logger()
-    if is_dev():
-        stack_frame = capture_stack_frame(
-            inspect.stack()[2].function, get_context_frame_params()
-        )
-
-        logger.info(stack_frame)
     try:
         yield
         if success_log_msg != "":
