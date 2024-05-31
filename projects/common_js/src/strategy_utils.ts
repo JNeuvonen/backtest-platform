@@ -32,6 +32,7 @@ export const getStrategyGroupTradeInfo = (
   let cumulativeUnrealizedProfit = 0;
   let isLongStrategy = true;
   let positionSize = 0;
+  let cumulativeAllocation = 0;
 
   const stratIdSet = new Set();
 
@@ -42,6 +43,10 @@ export const getStrategyGroupTradeInfo = (
       }
       stratIdSet.add(item.id);
       numStrategies += 1;
+
+      if (item.allocated_size_perc) {
+        cumulativeAllocation += item.allocated_size_perc;
+      }
     }
   });
 
@@ -85,5 +90,6 @@ export const getStrategyGroupTradeInfo = (
     numStrategies,
     cumulativeUnrealizedProfit,
     positionSize,
+    meanAllocation: safeDivide(cumulativeAllocation, numStrategies, 0),
   };
 };
