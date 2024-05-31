@@ -9,7 +9,6 @@ import {
   safeDivide,
   TRADE_DIRECTIONS,
 } from "common_js";
-import { info } from "console";
 import { useAppContext } from "src/context";
 import {
   useBinanceSpotPriceInfo,
@@ -56,6 +55,10 @@ export const BottomInfoFooter = () => {
     let tradesPast24h = 0;
 
     const trades = strategiesQuery.data.trades;
+
+    if (!trades) {
+      return null;
+    }
 
     trades.forEach((item) => {
       const latestPrice = findCurrentPrice(
@@ -118,6 +121,10 @@ export const BottomInfoFooter = () => {
   };
 
   const infoDict = getInfoDict();
+
+  if (!infoDict) {
+    return null;
+  }
   return (
     <div
       style={{

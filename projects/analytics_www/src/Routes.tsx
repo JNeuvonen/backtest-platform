@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router-dom";
 import {
+  LsStrategyPage,
   ProfilePage,
   RootPage,
-  StrategyPage,
   StrategiesPage,
-  LsStrategyPage,
+  StrategyPage,
 } from "./pages";
 import { PATHS } from "./utils";
 

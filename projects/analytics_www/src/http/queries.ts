@@ -30,7 +30,7 @@ export function useStrategiesQuery(): UseQueryResult<
   unknown
 > {
   return useQuery<StrategiesResponse, unknown>({
-    queryKey: [QUERY_KEYS.fetch_balance_snapshots],
+    queryKey: [QUERY_KEYS.fetch_strategies],
     queryFn: fetchStrategies,
   });
 }
