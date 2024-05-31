@@ -2,7 +2,10 @@ import {
   Heading,
   MenuButton,
   MenuItem,
+  NumberInput,
+  NumberInputField,
   Spinner,
+  Switch,
   useDisclosure,
 } from "@chakra-ui/react";
 import { ICellRendererParams } from "ag-grid-community";
@@ -29,6 +32,7 @@ import {
 import { profitColumnCellRenderer } from "src/pages/strategies";
 import { getTradeViewPath } from "src/utils";
 import { ChakraDrawer } from "src/components/chakra/Drawer";
+import { BulkUpdateRowsForm } from "./bulkupdaterowsform";
 
 const idCellRenderer = (params: ICellRendererParams) => {
   if (!params.value) {
@@ -104,7 +108,7 @@ const COLUMN_DEFS: any = [
     headerName: "Should close",
     field: "shouldClose",
     sortable: true,
-    editable: false,
+    editable: true,
   },
 ];
 
@@ -118,7 +122,7 @@ export const StrategySymbolsPage = () => {
   const [rowDataInitiated, setRowDataInitiated] = useState(false);
   const [isRowDataChanged, setIsRowDataChanged] = useState(false);
   const filterDrawer = useDisclosure();
-  const bulkChangeAllocationsDrawer = useDisclosure();
+  const bulkUpdateStrategies = useDisclosure();
   const forceUpdate = useForceUpdate();
 
   const getRowTradesDict = (strategy: Strategy, trades: Trade[]) => {
@@ -213,7 +217,7 @@ export const StrategySymbolsPage = () => {
       return row;
     });
     setRowData(updatedRowData);
-    setRowData(cloneDeep(updatedRowDataCopy));
+    setRowDataCopy(cloneDeep(updatedRowDataCopy));
     setIsRowDataChanged(true);
   };
 
@@ -247,7 +251,7 @@ export const StrategySymbolsPage = () => {
     setSymbolFilterInput(newValue);
   };
 
-  if (!strategyGroupQuery.data || !binanceSpotSymbols.data) {
+  if (!strategyGroupQuery.data) {
     return (
       <div>
         <Spinner />
@@ -266,6 +270,29 @@ export const StrategySymbolsPage = () => {
             }}
           />
         </div>
+      </ChakraDrawer>
+      <ChakraDrawer
+        {...bulkUpdateStrategies}
+        title={"Bulk update strategies"}
+        drawerContentStyles={{ maxWidth: "40%" }}
+      >
+        <BulkUpdateRowsForm
+          onSubmit={(values) => {
+            const newRowData = rowDataCopy.map((item) => {
+              return {
+                ...item,
+                closeOnly: values.closeOnly,
+                shouldClose: values.shouldCloseTrade,
+                allocation: values.allocationPerSymbol,
+              };
+            });
+
+            setRowDataCopy(newRowData);
+            setRowData(_.cloneDeep(newRowData));
+            forceUpdate();
+          }}
+          onClose={bulkUpdateStrategies.onClose}
+        />
       </ChakraDrawer>
       <div>
         <div>
@@ -290,8 +317,11 @@ export const StrategySymbolsPage = () => {
             >
               Save changes
             </MenuItem>
-            <MenuItem icon={<MdOutlineDataArray />} onClick={() => {}}>
-              Change allocation to every symbol
+            <MenuItem
+              icon={<MdOutlineDataArray />}
+              onClick={bulkUpdateStrategies.onOpen}
+            >
+              Run changes on every symbol
             </MenuItem>
             <MenuItem icon={<FaFilter />} onClick={filterDrawer.onOpen}>
               Filter

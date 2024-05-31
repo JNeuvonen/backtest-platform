@@ -131,7 +131,7 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Short positions</StatLabel>
-                <StatNumber>{lastTick.num_long_positions}</StatNumber>
+                <StatNumber>{lastTick.num_short_positions}</StatNumber>
                 <ChakraStatHelpText
                   num={
                     lastTick.num_short_positions -
