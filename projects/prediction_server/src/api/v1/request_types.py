@@ -53,6 +53,60 @@ class BodyCreateStrategy(BaseModel):
     data_transformations: List[DataTransformation] = Field(default_factory=list)
 
 
+class BodyUpdateStrategy(BaseModel):
+    id: Optional[int] = None
+    active_trade_id: Optional[int] = None
+    strategy_group_id: Optional[int] = None
+    name: Optional[str] = None
+    strategy_group: Optional[str] = None
+
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    symbol: Optional[str] = None
+    base_asset: Optional[str] = None
+    quote_asset: Optional[str] = None
+    enter_trade_code: Optional[str] = None
+    exit_trade_code: Optional[str] = None
+    fetch_datasources_code: Optional[str] = None
+
+    candle_interval: Optional[str] = None
+    trade_quantity_precision: Optional[int] = None
+    priority: Optional[int] = None
+    num_req_klines: Optional[int] = None
+    kline_size_ms: Optional[int] = None
+    last_kline_open_time_sec: Optional[int] = None
+    minimum_time_between_trades_ms: Optional[int] = None
+    maximum_klines_hold_time: Optional[int] = None
+    time_on_trade_open_ms: Optional[int] = None
+    last_loan_attempt_fail_time_ms: Optional[int] = None
+
+    price_on_trade_open: Optional[float] = None
+    quantity_on_trade_open: Optional[float] = None
+    remaining_position_on_trade: Optional[float] = None
+    allocated_size_perc: Optional[float] = None
+    take_profit_threshold_perc: Optional[float] = None
+    stop_loss_threshold_perc: Optional[float] = None
+
+    use_time_based_close: Optional[bool] = None
+    use_profit_based_close: Optional[bool] = None
+    use_stop_loss_based_close: Optional[bool] = None
+    use_taker_order: Optional[bool] = None
+
+    should_enter_trade: Optional[bool] = None
+    should_close_trade: Optional[bool] = None
+    should_calc_stops_on_pred_serv: Optional[bool] = None
+
+    is_on_pred_serv_err: Optional[bool] = None
+    is_paper_trade_mode: Optional[bool] = None
+    is_leverage_allowed: Optional[bool] = None
+    is_short_selling_strategy: Optional[bool] = None
+    is_disabled: Optional[bool] = None
+    is_in_close_only: Optional[bool] = None
+    is_in_position: Optional[bool] = None
+    is_no_loan_available_err: Optional[bool] = None
+
+
 class BodyCreateStrategyGroup(BaseModel):
     strategy_group: str
     enter_trade_code: str
@@ -176,6 +230,7 @@ class BodyPutStrategy(BaseModel):
     maximum_klines_hold_time: Optional[int] = None
     time_on_trade_open_ms: Optional[int] = None
     price_on_trade_open: Optional[float] = None
+    last_loan_attempt_fail_time_ms: Optional[int] = None
     allocated_size_perc: Optional[float] = None
     take_profit_threshold_perc: Optional[float] = None
     stop_loss_threshold_perc: Optional[float] = None
@@ -190,6 +245,7 @@ class BodyPutStrategy(BaseModel):
     is_short_selling_strategy: Optional[bool] = None
     is_disabled: Optional[bool] = None
     is_in_position: Optional[bool] = None
+    is_no_loan_available_err: Optional[bool] = None
 
 
 class BodyUpdateTradeClose(BaseModel):

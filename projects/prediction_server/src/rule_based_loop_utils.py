@@ -237,6 +237,9 @@ class RuleBasedLoopManager:
                         updated_strategies_dict[
                             local_dataset.strategy.id
                         ] = updated_fields.copy()
+                        updated_strategies_dict[local_dataset.strategy.id][
+                            "is_no_loan_available_err"
+                        ] = False
                         local_dataset.updated_fields = {}
                         local_dataset.new_data_arrived = False
 

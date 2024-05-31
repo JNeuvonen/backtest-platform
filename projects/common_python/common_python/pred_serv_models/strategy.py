@@ -43,6 +43,7 @@ class Strategy(Base):
     minimum_time_between_trades_ms = Column(Integer)
     maximum_klines_hold_time = Column(Integer, nullable=True)
     time_on_trade_open_ms = Column(BigInteger, default=0)
+    last_loan_attempt_fail_time_ms = Column(BigInteger, default=0)
 
     price_on_trade_open = Column(Float)
     quantity_on_trade_open = Column(Float, default=0)
@@ -67,6 +68,7 @@ class Strategy(Base):
     is_disabled = Column(Boolean, default=False)
     is_in_close_only = Column(Boolean, default=False)
     is_in_position = Column(Boolean, default=False)
+    is_no_loan_available_err = Column(Boolean, default=False)
 
 
 class StrategyQuery:

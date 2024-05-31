@@ -8,6 +8,7 @@ from api.v1.request_types import (
     BodyCreateStrategy,
     BodyCreateStrategyGroup,
     BodyPutStrategy,
+    BodyUpdateStrategy,
     BodyUpdateTradeClose,
 )
 from middleware import api_key_auth
@@ -25,6 +26,7 @@ router = APIRouter()
 class RoutePaths:
     STRATEGY = "/"
     UPDATE_TRADE_CLOSE = "/{id}/close-trade"
+    UPDATE_STRATEGY = "/{id}"
     CREATE_STRATEGY_GROUP = "/strategy-group"
 
 
