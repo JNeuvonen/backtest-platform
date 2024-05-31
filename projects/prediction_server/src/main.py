@@ -107,6 +107,9 @@ def rule_based_loop(stop_event):
             strategies_info = []
 
             for strategy in state_manager.strategies:
+                if strategy.stop_processing_new_candles is True:
+                    continue
+
                 trading_decisions = gen_trading_decisions(strategy, state_manager)
                 update_strategies_state_dict(
                     strategy, trading_decisions, current_state_dict, strategies_info
