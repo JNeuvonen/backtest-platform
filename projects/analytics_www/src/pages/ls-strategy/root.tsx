@@ -24,7 +24,7 @@ import {
   useLongshortGroup,
 } from "src/http/queries";
 import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
-import { getLongShortTickersPath, getStrategySymbolsPath } from "src/utils";
+import { getLongShortTickersPath } from "src/utils";
 
 export const LsStrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
