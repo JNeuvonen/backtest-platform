@@ -129,7 +129,7 @@ const getLsStrategyTableRowFields = (
 
   trades.forEach((item) => {
     if (item.pair_trade_group_id === strategy.id) {
-      if (!item.close_price) {
+      if (!item.percent_result) {
         openTrades += 1;
 
         const latestPrice = findCurrentPrice(item.symbol, binanceSymbolPrices);

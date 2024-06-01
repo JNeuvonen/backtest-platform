@@ -102,6 +102,20 @@ export const fetchBalanceSnapshots1DInterval = async () => {
   }
 };
 
+export const fetchLongShortGroup = async (groupName: string) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.fetch_longshort_group(groupName),
+    });
+    if (res.success) {
+      return res.data;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
+
 export const updateManyStrategies = async (payload) => {
   const res = await httpReq({
     url: ANALYTICS_SERV_API.update_many_strateies(),

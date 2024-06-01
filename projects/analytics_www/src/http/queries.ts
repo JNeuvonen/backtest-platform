@@ -2,6 +2,7 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import {
   BalanceSnapshot,
   BinanceSymbolPrice,
+  LongShortGroupResponse,
   StrategiesResponse,
   StrategyGroupResponse,
 } from "common_js";
@@ -11,6 +12,7 @@ import {
   fetchBalanceSnapshots1DInterval,
   fetchBinancePriceInfo,
   fetchLatestBalanceSnapshot,
+  fetchLongShortGroup,
   fetchStrategies,
   fetchStrategyGroup,
 } from "./requests";
@@ -74,5 +76,14 @@ export function useBalanceSnapshots1DInterval(): UseQueryResult<
   return useQuery<BalanceSnapshot[], unknown>({
     queryKey: [QUERY_KEYS.fetch_latest_balance_snapshot],
     queryFn: () => fetchBalanceSnapshots1DInterval(),
+  });
+}
+
+export function useLongshortGroup(
+  groupName: string,
+): UseQueryResult<LongShortGroupResponse, unknown> {
+  return useQuery<LongShortGroupResponse, unknown>({
+    queryKey: [QUERY_KEYS.fetch_longshort_group, groupName],
+    queryFn: () => fetchLongShortGroup(groupName),
   });
 }

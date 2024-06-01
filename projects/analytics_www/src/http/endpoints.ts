@@ -19,6 +19,10 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_strategy +
     `/strategy-group/${groupName}`,
+  fetch_longshort_group: (groupName: string) =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_strategy +
+    `/longshort-group/${groupName}`,
   fetch_balance_snapshot_latest: () =>
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_balance_snapshot +
