@@ -1,4 +1,6 @@
 import {
+  Badge,
+  Button,
   Heading,
   Spinner,
   Stat,
@@ -13,6 +15,7 @@ import {
   roundNumberFloor,
   safeDivide,
 } from "common_js";
+import { useNavigate } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
 import { usePathParams } from "src/hooks";
 import {
@@ -20,13 +23,15 @@ import {
   useLatestBalanceSnapshot,
   useLongshortGroup,
 } from "src/http/queries";
-import { COLOR_CONTENT_PRIMARY } from "src/theme";
+import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
+import { getLongShortTickersPath, getStrategySymbolsPath } from "src/utils";
 
 export const LsStrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
   const longshortGroupQuery = useLongshortGroup(strategyName);
   const binancePriceQuery = useBinanceSpotPriceInfo();
   const lastBalanceSnapshot = useLatestBalanceSnapshot();
+  const navigate = useNavigate();
 
   if (!longshortGroupQuery.data || !binancePriceQuery.data) {
     return (
@@ -36,6 +41,18 @@ export const LsStrategyPage = () => {
     );
   }
 
+  const getStateBadges = () => {
+    if (longshortGroupQuery.data.group.is_disabled) {
+      return <Badge colorScheme="red">Disabled</Badge>;
+    }
+
+    if (longshortGroupQuery.data.group.is_in_close_only) {
+      return <Badge colorScheme="red">Close only</Badge>;
+    }
+
+    return <Badge colorScheme="green">Live</Badge>;
+  };
+
   const infoDict = getLongShortGroupTradeInfo(
     longshortGroupQuery.data,
     binancePriceQuery.data,
@@ -44,17 +61,28 @@ export const LsStrategyPage = () => {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <Heading size={"lg"}>
-            {longshortGroupQuery.data.group.name.replace("{SYMBOL}_", "")}
-          </Heading>
-          <Text fontSize={"13px"}>
-            Went live:{" "}
-            {getDiffToPresentFormatted(
-              new Date(longshortGroupQuery.data.group.created_at),
-            )}{" "}
-            ago
-          </Text>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <div>
+            <Heading size={"lg"}>
+              {longshortGroupQuery.data.group.name.replace("{SYMBOL}_", "")}
+            </Heading>
+            <Text fontSize={"13px"}>
+              Went live:{" "}
+              {getDiffToPresentFormatted(
+                new Date(longshortGroupQuery.data.group.created_at),
+              )}{" "}
+              ago
+            </Text>
+          </div>
+
+          <div>{getStateBadges()}</div>
         </div>
       </div>
 
@@ -187,6 +215,21 @@ export const LsStrategyPage = () => {
             )}
           </div>
         </ChakraCard>
+      </div>
+      <div
+        style={{
+          marginTop: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={() => navigate(getLongShortTickersPath(strategyName))}
+        >
+          Tickers
+        </Button>
       </div>
     </div>
   );
