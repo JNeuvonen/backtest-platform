@@ -60,6 +60,8 @@ export interface Strategy {
 export interface LongShortGroup {
   id: number;
   name: string;
+  created_at: Date;
+  updated_at: Date;
   candle_interval?: string;
   buy_cond?: string;
   sell_cond?: string;
@@ -202,4 +204,12 @@ export interface LongShortTrade {
   percent_result: number;
   open_time_ms: number;
   close_time_ms: number;
+}
+
+export interface LongShortGroupResponse {
+  group: LongShortGroup;
+  pairs: LongShortPair[];
+  tickers: LongShortTicker[];
+  completed_trades: LongShortTrade[];
+  trades: Trade[];
 }

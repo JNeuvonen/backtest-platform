@@ -1,5 +1,11 @@
 import { safeDivide } from "./math";
-import { BinanceSymbolPrice, Strategy, StrategyGroup, Trade } from "./types";
+import {
+  BinanceSymbolPrice,
+  LongShortGroupResponse,
+  Strategy,
+  StrategyGroup,
+  Trade,
+} from "./types";
 
 export const TRADE_DIRECTIONS = {
   long: "LONG",
@@ -91,5 +97,69 @@ export const getStrategyGroupTradeInfo = (
     cumulativeUnrealizedProfit,
     positionSize,
     meanAllocation: safeDivide(cumulativeAllocation, numStrategies, 0),
+  };
+};
+
+export const getLongShortGroupTradeInfo = (
+  longShortGroupRes: LongShortGroupResponse,
+  latestPrices: BinanceSymbolPrice[],
+) => {
+  let openTrades = 0;
+  let cumulativeNetResult = 0;
+  let cumulativePercResult = 0;
+  let cumulativeHoldTimeMs = 0;
+  let cumulativeUnrealizedProfit = 0;
+  let positionSize = 0;
+  let longSidePositions = 0;
+  let shortSidePositions = 0;
+
+  longShortGroupRes.completed_trades.forEach((item) => {
+    cumulativeNetResult += item.net_result;
+    cumulativePercResult += item.percent_result;
+    cumulativeHoldTimeMs += item.close_time_ms - item.open_time_ms;
+  });
+
+  const openTradesArr = longShortGroupRes.trades;
+  const numClosedTrades = longShortGroupRes.completed_trades.length;
+
+  openTradesArr.forEach((item) => {
+    if (!item.percent_result) {
+      const latestPrice = findCurrentPrice(item.symbol, latestPrices);
+      openTrades += 1;
+
+      if (!latestPrice) return;
+
+      if (item.direction === TRADE_DIRECTIONS.long) {
+        const unrealizedProfit =
+          (latestPrice - item.open_price) * item.quantity;
+        cumulativeUnrealizedProfit += unrealizedProfit;
+        longSidePositions += latestPrice * item.quantity;
+      } else {
+        const unrealizedProfit =
+          (item.open_price - latestPrice) * item.quantity;
+        cumulativeUnrealizedProfit += unrealizedProfit;
+        shortSidePositions += latestPrice * item.quantity;
+      }
+    }
+  });
+
+  return {
+    openTrades,
+    closedTrades: numClosedTrades,
+    totalTrades: openTrades + numClosedTrades,
+    cumulativePercResult,
+    cumulativeNetResult,
+    meanTradeResult: safeDivide(cumulativePercResult, numClosedTrades, 0),
+    numStrategies: longShortGroupRes.tickers.length,
+    cumulativeUnrealizedProfit,
+    positionSize,
+    meanPositionTimeMs: safeDivide(cumulativeHoldTimeMs, numClosedTrades, 0),
+    longSidePositions,
+    shortSidePositions,
+    meanAllocation: safeDivide(
+      longShortGroupRes.group.max_leverage_ratio || 0,
+      longShortGroupRes.group.max_simultaneous_positions || 0,
+      0,
+    ),
   };
 };
