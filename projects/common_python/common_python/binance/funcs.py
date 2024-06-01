@@ -50,7 +50,14 @@ def get_account_assets_state():
         netAsset = float(item["netAsset"])
 
         if free != 0 or locked != 0 or borrowed != 0 or interest != 0 or netAsset != 0:
-            user_asset = BinanceUserAsset(**item)
+            user_asset = BinanceUserAsset(
+                asset=item["asset"],
+                borrowed=borrowed,
+                locked=locked,
+                interest=interest,
+                netAsset=netAsset,
+                free=free,
+            )
             ret.append(user_asset)
 
     return ret
