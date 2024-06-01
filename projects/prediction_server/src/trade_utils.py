@@ -207,7 +207,9 @@ def update_trade_close(
     TradeQuery.update_trade(
         trade_id,
         {
-            "close_price": float(order.price),
+            "close_price": safe_divide(
+                float(order.origQty), float(order.cummulativeQuoteQty), 0
+            ),
             "close_time_ms": order.transactTime,
             "net_result": net_result,
             "percent_result": perc_result,
