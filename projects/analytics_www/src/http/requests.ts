@@ -101,3 +101,13 @@ export const fetchBalanceSnapshots1DInterval = async () => {
     return {};
   }
 };
+
+export const updateManyStrategies = async (payload) => {
+  const res = await httpReq({
+    url: ANALYTICS_SERV_API.update_many_strateies(),
+    data: payload,
+    method: "PUT",
+    autoNofifyOnError: true,
+  });
+  return res;
+};

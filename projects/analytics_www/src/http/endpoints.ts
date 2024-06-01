@@ -27,4 +27,8 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_balance_snapshot +
     "/1d-interval",
+  update_many_strateies: () =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_strategy +
+    "/update-many",
 };

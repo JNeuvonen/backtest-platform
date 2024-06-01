@@ -8,11 +8,13 @@ const BULK_UPDATE_SYMBOLS_FORM_KEYS = {
   closeOnly: "closeOnly",
   shouldCloseTrade: "shouldCloseTrade",
   allocationPerSymbol: "allocationPerSymbol",
+  stopProcessingNewCandles: "stopProcessingNewCandles",
 };
 
 interface FormTypes {
   closeOnly: boolean;
   shouldCloseTrade: boolean;
+  stopProcessingNewCandles: boolean;
   allocationPerSymbol: number;
 }
 
@@ -25,15 +27,19 @@ export const BulkUpdateRowsForm = ({ onSubmit, onClose }: Props) => {
   return (
     <div>
       <Formik
-        initialValues={{
-          [BULK_UPDATE_SYMBOLS_FORM_KEYS.closeOnly]: false,
-          [BULK_UPDATE_SYMBOLS_FORM_KEYS.shouldCloseTrade]: false,
-          [BULK_UPDATE_SYMBOLS_FORM_KEYS.allocationPerSymbol]: 2,
-        }}
+        initialValues={
+          {
+            [BULK_UPDATE_SYMBOLS_FORM_KEYS.closeOnly]: false,
+            [BULK_UPDATE_SYMBOLS_FORM_KEYS.shouldCloseTrade]: false,
+            [BULK_UPDATE_SYMBOLS_FORM_KEYS.stopProcessingNewCandles]: false,
+            [BULK_UPDATE_SYMBOLS_FORM_KEYS.allocationPerSymbol]: 2,
+          } as any
+        }
         onSubmit={(values: FormTypes) => {
           onSubmit({
             closeOnly: values.closeOnly,
             shouldCloseTrade: values.shouldCloseTrade,
+            stopProcessingNewCandles: values.stopProcessingNewCandles,
             allocationPerSymbol: values.allocationPerSymbol,
           });
           onClose();
@@ -63,6 +69,23 @@ export const BulkUpdateRowsForm = ({ onSubmit, onClose }: Props) => {
               component={({ field, form }) => {
                 return (
                   <WithLabel label={"Should close trade"}>
+                    <Switch
+                      isChecked={field.value}
+                      onChange={() =>
+                        form.setFieldValue(field.name, !field.value)
+                      }
+                    />
+                  </WithLabel>
+                );
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "16px" }}>
+            <Field
+              name={BULK_UPDATE_SYMBOLS_FORM_KEYS.stopProcessingNewCandles}
+              component={({ field, form }) => {
+                return (
+                  <WithLabel label={"Stop processing new candles"}>
                     <Switch
                       isChecked={field.value}
                       onChange={() =>

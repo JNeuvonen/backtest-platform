@@ -1,13 +1,16 @@
-from common_python.auth.oauth2 import verify_access_token
+from typing import Dict
+from common_python.auth.oauth2 import get_user, verify_access_token
 from common_python.http_utils import HttpResponse
 from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.pred_serv_models.trade import TradeQuery
+from common_python.pred_serv_models.user import User
 from common_python.pred_serv_orm import StrategyGroup
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.strategy_group import StrategyGroupQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
-from fastapi import APIRouter, Depends
+from common_python.pydantic_models import BodyAnalyticsServiceUpdate
+from fastapi import APIRouter, Depends, Response, status
 
 
 router = APIRouter()
@@ -16,6 +19,7 @@ router = APIRouter()
 class RoutePaths:
     ROOT = "/"
     STRATEGY_BY_GROUP = "/strategy-group/{group_name}"
+    UPDATE_MANY = "/update-many"
 
 
 @router.get(RoutePaths.ROOT)
@@ -57,3 +61,28 @@ async def get_strategies_by_group(
             "strategies": strategies,
             "trades": trades,
         }
+
+
+@router.put(RoutePaths.UPDATE_MANY)
+async def put_update_many(
+    body: BodyAnalyticsServiceUpdate, user: User = Depends(get_user)
+):
+    with HttpResponse():
+        if user.access_level < 10:
+            raise Exception("Authorization failed")
+
+        update_dict: Dict[int, Dict] = {}
+
+        for item in body.strategies:
+            update_dict[item.id] = {}
+            update_dict[item.id]["allocated_size_perc"] = item.allocation_size_perc
+            update_dict[item.id]["should_close_trade"] = bool(item.should_close_trade)
+            update_dict[item.id]["is_in_close_only"] = bool(item.is_in_close_only)
+            update_dict[item.id]["stop_processing_new_candles"] = bool(
+                item.stop_processing_new_candles
+            )
+            update_dict[item.id]["id"] = item.id
+        StrategyQuery.update_multiple_strategies(update_dict)
+        return Response(
+            content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
+        )

@@ -5,7 +5,6 @@ import {
   NumberInput,
   NumberInputField,
   Spinner,
-  Switch,
   useDisclosure,
 } from "@chakra-ui/react";
 import { ICellRendererParams } from "ag-grid-community";
@@ -33,6 +32,8 @@ import { profitColumnCellRenderer } from "src/pages/strategies";
 import { getTradeViewPath } from "src/utils";
 import { ChakraDrawer } from "src/components/chakra/Drawer";
 import { BulkUpdateRowsForm } from "./bulkupdaterowsform";
+import { updateManyStrategies } from "src/http";
+import { toast } from "react-toastify";
 
 const idCellRenderer = (params: ICellRendererParams) => {
   if (!params.value) {
@@ -95,6 +96,12 @@ const COLUMN_DEFS: any = [
   {
     headerName: "Close only",
     field: "closeOnly",
+    sortable: true,
+    editable: true,
+  },
+  {
+    headerName: "Stop processing new candles",
+    field: "stopProcessingNewCandles",
     sortable: true,
     editable: true,
   },
@@ -196,6 +203,9 @@ export const StrategySymbolsPage = () => {
         shouldEnter: item.should_enter_trade,
         shouldClose: item.should_close_trade,
         activeTradeId: item.active_trade_id,
+        stopProcessingNewCandles: item.stop_processing_new_candles
+          ? true
+          : false,
       });
     });
 
@@ -251,6 +261,38 @@ export const StrategySymbolsPage = () => {
     setSymbolFilterInput(newValue);
   };
 
+  const findStrategyBasedOnSymbol = (symbol: string) => {
+    let strategy = null;
+    strategyGroupQuery.data.strategies.forEach((item) => {
+      if (item.symbol === symbol) {
+        strategy = item;
+      }
+    });
+    return strategy;
+  };
+
+  const syncWithServer = async () => {
+    const payload = [];
+
+    rowDataCopy.forEach((item) => {
+      const strategy = findStrategyBasedOnSymbol(item.symbol);
+      const strategyInfo = {
+        id: strategy.id,
+        allocation_size_perc: item.allocation,
+        should_close_trade: item.shouldClose,
+        is_in_close_only: item.closeOnly,
+        stop_processing_new_candles: item.stopProcessingNewCandles,
+      };
+      payload.push(strategyInfo);
+    });
+
+    const res = await updateManyStrategies({ strategies: payload });
+
+    if (res.success) {
+      toast.success("Updated strategies", { theme: "dark" });
+    }
+  };
+
   if (!strategyGroupQuery.data) {
     return (
       <div>
@@ -284,11 +326,13 @@ export const StrategySymbolsPage = () => {
                 closeOnly: values.closeOnly,
                 shouldClose: values.shouldCloseTrade,
                 allocation: values.allocationPerSymbol,
+                stopProcessingNewCandles: values.stopProcessingNewCandles,
               };
             });
 
             setRowDataCopy(newRowData);
             setRowData(_.cloneDeep(newRowData));
+            setIsRowDataChanged(true);
             forceUpdate();
           }}
           onClose={bulkUpdateStrategies.onClose}
@@ -312,7 +356,9 @@ export const StrategySymbolsPage = () => {
           <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
             <MenuItem
               icon={<CgSync />}
-              onClick={() => {}}
+              onClick={() => {
+                syncWithServer();
+              }}
               isDisabled={!isRowDataChanged}
             >
               Save changes

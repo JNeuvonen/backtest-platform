@@ -1,11 +1,12 @@
 import { DiskManager } from "common_js";
+import { toast } from "react-toastify";
 import { DISK_KEYS } from "src/utils/keys";
 
 interface ErrorOptions {
   errorNotifyUI?: boolean;
   customErrorMsgGeneratorCallback?: (error: string) => string;
   errorTitle?: string;
-  onErrorCallback?: () => void;
+  onErrorCallback?: (error: string) => void;
 }
 
 export interface HttpRequestOptions {
@@ -16,6 +17,7 @@ export interface HttpRequestOptions {
   headers?: Record<string, string>;
   errorOptions?: ErrorOptions;
   onSuccessCallback?: (data?: any, params?: Record<string, string>) => void;
+  autoNofifyOnError?: boolean;
 }
 
 export interface HttpResponse<T = any> {
@@ -34,6 +36,7 @@ export const httpReq = async <T = any>({
   headers = {},
   errorOptions = {},
   onSuccessCallback,
+  autoNofifyOnError = false,
 }: HttpRequestOptions): Promise<HttpResponse<T>> => {
   const { onErrorCallback = undefined } = errorOptions;
 
@@ -63,8 +66,11 @@ export const httpReq = async <T = any>({
 
     const response = await fetch(urlWithParams.toString(), options);
 
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType?.includes("application/json");
+
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = isJson ? await response.json() : await response.text();
       const errorMsg = `HTTP error! Status: ${response.status}, Detail: ${
         response.statusText
       }, Error Message: ${errorData.message || ""}`;
@@ -72,7 +78,9 @@ export const httpReq = async <T = any>({
       throw new Error(errorMsg);
     }
 
-    const responseData: T = await response.json();
+    const responseData: T = isJson
+      ? await response.json()
+      : await response.text();
 
     if (onSuccessCallback) {
       onSuccessCallback(data, params);
@@ -84,7 +92,11 @@ export const httpReq = async <T = any>({
     };
   } catch (error) {
     if (onErrorCallback) {
-      onErrorCallback();
+      onErrorCallback(error.message);
+    }
+
+    if (autoNofifyOnError) {
+      toast.error(error.message, { theme: "dark" });
     }
     return {
       success: false,
