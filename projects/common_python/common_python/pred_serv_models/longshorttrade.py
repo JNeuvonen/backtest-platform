@@ -47,3 +47,14 @@ class LongShortTradeQuery:
             with Session() as session:
                 trades = session.query(LongShortTrade).all()
                 return trades
+
+    @staticmethod
+    def fetch_all_by_group_id(long_short_group_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                trades = (
+                    session.query(LongShortTrade)
+                    .filter(LongShortTrade.long_short_group_id == long_short_group_id)
+                    .all()
+                )
+                return trades

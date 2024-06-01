@@ -52,3 +52,14 @@ class LongShortGroupQuery:
                     .first()
                 )
                 return entry
+
+    @staticmethod
+    def get_by_name(name: str):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = (
+                    session.query(LongShortGroup)
+                    .filter(LongShortGroup.name == name)
+                    .first()
+                )
+                return entry

@@ -20,6 +20,7 @@ router = APIRouter()
 class RoutePaths:
     ROOT = "/"
     STRATEGY_BY_GROUP = "/strategy-group/{group_name}"
+    LONGSHORT_BY_GROUP = "/longshort-group/{group_name}"
     UPDATE_MANY = "/update-many"
 
 
@@ -63,6 +64,27 @@ async def get_strategies_by_group(
             "strategy_group": strategy_group,
             "strategies": strategies,
             "trades": trades,
+        }
+
+
+@router.get(RoutePaths.LONGSHORT_BY_GROUP)
+async def get_longshort_strategies_by_group(
+    group_name: str, token: str = Depends(verify_access_token)
+):
+    with HttpResponse():
+        longshort_group = LongShortGroupQuery.get_by_name("{SYMBOL}_" + group_name)
+        if longshort_group is None:
+            raise Exception("No longshort group found for name: " + group_name)
+
+        longshort_tickers = LongShortTickerQuery.get_all_by_group_id(longshort_group.id)
+        longshort_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_group.id)
+        longshort_trades = LongShortTradeQuery.fetch_all_by_group_id(longshort_group.id)
+
+        return {
+            "tickers": longshort_tickers,
+            "pairs": longshort_pairs,
+            "group": longshort_group,
+            "trades": longshort_trades,
         }
 
 
