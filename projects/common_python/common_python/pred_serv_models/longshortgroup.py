@@ -59,7 +59,7 @@ class LongShortGroupQuery:
             with Session() as session:
                 entry = (
                     session.query(LongShortGroup)
-                    .filter(LongShortGroup.name == name)
+                    .filter(LongShortGroup.name.ilike(name))
                     .first()
                 )
                 return entry

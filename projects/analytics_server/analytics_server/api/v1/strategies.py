@@ -79,12 +79,14 @@ async def get_longshort_strategies_by_group(
         longshort_tickers = LongShortTickerQuery.get_all_by_group_id(longshort_group.id)
         longshort_pairs = LongShortPairQuery.get_pairs_by_group_id(longshort_group.id)
         longshort_trades = LongShortTradeQuery.fetch_all_by_group_id(longshort_group.id)
+        trades = TradeQuery.fetch_by_longshort_group_id(longshort_group.id)
 
         return {
             "tickers": longshort_tickers,
             "pairs": longshort_pairs,
             "group": longshort_group,
-            "trades": longshort_trades,
+            "completed_trades": longshort_trades,
+            "trades": trades,
         }
 
 

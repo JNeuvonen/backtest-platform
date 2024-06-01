@@ -99,3 +99,11 @@ class TradeQuery:
         with LogExceptionContext():
             with Session() as session:
                 return session.query(Trade).filter(Trade.id.in_(trade_ids)).all()
+
+    @staticmethod
+    def fetch_by_longshort_group_id(id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                return (
+                    session.query(Trade).filter(Trade.pair_trade_group_id == id).all()
+                )
