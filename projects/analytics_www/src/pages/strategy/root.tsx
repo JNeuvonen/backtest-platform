@@ -183,7 +183,7 @@ export const StrategyPage = () => {
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => navigate(getStrategySymbolsPath(strategyName))}
         >
-          Strategies
+          Tickers
         </Button>
       </div>
     </div>
