@@ -143,6 +143,13 @@ export const BottomInfoFooter = () => {
     >
       <div style={{ display: "flex", gap: "8px" }}>
         <div>
+          <Stat>
+            <StatLabel>
+              Acc value: {roundNumberFloor(latestSnapshotQuery.data.value, 2)}$
+            </StatLabel>
+          </Stat>
+        </div>
+        <div>
           <Stat color={COLOR_CONTENT_PRIMARY}>
             <StatLabel>
               Longs:{" "}
