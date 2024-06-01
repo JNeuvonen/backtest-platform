@@ -179,6 +179,7 @@ export interface StrategiesResponse {
   directional_strategies: Strategy[];
   trades: Trade[];
   strategy_groups: StrategyGroup[];
+  completed_longshort_trades: LongShortTrade[];
 }
 
 export interface StrategyGroupResponse {
@@ -190,4 +191,15 @@ export interface StrategyGroupResponse {
 export interface BinanceSymbolPrice {
   symbol: string;
   price: string;
+}
+
+export interface LongShortTrade {
+  id: number;
+  long_short_group_id: number;
+  long_side_trade_id: number;
+  short_side_trade_id: number;
+  net_result: number;
+  percent_result: number;
+  open_time_ms: number;
+  close_time_ms: number;
 }
