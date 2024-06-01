@@ -75,6 +75,7 @@ export interface LongShortGroup {
   take_profit_threshold_perc?: number;
   stop_loss_threshold_perc?: number;
   is_disabled: boolean;
+  is_in_close_only: boolean;
   use_time_based_close?: boolean;
   use_profit_based_close?: boolean;
   use_stop_loss_based_close?: boolean;
