@@ -1,4 +1,6 @@
+from typing import List
 from common_python.binance.client import client
+from common_python.binance.types import BinanceUserAsset
 
 
 SYMBOL_BTCUSDT = "BTCUSDT"
@@ -34,3 +36,21 @@ def get_binance_acc_balance_snapshot():
         "margin_level": margin_level,
         "btc_price": btc_price,
     }
+
+
+def get_account_assets_state():
+    ret = []
+    margin_account_info = client.get_margin_account()
+
+    for item in margin_account_info["userAssets"]:
+        free = float(item["free"])
+        locked = float(item["locked"])
+        borrowed = float(item["borrowed"])
+        interest = float(item["interest"])
+        netAsset = float(item["netAsset"])
+
+        if free != 0 or locked != 0 or borrowed != 0 or interest != 0 or netAsset != 0:
+            user_asset = BinanceUserAsset(**item)
+            ret.append(user_asset)
+
+    return ret
