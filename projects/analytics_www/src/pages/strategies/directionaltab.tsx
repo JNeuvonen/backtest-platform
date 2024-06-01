@@ -313,7 +313,7 @@ export const DirectionalStrategiesTab = ({
             </div>
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
-                <StatLabel>Trades</StatLabel>
+                <StatLabel>Completed trades</StatLabel>
                 <StatNumber>{infoDict.totalCompletedTrades}</StatNumber>
               </Stat>
             </div>
