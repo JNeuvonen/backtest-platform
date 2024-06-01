@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import {
+  LongShortTickersPage,
   LsStrategyPage,
   ProfilePage,
   RootPage,
@@ -20,6 +21,7 @@ export const AppRoutes = () => {
       <Route path={PATHS.lsStrategy} element={<LsStrategyPage />} />
       <Route path={PATHS.strategySymbols} element={<StrategySymbolsPage />} />
       <Route path={PATHS.viewTradePath} element={<ViewTradePage />} />
+      <Route path={PATHS.lsTickers} element={<LongShortTickersPage />} />
     </Routes>
   );
 };
