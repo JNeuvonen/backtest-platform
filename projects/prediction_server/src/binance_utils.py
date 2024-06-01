@@ -84,6 +84,13 @@ def get_last_kline_open_time(klines_df):
 
 
 def transform_and_predict(strategy, df, local_dataset: LocalDataset):
+    if strategy.stop_processing_new_candles is True:
+        return {
+            "should_enter_trade": strategy.should_enter_trade,
+            "should_close_trade": strategy.should_exit_trade,
+            "is_on_pred_serv_err": False,
+        }
+
     data_transformations = local_dataset.transformations
 
     results_dict = {
