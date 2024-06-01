@@ -11,6 +11,7 @@ const STRATEGY_PATH = `/strategy/${PATH_KEYS.strategyName}`;
 const TRADE_PATH = "/trade";
 const VIEW_TRADE_PATH = TRADE_PATH + `/${PATH_KEYS.id}`;
 const STRATEGY_SYMBOLS_PATH = STRATEGY_PATH + `/strategies`;
+const LS_TICKERS_PATH = LS_STRATEGY_PATH + "/tickers";
 
 export const PATHS = {
   root: "/",
@@ -20,6 +21,7 @@ export const PATHS = {
   profile: PROFILE_PATH,
   strategy: STRATEGY_PATH,
   lsStrategy: LS_STRATEGY_PATH,
+  lsTickers: LS_TICKERS_PATH,
   strategySymbols: STRATEGY_SYMBOLS_PATH,
   viewTradePath: VIEW_TRADE_PATH,
 };
