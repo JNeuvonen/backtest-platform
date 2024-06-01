@@ -1,4 +1,9 @@
-import { BinanceSymbolPrice, SPOT_MARKET_INFO_ENDPOINT } from "common_js";
+import {
+  BinanceSymbolPrice,
+  BinanceTickerPriceChange,
+  SPOT_MARKET_INFO_ENDPOINT,
+  SPOT_MARKET_PRICE_CHANGE_ENDPOINT,
+} from "common_js";
 import { httpReq, ANALYTICS_SERV_API } from ".";
 import { HttpRequestOptions } from "./utils";
 
@@ -74,6 +79,19 @@ export const fetchBinancePriceInfo = async () => {
   }
 };
 
+export const fetchBinance24hPriceChanges = async () => {
+  try {
+    const response = await fetch(SPOT_MARKET_PRICE_CHANGE_ENDPOINT);
+    if (response.ok) {
+      const data: BinanceTickerPriceChange[] = await response.json();
+      return data;
+    }
+    return [] as BinanceTickerPriceChange[];
+  } catch {
+    return [] as BinanceTickerPriceChange[];
+  }
+};
+
 export const fetchLatestBalanceSnapshot = async () => {
   try {
     const res = await httpReq({
@@ -124,4 +142,18 @@ export const updateManyStrategies = async (payload) => {
     autoNofifyOnError: true,
   });
   return res;
+};
+
+export const fetchUserAssets = async () => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.fetchAssets(),
+    });
+    if (res.success) {
+      return res.data.data;
+    }
+    return [];
+  } catch {
+    return [];
+  }
 };

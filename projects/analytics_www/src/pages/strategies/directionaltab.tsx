@@ -51,6 +51,14 @@ export const profitColumnCellRenderer = (params: ICellRendererParams) => {
   );
 };
 
+export const percColumnCellRenderer = (params: ICellRendererParams) => {
+  return (
+    <Text color={getNumberDisplayColor(params.value, COLOR_CONTENT_PRIMARY)}>
+      {roundNumberFloor(params.value, 2)}%
+    </Text>
+  );
+};
+
 const COLUMN_DEFS = [
   {
     headerName: "Strategy name",

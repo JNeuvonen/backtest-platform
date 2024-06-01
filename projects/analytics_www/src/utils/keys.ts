@@ -10,4 +10,6 @@ export const QUERY_KEYS = {
   fetch_latest_balance_snapshot: "FETCH_LATEST_BALANCE_SNAPSHOT",
   fetch_balance_snapshots_1d_interval: "FETCH_BALANCE_SNAPSHOTS_1D_INTERVAL",
   fetch_strategies: "FETCH_STRATEGIES",
+  fetch_binance_user_assets: "FETCH_BINANCE_USER_ASSETS",
+  fetch_binance_24h_price_change: "FETCH_BINANCE_24H_PRICE_CHANGE",
 };

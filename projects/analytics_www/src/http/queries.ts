@@ -2,6 +2,8 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import {
   BalanceSnapshot,
   BinanceSymbolPrice,
+  BinanceTickerPriceChange,
+  BinanceUserAsset,
   LongShortGroupResponse,
   StrategiesResponse,
   StrategyGroupResponse,
@@ -10,11 +12,13 @@ import { QUERY_KEYS } from "src/utils";
 import {
   fetchBalanceSnapshots,
   fetchBalanceSnapshots1DInterval,
+  fetchBinance24hPriceChanges,
   fetchBinancePriceInfo,
   fetchLatestBalanceSnapshot,
   fetchLongShortGroup,
   fetchStrategies,
   fetchStrategyGroup,
+  fetchUserAssets,
 } from "./requests";
 
 export function useBalanceSnapshotsQuery(): UseQueryResult<
@@ -85,5 +89,25 @@ export function useLongshortGroup(
   return useQuery<LongShortGroupResponse, unknown>({
     queryKey: [QUERY_KEYS.fetch_longshort_group, groupName],
     queryFn: () => fetchLongShortGroup(groupName),
+  });
+}
+
+export function useBinanceAssets(): UseQueryResult<
+  BinanceUserAsset[],
+  unknown
+> {
+  return useQuery<BinanceUserAsset[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_binance_user_assets],
+    queryFn: () => fetchUserAssets(),
+  });
+}
+
+export function useBinance24hPriceChanges(): UseQueryResult<
+  BinanceTickerPriceChange[],
+  unknown
+> {
+  return useQuery<BinanceTickerPriceChange[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_binance_24h_price_change],
+    queryFn: () => fetchBinance24hPriceChanges(),
   });
 }
