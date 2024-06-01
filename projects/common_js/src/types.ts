@@ -44,6 +44,7 @@ export interface Strategy {
   use_profit_based_close: boolean;
   use_stop_loss_based_close: boolean;
   use_taker_order?: boolean;
+  stop_processing_new_candles?: boolean;
   should_enter_trade: boolean;
   should_close_trade: boolean;
   should_calc_stops_on_pred_serv: boolean;
