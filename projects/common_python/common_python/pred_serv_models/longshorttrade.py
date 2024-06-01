@@ -40,3 +40,10 @@ class LongShortTradeQuery:
                     LongShortTrade.id == trade_id
                 ).update(non_null_update_fields, synchronize_session="fetch")
                 session.commit()
+
+    @staticmethod
+    def fetch_all():
+        with LogExceptionContext():
+            with Session() as session:
+                trades = session.query(LongShortTrade).all()
+                return trades
