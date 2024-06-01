@@ -143,6 +143,7 @@ def run_long_short_backtest(backtest_info: BodyCreateLongShortBacktest):
         dataset_id_to_table_name_map = {}
         dataset_table_name_to_timeseries_col_map = {}
         for item in backtest_info.datasets:
+            print(item)
             table_name = get_binance_dataset_tablename(
                 item, backtest_info.candle_interval
             )
