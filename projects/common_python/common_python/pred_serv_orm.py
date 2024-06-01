@@ -25,6 +25,9 @@ class LongShortGroup(Base):
 
     id = Column(Integer, primary_key=True)
 
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
     name = Column(String, unique=True)
     candle_interval = Column(String)
     buy_cond = Column(String)
