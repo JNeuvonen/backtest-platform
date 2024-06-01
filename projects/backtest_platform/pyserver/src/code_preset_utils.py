@@ -2388,7 +2388,7 @@ threshold = 0.001
 calculate_doji(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, threshold=threshold)
 """
 
-CDLDOJISTAR  = """
+CDLDOJISTAR = """
 import pandas as pd
 
 def calculate_doji_star(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', threshold=0.001):
@@ -2470,7 +2470,7 @@ open_col = 'open_price'
 close_col = 'close_price'
 calculate_engulfing(dataset, open_col=open_col, close_col=close_col)
 """
-CDLEVENINGDOJISTAR  = """
+CDLEVENINGDOJISTAR = """
 import pandas as pd
 
 def calculate_evening_doji_star(df, open_col='open_price', close_col='close_price', high_col='high_price', low_col='low_price', threshold=0.001):
@@ -3824,7 +3824,63 @@ low_col = 'low_price'
 calculate_upside_gap_two_crows(dataset, open_col=open_col, close_col=close_col, high_col=high_col, low_col=low_col)
 """
 
+LOSING_CANDLES_ON_RANGE = """
+import pandas as np
 
+def calculate_losing_candles_indicator(df, column='close_price', lookback_range=[40, 10], threshold_percentage=50):
+    def custom_agg(series):
+        if len(series) < lookback_range[0]:
+            return np.nan
+        return series[-lookback_range[0]:-lookback_range[1]].sum()
+
+    df['diff_helper'] = df[column].diff()
+    df['is_decreasing_helper'] = (df['diff_helper'] < 0).astype(int)
+    df['indicator_helper'] = df['is_decreasing_helper'].rolling(window=lookback_range[0], min_periods=lookback_range[0]).apply(custom_agg, raw=True)
+
+    threshold_count = (threshold_percentage / 100) * (lookback_range[0] - lookback_range[1])
+    range_start = lookback_range[0]
+    range_end = lookback_range[1]
+    df[f'losing_candles_{column}_from_{range_start}_to_{range_end}_threshold_{threshold_percentage}_perc'] = (df['indicator_helper'] >= threshold_count).astype(int)
+
+
+    
+    # Drop helper columns
+    df.drop(columns=['diff_helper', 'is_decreasing_helper', 'indicator_helper'], inplace=True)
+
+# Usage example:
+lookback_range = [30, 1]
+column = 'close_price'
+threshold_percentage = 50
+calculate_losing_candles_indicator(df=dataset, column=column, lookback_range=lookback_range, threshold_percentage=threshold_percentage)
+"""
+
+WINNING_CANDLES_ON_RANGE = """
+import pandas as pd
+
+def calculate_winning_candles_indicator(df, column='close_price', lookback_range=[40, 10], threshold_percentage=50):
+    def custom_agg(series):
+        if len(series) < lookback_range[0]:
+            return np.nan
+        return series[-lookback_range[0]:-lookback_range[1]].sum()
+
+    df['diff_helper'] = df[column].diff()
+    df['is_increasing_helper'] = (df['diff_helper'] > 0).astype(int)
+    df['indicator_helper'] = df['is_increasing_helper'].rolling(window=lookback_range[0], min_periods=lookback_range[0]).apply(custom_agg, raw=True)
+
+    threshold_count = (threshold_percentage / 100) * (lookback_range[0] - lookback_range[1])
+    range_start = lookback_range[0]
+    range_end = lookback_range[1]
+    df[f'winning_candles_{column}_from_{range_start}_to_{range_end}_threshold_{threshold_percentage}_perc'] = (df['indicator_helper'] >= threshold_count).astype(int)
+
+    # Drop helper columns
+    df.drop(columns=['diff_helper', 'is_increasing_helper', 'indicator_helper'], inplace=True)
+
+# Usage example:
+lookback_range = [30, 1]
+column = 'close_price'
+threshold_percentage = 50
+calculate_winning_candles_indicator(df=dataset, column=column, lookback_range=lookback_range, threshold_percentage=threshold_percentage)
+"""
 
 
 DEFAULT_CODE_PRESETS = [
@@ -4500,7 +4556,7 @@ DEFAULT_CODE_PRESETS = [
         description="The Piercing Pattern is a bullish candlestick pattern used in technical analysis to identify potential reversals in a downtrend. It occurs when a bearish candle is followed by a bullish candle that opens lower than the previous low but closes more than halfway up the body of the previous bearish candle. This pattern suggests that the selling pressure is decreasing and buying pressure is increasing, indicating a potential upward reversal.",
         labels=CodePresetLabels.CANDLE_PATTERN,
     ),
-     CodePreset(
+    CodePreset(
         code=CDLBREAKAWAY,
         name="CDLBREAKAWAY",
         category=CodePresetCategories.INDICATOR,
@@ -4836,43 +4892,20 @@ DEFAULT_CODE_PRESETS = [
         description="This indicator identifies the Upside Gap Two Crows candlestick pattern, which is a bearish reversal pattern. It consists of three candles:The first candle is a long bullish candle.The second candle is a bearish candle that opens above the high of the first candle, creating a gap, and closes within the body of the first candle.The third candle is a bearish candle that opens above the high of the second candle and closes below the close of the second candle but within the gap between the first and second candles.This pattern suggests a potential downward reversal after an uptrend. The indicator outputs 1 when the pattern is detected.",
         labels=CodePresetLabels.CANDLE_PATTERN,
     ),
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    CodePreset(
+        code=LOSING_CANDLES_ON_RANGE,
+        name="LOSING_CANDLES_ON_RANGE",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator is provided with a look-back window and threshold. If the look-back window has at least reached the threshold amount of losing candles, the indicator will be 1. Otherwise, the indicator will be 0.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=WINNING_CANDLES_ON_RANGE,
+        name="WINNING_CANDLES_ON_RANGE",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator is provided with a look-back window and threshold. If the look-back window has at least reached the threshold amount of winning candles, the indicator will be 1. Otherwise, the indicator will be 0.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
 ]
 
 
