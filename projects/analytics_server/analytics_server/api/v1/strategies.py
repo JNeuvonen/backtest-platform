@@ -9,6 +9,7 @@ from common_python.pred_serv_orm import StrategyGroup
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.strategy_group import StrategyGroupQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
+from common_python.pred_serv_models.longshorttrade import LongShortTradeQuery
 from common_python.pydantic_models import BodyAnalyticsServiceUpdate
 from fastapi import APIRouter, Depends, Response, status
 
@@ -30,6 +31,7 @@ async def get_strategies(token: str = Depends(verify_access_token)):
         trades = TradeQuery.get_trades()
         strategy_groups = StrategyGroupQuery.get_all()
         ls_tickers = LongShortTickerQuery.get_all()
+        longshort_trades = LongShortTradeQuery.fetch_all()
         pairs = LongShortPairQuery.get_all()
 
         return {
@@ -39,6 +41,7 @@ async def get_strategies(token: str = Depends(verify_access_token)):
             "directional_strategies": directional_strategies,
             "trades": trades,
             "strategy_groups": strategy_groups,
+            "completed_longshort_trades": longshort_trades,
         }
 
 
