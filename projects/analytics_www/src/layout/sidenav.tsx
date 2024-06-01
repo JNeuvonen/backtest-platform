@@ -9,6 +9,7 @@ import { Blur } from "src/components";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useAuth0 } from "@auth0/auth0-react";
 import { COLOR_BG_SECONDARY_SHADE_ONE } from "src/theme";
+import { BsCashStack } from "react-icons/bs";
 
 const SIDE_NAV_ITEMS = [
   {
@@ -20,6 +21,11 @@ const SIDE_NAV_ITEMS = [
     link: "Strategies",
     icon: FaChartLine,
     path: PATHS.strategies,
+  },
+  {
+    link: "Assets",
+    icon: BsCashStack,
+    path: PATHS.assets,
   },
 ];
 
