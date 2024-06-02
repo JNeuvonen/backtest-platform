@@ -52,6 +52,10 @@ export const profitColumnCellRenderer = (params: ICellRendererParams) => {
 };
 
 export const percColumnCellRenderer = (params: ICellRendererParams) => {
+  if (!params.value) {
+    return null;
+  }
+
   return (
     <Text color={getNumberDisplayColor(params.value, COLOR_CONTENT_PRIMARY)}>
       {roundNumberFloor(params.value, 2)}%
