@@ -145,6 +145,7 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
   const { bulkDeployDrawer, originalBacktest, backtests } = props;
   const { getPredServAPIKey } = useAppContext();
   const datasetQuery = useDatasetQuery(originalBacktest.dataset_name);
+
   const toast = useToast();
 
   if (!datasetQuery.data) {
@@ -214,6 +215,7 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
       ...form,
       symbols: symbolInfo,
       strategy_group: form.name,
+      data_transformations: datasetQuery.data.data_transformations,
     });
 
     backtestDiskManager.save(form);
