@@ -1,4 +1,4 @@
-export DATABASE_URI="postgresql+psycopg2://postgres:salasana123@localhost/pred_server_debug"
+export DATABASE_URI="postgresql+psycopg2://postgres:salasana123@localhost:5432/live_env_db_dump"
 # export DATABASE_URI=postgresql://postgres:HJyGHt67hRn8Ru@35.187.213.213:5432/prediction_server
 export SERVICE_PORT=8001
 export ENV=DEV
@@ -10,6 +10,6 @@ cd prediction_server
 cd src
 
 
-npx kill-port $SERVICE_PORT && python -m uvicorn main:app --reload
+npx kill-port $SERVICE_PORT && python -m uvicorn main:app --reload --port $SERVICE_PORT
 # npx kill-port $SERVICE_PORT && python -m main
 
