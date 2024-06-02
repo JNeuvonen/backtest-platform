@@ -34,6 +34,7 @@ import {
   inferAssets,
 } from "../../../../utils/binance";
 import { ChakraInput } from "../../../../components/chakra/input";
+import { SymbolDeployInfo } from "common_js";
 
 interface PathParams {
   datasetName: string;
@@ -100,6 +101,32 @@ export interface DeployStratForm {
   is_leverage_allowed: boolean;
   is_short_selling_strategy: boolean;
   is_paper_trade_mode: boolean;
+  data_transformations: DataTransformation[];
+}
+
+export interface DeployStrategyGroup {
+  strategy_group: string;
+  enter_trade_code: string;
+  exit_trade_code: string;
+  candle_interval: string;
+  fetch_datasources_code: string;
+  priority: number;
+  kline_size_ms: number;
+  maximum_klines_hold_time: number;
+  num_req_klines: number;
+  allocated_size_perc: number;
+  take_profit_threshold_perc: number;
+  stop_loss_threshold_perc: number;
+  should_calc_stops_on_pred_serv: boolean;
+  minimum_time_between_trades_ms: number;
+  use_time_based_close: boolean;
+  use_profit_based_close: boolean;
+  use_stop_loss_based_close: boolean;
+  use_taker_order: boolean;
+  is_leverage_allowed: boolean;
+  is_short_selling_strategy: boolean;
+  is_paper_trade_mode: boolean;
+  symbols: SymbolDeployInfo[];
   data_transformations: DataTransformation[];
 }
 

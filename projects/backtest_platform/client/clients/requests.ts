@@ -18,7 +18,10 @@ import {
 } from "./queries/response-types";
 import { save } from "@tauri-apps/api/dialog";
 import { CodePresetBody } from "../components/SaveCodePresetPopover";
-import { DeployStratForm } from "../pages/simulate/dataset/backtest/DeployStrategyForm";
+import {
+  DeployStratForm,
+  DeployStrategyGroup,
+} from "../pages/simulate/dataset/backtest/DeployStrategyForm";
 import { predServerHeaders } from "./headers-utils";
 import { CreateDataTransformationBody } from "../components/DataTransformationsControls";
 import { BodyMassPairTradeSim } from "../context/masspairtrade/CreateNewDrawer";
@@ -468,6 +471,23 @@ export const deployStrategyReq = async (
   const res = await buildRequest({
     method: "POST",
     url: PRED_SERVER_URLS.strategyEndpoint(),
+    payload: form,
+    options: {
+      headers: predServerHeaders(apiKey),
+    },
+    errorShouldNotifyUI: showErrorOnUI,
+  });
+  return res;
+};
+
+export const deployStrategyGroup = async (
+  apiKey: string,
+  form: DeployStrategyGroup,
+  showErrorOnUI: boolean = true
+) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: PRED_SERVER_URLS.deployStrategyGroupEndpoint(),
     payload: form,
     options: {
       headers: predServerHeaders(apiKey),

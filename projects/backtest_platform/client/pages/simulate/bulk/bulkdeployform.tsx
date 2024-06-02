@@ -29,7 +29,12 @@ import { CODE_PRESET_CATEGORY } from "../../../utils/constants";
 import { ChakraNumberStepper } from "../../../components/ChakraNumberStepper";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { useDatasetQuery } from "../../../clients/queries/queries";
-import { deployStrategyReq, fetchDataset } from "../../../clients/requests";
+import {
+  deployStrategyGroup,
+  deployStrategyReq,
+  fetchDataset,
+} from "../../../clients/requests";
+import { SymbolDeployInfo } from "common_js";
 
 const backtestDiskManager = new DiskManager(
   DISK_KEYS.bulk_deploy_strategy_form
@@ -65,7 +70,7 @@ export interface BulkDeployDirectionalStratForm {
   candle_interval: string;
   fetch_datasources_code: string;
   priority: number;
-  kline_size_ms?: number;
+  kline_size_ms: number;
   maximum_klines_hold_time: number;
   num_req_klines: number;
   allocated_size_perc: number;
@@ -146,47 +151,38 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
     return null;
   }
 
-  const deployStratHelper = async (
-    form: BulkDeployDirectionalStratForm,
-    dataset: Dataset,
-    dataTransformations: DataTransformation[],
-    strategyName: string
-  ) => {
-    const precision = await getTradeQuantityPrecision(dataset.symbol);
+  const getSymbolInfoList = async () => {
+    const ret: SymbolDeployInfo[] = [];
 
-    const { quoteAsset, baseAsset } = inferAssets(dataset.symbol);
+    const dataset = await fetchDataset(originalBacktest.dataset_name);
 
-    const res = await deployStrategyReq(
-      getPredServAPIKey(),
-      {
-        ...form,
-        name: `${strategyName}_${dataset.symbol}`,
-        strategy_group: strategyName,
+    if (dataset) {
+      const precision = await getTradeQuantityPrecision(dataset.symbol);
+      const { quoteAsset, baseAsset } = inferAssets(dataset.symbol);
+      ret.push({
         symbol: dataset.symbol,
         base_asset: baseAsset,
         quote_asset: quoteAsset,
-        data_transformations: dataTransformations,
-        candle_interval: originalBacktest.candle_interval,
         trade_quantity_precision: precision,
-      },
-      false
-    );
-
-    if (res.status === 200) {
-      toast({
-        title: `Deployed strategy on ${dataset.symbol}`,
-        status: "info",
-        duration: 5000,
-        isClosable: true,
-      });
-    } else {
-      toast({
-        title: `Deploying ${dataset.symbol} failed. Was the strategy already deployed on the symbol?`,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
       });
     }
+
+    for (const item of backtests) {
+      const dataset = await fetchDataset(item.dataset_name);
+
+      if (!dataset) {
+        continue;
+      }
+      const precision = await getTradeQuantityPrecision(dataset.symbol);
+      const { quoteAsset, baseAsset } = inferAssets(dataset.symbol);
+      ret.push({
+        symbol: dataset.symbol,
+        base_asset: baseAsset,
+        quote_asset: quoteAsset,
+        trade_quantity_precision: precision,
+      });
+    }
+    return ret;
   };
 
   const onSubmit = async (form: BulkDeployDirectionalStratForm) => {
@@ -212,35 +208,13 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
       return;
     }
 
-    const strategyName = form.name;
-    delete form.name;
+    const symbolInfo = await getSymbolInfoList();
 
-    await deployStratHelper(
-      form,
-      datasetQuery.data,
-      dataTransformations,
-      strategyName
-    );
-
-    for (const item of backtests) {
-      try {
-        const dataset = await fetchDataset(item.dataset_name);
-
-        if (dataset) {
-          await deployStratHelper(
-            form,
-            dataset,
-            dataTransformations,
-            strategyName
-          );
-        }
-      } catch (error) {
-        console.error(
-          `Failed to deploy strategy on ${item.dataset_name}`,
-          error
-        );
-      }
-    }
+    await deployStrategyGroup(getPredServAPIKey(), {
+      ...form,
+      symbols: symbolInfo,
+      strategy_group: form.name,
+    });
 
     backtestDiskManager.save(form);
     bulkDeployDrawer.onClose();

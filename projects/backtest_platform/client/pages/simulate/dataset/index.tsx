@@ -144,6 +144,15 @@ export const SimulateDatasetIndex = () => {
           <MenuItem icon={<MdCopyAll />} onClick={cloneIndicatorsDrawer.onOpen}>
             Clone indicators to other dataset
           </MenuItem>
+          <MenuItem icon={<MdCopyAll />} onClick={cloneIndicatorsDrawer.onOpen}>
+            View transformations
+          </MenuItem>
+          <MenuItem icon={<MdCopyAll />} onClick={cloneIndicatorsDrawer.onOpen}>
+            Remove all transformations
+          </MenuItem>
+          <MenuItem icon={<MdCopyAll />} onClick={cloneIndicatorsDrawer.onOpen}>
+            Reset dataset
+          </MenuItem>
         </ChakraMenu>
 
         <div style={{ marginLeft: "100px", marginTop: "32px" }}>

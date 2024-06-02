@@ -200,4 +200,6 @@ export const PRED_SERVER_URLS = {
   createApiKeyEndpoint: () => PRED_SERV_BASE_URL + PRED_SERV_API.v1_api_key,
   deployPairtradeEndpoint: () =>
     PRED_SERV_BASE_URL + PRED_SERV_API.v1_longshort,
+  deployStrategyGroupEndpoint: () =>
+    PRED_SERV_BASE_URL + PRED_SERV_API.v1_strategy + "/strategy-group",
 };

@@ -247,3 +247,10 @@ export interface BinanceTickerPriceChange {
   lastId: number;
   count: number;
 }
+
+export interface SymbolDeployInfo {
+  symbol: string;
+  base_asset: string;
+  quote_asset: string;
+  trade_quantity_precision: number;
+}
