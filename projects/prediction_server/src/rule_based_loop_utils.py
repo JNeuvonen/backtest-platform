@@ -136,6 +136,7 @@ class RuleBasedLoopManager:
             if current_time >= self.last_refetch + self.db_refetch_interval:
                 self.last_refetch = current_time
                 self.strategies = StrategyQuery.get_active_strategies()
+                self.active_trades = TradeQuery.get_open_trades()
                 self.strategy_groups = StrategyGroupQuery.get_all_active()
                 self.data_transformations = (
                     DataTransformationQuery.get_all_strategy_group_transformations()

@@ -1,4 +1,5 @@
 from typing import List
+from common_python.log import LogLevel, create_log
 import pandas as pd
 from binance import Client
 from log import LogExceptionContext
@@ -474,6 +475,13 @@ def update_trading_decisions_based_on_stops_v2(results_dict, local_dataset, last
 
         prices = []
         prices.append(local_dataset.strategy.price_on_trade_open)
+
+        if local_dataset.active_trade is None:
+            create_log(
+                msg=f"Conflict: Strategy: {local_dataset.strategy.name}, symbol: {local_dataset.strategy.symbol} did not have active trade despite being in a position.",
+                level=LogLevel.EXCEPTION,
+            )
+            return
 
         info_ticks = local_dataset.active_trade.info_ticks
         for item in info_ticks:
