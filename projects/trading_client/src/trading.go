@@ -60,16 +60,14 @@ func ShouldCloseTrade(bc *BinanceClient, strat Strategy) bool {
 		!strat.ShouldCalcStopsOnPredServ {
 
 		price, err := bc.FetchLatestPrice(strat.Symbol)
-		if err != nil {
-			return false
-		}
+		if err == nil {
+			if shouldProfitBasedClose(strat, price) {
+				return true
+			}
 
-		if shouldProfitBasedClose(strat, price) {
-			return true
-		}
-
-		if shouldStopLossClose(strat, price) {
-			return true
+			if shouldStopLossClose(strat, price) {
+				return true
+			}
 		}
 
 	}
