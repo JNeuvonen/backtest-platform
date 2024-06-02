@@ -15,6 +15,8 @@ import { FaFilter } from "react-icons/fa";
 import _, { cloneDeep } from "lodash";
 import {
   findCurrentPrice,
+  getDiffToPresentFormatted,
+  getDiffToPresentInHours,
   roundNumberFloor,
   Strategy,
   Trade,
@@ -51,6 +53,12 @@ const COLUMN_DEFS: any = [
   {
     headerName: "Symbol",
     field: "symbol",
+    sortable: true,
+    editable: false,
+  },
+  {
+    headerName: "In position",
+    field: "inPosition",
     sortable: true,
     editable: false,
   },
@@ -114,6 +122,12 @@ const COLUMN_DEFS: any = [
   {
     headerName: "Should close",
     field: "shouldClose",
+    sortable: true,
+    editable: true,
+  },
+  {
+    headerName: "Position held",
+    field: "positionHeldTime",
     sortable: true,
     editable: true,
   },
@@ -203,13 +217,19 @@ export const StrategySymbolsPage = () => {
         shouldEnter: item.should_enter_trade,
         shouldClose: item.should_close_trade,
         activeTradeId: item.active_trade_id,
+        inPosition: item.is_in_position,
+        positionHeldTime: getDiffToPresentInHours(
+          new Date(item.time_on_trade_open_ms),
+        ),
         stopProcessingNewCandles: item.stop_processing_new_candles
           ? true
           : false,
       });
     });
 
-    return rows.sort((a: any, b: any) => b.tradesCount - a.tradesCount);
+    return rows.sort(
+      (a: any, b: any) => Number(b.inPosition) - Number(a.inPosition),
+    );
   };
 
   const onCellValueChanged = (params: any) => {
