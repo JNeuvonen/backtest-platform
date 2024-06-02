@@ -4,9 +4,12 @@ import {
   ASSETS,
   findCurrentPrice,
   findSymbolPriceChangeTicker,
+  includeLwrCase,
   roundNumberFloor,
   safeDivide,
 } from "common_js";
+import { useState } from "react";
+import { ChakraInput } from "src/components/chakra";
 import {
   useBinance24hPriceChanges,
   useBinanceAssets,
@@ -65,11 +68,13 @@ export const AssetsPage = () => {
   const binancePrices = useBinanceSpotPriceInfo();
   const latestBalanceSnapshot = useLatestBalanceSnapshot();
   const binancePriceChanges = useBinance24hPriceChanges();
+  const [assetFilterInput, setAssetFilterInput] = useState("");
 
   if (
     !binanceAssets.data ||
     !binancePrices.data ||
-    !latestBalanceSnapshot.data
+    !latestBalanceSnapshot.data ||
+    !binancePriceChanges.data
   ) {
     return (
       <div>
@@ -82,6 +87,10 @@ export const AssetsPage = () => {
     const ret = [];
 
     binanceAssets.data.forEach((item) => {
+      if (assetFilterInput && !includeLwrCase(item.asset, assetFilterInput)) {
+        return;
+      }
+
       const price = findCurrentPrice(
         item.asset + ASSETS.usdt,
         binancePrices.data,
@@ -92,11 +101,14 @@ export const AssetsPage = () => {
         binancePriceChanges.data,
       );
 
-      if (!price || !priceChange) return;
+      if ((!price || !priceChange) && item.asset !== ASSETS.usdt) return;
 
-      const value = item.netAsset * price;
-      const freeValue = item.free * price;
-      const debtValue = item.borrowed * price;
+      const value =
+        item.asset !== ASSETS.usdt ? item.netAsset * price : item.netAsset;
+      const freeValue =
+        item.asset !== ASSETS.usdt ? item.free * price : item.free;
+      const debtValue =
+        item.asset !== ASSETS.usdt ? item.borrowed * price : item.borrowed;
 
       ret.push({
         netAsset: value,
@@ -111,10 +123,9 @@ export const AssetsPage = () => {
           safeDivide(debtValue, latestBalanceSnapshot.data.value, 0) * 100,
           2,
         ),
-        priceChange24h: roundNumberFloor(
-          Number(priceChange.priceChangePercent),
-          2,
-        ),
+        priceChange24h: priceChange
+          ? roundNumberFloor(Number(priceChange.priceChangePercent), 2)
+          : undefined,
       });
     });
     return ret.sort((a, b) => b.netAsset - a.netAsset);
@@ -124,6 +135,13 @@ export const AssetsPage = () => {
     <div>
       <div>
         <Heading size={"lg"}>Assets</Heading>
+      </div>
+
+      <div>
+        <ChakraInput
+          label="Filter asset"
+          onChange={(val) => setAssetFilterInput(val)}
+        />
       </div>
       <div>
         <div
