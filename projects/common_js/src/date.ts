@@ -45,3 +45,27 @@ export const isSame24h = (date1: Date, date2: Date) => {
   const diff = Math.abs(date1.getTime() - date2.getTime());
   return diff < 24 * 60 * 60 * 1000;
 };
+
+export const getDiffToPresentInHours = (date: Date) => {
+  if (!(date instanceof Date)) {
+    throw new Error("The provided value is not a valid Date object.");
+  }
+
+  const now = new Date();
+  const diffInMilliseconds = now.getTime() - date.getTime();
+
+  const millisecondsInSecond = 1000;
+  const millisecondsInMinute = millisecondsInSecond * 60;
+  const millisecondsInHour = millisecondsInMinute * 60;
+
+  if (diffInMilliseconds < millisecondsInMinute) {
+    const seconds = Math.floor(diffInMilliseconds / millisecondsInSecond);
+    return `${seconds} ${seconds === 1 ? "second" : "seconds"}`;
+  } else if (diffInMilliseconds < millisecondsInHour) {
+    const minutes = Math.floor(diffInMilliseconds / millisecondsInMinute);
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+  } else {
+    const hours = Math.floor(diffInMilliseconds / millisecondsInHour);
+    return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+  }
+};
