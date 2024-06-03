@@ -34,7 +34,8 @@ COPY /deploy/cert.key /etc/nginx/ssl/cert.key
 
 EXPOSE 80
 EXPOSE 8000
-expose 443
+EXPOSE 443
 
 WORKDIR /usr/src/app/projects/analytics_server/analytics_server
 CMD ["sh", "-c", "python -m main & nginx -g 'daemon off;'"]
+# CMD ["python", "-m", "main"]
