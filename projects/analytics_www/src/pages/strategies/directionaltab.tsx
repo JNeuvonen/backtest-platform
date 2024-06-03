@@ -300,7 +300,7 @@ export const DirectionalStrategiesTab = ({
                     COLOR_CONTENT_PRIMARY,
                   )}
                 >
-                  ${infoDict.realizedProfit}
+                  ${roundNumberFloor(infoDict.realizedProfit, 2)}
                 </StatNumber>
               </Stat>
             </div>
