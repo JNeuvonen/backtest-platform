@@ -181,7 +181,8 @@ class Positions:
         if self.short_debt > 0.0:
             is_short_selling_strat = True
 
-        prices = self.trade_prices
+        prices = self.trade_prices.copy()
+        prices.append(price)
         position_ath_price = prices[0]
 
         for item in prices:
