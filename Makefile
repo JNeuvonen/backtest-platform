@@ -6,8 +6,23 @@ build-pred-service-container:
 	docker buildx build --platform linux/amd64 -t jneuv/prediction_service:latest -f ./deploy/Dockerfile.prediction_server --build-arg DATABASE_URI=$(DATABASE_URI) . --load
 
 
+
 build-pred-service-container-local:
 	docker build -t jneuv/prediction_service:latest -f ./deploy/Dockerfile.prediction_server --build-arg DATABASE_URI=$(DATABASE_URI) . --load
+
+
+build-analytics-service-container:
+	docker buildx build --platform linux/amd64 -t jneuv/analytics_service:latest -f ./deploy/Dockerfile.analytics_server \
+		--build-arg DATABASE_URI=$(DATABASE_URI) \
+		--build-arg BINANCE_API_KEY=$(BINANCE_API_KEY) \
+		--build-arg BINANCE_API_SECRET=$(BINANCE_API_SECRET) . --load
+
+
+build-analytics-service-container-local:
+	docker build -t jneuv/analytics_service:latest -f ./deploy/Dockerfile.analytics_server \
+		--build-arg DATABASE_URI=$(DATABASE_URI) \
+		--build-arg BINANCE_API_KEY=$(BINANCE_API_KEY) \
+		--build-arg BINANCE_API_SECRET=$(BINANCE_API_SECRET) . --load
 
 
 build-trading-client-container:
