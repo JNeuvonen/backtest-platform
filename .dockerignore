@@ -1,7 +1,7 @@
 venv
 venv_pred_server
 projects/backtest_platform
-projects/analytics_server
+projects/analytics_www
 databases
 .git
 .mypy_cache
