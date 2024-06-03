@@ -1,4 +1,4 @@
-import { DiskManager } from "common_js";
+import { DiskManager } from "src/common_js";
 import { toast } from "react-toastify";
 import { DISK_KEYS } from "src/utils/keys";
 

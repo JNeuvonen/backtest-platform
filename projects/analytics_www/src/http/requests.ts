@@ -3,7 +3,7 @@ import {
   BinanceTickerPriceChange,
   SPOT_MARKET_INFO_ENDPOINT,
   SPOT_MARKET_PRICE_CHANGE_ENDPOINT,
-} from "common_js";
+} from "src/common_js";
 import { httpReq, ANALYTICS_SERV_API } from ".";
 import { HttpRequestOptions } from "./utils";
 

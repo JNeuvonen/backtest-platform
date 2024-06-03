@@ -7,7 +7,7 @@ import {
   includeLwrCase,
   roundNumberFloor,
   safeDivide,
-} from "common_js";
+} from "src/common_js";
 import { useState } from "react";
 import { ChakraInput } from "src/components/chakra";
 import {

@@ -21,7 +21,7 @@ import {
   Strategy,
   Trade,
   TRADE_DIRECTIONS,
-} from "common_js";
+} from "src/common_js";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChakraInput, ChakraMenu } from "src/components/chakra";

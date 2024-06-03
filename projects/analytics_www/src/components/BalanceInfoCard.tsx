@@ -3,7 +3,7 @@ import {
   BalanceSnapshot,
   getRateOfChangePerc,
   roundNumberFloor,
-} from "common_js";
+} from "src/common_js";
 import { COLOR_CONTENT_PRIMARY } from "src/theme";
 import { ChakraCard } from "./chakra";
 import ChakraStatHelpText from "./chakra/StatHelpText";

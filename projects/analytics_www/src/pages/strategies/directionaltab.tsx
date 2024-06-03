@@ -19,7 +19,7 @@ import {
   StrategyGroup,
   Trade,
   formatSecondsIntoTime,
-} from "common_js";
+} from "src/common_js";
 import { Link } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
 import {

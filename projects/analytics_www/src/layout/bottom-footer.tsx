@@ -1,4 +1,4 @@
-import { Spinner, Stat, StatLabel, StatNumber } from "@chakra-ui/react";
+import { Stat, StatLabel } from "@chakra-ui/react";
 import {
   findCurrentPrice,
   getNumberDisplayColor,
@@ -8,7 +8,7 @@ import {
   roundNumberFloor,
   safeDivide,
   TRADE_DIRECTIONS,
-} from "common_js";
+} from "src/common_js";
 import { useAppContext } from "src/context";
 import {
   useBinanceSpotPriceInfo,

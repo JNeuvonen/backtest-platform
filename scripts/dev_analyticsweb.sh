@@ -1,8 +1,8 @@
-chmod +x ./scripts/node_link_common_js.sh
-./scripts/node_link_common_js.sh
+# chmod +x ./scripts/node_link_common_js.sh
+# ./scripts/node_link_common_js.sh
 
 
-export REACT_APP_ANALYTICS_SERV_URI="http://localhost:8003/"
+export REACT_APP_ANALYTICS_SERV_URI="http://34.88.112.180/"
 
 npx kill-port 3000
 

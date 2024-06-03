@@ -12,7 +12,7 @@ import {
   getNumberDisplayColor,
   getStrategyGroupTradeInfo,
   roundNumberFloor,
-} from "common_js";
+} from "src/common_js";
 import { useNavigate } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
 import { usePathParams } from "src/hooks";

@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { LoginPage } from "src/pages/login";
-import { DiskManager } from "common_js";
+import { DiskManager } from "src/common_js";
 import { DISK_KEYS } from "src/utils/keys";
 
 interface AccessTokenContextType {

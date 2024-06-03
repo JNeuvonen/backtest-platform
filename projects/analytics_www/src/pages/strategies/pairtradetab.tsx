@@ -20,7 +20,7 @@ import {
   StrategiesResponse,
   Trade,
   TRADE_DIRECTIONS,
-} from "common_js";
+} from "src/common_js";
 import { Link } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
 import {

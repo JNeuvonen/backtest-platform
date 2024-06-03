@@ -1,6 +1,6 @@
 import { Heading, MenuButton, MenuItem, Spinner } from "@chakra-ui/react";
 import { AgGridReact } from "ag-grid-react";
-import { findLongShortPair, getDiffToPresentFormatted } from "common_js";
+import { findLongShortPair, getDiffToPresentFormatted } from "src/common_js";
 import { useEffect, useState } from "react";
 import { CgSync } from "react-icons/cg";
 import { FaFilter } from "react-icons/fa";

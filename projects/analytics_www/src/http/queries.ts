@@ -7,7 +7,7 @@ import {
   LongShortGroupResponse,
   StrategiesResponse,
   StrategyGroupResponse,
-} from "common_js";
+} from "src/common_js";
 import { QUERY_KEYS } from "src/utils";
 import {
   fetchBalanceSnapshots,

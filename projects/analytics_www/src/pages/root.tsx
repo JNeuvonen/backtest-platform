@@ -7,7 +7,7 @@ import {
   COLOR_BRAND_PRIMARY_SHADE_FOUR,
   COLOR_BRAND_SECONDARY,
 } from "src/theme";
-import { BalanceSnapshot, getDiffToPresentFormatted } from "common_js";
+import { BalanceSnapshot, getDiffToPresentFormatted } from "src/common_js";
 import BalanceInfoCard from "src/components/BalanceInfoCard";
 
 export const RootPage = () => {
