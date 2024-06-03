@@ -45,3 +45,6 @@ venv_pred_server
 
 *debug_bin*
 
+cert.crt
+cert.key
+
