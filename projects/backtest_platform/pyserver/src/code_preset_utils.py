@@ -3882,6 +3882,34 @@ threshold_percentage = 50
 calculate_winning_candles_indicator(df=dataset, column=column, lookback_range=lookback_range, threshold_percentage=threshold_percentage)
 """
 
+N_TH_PERCENTILE = """
+import pandas as pd
+
+def calculate_top_bottom_percent(df, column='close_price', lookback_period=20, percentile=10, position='top'):
+    percentile_label = f"{column}_{percentile}th_{position}_{lookback_period}_lookback"
+
+    if position == 'top':
+        df[percentile_label] = (df[column].rolling(window=lookback_period)
+                                          .apply(lambda x: x.iloc[-1] >= x.quantile(1 - percentile / 100.0), raw=False)
+                                          .fillna(0)
+                                          .astype(int))
+    elif position == 'bottom':
+        df[percentile_label] = (df[column].rolling(window=lookback_period)
+                                          .apply(lambda x: x.iloc[-1] <= x.quantile(percentile / 100.0), raw=False)
+                                          .fillna(0)
+                                          .astype(int))
+    else:
+        raise ValueError("Position must be 'top' or 'bottom'")
+
+# Usage example:
+column = 'ROCP_1_close_price'
+lookback_period = 500
+percentile = 15
+position = 'top'
+
+calculate_top_bottom_percent(dataset, column=column, lookback_period=lookback_period, percentile=percentile, position=position)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -4904,6 +4932,13 @@ DEFAULT_CODE_PRESETS = [
         name="WINNING_CANDLES_ON_RANGE",
         category=CodePresetCategories.INDICATOR,
         description="This indicator is provided with a look-back window and threshold. If the look-back window has at least reached the threshold amount of winning candles, the indicator will be 1. Otherwise, the indicator will be 0.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=N_TH_PERCENTILE,
+        name="N_TH_PERCENTILE",
+        category=CodePresetCategories.INDICATOR,
+        description="Top/Bottom Percentile Indicator: This function calculates whether the current value of a specified column is within the top or bottom percentile of values over a given lookback period. This can be useful for identifying periods when the price is at a relatively extreme level compared to its recent history.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]
