@@ -3,10 +3,10 @@ def calc_short_trade_perc_result(quantity, open_price, close_price) -> float:
     quote_amount_on_close = quantity * close_price
 
     if quote_amount_on_open >= quote_amount_on_close:
-        return (quote_amount_on_open / quote_amount_on_close - 1) * 100
+        return (1 - (quote_amount_on_close / quote_amount_on_open)) * 100
 
     else:
-        return (quote_amount_on_close / quote_amount_on_open - 1) * 100
+        return (quote_amount_on_close / quote_amount_on_open - 1) * 100 * -1
 
 
 def calc_short_trade_net_result(quantity, open_price, close_price) -> float:
