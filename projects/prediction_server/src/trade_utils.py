@@ -88,26 +88,15 @@ def get_trade_close_dict(strat: Strategy, trade: Trade, req_body: BodyUpdateTrad
 
 def close_short_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClose):
     with LogExceptionContext():
-        logger = get_logger()
         update_dict = get_trade_close_dict(strat, trade, req_body)
         slack_log_close_trade_notif(strat, update_dict)
-        stringified_dict = json.dumps(update_dict)
-
-        logger.info(
-            f"Closing short trade on strat {strat.id} with payload: {stringified_dict}"
-        )
         TradeQuery.update_trade(trade.id, update_dict)
 
 
 def close_long_trade(strat: Strategy, trade: Trade, req_body: BodyUpdateTradeClose):
     with LogExceptionContext():
-        logger = get_logger()
         update_dict = get_trade_close_dict(strat, trade, req_body)
         slack_log_close_trade_notif(strat, update_dict)
-        stringified_dict = json.dumps(update_dict)
-        logger.info(
-            f"Closing short trade on strat {strat.id} with payload: {stringified_dict}"
-        )
         TradeQuery.update_trade(trade.id, update_dict)
 
 
