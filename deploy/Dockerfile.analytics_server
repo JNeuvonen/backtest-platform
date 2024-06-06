@@ -31,11 +31,7 @@ COPY /deploy/nginx.conf /etc/nginx/nginx.conf
 COPY /deploy/cert.crt /etc/nginx/ssl/cert.crt
 COPY /deploy/cert.key /etc/nginx/ssl/cert.key
 
-
-EXPOSE 80
 EXPOSE 8000
-EXPOSE 443
 
 WORKDIR /usr/src/app/projects/analytics_server/analytics_server
-CMD ["sh", "-c", "python -m main & nginx -g 'daemon off;'"]
-# CMD ["python", "-m", "main"]
+CMD ["python", "-m", "main"]
