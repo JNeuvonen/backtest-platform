@@ -533,26 +533,27 @@ def get_correlations_to_shifted_prices(df, col_name):
     return ret
 
 
-def get_correlation_data(df, col_name, timeseries_col_name, price_col_name):
-    if price_col_name is None:
+def get_correlation_data(df, col_name, timeseries_col_name, target_col_name):
+    if target_col_name is None:
         return None, []
 
     with LogExceptionContext():
         try:
-            corr_to_price = get_df_corr(df, col_name, price_col_name)
+            corr_to_price = get_df_corr(df, col_name, target_col_name)
 
             candles_time_delta = get_df_candle_size(df, timeseries_col_name)
 
-            if price_col_name != col_name and timeseries_col_name != col_name:
-                df_generate_future_prices_cols(df, candles_time_delta, price_col_name)
+            if target_col_name != col_name and timeseries_col_name != col_name:
+                df_generate_future_prices_cols(df, candles_time_delta, target_col_name)
 
             corrs_to_shifted_prices = (
                 get_correlations_to_shifted_prices(df, col_name)
-                if price_col_name != col_name and col_name != timeseries_col_name
+                if target_col_name != col_name and col_name != timeseries_col_name
                 else []
             )
             return corr_to_price, corrs_to_shifted_prices
-        except Exception:
+        except Exception as e:
+            print(str(e))
             return None, []
 
 
