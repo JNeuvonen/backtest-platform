@@ -1,5 +1,6 @@
+from typing import Dict
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, update
+from sqlalchemy import Boolean, Column, Integer, String, update
 from log import LogExceptionContext
 from orm import Base, Session
 
@@ -24,6 +25,9 @@ class Dataset(Base):
     target_column = Column(String)
     symbol = Column(String)
     interval = Column(String)
+    is_stockmarket_dataset = Column(Boolean, default=False)
+    is_crypto_dataset = Column(Boolean, default=False)
+    is_alt_data_dataset = Column(Boolean, default=False)
 
     def to_dict(self):
         return {
@@ -36,6 +40,15 @@ class Dataset(Base):
 
 
 class DatasetQuery:
+    @staticmethod
+    def create_entry_from_dict(fields: Dict):
+        with LogExceptionContext():
+            with Session() as session:
+                entry = Dataset(**fields)
+                session.add(entry)
+                session.commit()
+                return entry.id
+
     @staticmethod
     def update_dataset(dataset_name: str, update_fields: DatasetBody):
         with LogExceptionContext():

@@ -39,6 +39,13 @@ def save_yfinance_historical_klines(symbol):
     with LogExceptionContext(notification_duration=60000):
         symbol_df = fetch_stock_symbol_yfinance_data(symbol)
         symbol_df.reset_index(inplace=True)
+        symbol_df[YFinanceColumns.DATE] = pd.to_datetime(
+            symbol_df[YFinanceColumns.DATE]
+        )
+        symbol_df[YFinanceColumns.DATE] = symbol_df[YFinanceColumns.DATE].apply(
+            lambda x: int(x.timestamp() * 1000)
+        )
+
         table_name = get_yfinance_table_name(symbol)
 
         table_exists_query = (
@@ -53,10 +60,13 @@ def save_yfinance_historical_klines(symbol):
 
         symbol_df.to_sql(table_name, datasets_conn, if_exists="replace", index=False)
 
-        DatasetQuery.create_dataset_entry(
-            dataset_name=table_name,
-            timeseries_column=YFinanceColumns.DATE,
-            price_column=YFinanceColumns.CLOSE,
-            symbol=symbol,
-            interval="1d",
+        DatasetQuery.create_entry_from_dict(
+            {
+                "dataset_name": table_name,
+                "timeseries_column": YFinanceColumns.DATE,
+                "price_column": YFinanceColumns.CLOSE,
+                "symbol": symbol,
+                "interval": "1d",
+                "is_stockmarket_dataset": True,
+            }
         )

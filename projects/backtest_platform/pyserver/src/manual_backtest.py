@@ -28,6 +28,11 @@ from request_types import (
     BodyCreateManualBacktest,
     BodyCreateMassBacktest,
 )
+from stock_utils import (
+    YFinanceColumns,
+    get_yfinance_table_name,
+    save_yfinance_historical_klines,
+)
 from utils import PythonCode, get_binance_dataset_tablename
 
 
@@ -42,7 +47,7 @@ async def run_rule_based_mass_backtest(
 ):
     with LogExceptionContext():
         logger = get_logger()
-        n_symbols = len(body.symbols)
+        n_symbols = len(body.crypto_symbols)
         curr_iter = 1
 
         original_dataset = DatasetQuery.fetch_dataset_by_id(
@@ -52,7 +57,7 @@ async def run_rule_based_mass_backtest(
             original_dataset.id
         )
 
-        for symbol in body.symbols:
+        for symbol in body.crypto_symbols:
             print(symbol)
             table_name = get_binance_dataset_tablename(symbol, interval)
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
@@ -62,6 +67,73 @@ async def run_rule_based_mass_backtest(
                 symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
+
+            try:
+                for transformation in data_transformations:
+                    python_program = PythonCode.on_dataset(
+                        table_name, transformation.transformation_code
+                    )
+                    exec_python(python_program)
+                    DataTransformationQuery.create_entry(
+                        {
+                            "transformation_code": transformation.transformation_code,
+                            "dataset_id": symbol_dataset.id,
+                        }
+                    )
+            except Exception:
+                continue
+
+            backtest_body = {
+                "backtest_data_range": [
+                    original_backtest["backtest_range_start"],
+                    original_backtest["backtest_range_end"],
+                ],
+                "open_trade_cond": original_backtest["open_trade_cond"],
+                "close_trade_cond": original_backtest["close_trade_cond"],
+                "is_short_selling_strategy": original_backtest[
+                    "is_short_selling_strategy"
+                ],
+                "use_time_based_close": original_backtest["use_time_based_close"],
+                "use_profit_based_close": original_backtest["use_profit_based_close"],
+                "use_stop_loss_based_close": original_backtest[
+                    "use_stop_loss_based_close"
+                ],
+                "dataset_id": symbol_dataset.id,
+                "trading_fees_perc": original_backtest["trading_fees_perc"],
+                "slippage_perc": original_backtest["slippage_perc"],
+                "short_fee_hourly": original_backtest["short_fee_hourly"],
+                "take_profit_threshold_perc": original_backtest[
+                    "take_profit_threshold_perc"
+                ],
+                "stop_loss_threshold_perc": original_backtest[
+                    "stop_loss_threshold_perc"
+                ],
+                "name": original_backtest["name"],
+                "klines_until_close": original_backtest["klines_until_close"],
+            }
+
+            backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
+            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
+
+            logger.log(
+                f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
+                logging.INFO,
+                True,
+                True,
+                DomEventChannels.REFETCH_COMPONENT.value,
+            )
+            curr_iter += 1
+
+        for symbol in body.stock_market_symbols:
+            print(symbol)
+            table_name = get_yfinance_table_name(symbol)
+            symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+
+            if symbol_dataset is None or body.fetch_latest_data is True:
+                save_yfinance_historical_klines(symbol)
+                symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+
+            DatasetQuery.update_price_column(table_name, YFinanceColumns.CLOSE)
 
             try:
                 for transformation in data_transformations:
