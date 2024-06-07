@@ -50,7 +50,6 @@ from request_types import (
 from utils import (
     PythonCode,
     add_to_datasets_db,
-    get_binance_dataset_tablename,
     read_file_to_dataframe,
     remove_all_csv_files,
     run_in_thread,
