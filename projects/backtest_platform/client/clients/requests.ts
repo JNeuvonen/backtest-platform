@@ -511,7 +511,8 @@ export const createPredServApiKey = async () => {
 };
 
 interface PostMassBacktestBody {
-  symbols: string[];
+  crypto_symbols: string[];
+  stock_market_symbols: string[];
   original_backtest_id: number;
   fetch_latest_data: boolean;
 }

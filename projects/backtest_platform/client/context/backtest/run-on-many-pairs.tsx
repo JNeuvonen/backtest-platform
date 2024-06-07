@@ -21,6 +21,7 @@ import { MultiValue } from "react-select";
 import {
   useBacktestById,
   useBinanceTickersQuery,
+  useNyseSymbolList,
 } from "../../clients/queries/queries";
 import { usePathParams } from "../../hooks/usePathParams";
 import { postMassBacktest } from "../../clients/requests";
@@ -31,6 +32,7 @@ import { BULK_SIM_PAIR_PRESETS } from "../../utils/hardcodedpresets";
 
 const formKeys = {
   pairs: "pairs",
+  stockMarketSymbols: "stockMarketSymbols",
   useLatestData: "useLatestData",
 };
 
@@ -38,6 +40,7 @@ const getFormInitialValues = () => {
   return {
     pairs: [] as MultiValue<OptionType>,
     useLatestData: true,
+    stockMarketSymbols: [] as MultiValue<OptionType>,
   };
 };
 
@@ -48,6 +51,7 @@ interface PathParams {
 
 export interface MassBacktest {
   pairs: MultiValue<OptionType>;
+  stockMarketSymbols: MultiValue<OptionType>;
   useLatestData: boolean;
 }
 
@@ -85,6 +89,7 @@ export const BacktestOnManyPairs = () => {
   const { runBacktestOnManyPairsModal } = useBacktestContext();
 
   const binanceTickersQuery = useBinanceTickersQuery();
+  const nyseTickersQuery = useNyseSymbolList();
   const backtestQuery = useBacktestById(Number(backtestId));
   const presetsPopover = useDisclosure();
 
@@ -108,7 +113,10 @@ export const BacktestOnManyPairs = () => {
     const symbols = formValues.pairs.map((item) => item.label);
 
     const res = await postMassBacktest({
-      symbols: symbols,
+      crypto_symbols: symbols,
+      stock_market_symbols: formValues.stockMarketSymbols.map(
+        (item) => item.value
+      ),
       original_backtest_id: backtestQuery.data?.data.id,
       fetch_latest_data: formValues.useLatestData,
     });
@@ -143,8 +151,7 @@ export const BacktestOnManyPairs = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <FormLabel fontSize={"x-large"}>Select pairs</FormLabel>
-
+                  <FormLabel fontSize={"x-large"}>Cryptocurrency</FormLabel>
                   <ChakraPopover
                     {...presetsPopover}
                     setOpen={presetsPopover.onOpen}
@@ -172,6 +179,49 @@ export const BacktestOnManyPairs = () => {
                   isMulti={true}
                   closeMenuOnSelect={false}
                   value={values.pairs}
+                />
+              </FormControl>
+              <FormControl>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    justifyContent: "space-between",
+                    marginTop: "16px",
+                  }}
+                >
+                  <FormLabel fontSize={"x-large"}>Stock market</FormLabel>
+                  <ChakraPopover
+                    {...presetsPopover}
+                    setOpen={presetsPopover.onOpen}
+                    body={
+                      <SelectBulkSimPairsBody
+                        onSelect={(values) =>
+                          setFieldValue(formKeys.pairs, values)
+                        }
+                      />
+                    }
+                    headerText="Select pairs from a preset"
+                  >
+                    <Button variant={BUTTON_VARIANTS.nofill}>Presets</Button>
+                  </ChakraPopover>
+                </div>
+                <Field
+                  name={formKeys.stockMarketSymbols}
+                  as={SelectWithTextFilter}
+                  options={nyseTickersQuery.data?.map((item) => {
+                    return {
+                      label: item,
+                      value: item,
+                    };
+                  })}
+                  onChange={(selectedOptions: MultiValue<OptionType>) =>
+                    setFieldValue(formKeys.stockMarketSymbols, selectedOptions)
+                  }
+                  isMulti={true}
+                  closeMenuOnSelect={false}
+                  value={values.stockMarketSymbols}
                 />
               </FormControl>
 

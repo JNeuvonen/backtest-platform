@@ -18,7 +18,8 @@ export function inferAssets(symbol: string): {
     quoteAsset = "BNB";
     baseAsset = symbol.slice(0, symbol.length - 3);
   } else {
-    throw new Error("Unsupported quote asset.");
+    baseAsset = "";
+    quoteAsset = "";
   }
 
   return { baseAsset, quoteAsset };

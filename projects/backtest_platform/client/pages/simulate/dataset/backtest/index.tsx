@@ -219,6 +219,12 @@ export const DatasetBacktestPage = () => {
           containerStyles={{ marginTop: "16px" }}
           showDots={false}
           displayTradeEntersAndExits={true}
+          xAxisTickFormatter={(tick: number) =>
+            new Date(tick).toLocaleDateString("default", {
+              year: "numeric",
+              month: "short",
+            })
+          }
         />
 
         <Heading size={"md"}>Trade results</Heading>
