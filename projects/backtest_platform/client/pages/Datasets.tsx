@@ -18,6 +18,7 @@ import { ApiResponse, buildRequest } from "../clients/fetch";
 import {
   useBinanceTickersQuery,
   useDatasetsQuery,
+  useNyseSymbolList,
 } from "../clients/queries/queries";
 import { BasicCard } from "../components/Card";
 import { OptionType, SelectWithTextFilter } from "../components/SelectFilter";
@@ -29,7 +30,7 @@ import { useMessageListener } from "../hooks/useMessageListener";
 import { BinanceBasicTicker } from "../clients/queries/response-types";
 import { useForceUpdate } from "../hooks/useForceUpdate";
 import { BUTTON_VARIANTS } from "../theme";
-import { removeDatasets } from "../clients/requests";
+import { removeDatasets, saveYfinanceKlines } from "../clients/requests";
 import { ConfirmModal } from "../components/form/Confirm";
 import { WithLabel } from "../components/form/WithLabel";
 
@@ -201,8 +202,87 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
     </Formik>
   );
 };
-const FormStateStocks = () => {
-  return <Box></Box>;
+const FormStateStocks = ({ modalClose }) => {
+  const toast = useToast();
+  const nyseSymbolsQuery = useNyseSymbolList();
+
+  if (nyseSymbolsQuery.isLoading) {
+    return (
+      <Box>
+        <Spinner />
+      </Box>
+    );
+  }
+
+  const submitForm = async (values: { selectedTickers: OptionType[] }) => {
+    const symbols = values.selectedTickers;
+    const promises: Promise<ApiResponse>[] = [];
+
+    symbols.map((item) => {
+      const res = saveYfinanceKlines(item.label);
+      promises.push(res);
+    });
+
+    try {
+      await Promise.all(promises);
+      toast({
+        title: "Started download",
+        description:
+          "Datasets will show up here once they are fully downloaded",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+      modalClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error?.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  return (
+    <Box>
+      <Formik
+        initialValues={{ selectedTickers: [] }}
+        onSubmit={(values) => submitForm(values)}
+      >
+        {({ setFieldValue }) => (
+          <Form>
+            <Box>
+              <FormControl>
+                <FormLabel fontSize={"x-large"}>
+                  Pairs to be downloaded
+                </FormLabel>
+                <Field
+                  name="selectedTickers"
+                  as={SelectWithTextFilter}
+                  options={nyseSymbolsQuery.data?.map((item) => {
+                    return {
+                      value: item,
+                      label: item,
+                    };
+                  })}
+                  onChange={(selectedOptions: MultiValue<OptionType>) =>
+                    setFieldValue("selectedTickers", selectedOptions)
+                  }
+                  isMulti={true}
+                  closeMenuOnSelect={false}
+                />
+              </FormControl>
+              <Button mt={4} type="submit">
+                Submit
+              </Button>
+            </Box>
+          </Form>
+        )}
+      </Formik>
+    </Box>
+  );
 };
 
 const STEP_1 = "select-provider";
@@ -229,7 +309,7 @@ const GetNewDatasetModal = ({ modalClose }: GetNewDatasetModalProps) => {
           <FormStateBinance modalClose={modalClose} />
         )}
         {formState === STEP_2 && dataProvider === "Stocks" && (
-          <FormStateStocks />
+          <FormStateStocks modalClose={modalClose} />
         )}
       </div>
     </div>

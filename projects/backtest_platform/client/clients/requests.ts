@@ -5,6 +5,7 @@ import { NullFillStrategy } from "../utils/constants";
 import { LOCAL_API_URL, PRED_SERVER_URLS } from "./endpoints";
 import { buildRequest } from "./fetch";
 import { saveAs } from "file-saver";
+import Papa from "papaparse";
 import {
   BacktestObject,
   BacktestsResponse,
@@ -723,6 +724,26 @@ export const deployPairtradeSystem = async (
     options: {
       headers: predServerHeaders(apiKey),
     },
+  });
+  return res;
+};
+
+export const fetchNyseSymbols = async () => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.stocksSymbolList(),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};
+
+export const saveYfinanceKlines = async (symbol: string) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.saveYfinanceKlines(symbol),
   });
   return res;
 };

@@ -30,6 +30,10 @@ const LOCAL_API = {
   data_transformation: {
     root: "/data-transformation",
   },
+  stocks: {
+    root: "/stocks",
+    get_symbol_list: "/stocks/get-symbols",
+  },
 };
 
 export const PRED_SERV_API = {
@@ -193,6 +197,9 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.model.root + `/${modelId}/columns`,
   cloneIndicators: (datasetName: string) =>
     LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/clone-indicators`,
+  stocksSymbolList: () => LOCAL_API_URI + LOCAL_API.stocks.get_symbol_list,
+  saveYfinanceKlines: (symbol: string) =>
+    LOCAL_API_URI + LOCAL_API.stocks.root + "/yfinance/dataset/" + symbol,
 };
 
 export const PRED_SERVER_URLS = {

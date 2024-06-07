@@ -20,4 +20,5 @@ export const QUERY_KEYS = {
   fetch_ml_models_cols: "fetch_ml_models_cols",
   fetch_mass_backtest_symbols: "fetch_mass_backtest_symbols",
   fetch_mass_backtest_transformations: "fetch_mass_backtest_transformations",
+  fetch_nyse_symbols: "fetch_nyse_symbols",
 };

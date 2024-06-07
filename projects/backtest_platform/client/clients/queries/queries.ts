@@ -22,6 +22,7 @@ import {
   fetchMassbacktestsById,
   fetchModelById,
   fetchModelTrainColumns,
+  fetchNyseSymbols,
   fetchTrainjobBacktests,
   fetchTrainjobDetailed,
 } from "../requests";
@@ -251,5 +252,12 @@ export function useMassbacktestTransformations(
     queryKey: [QUERY_KEYS.fetch_mass_backtest_transformations, backtestId],
     queryFn: () => fetchMassbacktestTransformations(backtestId as number),
     enabled: backtestId !== undefined,
+  });
+}
+
+export function useNyseSymbolList(): UseQueryResult<string[], unknown> {
+  return useQuery<string[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_nyse_symbols],
+    queryFn: () => fetchNyseSymbols(),
   });
 }
