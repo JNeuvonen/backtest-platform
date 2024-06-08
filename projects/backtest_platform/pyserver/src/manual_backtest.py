@@ -11,7 +11,12 @@ from backtest_utils import (
     turn_short_fee_perc_to_coeff,
 )
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE
-from constants import BINANCE_BACKTEST_PRICE_COL, YEAR_IN_MS, DomEventChannels
+from constants import (
+    BINANCE_BACKTEST_PRICE_COL,
+    YEAR_IN_MS,
+    BinanceDataCols,
+    DomEventChannels,
+)
 from dataset import read_dataset_to_mem
 from db import exec_python, get_df_candle_size, ms_to_years
 from log import LogExceptionContext, get_logger
@@ -29,7 +34,6 @@ from request_types import (
     BodyCreateMassBacktest,
 )
 from stock_utils import (
-    YFinanceColumns,
     get_yfinance_table_name,
     save_yfinance_historical_klines,
 )
@@ -133,7 +137,7 @@ async def run_rule_based_mass_backtest(
                 save_yfinance_historical_klines(symbol)
                 symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
-            DatasetQuery.update_price_column(table_name, YFinanceColumns.CLOSE)
+            DatasetQuery.update_price_column(table_name, BinanceDataCols.CLOSE_PRICE)
 
             try:
                 for transformation in data_transformations:
@@ -200,9 +204,7 @@ def run_manual_backtest(backtestInfo: BodyCreateManualBacktest):
         candles_time_delta = get_df_candle_size(
             dataset_df, dataset.timeseries_column, formatted=False
         )
-        candle_interval = get_df_candle_size(
-            dataset_df, dataset.timeseries_column, formatted=True
-        )
+        candle_interval = dataset.interval
 
         replacements = {
             "{OPEN_TRADE_FUNC}": backtestInfo.open_trade_cond,

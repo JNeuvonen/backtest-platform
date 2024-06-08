@@ -1,7 +1,7 @@
 import pandas as pd
 from db import create_connection
 from log import LogExceptionContext
-from constants import AppConstants
+from constants import AppConstants, BinanceDataCols
 from query_dataset import DatasetQuery
 import yfinance as yf
 
@@ -46,6 +46,17 @@ def save_yfinance_historical_klines(symbol):
             lambda x: int(x.timestamp() * 1000)
         )
 
+        symbol_df = symbol_df.rename(
+            columns={
+                YFinanceColumns.DATE: BinanceDataCols.KLINE_OPEN_TIME,
+                YFinanceColumns.CLOSE: BinanceDataCols.CLOSE_PRICE,
+                YFinanceColumns.OPEN: BinanceDataCols.OPEN_PRICE,
+                YFinanceColumns.HIGH: BinanceDataCols.HIGH_PRICE,
+                YFinanceColumns.LOW: BinanceDataCols.LOW_PRICE,
+                YFinanceColumns.VOLUME: BinanceDataCols.VOLUME,
+            }
+        )
+
         table_name = get_yfinance_table_name(symbol)
 
         table_exists_query = (
@@ -63,8 +74,8 @@ def save_yfinance_historical_klines(symbol):
         DatasetQuery.create_entry_from_dict(
             {
                 "dataset_name": table_name,
-                "timeseries_column": YFinanceColumns.DATE,
-                "price_column": YFinanceColumns.CLOSE,
+                "timeseries_column": BinanceDataCols.KLINE_OPEN_TIME,
+                "price_column": BinanceDataCols.CLOSE_PRICE,
                 "symbol": symbol,
                 "interval": "1d",
                 "is_stockmarket_dataset": True,

@@ -1,5 +1,6 @@
 import pandas as pd
 from bs4 import BeautifulSoup
+from pydantic_core.core_schema import dict_schema
 from constants import BACKTEST_REPORT_HTML_PATH
 import quantstats_lumi as qs
 from request_types import BodyCreateManualBacktest
