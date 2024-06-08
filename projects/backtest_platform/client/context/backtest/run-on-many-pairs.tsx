@@ -28,7 +28,10 @@ import { postMassBacktest } from "../../clients/requests";
 import { WithLabel } from "../../components/form/WithLabel";
 import { BUTTON_VARIANTS } from "../../theme";
 import { ChakraPopover } from "../../components/chakra/popover";
-import { BULK_SIM_PAIR_PRESETS } from "../../utils/hardcodedpresets";
+import {
+  BULK_SIM_NYSE_SYMBOL_PRESETS,
+  BULK_SIM_PAIR_PRESETS,
+} from "../../utils/hardcodedpresets";
 
 const formKeys = {
   pairs: "pairs",
@@ -84,6 +87,31 @@ export const SelectBulkSimPairsBody = ({
   );
 };
 
+export const SelectBulkSimNyseSymbolsBody = ({
+  onSelect,
+}: PropsSelectBulkSimPairs) => {
+  return (
+    <div>
+      {BULK_SIM_NYSE_SYMBOL_PRESETS.map((preset) => {
+        return (
+          <div>
+            <Tooltip label={preset.pairs.map((pair) => pair.label).join(", ")}>
+              <Button
+                variant={BUTTON_VARIANTS.nofill}
+                onClick={() => {
+                  onSelect(preset.pairs);
+                }}
+              >
+                {preset.label} ({preset.pairs.length} symbols)
+              </Button>
+            </Tooltip>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 export const BacktestOnManyPairs = () => {
   const { backtestId } = usePathParams<PathParams>();
   const { runBacktestOnManyPairsModal } = useBacktestContext();
@@ -91,7 +119,8 @@ export const BacktestOnManyPairs = () => {
   const binanceTickersQuery = useBinanceTickersQuery();
   const nyseTickersQuery = useNyseSymbolList();
   const backtestQuery = useBacktestById(Number(backtestId));
-  const presetsPopover = useDisclosure();
+  const cryptoPresetsPopover = useDisclosure();
+  const stockMarketPresetsPopover = useDisclosure();
 
   const toast = useToast();
 
@@ -153,8 +182,8 @@ export const BacktestOnManyPairs = () => {
                 >
                   <FormLabel fontSize={"x-large"}>Cryptocurrency</FormLabel>
                   <ChakraPopover
-                    {...presetsPopover}
-                    setOpen={presetsPopover.onOpen}
+                    {...cryptoPresetsPopover}
+                    setOpen={cryptoPresetsPopover.onOpen}
                     body={
                       <SelectBulkSimPairsBody
                         onSelect={(values) =>
@@ -193,12 +222,12 @@ export const BacktestOnManyPairs = () => {
                 >
                   <FormLabel fontSize={"x-large"}>Stock market</FormLabel>
                   <ChakraPopover
-                    {...presetsPopover}
-                    setOpen={presetsPopover.onOpen}
+                    {...stockMarketPresetsPopover}
+                    setOpen={stockMarketPresetsPopover.onOpen}
                     body={
-                      <SelectBulkSimPairsBody
+                      <SelectBulkSimNyseSymbolsBody
                         onSelect={(values) =>
-                          setFieldValue(formKeys.pairs, values)
+                          setFieldValue(formKeys.stockMarketSymbols, values)
                         }
                       />
                     }
