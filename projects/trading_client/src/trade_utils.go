@@ -78,12 +78,13 @@ func UpdatePredServerAfterTradeOpen(
 	)
 
 	tradeID := CreateTradeEntry(map[string]interface{}{
-		"open_price":   execPrice,
-		"open_time_ms": res.TransactTime,
-		"quantity":     res.ExecutedQty,
-		"direction":    direction,
-		"symbol":       strat.Symbol,
-		"strategy_id":  int32(strat.ID),
+		"open_price":        execPrice,
+		"open_time_ms":      res.TransactTime,
+		"quantity":          res.ExecutedQty,
+		"direction":         direction,
+		"symbol":            strat.Symbol,
+		"strategy_id":       int32(strat.ID),
+		"strategy_group_id": int32(strat.StrategyGroupId),
 	})
 
 	updateStratSuccess := UpdateStrategy(map[string]interface{}{

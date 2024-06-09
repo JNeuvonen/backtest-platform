@@ -22,6 +22,7 @@ type AccountByNameResponse struct {
 
 type Strategy struct {
 	ID                         int     `json:"id"`
+	StrategyGroupId            int     `json:"strategy_group_id"`
 	Name                       string  `json:"name"`
 	CreatedAt                  string  `json:"created_at"`
 	UpdatedAt                  string  `json:"updated_at"`

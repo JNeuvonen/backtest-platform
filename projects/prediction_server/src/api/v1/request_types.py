@@ -193,6 +193,7 @@ class BodyCreateAccount(BaseModel):
 class BodyCreateTrade(BaseModel):
     open_time_ms: int
     strategy_id: Optional[int] = None
+    strategy_group_id: Optional[int] = None
     quantity: float
     open_price: float
     symbol: str
