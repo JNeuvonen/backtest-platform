@@ -107,3 +107,16 @@ class TradeQuery:
                 return (
                     session.query(Trade).filter(Trade.pair_trade_group_id == id).all()
                 )
+
+    @staticmethod
+    def update(trade_id, update_fields: Dict):
+        with LogExceptionContext():
+            with Session() as session:
+                update_fields.pop("id", None)
+                non_null_update_fields = {
+                    k: v for k, v in update_fields.items() if v is not None
+                }
+                session.query(Trade).filter(Trade.id == trade_id).update(
+                    non_null_update_fields, synchronize_session=False
+                )
+                session.commit()
