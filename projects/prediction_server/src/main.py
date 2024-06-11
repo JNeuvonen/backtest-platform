@@ -153,44 +153,45 @@ def rule_based_loop(stop_event):
 
 
 def long_short_loop(stop_event):
-    logger = get_logger()
-    logger.info("Starting longshort loop")
-
-    last_loop_complete_timestamp = get_current_timestamp_ms()
-    last_slack_message_timestamp = 0
-
-    while not stop_event.is_set():
-        strategies = LongShortGroupQuery.get_strategies()
-
-        current_state_dict = {
-            "total_available_pairs": 0,
-            "no_loan_available_err": 0,
-            "total_num_symbols": 0,
-            "sell_symbols": [],
-            "buy_symbols": [],
-            "strategies": [],
-        }
-
-        for strategy in strategies:
-            update_long_short_exits(strategy, current_state_dict)
-
-            if strategy.is_disabled is False:
-                current_state_dict["strategies"].append(strategy.name)
-
-        strategies = LongShortGroupQuery.get_strategies()
-        for strategy in strategies:
-            update_long_short_enters(strategy, current_state_dict)
-
-        if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
-            create_log(
-                msg=format_pair_trade_loop_msg(
-                    current_state_dict, last_loop_complete_timestamp
-                ),
-                level=LogLevel.INFO,
-            )
-            last_slack_message_timestamp = get_current_timestamp_ms()
+    with LogExceptionContext(re_raise=False):
+        logger = get_logger()
+        logger.info("Starting longshort loop")
 
         last_loop_complete_timestamp = get_current_timestamp_ms()
+        last_slack_message_timestamp = 0
+
+        while not stop_event.is_set():
+            strategies = LongShortGroupQuery.get_strategies()
+
+            current_state_dict = {
+                "total_available_pairs": 0,
+                "no_loan_available_err": 0,
+                "total_num_symbols": 0,
+                "sell_symbols": [],
+                "buy_symbols": [],
+                "strategies": [],
+            }
+
+            for strategy in strategies:
+                update_long_short_exits(strategy, current_state_dict)
+
+                if strategy.is_disabled is False:
+                    current_state_dict["strategies"].append(strategy.name)
+
+            strategies = LongShortGroupQuery.get_strategies()
+            for strategy in strategies:
+                update_long_short_enters(strategy, current_state_dict)
+
+            if get_current_timestamp_ms() >= last_slack_message_timestamp + 60000:
+                create_log(
+                    msg=format_pair_trade_loop_msg(
+                        current_state_dict, last_loop_complete_timestamp
+                    ),
+                    level=LogLevel.INFO,
+                )
+                last_slack_message_timestamp = get_current_timestamp_ms()
+
+            last_loop_complete_timestamp = get_current_timestamp_ms()
 
 
 class PredictionService:
