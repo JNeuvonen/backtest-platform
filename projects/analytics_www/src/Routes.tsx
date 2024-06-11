@@ -4,6 +4,7 @@ import {
   LongShortTickersPage,
   LsStrategyPage,
   ProfilePage,
+  ReproduceDirectionalLiveTrades,
   RootPage,
   StrategiesPage,
   StrategyPage,
@@ -24,6 +25,10 @@ export const AppRoutes = () => {
       <Route path={PATHS.viewTradePath} element={<ViewTradePage />} />
       <Route path={PATHS.lsTickers} element={<LongShortTickersPage />} />
       <Route path={PATHS.assets} element={<AssetsPage />} />
+      <Route
+        path={PATHS.reproduceLiveTradesPath}
+        element={<ReproduceDirectionalLiveTrades />}
+      />
     </Routes>
   );
 };

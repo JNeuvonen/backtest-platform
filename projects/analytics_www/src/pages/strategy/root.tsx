@@ -22,7 +22,7 @@ import {
   useStrategyGroupQuery,
 } from "src/http/queries";
 import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
-import { getStrategySymbolsPath } from "src/utils";
+import { getReprodLiveTradesPath, getStrategySymbolsPath } from "src/utils";
 
 export const StrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
@@ -184,6 +184,12 @@ export const StrategyPage = () => {
           onClick={() => navigate(getStrategySymbolsPath(strategyName))}
         >
           Tickers
+        </Button>
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={() => navigate(getReprodLiveTradesPath(strategyName))}
+        >
+          Reproduce live trades
         </Button>
       </div>
     </div>
