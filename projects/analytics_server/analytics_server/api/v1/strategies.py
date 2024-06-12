@@ -5,7 +5,6 @@ from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.pred_serv_models.trade import TradeQuery
 from common_python.pred_serv_models.user import User
-from common_python.pred_serv_orm import StrategyGroup
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.strategy_group import StrategyGroupQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
@@ -21,6 +20,7 @@ class RoutePaths:
     ROOT = "/"
     STRATEGY_BY_GROUP = "/strategy-group/{group_name}"
     LONGSHORT_BY_GROUP = "/longshort-group/{group_name}"
+    DISABLE_LONG_SHORT_STRATEGY = "/longshort-group/{id}/disable"
     UPDATE_MANY = "/update-many"
 
 
@@ -110,6 +110,17 @@ async def put_update_many(
             )
             update_dict[item.id]["id"] = item.id
         StrategyQuery.update_multiple_strategies(update_dict)
+        return Response(
+            content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
+        )
+
+
+@router.delete(RoutePaths.DISABLE_LONG_SHORT_STRATEGY)
+async def longshort_disable_and_close(id: int, user: User = Depends(get_user)):
+    with HttpResponse():
+        if user.access_level < 10:
+            raise Exception("Authorization failed")
+        LongShortGroupQuery.update(id, {"is_disabled": True})
         return Response(
             content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
         )
