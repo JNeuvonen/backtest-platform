@@ -20,7 +20,23 @@ const formKeys = {
 };
 
 const getFormInitialValues = () => {
-  return {};
+  return {
+    backtestName: "",
+    useLatestData: false,
+    startDate: null,
+    endDate: null,
+  };
+};
+
+const FormikDatePicker = ({ field, form, ...props }) => {
+  return (
+    <DatePicker
+      {...field}
+      {...props}
+      selected={(field.value && new Date(field.value)) || null}
+      onChange={(date) => form.setFieldValue(field.name, date)}
+    />
+  );
 };
 
 export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
@@ -31,8 +47,6 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
         drawerContentStyles={{ maxWidth: "80%" }}
         {...drawerControls}
       >
-        <div></div>
-
         <Formik
           onSubmit={(values) => {}}
           initialValues={getFormInitialValues()}
@@ -75,7 +89,22 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
                     }}
                   </Field>
                 </div>
-                <div></div>
+                <div>
+                  <WithLabel label={"Start date"}>
+                    <Field
+                      name={formKeys.startDate}
+                      component={FormikDatePicker}
+                    />
+                  </WithLabel>
+                </div>
+                <div>
+                  <WithLabel label={"End date"}>
+                    <Field
+                      name={formKeys.endDate}
+                      component={FormikDatePicker}
+                    />
+                  </WithLabel>
+                </div>
               </div>
             </Form>
           )}
