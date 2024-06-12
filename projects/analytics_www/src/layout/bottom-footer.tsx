@@ -87,14 +87,10 @@ export const BottomInfoFooter = () => {
         }
       } else {
         if (item.direction === TRADE_DIRECTIONS.long) {
-          tradeUnrealizedProfit =
-            (latestPrice - item.open_price) * item.quantity;
+          tradeUnrealizedProfit = item.net_result;
         } else {
-          tradeUnrealizedProfit =
-            (item.open_price - latestPrice) * item.quantity;
+          tradeUnrealizedProfit = item.net_result;
         }
-
-        tradeUnrealizedProfit += tradeUnrealizedProfit;
       }
 
       if (isSameMonth(createdAt, presentDate)) {
