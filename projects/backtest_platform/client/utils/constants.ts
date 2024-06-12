@@ -47,6 +47,9 @@ export const PATHS = {
     pairtrade: `/simulate/mass-backtests/long-short/${PATH_KEYS.mass_pair_trade_backtest}`,
     backtest: `/simulate/mass-backtests/result/${PATH_KEYS.mass_backtest}`,
   },
+  rule_based_on_universe: {
+    root: `/rule-based-on-universe/`,
+  },
   ml_based: {
     backtest: `/simulate/ml-based/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
   },

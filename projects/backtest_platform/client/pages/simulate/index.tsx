@@ -30,6 +30,10 @@ export const SimulateSelectMode = () => {
           linkText={"Simple rule based"}
         />
         <ExternalLink
+          to={PATHS.rule_based_on_universe.root}
+          linkText={"Rule based on universe"}
+        />
+        <ExternalLink
           to={PATHS.simulate.bulk_long_short}
           linkText={"Bulk Long/short"}
         />
