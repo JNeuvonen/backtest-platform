@@ -1,4 +1,3 @@
-from typing import List
 from common_python.binance.client import client
 from common_python.binance.types import BinanceUserAsset
 
