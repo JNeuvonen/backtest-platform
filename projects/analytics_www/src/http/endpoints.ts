@@ -39,4 +39,8 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_balance_snapshot +
     "/assets",
+  lsDisableAndClose: (id: number) =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_strategy +
+    `/longshort-group/${id}/disable`,
 };

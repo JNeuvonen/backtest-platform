@@ -51,6 +51,12 @@ const COLUMN_DEFS: ColDef[] = [
     cellRenderer: strategyNameCellRenderer,
   },
   {
+    headerName: "Is active",
+    field: "active",
+    sortable: true,
+    editable: false,
+  },
+  {
     headerName: "Universe size",
     field: "size",
     sortable: true,
@@ -188,6 +194,7 @@ export const PairTradeTab = ({
     lsStrategies.forEach((item) => {
       const lsStrategy = {
         name: item.name.replace("{SYMBOL}_", ""),
+        active: !item.is_disabled,
         ...getLsStrategyTableRowFields(
           item,
           strategiesRes.trades,

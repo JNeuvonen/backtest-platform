@@ -7,6 +7,7 @@ import {
   StatLabel,
   StatNumber,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   getDiffToPresentFormatted,
@@ -25,12 +26,16 @@ import {
 } from "src/http/queries";
 import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
 import { getLongShortTickersPath } from "src/utils";
+import { ConfirmModal } from "src/components/ConfirmModal";
+import { disableAndCloseLsStrat } from "src/http";
+import { toast } from "react-toastify";
 
 export const LsStrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
   const longshortGroupQuery = useLongshortGroup(strategyName);
   const binancePriceQuery = useBinanceSpotPriceInfo();
   const lastBalanceSnapshot = useLatestBalanceSnapshot();
+  const disableAndCloseConfirmModal = useDisclosure();
   const navigate = useNavigate();
 
   if (!longshortGroupQuery.data || !binancePriceQuery.data) {
@@ -53,6 +58,18 @@ export const LsStrategyPage = () => {
     return <Badge colorScheme="green">Live</Badge>;
   };
 
+  const disableAndClosePositions = async () => {
+    const id = longshortGroupQuery.data.group.id;
+
+    const res = await disableAndCloseLsStrat(id);
+
+    if (res.success) {
+      toast.success("Disabled strategy", { theme: "dark" });
+    } else {
+      toast.error("Failed to disable strategy", { theme: "dark" });
+    }
+  };
+
   const infoDict = getLongShortGroupTradeInfo(
     longshortGroupQuery.data,
     binancePriceQuery.data,
@@ -60,6 +77,14 @@ export const LsStrategyPage = () => {
 
   return (
     <div>
+      <ConfirmModal
+        {...disableAndCloseConfirmModal}
+        onConfirm={disableAndClosePositions}
+        title={"Disable strategy"}
+        message={
+          "Are you sure you want to disable this strategy and close all positions?"
+        }
+      />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div
           style={{
@@ -224,6 +249,12 @@ export const LsStrategyPage = () => {
           gap: "8px",
         }}
       >
+        <Button
+          variant={BUTTON_VARIANTS.dangerNoFill}
+          onClick={() => disableAndCloseConfirmModal.onOpen()}
+        >
+          Disable and close positions
+        </Button>
         <Button
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => navigate(getLongShortTickersPath(strategyName))}

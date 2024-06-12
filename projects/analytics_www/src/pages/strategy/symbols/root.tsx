@@ -15,7 +15,6 @@ import { FaFilter } from "react-icons/fa";
 import _, { cloneDeep } from "lodash";
 import {
   findCurrentPrice,
-  getDiffToPresentFormatted,
   getDiffToPresentInHours,
   roundNumberFloor,
   Strategy,

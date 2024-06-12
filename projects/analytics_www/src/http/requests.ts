@@ -157,3 +157,15 @@ export const fetchUserAssets = async () => {
     return [];
   }
 };
+
+export const disableAndCloseLsStrat = async (id: number) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.lsDisableAndClose(id),
+      method: "DELETE",
+    });
+    return res;
+  } catch {
+    return null;
+  }
+};
