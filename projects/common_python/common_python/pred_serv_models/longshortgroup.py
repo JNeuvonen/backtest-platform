@@ -14,6 +14,12 @@ class LongShortGroupQuery:
                 return entry.id
 
     @staticmethod
+    def get_all_strategies():
+        with LogExceptionContext():
+            with Session() as session:
+                return session.query(LongShortGroup).all()
+
+    @staticmethod
     def get_strategies():
         with LogExceptionContext():
             with Session() as session:

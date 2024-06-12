@@ -92,7 +92,7 @@ async def route_create_long_short_strategy(body: BodyCreateLongShortStrategy):
 @router.get(RoutePaths.LONG_SHORT, dependencies=[Depends(api_key_auth)])
 async def route_get_longshort_strategies():
     with HttpResponseContext():
-        longshort_strategies = LongShortGroupQuery.get_strategies()
+        longshort_strategies = LongShortGroupQuery.get_all_strategies()
         return {"data": longshort_strategies}
 
 
