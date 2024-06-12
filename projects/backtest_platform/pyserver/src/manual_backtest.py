@@ -51,7 +51,7 @@ async def run_rule_based_mass_backtest(
 ):
     with LogExceptionContext():
         logger = get_logger()
-        n_symbols = len(body.crypto_symbols)
+        n_symbols = len(body.crypto_symbols) + len(body.stock_market_symbols)
         curr_iter = 1
 
         original_dataset = DatasetQuery.fetch_dataset_by_id(
