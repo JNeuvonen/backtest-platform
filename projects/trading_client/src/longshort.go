@@ -429,12 +429,17 @@ func ProcessLongShortGroup(bc *BinanceClient, predServClient *HttpClient, group 
 	lsTickers := predServClient.FetchLongShortTickers(group.ID)
 
 	for _, pair := range pairs {
+
+		if group.IsDisabled {
+			exitLongShortTrade(bc, predServClient, &pair)
+		}
+
 		if pair.InPosition && !pair.IsTradeFinished &&
 			shouldClosePairTrade(bc, group, &pair, lsTickers) {
 			exitLongShortTrade(bc, predServClient, &pair)
 		}
 
-		if !pair.InPosition && !pair.IsTradeFinished && !pair.ErrorInEntering {
+		if !pair.InPosition && !pair.IsTradeFinished && !pair.ErrorInEntering && !group.IsDisabled {
 			enterLongShortTrade(bc, predServClient, group, &pair)
 		}
 	}
