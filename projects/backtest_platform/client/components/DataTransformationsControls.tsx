@@ -87,7 +87,7 @@ const CreateDataTransformationForm = ({
   );
 };
 
-const SelectTransformationsModal = ({
+export const SelectTransformationsModal = ({
   transformations,
   selectedTransformationIds,
   onSelect,
