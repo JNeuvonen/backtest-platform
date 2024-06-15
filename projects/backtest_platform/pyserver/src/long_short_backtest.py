@@ -8,6 +8,7 @@ from backtest_utils import (
     calc_long_short_profit_factor,
     calc_max_drawdown,
     get_backtest_data_range_indexes,
+    get_bar_curr_price,
     get_cagr,
     get_long_short_trade_details,
     turn_short_fee_perc_to_coeff,
@@ -79,13 +80,6 @@ def get_benchmark_initial_state(
         ret[item] = price
 
     return ret
-
-
-def get_bar_curr_price(df):
-    if not df.empty:
-        price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
-        return price
-    return None
 
 
 def get_datasets_kline_state(

@@ -4,6 +4,7 @@ import json
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
+from mass_rule_based_backtest import run_rule_based_backtest_on_universe
 from query_data_transformation import DataTransformationQuery
 from query_symbol import SymbolQuery
 from backtest_utils import (
@@ -13,7 +14,9 @@ from backtest_utils import (
 from config import is_testing
 from fastapi_utils import convert_to_bool
 from long_short_backtest import run_long_short_backtest
-from ml_based_backtest import run_ml_based_backtest
+from ml_based_backtest import (
+    run_ml_based_backtest,
+)
 from query_backtest_history import BacktestHistoryQuery
 from constants import BACKTEST_REPORT_HTML_PATH
 
@@ -34,6 +37,7 @@ from request_types import (
     BodyCreateManualBacktest,
     BodyCreateMassBacktest,
     BodyMLBasedBacktest,
+    BodyRuleBasedOnUniverse,
 )
 from utils import base_model_to_dict, get_periods_per_year
 
@@ -59,6 +63,7 @@ class RoutePaths:
     FETCH_MASS_BACKTEST_TRANSFORMATIONS = (
         "/mass-backtest/long-short/transformations/{backtest_id}"
     )
+    RULE_BASED_BACKTEST_ON_UNIVERSE = "/rule-based-on-universe"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -319,3 +324,16 @@ async def route_fetch_mass_backtest_transformations(backtest_id: int):
             backtest_id
         )
         return {"data": transformations}
+
+
+@router.post(RoutePaths.RULE_BASED_BACKTEST_ON_UNIVERSE)
+async def route_rule_based_on_universe(body: BodyRuleBasedOnUniverse):
+    with HttpResponseContext():
+        if is_testing():
+            run_rule_based_backtest_on_universe(body)
+        else:
+            process = Process(target=run_rule_based_backtest_on_universe, args=(body,))
+            process.start()
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )

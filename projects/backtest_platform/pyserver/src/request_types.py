@@ -1,7 +1,8 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from constants import NullFillStrategy, ScalingStrategy
+from datetime import datetime
 
 
 class BodyModelData(BaseModel):
@@ -113,6 +114,35 @@ class BodyCreateLongShortBacktest(BaseModel):
     stop_loss_threshold_perc: float
     name: Optional[str] = None
     klines_until_close: Optional[int] = None
+
+
+class BodyRuleBasedOnUniverse(BaseModel):
+    name: Optional[str] = None
+    candle_interval: str
+    datasets: List[str]
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    max_simultaneous_positions: int
+    data_transformations: List[int]
+    klines_until_close: Optional[int] = None
+    open_trade_cond: str
+    close_trade_cond: str
+    fetch_latest_data: bool
+    is_cryptocurrency_datasets: bool
+    is_short_selling_strategy: bool
+    use_time_based_close: bool
+    use_profit_based_close: bool
+    use_stop_loss_based_close: bool
+    take_profit_threshold_perc: float
+    stop_loss_threshold_perc: float
+    short_fee_hourly: float
+    trading_fees_perc: float
+
+    @validator("start_date", "end_date", pre=True)
+    def parse_date(cls, value):
+        if isinstance(value, str):
+            return datetime.fromisoformat(value)
+        return value
 
 
 class BodyMLBasedBacktest(BaseModel):

@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta
 import math
-from typing import Dict, List, Optional
-from code_gen_template import LOAD_MODEL_TEMPLATE
+from common_python.trading.utils import (
+    is_stop_loss_hit,
+    is_take_profit_hit,
+    calc_trade_net_result,
+    calc_trade_perc_result,
+)
+from typing import Dict, List, Optional, Set
+from code_gen_template import BACKTEST_MANUAL_TEMPLATE, LOAD_MODEL_TEMPLATE
+from dataset import read_all_cols_matching_kline_open_times
 from db import candlesize_to_timedelta, exec_python
 from math_utils import safe_divide
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
-from constants import ONE_HOUR_IN_MS, CandleSize
+from constants import BINANCE_BACKTEST_PRICE_COL, ONE_HOUR_IN_MS, CandleSize
 from query_data_transformation import DataTransformation
 from query_dataset import Dataset
 from query_pair_trade import PairTradeQuery
@@ -16,6 +23,13 @@ from utils import PythonCode
 
 
 START_BALANCE = 10000
+
+
+def get_bar_curr_price(df):
+    if not df.empty:
+        price = df.iloc[0][BINANCE_BACKTEST_PRICE_COL]
+        return price
+    return None
 
 
 def get_backtest_profit_factor_comp(trades):
@@ -122,6 +136,68 @@ def calc_short_side_trade_res_perc(open_price, close_price):
     if open_price == 0:
         return 0
     return (close_price / open_price - 1) * -1 * 100
+
+
+def get_dataset_exit_and_enter_decisions(df_row, replacements: Dict):
+    code = BACKTEST_MANUAL_TEMPLATE
+
+    for key, value in replacements.items():
+        code = code.replace(key, str(value))
+
+    results_dict = {"df_row": df_row}
+    exec(code, globals(), results_dict)
+    ret = {
+        "should_open": results_dict["should_open_trade"],
+        "should_exit": results_dict["should_close_trade"],
+    }
+    return ret
+
+
+def get_kline_decisions_v2(
+    kline_open_time: int,
+    open_cond: str,
+    exit_cond: str,
+    dataset_table_name_to_timeseries_col_map: Dict,
+    table_names: List[str],
+):
+    enters: Set = set()
+    exits: Set = set()
+
+    exec_py_replacements = {
+        "{OPEN_TRADE_FUNC}": open_cond,
+        "{CLOSE_TRADE_FUNC}": exit_cond,
+    }
+    table_name_to_df_map = {}
+
+    for item in table_names:
+        timeseries_col = dataset_table_name_to_timeseries_col_map[str(item)]
+        df = read_all_cols_matching_kline_open_times(
+            item, timeseries_col, [kline_open_time]
+        )
+        table_name_to_df_map[item] = df
+
+        if df.empty is True:
+            continue
+
+        df_row = df.iloc[0]
+        kline_trading_decisions = get_dataset_exit_and_enter_decisions(
+            df_row, exec_py_replacements
+        )
+
+        should_open = kline_trading_decisions["should_open"]
+        should_exit = kline_trading_decisions["should_exit"]
+
+        if should_open is True:
+            enters.add(item)
+
+        if should_exit is True:
+            exits.add(item)
+
+    return {
+        "enters": list(enters),
+        "exits": list(exits),
+        "table_name_to_df_map": table_name_to_df_map,
+    }
 
 
 def get_trade_details(trades):
@@ -865,3 +941,437 @@ def calc_profit_factor(trades):
             gross_losses += abs(item.trade_gross_result)
 
     return safe_divide(gross_profit, gross_losses, fallback=None)
+
+
+TABLE_NAME_TO_DF_MAP = "table_name_to_df_map"
+
+
+class Trade:
+    def __init__(
+        self,
+        open_price,
+        close_price,
+        open_time,
+        close_time,
+        direction,
+        net_result,
+        percent_result,
+        dataset_name,
+    ):
+        pass
+
+
+class TradingRules:
+    def __init__(
+        self,
+        trading_fees: float,
+        use_stop_loss_based_close: bool,
+        use_profit_based_close: bool,
+        use_time_based_close: bool,
+        take_profit_threshold_perc: float,
+        stop_loss_threshold_perc: float,
+        short_fee_hourly_perc: float,
+        max_klines_until_close: int | None,
+        candles_time_delta,
+    ):
+        self.trading_fees = trading_fees
+        self.use_stop_loss_based_close = use_stop_loss_based_close
+        self.use_profit_based_close = use_profit_based_close
+        self.use_time_based_close = use_time_based_close
+        self.take_profit_threshold_perc = take_profit_threshold_perc
+        self.stop_loss_threshold_perc = stop_loss_threshold_perc
+        self.short_fee_hourly_perc = short_fee_hourly_perc
+        self.max_klines_until_close = max_klines_until_close
+        self.short_fee_coeff = turn_short_fee_perc_to_coeff(
+            short_fee_hourly_perc, candles_time_delta
+        )
+
+
+class Position:
+    def __init__(
+        self,
+        dataset_name: str,
+        quantity: float,
+        open_time_ms: int,
+        open_price: float,
+        is_debt: bool,
+    ):
+        self.dataset_name = dataset_name
+        self.open_quantity = quantity
+        self.open_quote_quantity = open_price * quantity
+        self.quantity = quantity
+        self.open_time_ms = open_time_ms
+        self.open_price = open_price
+        self.is_debt = is_debt
+        self.candles_held = 0
+        self.prev_price = open_price
+        self.balance_history: List[Dict] = [
+            {
+                "position_size": quantity * open_price,
+                "kline_open_time": open_time_ms,
+                "price": open_price,
+            }
+        ]
+        self.is_closed = False
+        self.close_proceedings = 0
+
+    def get_price_safe(self, price: float | None):
+        if price is None:
+            return self.prev_price
+        return price
+
+    def update(self, kline_open_time: int, new_price: float | None):
+        self.candles_held += 1
+
+        if new_price is not None:
+            self.prev_price = new_price
+
+        price = self.get_price_safe(new_price)
+        position_size = self.quantity * price
+
+        self.balance_history.append(
+            {
+                "position_size": position_size,
+                "kline_open_time": kline_open_time,
+                "price": price,
+            }
+        )
+
+
+class Strategy:
+    def __init__(
+        self,
+        enter_cond: str,
+        exit_cond: str,
+        is_short_selling_strategy: bool,
+        universe_datasets: List[str],
+        leverage_allowed: float,
+        trading_rules: TradingRules,
+        dataset_table_name_to_timeseries_col_map: Dict,
+        allocation_per_symbol: float,
+        longest_dataset: Dataset,
+    ):
+        self.enter_cond = enter_cond
+        self.exit_cond = exit_cond
+        self.is_short_selling_strategy = is_short_selling_strategy
+        self.universe_datasets = universe_datasets
+        self.is_leverage_allowed = leverage_allowed
+        self.trading_rules = trading_rules
+        self.allocation_per_symbol = allocation_per_symbol
+        self.dataset_table_name_to_timeseries_col_map = (
+            dataset_table_name_to_timeseries_col_map
+        )
+        self.kline_state: Dict = {}
+        self.table_name_to_df_map: Dict = {}
+        self.positions: List[Position] = []
+        self.longest_dataset = longest_dataset
+        self.trades: List[Trade] = []
+        self.is_no_data_on_curr_row = False
+
+    def process_bar(self, kline_open_time: int):
+        df = read_all_cols_matching_kline_open_times(
+            self.longest_dataset.dataset_name,
+            self.longest_dataset.timeseries_column,
+            [kline_open_time],
+        )
+        if not df.empty:
+            self.kline_state = get_kline_decisions_v2(
+                kline_open_time,
+                self.enter_cond,
+                self.exit_cond,
+                self.dataset_table_name_to_timeseries_col_map,
+                self.universe_datasets,
+            )
+        else:
+            self.is_no_data_on_curr_row = True
+
+    def is_dataset_already_in_pos(self, dataset: str):
+        for item in self.positions:
+            if item.dataset_name == dataset:
+                return True
+        return False
+
+    def enter_trade(self, dataset: str, kline_open_time: int, usdt_allocation: float):
+        price = get_bar_curr_price(self.kline_state[TABLE_NAME_TO_DF_MAP][dataset])
+
+        if price is None:
+            return False
+
+        quantity = usdt_allocation / price
+        position = Position(
+            dataset_name=dataset,
+            quantity=quantity,
+            open_time_ms=kline_open_time,
+            open_price=price,
+            is_debt=self.is_short_selling_strategy,
+        )
+        self.positions.append(position)
+        return True
+
+    def tick(self, kline_open_time: int):
+        for item in self.positions:
+            if self.is_no_data_on_curr_row is False:
+                price = get_bar_curr_price(
+                    self.kline_state[TABLE_NAME_TO_DF_MAP][item.dataset_name]
+                )
+                item.update(kline_open_time=kline_open_time, new_price=price)
+
+    def get_assets(self):
+        if self.is_short_selling_strategy is True:
+            return 0
+
+        assets = 0.0
+
+        for item in self.positions:
+            price = get_bar_curr_price(
+                self.kline_state[TABLE_NAME_TO_DF_MAP][item.dataset_name]
+            )
+
+            if price is not None:
+                assets += price * item.quantity
+        return assets
+
+    def get_liabilities(self):
+        if self.is_short_selling_strategy is False:
+            return 0
+
+        liabilities = 0.0
+
+        for item in self.positions:
+            price = get_bar_curr_price(
+                self.kline_state[TABLE_NAME_TO_DF_MAP][item.dataset_name]
+            )
+            if price is not None:
+                liabilities += price * item.quantity
+        return liabilities
+
+    def should_close_by_exit_cond(self, position: Position):
+        exits = self.kline_state["exits"]
+        for item in exits:
+            if item == position.dataset_name:
+                return True
+        return False
+
+    def is_pos_held_for_max_time(self, position: Position):
+        if self.trading_rules.use_time_based_close is True:
+            return position.candles_held >= self.trading_rules.max_klines_until_close
+        return False
+
+    def should_close_by_stop_loss(self, position: Position):
+        if self.trading_rules.use_stop_loss_based_close is False:
+            return False
+
+        if len(position.balance_history) == 0:
+            return False
+
+        return is_stop_loss_hit(
+            [item["price"] for item in position.balance_history],
+            self.trading_rules.stop_loss_threshold_perc,
+            self.is_short_selling_strategy,
+        )
+
+    def should_close_by_take_profit(self, position: Position):
+        if self.trading_rules.use_profit_based_close is False:
+            return False
+
+        if len(position.balance_history) == 0:
+            return False
+
+        last_price = position.balance_history[len(position.balance_history) - 1][
+            "price"
+        ]
+        open_price = position.balance_history[0]["price"]
+
+        return is_take_profit_hit(
+            last_price,
+            open_price,
+            self.trading_rules.take_profit_threshold_perc,
+            self.is_short_selling_strategy,
+        )
+
+
+class BacktestOnUniverse:
+    def __init__(
+        self,
+        trading_rules: TradingRules,
+        starting_balance: float,
+        benchmark_initial_state: Dict,
+        candle_time_delta_ms: int,
+        strategies: List[Strategy],
+        max_margin_ratio: int = 1,
+    ):
+        self.trading_rules = trading_rules
+        self.starting_balance = starting_balance
+        self.candle_time_delta_ms = candle_time_delta_ms
+        self.positions: List[Position] = []
+        self.cash_balance = starting_balance
+        self.nav = starting_balance
+        self.cash_debt = 0
+        self.max_margin_ratio = max_margin_ratio
+        self.current_margin_ratio = 0
+        self.strategies = strategies
+        self.balance_history: List[Dict] = []
+
+    def update_balances(self, kline_open_time: int):
+        total_assets = 0.0
+        total_liabilities = 0.0
+
+        for item in self.strategies:
+            item.tick(kline_open_time)
+
+        for item in self.strategies:
+            if item.is_short_selling_strategy is True:
+                total_liabilities += item.get_liabilities()
+            else:
+                total_assets += item.get_assets()
+
+        nav = self.cash_balance + total_assets - total_liabilities
+        self.nav = nav
+        self.current_margin_ratio = safe_divide(total_liabilities, self.nav, 0.0)
+
+        tick = {
+            "total_debt": total_liabilities,
+            "total_long": total_assets,
+            "kline_open_time": kline_open_time,
+            "debt_to_net_value_ratio": self.current_margin_ratio,
+            "portfolio_worth": self.nav,
+        }
+        self.balance_history.append(tick)
+
+    def close_trade(self, strategy: Strategy, position: Position, kline_open_time: int):
+        last_price = position.balance_history[len(position.balance_history) - 1][
+            "price"
+        ]
+        net_result = calc_trade_net_result(
+            position.open_price,
+            last_price,
+            position.open_quantity,
+            position.quantity,
+            strategy.is_short_selling_strategy,
+        )
+        perc_result = calc_trade_perc_result(
+            position.open_price,
+            last_price,
+            position.open_quantity,
+            position.quantity,
+            strategy.is_short_selling_strategy,
+        )
+
+        trade = Trade(
+            open_price=position.open_price,
+            open_time=position.open_time_ms,
+            close_price=last_price,
+            close_time=kline_open_time,
+            net_result=net_result,
+            percent_result=perc_result,
+            direction="SHORT" if strategy.is_short_selling_strategy else "LONG",
+            dataset_name=position.dataset_name,
+        )
+        strategy.trades.append(trade)
+        position.close_proceedings = last_price * position.quantity
+        position.is_closed = True
+
+    def close_trades(self, kline_open_time: int):
+        for item in self.strategies:
+            for position in item.positions:
+                should_close = False
+
+                if item.should_close_by_exit_cond(position) is True:
+                    should_close = True
+                if item.should_close_by_stop_loss(position) is True:
+                    should_close = True
+                if item.should_close_by_take_profit(position) is True:
+                    should_close = True
+                if item.is_pos_held_for_max_time(position) is True:
+                    should_close = True
+
+                if should_close is True:
+                    if item.is_short_selling_strategy is False:
+                        self.close_trade(item, position, kline_open_time)
+                        close_proceedings = position.close_proceedings
+
+                        if self.cash_debt > 0:
+                            if self.cash_debt >= close_proceedings:
+                                self.cash_debt -= close_proceedings
+                            else:
+                                remaining_after_close_debt = (
+                                    close_proceedings - self.cash_debt
+                                )
+                                self.cash_debt = 0.0
+                                self.cash_balance += remaining_after_close_debt
+                        else:
+                            self.cash_balance += close_proceedings
+                    else:
+                        self.close_trade(item, position, kline_open_time)
+                        close_proceedings = position.close_proceedings
+
+                        if self.cash_balance >= close_proceedings:
+                            self.cash_balance -= close_proceedings
+                        else:
+                            needed_debt = close_proceedings - self.cash_balance
+                            self.cash_debt += needed_debt
+                            self.cash_balance = 0.0
+
+    def get_short_size_usdt(self, strategy: Strategy):
+        allocation_per_symbol = strategy.allocation_per_symbol
+
+        if self.current_margin_ratio >= self.max_margin_ratio:
+            return 0
+
+        if allocation_per_symbol + self.current_margin_ratio >= self.max_margin_ratio:
+            return (self.max_margin_ratio - self.current_margin_ratio) * self.nav
+
+        return allocation_per_symbol * self.nav
+
+    def get_long_size_usdt(self, strategy: Strategy):
+        allocated_size = strategy.allocation_per_symbol * self.nav
+        if self.cash_balance >= allocated_size:
+            return allocated_size
+        return self.cash_balance
+
+    def enter_trades(self, kline_open_time: int):
+        for item in self.strategies:
+            if item.is_no_data_on_curr_row is True:
+                continue
+
+            enters = item.kline_state["enters"]
+            for enter_dataset in enters:
+                if item.is_dataset_already_in_pos(enter_dataset) is False:
+                    if item.is_short_selling_strategy is True:
+                        size = self.get_short_size_usdt(item)
+                        if (
+                            item.enter_trade(
+                                enter_dataset,
+                                kline_open_time,
+                                size,
+                            )
+                            is True
+                        ):
+                            self.cash_balance += size
+                    else:
+                        size = self.get_long_size_usdt(item)
+                        if (
+                            item.enter_trade(
+                                enter_dataset,
+                                kline_open_time,
+                                size,
+                            )
+                            is True
+                        ):
+                            self.cash_balance -= size
+
+    def cleanup(self):
+        for item in self.strategies:
+            positions = []
+            for position in item.positions:
+                if position.is_closed is False:
+                    positions.append(position)
+            item.positions = positions
+
+    def tick(self, kline_open_time: int):
+        for item in self.strategies:
+            item.process_bar(kline_open_time)
+        self.update_balances(kline_open_time)
+        self.close_trades(kline_open_time)
+        self.enter_trades(kline_open_time)
+        self.cleanup()
