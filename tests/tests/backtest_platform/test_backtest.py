@@ -22,6 +22,7 @@ from tests.backtest_platform.fixtures import (
     ml_based_exit_long_cond_basic,
     ml_based_exit_short_cond_basic,
     open_long_trade_cond_basic,
+    body_rule_based_on_universe_v1,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
 from tests.backtest_platform.fixtures import (
@@ -102,7 +103,7 @@ def test_long_short_backtest(cleanup_db, fixt_add_blue_chip_1d_datasets):
     time.sleep(1000)
 
 
-@pytest.mark.dev
+@pytest.mark.acceptance
 def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     ML_MODEL_NAME = "Example model"
 
@@ -137,3 +138,20 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     body["epoch"] = 4
 
     Post.create_ml_based_backtest(body=body)
+
+
+@pytest.mark.dev
+def test_rule_based_on_universe(cleanup_db, fixt_add_blue_chip_1d_datasets):
+    datasets = fixt_add_blue_chip_1d_datasets
+    body = body_rule_based_on_universe_v1
+
+    first_dataset = datasets[0]
+    data_transformation_ids = gen_data_transformations(first_dataset.name)
+    body = body_rule_based_on_universe_v1
+    body["data_transformations"] = data_transformation_ids
+    dataset_names = []
+    for item in datasets:
+        dataset_names.append(item.pair_name)
+    body["datasets"] = dataset_names
+
+    Post.run_rule_based_sim_on_universe(body=body)

@@ -1,6 +1,7 @@
 from typing import List
 from tests.backtest_platform.t_constants import BinanceCols
 from tests.backtest_platform.t_utils import create_backtest_body, create_train_job_body
+from datetime import datetime, timedelta
 
 from tests.backtest_platform.t_conf import SERVER_SOURCE_DIR
 from code_gen import PyCode
@@ -310,6 +311,33 @@ backtest_rule_based_v2 = {
     "stop_loss_threshold_perc": 2,
     "take_profit_threshold_perc": 0,
     "backtest_data_range": [70, 100],
+}
+
+body_rule_based_on_universe_v1 = {
+    "fetch_latest_data": True,
+    "start_date": (datetime.now() - timedelta(days=3000)).isoformat(),
+    "candle_interval": "1d",
+    "end_date": datetime.now().isoformat(),
+    "max_simultaneous_positions": 5,
+    "open_trade_cond": """
+def get_enter_trade_decision(tick):
+    if tick.get('RSI_30_MA_50_close_price') is None:
+        return False
+    if tick['RSI_30_MA_50_close_price'] > 90:
+        return True
+    return False
+    """,
+    "close_trade_cond": "def get_exit_trade_decision(tick):\n    return False",
+    "klines_until_close": 5,
+    "is_short_selling_strategy": False,
+    "is_cryptocurrency_datasets": True,
+    "use_time_based_close": True,
+    "use_profit_based_close": False,
+    "use_stop_loss_based_close": False,
+    "take_profit_threshold_perc": 0.05,
+    "stop_loss_threshold_perc": 0.05,
+    "short_fee_hourly": 0.05,
+    "trading_fees_perc": 0.075,
 }
 
 

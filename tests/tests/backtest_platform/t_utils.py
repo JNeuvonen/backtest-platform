@@ -426,6 +426,11 @@ class Post:
         with Req("post", URL.create_ml_based_backtest(), json=body) as res:
             return res
 
+    @staticmethod
+    def run_rule_based_sim_on_universe(body):
+        with Req("post", URL.create_rule_based_sim_on_universe(), json=body) as res:
+            return res
+
 
 class Put:
     @staticmethod

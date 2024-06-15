@@ -8,6 +8,7 @@ tests.egg-info/top_level.txt
 tests/analytics_server/__init__.py
 tests/analytics_server/conftest.py
 tests/analytics_server/http_utils.py
+tests/analytics_server/test_dev.py
 tests/analytics_server/test_user.py
 tests/analytics_server/fixtures/__init__.py
 tests/analytics_server/fixtures/test_token.py
