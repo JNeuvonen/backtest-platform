@@ -15,6 +15,7 @@ import {
   DatasetsResponse,
   EpochInfo,
   FetchModelByNameRes,
+  RuleBasedMassBacktestBody,
   TrainJob,
 } from "./queries/response-types";
 import { save } from "@tauri-apps/api/dialog";
@@ -31,6 +32,7 @@ import {
   CloneIndicatorsFormValues,
 } from "../components/CloneIndicatorsForm";
 import { LongShortDeployForm } from "../pages/simulate/bulk/deployform";
+import { BacktestOnUniverseFormValues } from "../components/CreateMassRuleBasedSim";
 
 export async function fetchDatasets() {
   const url = LOCAL_API_URL.tables;
@@ -745,6 +747,17 @@ export const saveYfinanceKlines = async (symbol: string) => {
   const res = await buildRequest({
     method: "POST",
     url: LOCAL_API_URL.saveYfinanceKlines(symbol),
+  });
+  return res;
+};
+
+export const createRuleBasedMassBacktest = async (
+  body: RuleBasedMassBacktestBody
+) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.createRuleBasedMassBacktest(),
+    payload: body,
   });
   return res;
 };

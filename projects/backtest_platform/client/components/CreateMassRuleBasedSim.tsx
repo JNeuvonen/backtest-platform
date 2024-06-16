@@ -16,9 +16,33 @@ import "react-datepicker/dist/react-datepicker.css";
 import { DataTransformationControls } from "./DataTransformationsControls";
 import { CodeEditor } from "./CodeEditor";
 import { ChakraNumberStepper } from "./ChakraNumberStepper";
+import { FormSubmitBar } from "./form/FormSubmitBar";
+import { ENTER_TRADE_DEFAULT, EXIT_LONG_TRADE_DEFAULT } from "../utils/code";
 
 interface Props {
   drawerControls: UseDisclosureReturn;
+  onSubmit: (formValues: any) => void;
+}
+
+export interface BacktestOnUniverseFormValues {
+  backtestName: string;
+  useLatestData: boolean;
+  startDate: Date | null;
+  endDate: Date | null;
+  dataTransformations: number[];
+  enterCriteria: string;
+  exitCriteria: string;
+  isShortSellingStrategy: boolean;
+  useTimeBasedClose: boolean;
+  useProfitBasedClose: boolean;
+  useStopLossBasedClose: boolean;
+  klinesUntilClose: number;
+  takeProfitThresholdPerc: number;
+  stopLossThresholdPerc: number;
+  tradingFees: number;
+  slippage: number;
+  allocationPerSymbol: number;
+  shortFeeHourly: number;
 }
 
 const formKeys = {
@@ -36,6 +60,7 @@ const formKeys = {
   klinesUntilClose: "klinesUntilClose",
   takeProfitThresholdPerc: "takeProfitThresholdPerc",
   stopLossThresholdPerc: "stopLossThresholdPerc",
+  allocationPerSymbol: "allocationPerSymbol",
   tradingFees: "tradingFees",
   shortFeeHourly: "shortFeeHourly",
   slippage: "slippage",
@@ -48,8 +73,8 @@ const getFormInitialValues = () => {
     [formKeys.startDate]: null,
     [formKeys.endDate]: null,
     [formKeys.dataTransformations]: [],
-    [formKeys.enterCriteria]: "",
-    [formKeys.exitCriteria]: "",
+    [formKeys.enterCriteria]: ENTER_TRADE_DEFAULT(),
+    [formKeys.exitCriteria]: EXIT_LONG_TRADE_DEFAULT(),
     [formKeys.isShortSellingStrategy]: false,
     [formKeys.useTimeBasedClose]: false,
     [formKeys.useProfitBasedClose]: false,
@@ -59,6 +84,8 @@ const getFormInitialValues = () => {
     [formKeys.stopLossThresholdPerc]: 1,
     [formKeys.tradingFees]: 0.1,
     [formKeys.slippage]: 0,
+    [formKeys.allocationPerSymbol]: 0.5,
+    [formKeys.shortFeeHourly]: 0.00016,
   };
 };
 
@@ -73,9 +100,7 @@ const FormikDatePicker = ({ field, form, ...props }) => {
   );
 };
 
-export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
-  const selectTransformationsModal = useDisclosure();
-
+export const CreateMassRuleBasedSim = ({ drawerControls, onSubmit }: Props) => {
   return (
     <div>
       <ChakraDrawer
@@ -84,7 +109,9 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
         {...drawerControls}
       >
         <Formik
-          onSubmit={(values) => {}}
+          onSubmit={(values) => {
+            onSubmit(values);
+          }}
           initialValues={getFormInitialValues()}
         >
           {({ values }) => (
@@ -189,7 +216,7 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
                       <CodeEditor
                         code={field.value}
                         setCode={(newState) => {
-                          form.setFieldValue(formKeys.enterCriteria, newState);
+                          form.setFieldValue(formKeys.exitCriteria, newState);
                         }}
                         style={{ marginTop: "16px" }}
                         fontSize={13}
@@ -217,6 +244,38 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
                             )
                           }
                         />
+                      </WithLabel>
+                    );
+                  }}
+                </Field>
+              </div>
+
+              <div style={{ marginTop: "16px" }}>
+                <Field name={formKeys.allocationPerSymbol}>
+                  {({ field, form }) => {
+                    return (
+                      <WithLabel
+                        label={"Allocation % per symbol"}
+                        containerStyles={{
+                          maxWidth: "200px",
+                          marginTop: "16px",
+                        }}
+                      >
+                        <NumberInput
+                          step={0.25}
+                          min={0}
+                          value={field.value}
+                          precision={3}
+                          onChange={(valueString) =>
+                            form.setFieldValue(
+                              formKeys.allocationPerSymbol,
+                              parseFloat(valueString)
+                            )
+                          }
+                        >
+                          <NumberInputField />
+                          <ChakraNumberStepper />
+                        </NumberInput>
                       </WithLabel>
                     );
                   }}
@@ -443,7 +502,7 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
                   }}
                 </Field>
 
-                {values.useShorts && (
+                {values[formKeys.isShortSellingStrategy] && (
                   <Field name={formKeys.shortFeeHourly}>
                     {({ field, form }) => {
                       return (
@@ -475,6 +534,8 @@ export const CreateMassRuleBasedSim = ({ drawerControls }: Props) => {
                   </Field>
                 )}
               </div>
+
+              <FormSubmitBar />
             </Form>
           )}
         </Formik>

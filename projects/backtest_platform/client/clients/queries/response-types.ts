@@ -329,3 +329,26 @@ export interface FetchBulkBacktests {
   equity_curves: { [key: number]: PortfolioHistoryTerse[] }[];
   id_to_dataset_name_map: { [key: number]: string };
 }
+
+export interface RuleBasedMassBacktestBody {
+  name: string;
+  candle_interval: string;
+  datasets: string[];
+  start_date: string | null;
+  end_date: string | null;
+  data_transformations: number[];
+  klines_until_close: number;
+  open_trade_cond: string;
+  close_trade_cond: string;
+  fetch_latest_data: boolean;
+  is_cryptocurrency_datasets: boolean;
+  is_short_selling_strategy: boolean;
+  use_time_based_close: boolean;
+  use_profit_based_close: boolean;
+  use_stop_loss_based_close: boolean;
+  stop_loss_threshold_perc: number;
+  short_fee_hourly: number;
+  trading_fees_perc: number;
+  slippage_perc: number;
+  allocation_per_symbol: number;
+}

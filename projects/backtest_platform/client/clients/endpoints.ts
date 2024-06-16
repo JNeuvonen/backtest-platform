@@ -179,6 +179,8 @@ export const LOCAL_API_URL = {
     LOCAL_API.backtest.root +
     "/mass-backtest/combined/summary?list_of_ids=" +
     `${JSON.stringify(listOfBacktestIds)}`,
+  createRuleBasedMassBacktest: () =>
+    LOCAL_API_URI + LOCAL_API.backtest.root + "/rule-based-on-universe",
   fetchDataTransformations: () =>
     LOCAL_API_URI + LOCAL_API.data_transformation.root,
   createDataTransformation: () =>
