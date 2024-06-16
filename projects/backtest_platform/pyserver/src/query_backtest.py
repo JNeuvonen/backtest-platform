@@ -41,6 +41,7 @@ class Backtest(Base):
     is_short_selling_strategy = Column(Boolean)
     is_long_short_strategy = Column(Boolean)
     is_ml_based_strategy = Column(Boolean)
+    is_rule_based_mass_backtest = Column(Boolean)
     is_ran_on_asset_universe = Column(Boolean)
 
     use_time_based_close = Column(Boolean)
@@ -177,6 +178,25 @@ class BacktestQuery:
                         Backtest.id == BacktestStatistics.backtest_id,
                     )
                     .filter(Backtest.is_long_short_strategy == True)
+                    .all()
+                )
+                combined_backtests = [
+                    combine_dicts([backtest.__dict__, stats.__dict__])
+                    for backtest, stats in backtests
+                ]
+                return combined_backtests
+
+    @staticmethod
+    def fetch_all_rule_based_mass_backtests():
+        with LogExceptionContext():
+            with Session() as session:
+                backtests = (
+                    session.query(Backtest, BacktestStatistics)
+                    .join(
+                        BacktestStatistics,
+                        Backtest.id == BacktestStatistics.backtest_id,
+                    )
+                    .filter(Backtest.is_rule_based_mass_backtest == True)
                     .all()
                 )
                 combined_backtests = [

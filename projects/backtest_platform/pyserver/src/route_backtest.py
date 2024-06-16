@@ -64,6 +64,7 @@ class RoutePaths:
         "/mass-backtest/long-short/transformations/{backtest_id}"
     )
     RULE_BASED_BACKTEST_ON_UNIVERSE = "/rule-based-on-universe"
+    FETCH_RULE_BASED_MASSBACKTESTS = "/rule-based-mass-backtests"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -337,3 +338,10 @@ async def route_rule_based_on_universe(body: BodyRuleBasedOnUniverse):
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
+
+
+@router.get(RoutePaths.FETCH_RULE_BASED_MASSBACKTESTS)
+async def route_fetch_rule_based_massbacktests():
+    with HttpResponseContext():
+        backtests = BacktestQuery.fetch_all_rule_based_mass_backtests()
+        return {"data": backtests}

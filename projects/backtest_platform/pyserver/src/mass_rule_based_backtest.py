@@ -272,6 +272,7 @@ def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
             if body.end_date is not None
             else None,
             "is_ran_on_asset_universe": True,
+            "is_rule_based_mass_backtest": True,
             "allocation_per_symbol": body.allocation_per_symbol,
             "asset_universe_dataset_ids": json.dumps(dataset_ids),
         }
