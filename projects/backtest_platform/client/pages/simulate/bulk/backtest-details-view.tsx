@@ -47,7 +47,7 @@ interface ChartTick {
   kline_open_time: number;
 }
 
-const getPortfolioChartData = (backtestData: FetchBacktestByIdRes) => {
+export const getPortfolioChartData = (backtestData: FetchBacktestByIdRes) => {
   if (backtestData === undefined) return [];
 
   const ret = [] as ChartTick[];
@@ -67,9 +67,10 @@ const getPortfolioChartData = (backtestData: FetchBacktestByIdRes) => {
   return ret;
 };
 
-const getTradesData = (
+export const getTradesData = (
   backtestData: FetchBacktestByIdRes,
-  filterTradesRange: number[]
+  filterTradesRange: number[],
+  pairTrades: boolean = true
 ) => {
   if (backtestData === undefined) return {};
 
@@ -78,7 +79,7 @@ const getTradesData = (
   let numWinningTrades = 0;
   let numLosingTrades = 0;
 
-  const trades = backtestData.pair_trades.sort(
+  const trades = backtestData[pairTrades ? "pair_trades" : "trades"].sort(
     (a, b) => a.percent_result - b.percent_result
   );
 

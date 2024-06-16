@@ -22,6 +22,7 @@ import { MachineLearningBacktestPage } from "./pages/simulate/machine-learning";
 import { MLBasedBacktestProvider } from "./context/mlbasedbacktest";
 import { MLBasedBacktestPage } from "./pages/ml-based-backtest";
 import { RuleBasedSimOnUniverseBacktest } from "./pages/rule-based-on-universe-backtest";
+import { ViewRuleBasedMassBacktestPage } from "./pages/rule-based-on-universe-backtest/view-by-id";
 
 export const AppRoutes = () => {
   return (
@@ -68,7 +69,7 @@ export const AppRoutes = () => {
       />
       <Route
         path={PATHS.rule_based_on_universe.by_id}
-        element={<div>View rule based backtest by id</div>}
+        element={<ViewRuleBasedMassBacktestPage />}
       />
       <Route
         path={PATHS.simulate.bulk_long_short}
