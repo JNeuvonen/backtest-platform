@@ -18,6 +18,10 @@ import { CodeEditor } from "./CodeEditor";
 import { ChakraNumberStepper } from "./ChakraNumberStepper";
 import { FormSubmitBar } from "./form/FormSubmitBar";
 import { ENTER_TRADE_DEFAULT, EXIT_LONG_TRADE_DEFAULT } from "../utils/code";
+import { DiskManager } from "common_js";
+import { DISK_KEYS } from "../utils/disk";
+
+const backtestDiskManager = new DiskManager(DISK_KEYS.rule_based_mass_backtest);
 
 interface Props {
   drawerControls: UseDisclosureReturn;
@@ -67,25 +71,39 @@ const formKeys = {
 };
 
 const getFormInitialValues = () => {
+  const prevForm = backtestDiskManager.read();
+
+  if (prevForm === null) {
+    return {
+      [formKeys.backtestName]: "",
+      [formKeys.useLatestData]: false,
+      [formKeys.startDate]: null,
+      [formKeys.endDate]: null,
+      [formKeys.dataTransformations]: [],
+      [formKeys.enterCriteria]: ENTER_TRADE_DEFAULT(),
+      [formKeys.exitCriteria]: EXIT_LONG_TRADE_DEFAULT(),
+      [formKeys.isShortSellingStrategy]: false,
+      [formKeys.useTimeBasedClose]: false,
+      [formKeys.useProfitBasedClose]: false,
+      [formKeys.useStopLossBasedClose]: false,
+      [formKeys.klinesUntilClose]: 1,
+      [formKeys.takeProfitThresholdPerc]: 1,
+      [formKeys.stopLossThresholdPerc]: 1,
+      [formKeys.tradingFees]: 0.1,
+      [formKeys.slippage]: 0,
+      [formKeys.allocationPerSymbol]: 0.5,
+      [formKeys.shortFeeHourly]: 0.00016,
+    };
+  }
+
   return {
-    [formKeys.backtestName]: "",
-    [formKeys.useLatestData]: false,
-    [formKeys.startDate]: null,
-    [formKeys.endDate]: null,
-    [formKeys.dataTransformations]: [],
-    [formKeys.enterCriteria]: ENTER_TRADE_DEFAULT(),
-    [formKeys.exitCriteria]: EXIT_LONG_TRADE_DEFAULT(),
-    [formKeys.isShortSellingStrategy]: false,
-    [formKeys.useTimeBasedClose]: false,
-    [formKeys.useProfitBasedClose]: false,
-    [formKeys.useStopLossBasedClose]: false,
-    [formKeys.klinesUntilClose]: 1,
-    [formKeys.takeProfitThresholdPerc]: 1,
-    [formKeys.stopLossThresholdPerc]: 1,
-    [formKeys.tradingFees]: 0.1,
-    [formKeys.slippage]: 0,
-    [formKeys.allocationPerSymbol]: 0.5,
-    [formKeys.shortFeeHourly]: 0.00016,
+    ...prevForm,
+    [formKeys.startDate]: prevForm[formKeys.startDate]
+      ? new Date(prevForm[formKeys.startDate])
+      : null,
+    [formKeys.endDate]: prevForm[formKeys.endDate]
+      ? new Date(prevForm[formKeys.endDate])
+      : null,
   };
 };
 
@@ -110,6 +128,7 @@ export const CreateMassRuleBasedSim = ({ drawerControls, onSubmit }: Props) => {
       >
         <Formik
           onSubmit={(values) => {
+            backtestDiskManager.save(values);
             onSubmit(values);
           }}
           initialValues={getFormInitialValues()}

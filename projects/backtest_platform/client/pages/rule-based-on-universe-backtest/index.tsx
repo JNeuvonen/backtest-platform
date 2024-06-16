@@ -2,7 +2,6 @@ import {
   Heading,
   MenuButton,
   MenuItem,
-  Tooltip,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";

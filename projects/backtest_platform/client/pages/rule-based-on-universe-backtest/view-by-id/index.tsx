@@ -30,16 +30,6 @@ export const ViewRuleBasedMassBacktestPage = () => {
     [backtestQuery.data]
   );
 
-  const tradeDetailsData = useMemo(
-    () =>
-      getTradesData(
-        backtestQuery.data as FetchBacktestByIdRes,
-        filterTradesRange,
-        false
-      ),
-    [backtestQuery.data, JSON.stringify(filterTradesRange)]
-  );
-
   useEffect(() => {
     if (backtestQuery.data) {
       const trades = backtestQuery.data.trades.sort(

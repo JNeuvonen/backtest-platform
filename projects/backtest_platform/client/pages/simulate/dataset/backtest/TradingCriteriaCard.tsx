@@ -26,11 +26,10 @@ export const TradingCriteriaCard = (props: Props) => {
     if (backtestQuery.data?.data.is_ml_based_strategy) {
       return "ML based";
     } else {
-      {
-        return backtestQuery.data.data.is_short_selling_strategy
-          ? "Short"
-          : "Long";
-      }
+      console.log(backtestQuery.data.data.is_short_selling_strategy);
+      return backtestQuery.data.data.is_short_selling_strategy
+        ? "Short"
+        : "Long";
     }
   };
 

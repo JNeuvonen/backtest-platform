@@ -8,6 +8,7 @@ export const DISK_KEYS = {
   ml_backtest_form: "ML_BASED_BACKTEST_FORM",
   run_python_on_dataset: "RUN_PYTHON_ON_DATASET",
   manage_code_presets_filters: "MANAGE_CODE_PRESETS_FILTERS",
+  rule_based_mass_backtest: "RULE_BASED_MASS_BACKTEST",
 };
 
 export class DiskManager {
