@@ -27,6 +27,7 @@ from tests.backtest_platform.fixtures import (
 from tests.backtest_platform.t_utils import Fetch, Post
 from tests.backtest_platform.fixtures import (
     backtest_rule_based_v2,
+    backtest_rule_based_debug_scalar_divide,
 )
 
 
@@ -154,4 +155,17 @@ def test_rule_based_on_universe(cleanup_db, fixt_add_blue_chip_1d_datasets):
         dataset_names.append(item.pair_name)
     body["datasets"] = dataset_names
 
+    Post.run_rule_based_sim_on_universe(body=body)
+
+
+@pytest.mark.debug
+def test_rule_based_on_universe_issue_with_scalar_div(
+    cleanup_db, fixt_add_blue_chip_1d_datasets
+):
+    datasets = fixt_add_blue_chip_1d_datasets
+    body = backtest_rule_based_debug_scalar_divide
+
+    first_dataset = datasets[0]
+    data_transformation_ids = gen_data_transformations(first_dataset.name)
+    body["data_transformations"] = data_transformation_ids
     Post.run_rule_based_sim_on_universe(body=body)

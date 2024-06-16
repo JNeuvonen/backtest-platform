@@ -86,7 +86,7 @@ def get_backtest_data_range_indexes(
         return range_start_idx, range_end_idx + 1
 
 
-def transform_datasets_on_universe(
+def fetch_transform_datasets_on_universe(
     datasets: List[str],
     data_transformations: List[int],
     candle_interval: str,
@@ -137,7 +137,7 @@ def transform_datasets_on_universe(
 def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
     with LogExceptionContext():
         logger = get_logger()
-        result = transform_datasets_on_universe(
+        result = fetch_transform_datasets_on_universe(
             body.datasets,
             body.data_transformations,
             body.candle_interval,
@@ -198,7 +198,7 @@ def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
                 is_short_selling_strategy=body.is_short_selling_strategy,
                 universe_datasets=table_names,
                 leverage_allowed=False,
-                allocation_per_symbol=body.allocation_per_symbol,
+                allocation_per_symbol=body.allocation_per_symbol / 100,
                 trading_rules=trading_rules,
                 dataset_table_name_to_timeseries_col_map=dataset_table_name_to_timeseries_col_map,
                 longest_dataset=longest_dataset,
