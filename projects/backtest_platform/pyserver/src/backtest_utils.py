@@ -1348,6 +1348,9 @@ class BacktestOnUniverse:
                 if item.is_dataset_already_in_pos(enter_dataset) is False:
                     if item.is_short_selling_strategy is True:
                         size = self.get_short_size_usdt(item)
+                        if size < 30:
+                            continue
+
                         if (
                             item.enter_trade(
                                 enter_dataset,
@@ -1361,6 +1364,9 @@ class BacktestOnUniverse:
                             )
                     else:
                         size = self.get_long_size_usdt(item)
+                        if size < 30:
+                            continue
+
                         if (
                             item.enter_trade(
                                 enter_dataset,
