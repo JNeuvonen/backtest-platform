@@ -122,7 +122,6 @@ class BodyRuleBasedOnUniverse(BaseModel):
     datasets: List[str]
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-    max_simultaneous_positions: int
     data_transformations: List[int]
     klines_until_close: Optional[int] = None
     open_trade_cond: str

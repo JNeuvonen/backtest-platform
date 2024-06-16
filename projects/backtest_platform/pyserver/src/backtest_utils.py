@@ -1399,4 +1399,6 @@ def create_trade_entries_v2(backtest_id: int, trades: List[Trade]):
         trade_dict = item.to_dict()
         trade_dict["backtest_id"] = backtest_id
         trade_dict["is_short_trade"] = True if item.direction == "SHORT" else False
+        trade_dict["open_time"] = trade_dict["open_time"] / 1000
+        trade_dict["close_time"] = trade_dict["close_time"] / 1000
         TradeQuery.create_entry(trade_dict)

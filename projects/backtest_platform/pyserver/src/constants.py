@@ -38,7 +38,6 @@ class BinanceDataCols:
 BINANCE_BACKTEST_PRICE_COL = "close_price"
 
 LOG_FILE = "logs"
-WEBSOCKETS_STATE = "websockets_state.pkl"
 DB_DATASETS = "datasets.db"
 
 STREAMING_DEFAULT_CHUNK_SIZE = 1024

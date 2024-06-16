@@ -3,8 +3,6 @@ from contextlib import asynccontextmanager
 from code_preset_utils import generate_default_code_presets
 from utils import on_shutdown_cleanup
 import uvicorn
-import query_epoch_prediction
-import query_ml_validation_set_prices
 
 from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +23,6 @@ async def lifespan(
     app: FastAPI,
 ):  # pylint: disable=unused-argument, redefined-outer-name
     """The code before the yield statement will be executed on boot. The code after the yield statement will be executed as a cleanup on application close."""
-
     with LogExceptionContext("Succesfully initiated tables"):
         create_tables()
         generate_default_code_presets()
