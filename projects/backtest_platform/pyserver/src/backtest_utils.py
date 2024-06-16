@@ -5,6 +5,7 @@ from common_python.trading.utils import (
     is_take_profit_hit,
     calc_trade_net_result,
     calc_trade_perc_result,
+    Trade,
 )
 from typing import Dict, List, Optional, Set
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE, LOAD_MODEL_TEMPLATE
@@ -946,21 +947,6 @@ def calc_profit_factor(trades):
 TABLE_NAME_TO_DF_MAP = "table_name_to_df_map"
 
 
-class Trade:
-    def __init__(
-        self,
-        open_price,
-        close_price,
-        open_time,
-        close_time,
-        direction,
-        net_result,
-        percent_result,
-        dataset_name,
-    ):
-        pass
-
-
 class TradingRules:
     def __init__(
         self,
@@ -974,7 +960,7 @@ class TradingRules:
         max_klines_until_close: int | None,
         candles_time_delta,
     ):
-        self.trading_fees = trading_fees
+        self.trading_fees = trading_fees / 100
         self.use_stop_loss_based_close = use_stop_loss_based_close
         self.use_profit_based_close = use_profit_based_close
         self.use_time_based_close = use_time_based_close
@@ -992,13 +978,14 @@ class Position:
         self,
         dataset_name: str,
         quantity: float,
+        open_quote_quantity: float,
         open_time_ms: int,
         open_price: float,
         is_debt: bool,
     ):
         self.dataset_name = dataset_name
         self.open_quantity = quantity
-        self.open_quote_quantity = open_price * quantity
+        self.open_quote_quantity = open_quote_quantity
         self.quantity = quantity
         self.open_time_ms = open_time_ms
         self.open_price = open_price
@@ -1085,6 +1072,12 @@ class Strategy:
         else:
             self.is_no_data_on_curr_row = True
 
+    def trading_fees_coeff_reduce_amount(self):
+        return 1 - self.trading_rules.trading_fees
+
+    def trading_fees_coeff_increase_amount(self):
+        return self.trading_rules.trading_fees + 1
+
     def is_dataset_already_in_pos(self, dataset: str):
         for item in self.positions:
             if item.dataset_name == dataset:
@@ -1098,9 +1091,14 @@ class Strategy:
             return False
 
         quantity = usdt_allocation / price
+
+        if self.is_short_selling_strategy is False:
+            quantity = quantity * self.trading_fees_coeff_reduce_amount()
+
         position = Position(
             dataset_name=dataset,
             quantity=quantity,
+            open_quote_quantity=usdt_allocation,
             open_time_ms=kline_open_time,
             open_price=price,
             is_debt=self.is_short_selling_strategy,
@@ -1115,6 +1113,9 @@ class Strategy:
                     self.kline_state[TABLE_NAME_TO_DF_MAP][item.dataset_name]
                 )
                 item.update(kline_open_time=kline_open_time, new_price=price)
+
+            if self.is_short_selling_strategy is True:
+                item.quantity *= self.trading_rules.short_fee_coeff
 
     def get_assets(self):
         if self.is_short_selling_strategy is True:
@@ -1203,6 +1204,7 @@ class BacktestOnUniverse:
         self.trading_rules = trading_rules
         self.starting_balance = starting_balance
         self.candle_time_delta_ms = candle_time_delta_ms
+        self.cumulative_time_ms = 0
         self.positions: List[Position] = []
         self.cash_balance = starting_balance
         self.nav = starting_balance
@@ -1212,7 +1214,7 @@ class BacktestOnUniverse:
         self.strategies = strategies
         self.balance_history: List[Dict] = []
 
-    def update_balances(self, kline_open_time: int):
+    def update(self, kline_open_time: int):
         total_assets = 0.0
         total_liabilities = 0.0
 
@@ -1236,6 +1238,7 @@ class BacktestOnUniverse:
             "debt_to_net_value_ratio": self.current_margin_ratio,
             "portfolio_worth": self.nav,
         }
+        self.cumulative_time_ms += self.candle_time_delta_ms
         self.balance_history.append(tick)
 
     def close_trade(self, strategy: Strategy, position: Position, kline_open_time: int):
@@ -1288,7 +1291,10 @@ class BacktestOnUniverse:
                 if should_close is True:
                     if item.is_short_selling_strategy is False:
                         self.close_trade(item, position, kline_open_time)
-                        close_proceedings = position.close_proceedings
+                        close_proceedings = (
+                            position.close_proceedings
+                            * item.trading_fees_coeff_reduce_amount()
+                        )
 
                         if self.cash_debt > 0:
                             if self.cash_debt >= close_proceedings:
@@ -1303,7 +1309,10 @@ class BacktestOnUniverse:
                             self.cash_balance += close_proceedings
                     else:
                         self.close_trade(item, position, kline_open_time)
-                        close_proceedings = position.close_proceedings
+                        close_proceedings = (
+                            position.close_proceedings
+                            * item.trading_fees_coeff_increase_amount()
+                        )
 
                         if self.cash_balance >= close_proceedings:
                             self.cash_balance -= close_proceedings
@@ -1347,7 +1356,9 @@ class BacktestOnUniverse:
                             )
                             is True
                         ):
-                            self.cash_balance += size
+                            self.cash_balance += (
+                                size * item.trading_fees_coeff_reduce_amount()
+                            )
                     else:
                         size = self.get_long_size_usdt(item)
                         if (
@@ -1371,7 +1382,21 @@ class BacktestOnUniverse:
     def tick(self, kline_open_time: int):
         for item in self.strategies:
             item.process_bar(kline_open_time)
-        self.update_balances(kline_open_time)
+        self.update(kline_open_time)
         self.close_trades(kline_open_time)
         self.enter_trades(kline_open_time)
         self.cleanup()
+
+    def get_all_trades(self):
+        trades = []
+        for item in self.strategies:
+            trades += item.trades
+        return trades
+
+
+def create_trade_entries_v2(backtest_id: int, trades: List[Trade]):
+    for item in trades:
+        trade_dict = item.to_dict()
+        trade_dict["backtest_id"] = backtest_id
+        trade_dict["is_short_trade"] = True if item.direction == "SHORT" else False
+        TradeQuery.create_entry(trade_dict)

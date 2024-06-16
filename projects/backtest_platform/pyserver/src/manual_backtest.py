@@ -29,7 +29,6 @@ from query_dataset import DatasetQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import (
-    BodyCreateLongShortBacktest,
     BodyCreateManualBacktest,
     BodyCreateMassBacktest,
 )

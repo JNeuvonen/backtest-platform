@@ -1,6 +1,6 @@
 import json
 from typing import Dict, List
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 
 from log import LogExceptionContext
 from orm import Base, Session
@@ -17,6 +17,8 @@ class Backtest(Base):
     model_id = Column(Integer, ForeignKey("model.id"))
     dataset_id = Column(Integer, ForeignKey("dataset.id"))
     dataset_name = Column(String)
+    asset_universe_dataset_ids = Column(String)
+    allocation_per_symbol = Column(Float)
 
     name = Column(String)
     candle_interval = Column(String)
@@ -39,6 +41,7 @@ class Backtest(Base):
     is_short_selling_strategy = Column(Boolean)
     is_long_short_strategy = Column(Boolean)
     is_ml_based_strategy = Column(Boolean)
+    is_ran_on_asset_universe = Column(Boolean)
 
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)
@@ -48,6 +51,8 @@ class Backtest(Base):
     klines_until_close = Column(Integer)
     backtest_range_start = Column(Integer)
     backtest_range_end = Column(Integer)
+    backtest_date_start_iso = Column(String)
+    backtest_date_end_iso = Column(String)
     model_train_epoch = Column(Integer)
 
 

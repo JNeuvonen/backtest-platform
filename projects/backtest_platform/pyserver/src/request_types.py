@@ -137,6 +137,8 @@ class BodyRuleBasedOnUniverse(BaseModel):
     stop_loss_threshold_perc: float
     short_fee_hourly: float
     trading_fees_perc: float
+    slippage_perc: float
+    allocation_per_symbol: float
 
     @validator("start_date", "end_date", pre=True)
     def parse_date(cls, value):

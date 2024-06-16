@@ -2,12 +2,13 @@ import asyncio
 from contextlib import contextmanager
 import logging
 import json
+import pickle
 import threading
 import inspect
 import os
 from config import append_app_data_path, is_dev
 
-from constants import LOG_FILE
+from constants import LOG_FILE, WEBSOCKETS_STATE
 
 
 def capture_stack_frame(func_name, params):
@@ -79,6 +80,8 @@ class Logger:
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(log_level)
+        self.state_file = append_app_data_path(WEBSOCKETS_STATE)
+        self.websocket_connections = self.load_state()
         self.websocket_connections = []
 
         # Check if the logger already has a FileHandler
@@ -92,13 +95,23 @@ class Logger:
             self.logger.addHandler(file_handler)
         self.logger.info("Application launched")
 
+    def load_state(self):
+        if os.path.exists(self.state_file):
+            with open(self.state_file, "rb") as f:
+                return pickle.load(f)
+        return []
+
+    def save_state(self):
+        with open(self.state_file, "wb") as f:
+            pickle.dump(self.websocket_connections, f)
+
     def add_websocket_connection(self, websocket):
-        """Add a new WebSocket connection."""
         self.websocket_connections.append(websocket)
+        self.save_state()
 
     def remove_websocket_connection(self, websocket):
-        """Remove a WebSocket connection."""
         self.websocket_connections.remove(websocket)
+        self.save_state()
 
     def build_stream_msg(
         self,
