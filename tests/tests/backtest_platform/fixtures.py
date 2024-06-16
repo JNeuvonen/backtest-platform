@@ -337,7 +337,9 @@ def get_enter_trade_decision(tick):
     "take_profit_threshold_perc": 0.05,
     "stop_loss_threshold_perc": 0.05,
     "short_fee_hourly": 0.05,
-    "trading_fees_perc": 0.075,
+    "trading_fees_perc": 0.1,
+    "slippage_perc": 0.001,
+    "allocation_per_symbol": 0.33,
 }
 
 
