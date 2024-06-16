@@ -64,7 +64,7 @@ class RoutePaths:
         "/mass-backtest/long-short/transformations/{backtest_id}"
     )
     RULE_BASED_BACKTEST_ON_UNIVERSE = "/rule-based-on-universe"
-    FETCH_RULE_BASED_MASSBACKTESTS = "/rule-based-mass-backtests"
+    FETCH_RULE_BASED_MASSBACKTESTS = "/mass-backtest/rule-based/on-asset-universe"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)

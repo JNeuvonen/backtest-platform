@@ -18,6 +18,7 @@ import {
   CreateMassRuleBasedSim,
 } from "../../components/CreateMassRuleBasedSim";
 import { createRuleBasedMassBacktest } from "../../clients/requests";
+import { useRuleBasedMassBacktests } from "../../clients/queries/queries";
 
 export const RuleBasedSimOnUniverseBacktest = () => {
   const selectUniverseModal = useDisclosure();
@@ -29,7 +30,8 @@ export const RuleBasedSimOnUniverseBacktest = () => {
     []
   );
   const [candleInterval, setCandleInterval] = useState("1d");
-
+  const backtestsQuery = useRuleBasedMassBacktests();
+  console.log(backtestsQuery.data);
   const toast = useToast();
 
   const onCreateBacktest = async (values: BacktestOnUniverseFormValues) => {

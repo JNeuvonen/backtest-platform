@@ -23,6 +23,7 @@ import {
   fetchModelById,
   fetchModelTrainColumns,
   fetchNyseSymbols,
+  fetchRuleBasedMassBacktests,
   fetchTrainjobBacktests,
   fetchTrainjobDetailed,
 } from "../requests";
@@ -259,5 +260,15 @@ export function useNyseSymbolList(): UseQueryResult<string[], unknown> {
   return useQuery<string[], unknown>({
     queryKey: [QUERY_KEYS.fetch_nyse_symbols],
     queryFn: () => fetchNyseSymbols(),
+  });
+}
+
+export function useRuleBasedMassBacktests(): UseQueryResult<
+  BacktestObject[],
+  unknown
+> {
+  return useQuery<BacktestObject[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_rule_based_mass_backtests],
+    queryFn: () => fetchRuleBasedMassBacktests(),
   });
 }

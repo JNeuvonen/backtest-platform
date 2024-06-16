@@ -761,3 +761,14 @@ export const createRuleBasedMassBacktest = async (
   });
   return res;
 };
+
+export const fetchRuleBasedMassBacktests = async () => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchRuleBasedMassBacktests(),
+  });
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};

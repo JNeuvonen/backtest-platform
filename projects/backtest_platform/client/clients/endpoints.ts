@@ -189,6 +189,10 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.backtest.root + "/long-short-backtest",
   fetchLongShortBacktests: () =>
     LOCAL_API_URI + LOCAL_API.backtest.root + "/mass-backtest/long-short/fetch",
+  fetchRuleBasedMassBacktests: () =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    "/mass-backtest/rule-based/on-asset-universe",
   fetchEpochValidationPreds: (trainJobId: number, epochNr: number) =>
     LOCAL_API_URI +
     LOCAL_API.model.root +
