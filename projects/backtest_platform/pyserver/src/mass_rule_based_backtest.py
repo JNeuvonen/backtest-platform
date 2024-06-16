@@ -273,6 +273,7 @@ def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
             else None,
             "is_ran_on_asset_universe": True,
             "is_rule_based_mass_backtest": True,
+            "is_short_selling_strategy": body.is_short_selling_strategy,
             "allocation_per_symbol": body.allocation_per_symbol,
             "asset_universe_dataset_ids": json.dumps(dataset_ids),
         }
