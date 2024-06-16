@@ -67,6 +67,10 @@ export const AppRoutes = () => {
         element={<RuleBasedSimOnUniverseBacktest />}
       />
       <Route
+        path={PATHS.rule_based_on_universe.by_id}
+        element={<div>View rule based backtest by id</div>}
+      />
+      <Route
         path={PATHS.simulate.bulk_long_short}
         element={
           <MassPairTradeProvider>

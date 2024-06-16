@@ -237,7 +237,10 @@ export const SimulateDatasetIndex = () => {
         {datasetBacktestsQuery.data ? (
           <BacktestDatagrid
             backtests={datasetBacktestsQuery.data.filter((item) => {
-              if (item.is_ml_based_strategy) {
+              if (
+                item.is_ml_based_strategy ||
+                item.is_rule_based_mass_backtest
+              ) {
                 return false;
               }
               return true;

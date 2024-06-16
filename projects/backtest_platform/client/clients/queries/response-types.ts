@@ -202,6 +202,7 @@ export interface BacktestObject {
   is_short_selling_strategy: boolean;
   is_long_short_strategy: boolean;
   is_ml_based_strategy: boolean;
+  is_rule_based_mass_backtest: boolean;
   klines_until_close: number;
   long_side_profit_factor: number;
   short_side_profit_factor: number;

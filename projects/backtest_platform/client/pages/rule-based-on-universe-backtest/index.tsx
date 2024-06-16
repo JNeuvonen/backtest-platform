@@ -19,6 +19,7 @@ import {
 } from "../../components/CreateMassRuleBasedSim";
 import { createRuleBasedMassBacktest } from "../../clients/requests";
 import { useRuleBasedMassBacktests } from "../../clients/queries/queries";
+import { BacktestDatagrid } from "../../components/data-grid/Backtest";
 
 export const RuleBasedSimOnUniverseBacktest = () => {
   const selectUniverseModal = useDisclosure();
@@ -31,7 +32,7 @@ export const RuleBasedSimOnUniverseBacktest = () => {
   );
   const [candleInterval, setCandleInterval] = useState("1d");
   const backtestsQuery = useRuleBasedMassBacktests();
-  console.log(backtestsQuery.data);
+  const onDeleteMode = useDisclosure();
   const toast = useToast();
 
   const onCreateBacktest = async (values: BacktestOnUniverseFormValues) => {
@@ -68,6 +69,7 @@ export const RuleBasedSimOnUniverseBacktest = () => {
         duration: 5000,
         isClosable: true,
       });
+      newBacktestDrawer.onClose();
     }
   };
 
@@ -108,6 +110,13 @@ export const RuleBasedSimOnUniverseBacktest = () => {
         <div>
           Universe size: {stockMarketSymbols.length + cryptoSymbols.length}
         </div>
+      </div>
+
+      <div style={{ marginTop: "8px" }}>
+        <BacktestDatagrid
+          backtests={backtestsQuery.data || []}
+          onDeleteMode={onDeleteMode}
+        />
       </div>
     </div>
   );

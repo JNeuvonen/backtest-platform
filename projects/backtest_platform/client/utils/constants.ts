@@ -49,6 +49,7 @@ export const PATHS = {
   },
   rule_based_on_universe: {
     root: `/rule-based-on-universe/`,
+    by_id: `/rule_based_on_universe/${PATH_KEYS.backtest}`,
   },
   ml_based: {
     backtest: `/simulate/ml-based/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,

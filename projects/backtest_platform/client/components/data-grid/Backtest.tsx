@@ -12,6 +12,7 @@ import {
   getDatasetBacktestPath,
   getMlBasedBacktestPath,
   getPairTradeBacktestPath,
+  getRuleBasedBacktestByIdPath,
 } from "../../utils/navigate";
 import { Link } from "react-router-dom";
 import { roundNumberDropRemaining } from "../../utils/number";
@@ -69,8 +70,12 @@ const idCellRenderer = (params: ICellRendererParams) => {
       datasetName
     );
 
-    if (window.location.pathname == backtestUri) {
+    if (window.location.pathname === backtestUri) {
       return getDatasetBacktestPath(datasetName, params.value);
+    }
+
+    if (window.location.pathname === PATHS.rule_based_on_universe.root) {
+      return getRuleBasedBacktestByIdPath(params.value);
     }
 
     return getMlBasedBacktestPath(datasetName, params.value);

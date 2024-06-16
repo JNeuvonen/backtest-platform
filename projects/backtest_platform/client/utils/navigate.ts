@@ -59,6 +59,13 @@ export const getDatasetBacktestPath = (dataset: string, backtestId: number) => {
     .replace(PATH_KEYS.backtest, String(backtestId));
 };
 
+export const getRuleBasedBacktestByIdPath = (backtestId: number) => {
+  return PATHS.rule_based_on_universe.by_id.replace(
+    PATH_KEYS.backtest,
+    String(backtestId)
+  );
+};
+
 export const getMlBasedBacktestPath = (dataset: string, backtestId: number) => {
   return PATHS.ml_based.backtest
     .replace(PATH_KEYS.dataset, dataset)
