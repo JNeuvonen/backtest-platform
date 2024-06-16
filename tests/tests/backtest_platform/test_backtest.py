@@ -4,6 +4,7 @@ from constants import NullFillStrategy
 from tests.backtest_platform.conftest import fixt_add_many_datasets
 from tests.backtest_platform.t_utils import (
     create_model_body,
+    gen_cdl3_star_in_south_transformation,
     gen_data_transformations,
     gen_ml_based_test_data_transformations,
 )
@@ -23,6 +24,7 @@ from tests.backtest_platform.fixtures import (
     ml_based_exit_short_cond_basic,
     open_long_trade_cond_basic,
     body_rule_based_on_universe_v1,
+    body_rule_based_on_universe_debug_crash,
 )
 from tests.backtest_platform.t_utils import Fetch, Post
 from tests.backtest_platform.fixtures import (
@@ -158,7 +160,7 @@ def test_rule_based_on_universe(cleanup_db, fixt_add_blue_chip_1d_datasets):
     Post.run_rule_based_sim_on_universe(body=body)
 
 
-@pytest.mark.debug
+@pytest.mark.dev
 def test_rule_based_on_universe_issue_with_scalar_div(
     cleanup_db, fixt_add_blue_chip_1d_datasets
 ):
@@ -167,5 +169,18 @@ def test_rule_based_on_universe_issue_with_scalar_div(
 
     first_dataset = datasets[0]
     data_transformation_ids = gen_data_transformations(first_dataset.name)
+    body["data_transformations"] = data_transformation_ids
+    Post.run_rule_based_sim_on_universe(body=body)
+
+
+@pytest.mark.debug
+def test_rule_based_on_universe_issue_with_scalar_div(
+    cleanup_db, fixt_add_blue_chip_1d_datasets
+):
+    datasets = fixt_add_blue_chip_1d_datasets
+    body = body_rule_based_on_universe_debug_crash
+
+    first_dataset = datasets[0]
+    data_transformation_ids = gen_cdl3_star_in_south_transformation(first_dataset.name)
     body["data_transformations"] = data_transformation_ids
     Post.run_rule_based_sim_on_universe(body=body)

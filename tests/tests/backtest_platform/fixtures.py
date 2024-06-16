@@ -390,6 +390,30 @@ def get_enter_trade_decision(tick):
     "allocation_per_symbol": 0.33,
 }
 
+body_rule_based_on_universe_debug_crash = {
+    "name": "",
+    "candle_interval": "1d",
+    "datasets": ["ETHUSDT", "BNBUSDT", "SOLUSDT", "BTCUSDT"],
+    "start_date": "2016-06-13T21:00:00.000Z",
+    "end_date": "2016-06-13T21:00:00.000Z",
+    "data_transformations": [5],
+    "klines_until_close": 1,
+    "open_trade_cond": 'def get_enter_trade_decision(tick):\n    if tick["CDL3STARSINSOUTH"] == 1:\n        return True\n    return False',
+    "close_trade_cond": "def get_exit_trade_decision(tick):\n    return False",
+    "fetch_latest_data": False,
+    "is_cryptocurrency_datasets": True,
+    "is_short_selling_strategy": True,
+    "use_time_based_close": False,
+    "use_profit_based_close": True,
+    "use_stop_loss_based_close": True,
+    "stop_loss_threshold_perc": 4,
+    "short_fee_hourly": 0.00016,
+    "trading_fees_perc": 0.075,
+    "slippage_perc": 0,
+    "allocation_per_symbol": 4,
+    "take_profit_threshold_perc": 4,
+}
+
 
 long_short_index_out_of_err = {
     "datasets": [

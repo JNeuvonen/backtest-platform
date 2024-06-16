@@ -126,6 +126,45 @@ def create_train_job_body(
     }
 
 
+def gen_cdl3_star_in_south_transformation(dataset_name: str):
+    transformation_ids = []
+
+    transformation_ids.append(
+        Post.exec_python_on_dataset(
+            dataset_name,
+            body={
+                "code": """
+import pandas as pd
+
+def calculate_cdl3starsinthesouth(df, open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price'):
+    df['CDL3STARSINSOUTH'] = 0
+
+    for i in range(2, len(df)):
+        first_candle = df.iloc[i - 2]
+        second_candle = df.iloc[i - 1]
+        third_candle = df.iloc[i]
+
+        if (first_candle[close_col] < first_candle[open_col] and 
+            second_candle[close_col] < second_candle[open_col] and 
+            third_candle[close_col] > third_candle[open_col] and 
+            third_candle[low_col] < second_candle[low_col] < first_candle[low_col] and 
+            third_candle[high_col] < second_candle[high_col] < first_candle[high_col]):
+            df.at[i, 'CDL3STARSINSOUTH'] = 1
+
+# Usage example:
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+calculate_cdl3starsinthesouth(dataset, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col)
+    """
+            },
+        )
+    )
+
+    return transformation_ids
+
+
 def gen_data_transformations(dataset_name: str):
     transformation_results = []
 
