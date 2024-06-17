@@ -1,7 +1,6 @@
 import pytest
 import time
 from constants import NullFillStrategy
-from tests.backtest_platform.conftest import fixt_add_many_datasets
 from tests.backtest_platform.t_utils import (
     create_model_body,
     gen_cdl3_star_in_south_transformation,
