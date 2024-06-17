@@ -1,7 +1,8 @@
 import os
 from contextlib import asynccontextmanager
 from code_preset_utils import generate_default_code_presets
-from utils import on_shutdown_cleanup
+from multiprocess import log_event_loop_queue, log_event_queue
+from utils import on_shutdown_cleanup, run_in_thread
 import uvicorn
 
 from fastapi import FastAPI, HTTPException, Response, status
@@ -24,6 +25,7 @@ async def lifespan(
 ):  # pylint: disable=unused-argument, redefined-outer-name
     """The code before the yield statement will be executed on boot. The code after the yield statement will be executed as a cleanup on application close."""
     with LogExceptionContext("Succesfully initiated tables"):
+        run_in_thread(log_event_loop_queue, log_event_queue)
         create_tables()
         generate_default_code_presets()
     yield

@@ -32,6 +32,7 @@ from query_mass_backtest import MassBacktestQuery
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from multiprocessing import Process
+from multiprocess import log_event_queue
 from request_types import (
     BodyCreateLongShortBacktest,
     BodyCreateManualBacktest,
@@ -331,9 +332,15 @@ async def route_fetch_mass_backtest_transformations(backtest_id: int):
 async def route_rule_based_on_universe(body: BodyRuleBasedOnUniverse):
     with HttpResponseContext():
         if is_testing():
-            run_rule_based_backtest_on_universe(body)
+            run_rule_based_backtest_on_universe(log_event_queue, body)
         else:
-            process = Process(target=run_rule_based_backtest_on_universe, args=(body,))
+            process = Process(
+                target=run_rule_based_backtest_on_universe,
+                args=(
+                    log_event_queue,
+                    body,
+                ),
+            )
             process.start()
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"

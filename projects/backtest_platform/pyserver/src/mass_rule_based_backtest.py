@@ -1,6 +1,5 @@
 from datetime import datetime
 import json
-import logging
 from typing import List
 from api_binance import non_async_save_historical_klines
 from backtest_utils import (
@@ -30,6 +29,12 @@ from common_python.trading.utils import (
     get_trade_details,
 )
 from common_python.math import ms_to_years, get_cagr
+from datetime import datetime
+from common_python.date import (
+    get_time_elapsed,
+    get_diff_in_ms,
+    format_ms_to_human_readable,
+)
 
 
 def get_universe_longest_dataset_id(datasets, candle_interval):
@@ -134,7 +139,7 @@ def fetch_transform_datasets_on_universe(
     }
 
 
-def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
+def run_rule_based_backtest_on_universe(log_event_queue, body: BodyRuleBasedOnUniverse):
     with LogExceptionContext():
         logger = get_logger()
         result = fetch_transform_datasets_on_universe(
@@ -218,24 +223,30 @@ def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
         idx = 0
         processed_bars = 0
         max_bars = idx_range_end - idx_range_start
+        sim_start_time = datetime.now()
 
         for _, row in kline_open_times.iterrows():
             if idx <= idx_range_start or idx > idx_range_end:
                 idx += 1
                 continue
 
-            if processed_bars % 50 == 0:
-                logger.log(
-                    f"Processed {processed_bars}/{max_bars} bars. Current profit: {backtest.nav - START_BALANCE}",
-                    logging.INFO,
-                    True,
-                    True,
+            if processed_bars % 50 == 0 and processed_bars > 0:
+                datetime_now = datetime.now()
+                progress_left = abs((processed_bars / max_bars - 1))
+                diff_in_ms = get_diff_in_ms(sim_start_time, datetime_now)
+                total_time = max_bars / processed_bars * diff_in_ms
+
+                time_remaining_eta = format_ms_to_human_readable(
+                    progress_left * total_time
                 )
-                logger.log
+
+                log_msg = f"Progress {round((processed_bars / max_bars) * 100, 2)}%. Current profit: {round(backtest.nav - START_BALANCE, 0)}. ETA on completion: {time_remaining_eta}"
+                log_event_queue.put(log_msg)
 
             backtest.tick(kline_open_time=row[timeseries_col])
 
             idx += 1
+            processed_bars += 1
 
         profit_factor = calc_profit_factor(backtest.get_all_trades())
         strategy_max_drawdown = calc_max_drawdown(
@@ -313,3 +324,9 @@ def run_rule_based_backtest_on_universe(body: BodyRuleBasedOnUniverse):
         BacktestHistoryQuery.create_many(backtest_id, backtest.balance_history)
 
         create_trade_entries_v2(backtest_id, backtest.get_all_trades())
+
+        datetime_now = datetime.now()
+        time_elapsed = get_time_elapsed(sim_start_time, datetime_now)
+
+        log_msg = f"Simulation finished. Time elapsed: {time_elapsed}."
+        log_event_queue.put(log_msg)
