@@ -66,6 +66,13 @@ export const getRuleBasedBacktestByIdPath = (backtestId: number) => {
   );
 };
 
+export const getMultiStratBacktestByIdPath = (backtestId: number) => {
+  return PATHS.simulate.multistrategy_by_id.replace(
+    PATH_KEYS.backtest,
+    String(backtestId)
+  );
+};
+
 export const getMlBasedBacktestPath = (dataset: string, backtestId: number) => {
   return PATHS.ml_based.backtest
     .replace(PATH_KEYS.dataset, dataset)

@@ -11,6 +11,7 @@ import { usePathParams } from "../../hooks/usePathParams";
 import {
   getDatasetBacktestPath,
   getMlBasedBacktestPath,
+  getMultiStratBacktestByIdPath,
   getPairTradeBacktestPath,
   getRuleBasedBacktestByIdPath,
 } from "../../utils/navigate";
@@ -76,6 +77,10 @@ const idCellRenderer = (params: ICellRendererParams) => {
 
     if (window.location.pathname === PATHS.rule_based_on_universe.root) {
       return getRuleBasedBacktestByIdPath(params.value);
+    }
+
+    if (window.location.pathname === PATHS.simulate.multistrategy) {
+      return getMultiStratBacktestByIdPath(params.value);
     }
 
     return getMlBasedBacktestPath(datasetName, params.value);

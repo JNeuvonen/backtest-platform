@@ -24,6 +24,7 @@ import { MLBasedBacktestPage } from "./pages/ml-based-backtest";
 import { RuleBasedSimOnUniverseBacktest } from "./pages/rule-based-on-universe-backtest";
 import { ViewRuleBasedMassBacktestPage } from "./pages/rule-based-on-universe-backtest/view-by-id";
 import { MultiStrategyBacktestPage } from "./pages/multistrategy";
+import { MultiStrategyPageById } from "./pages/multistrategy/view-by-id";
 
 export const AppRoutes = () => {
   return (
@@ -66,6 +67,10 @@ export const AppRoutes = () => {
       <Route
         path={PATHS.rule_based_on_universe.root}
         element={<RuleBasedSimOnUniverseBacktest />}
+      />
+      <Route
+        path={PATHS.simulate.multistrategy_by_id}
+        element={<MultiStrategyPageById />}
       />
       <Route
         path={PATHS.rule_based_on_universe.by_id}
