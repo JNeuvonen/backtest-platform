@@ -69,6 +69,7 @@ class RoutePaths:
     RULE_BASED_BACKTEST_ON_UNIVERSE = "/rule-based-on-universe"
     RULE_BASED_MULTISTRAT = "/rule-based-multi-strat"
     FETCH_RULE_BASED_MASSBACKTESTS = "/mass-backtest/rule-based/on-asset-universe"
+    FETCH_MULTI_STRAT_BACKTESTS = "/mass-backtest/rule-based/multi-strat"
 
 
 @router.get(RoutePaths.BACKTEST_BY_ID)
@@ -364,7 +365,7 @@ async def route_rule_based_multistrat(body: BodyRuleBasedMultiStrategy):
             run_rule_based_multistrat_backtest(log_event_queue, body)
         else:
             process = Process(
-                target=run_rule_based_backtest_on_universe,
+                target=run_rule_based_multistrat_backtest,
                 args=(
                     log_event_queue,
                     body,
@@ -375,3 +376,10 @@ async def route_rule_based_multistrat(body: BodyRuleBasedMultiStrategy):
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
+
+
+@router.get(RoutePaths.FETCH_MULTI_STRAT_BACKTESTS)
+async def route_fetch_multistrat_backtests():
+    with HttpResponseContext():
+        backtests = BacktestQuery.fetch_all_multistrat_backtests()
+        return {"data": backtests}

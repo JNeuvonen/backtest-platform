@@ -21,6 +21,7 @@ class Backtest(Base):
     allocation_per_symbol = Column(Float)
 
     name = Column(String)
+    body_json_dump = Column(String)
     candle_interval = Column(String)
 
     open_trade_cond = Column(String)
@@ -198,6 +199,25 @@ class BacktestQuery:
                         Backtest.id == BacktestStatistics.backtest_id,
                     )
                     .filter(Backtest.is_rule_based_mass_backtest == True)
+                    .all()
+                )
+                combined_backtests = [
+                    combine_dicts([backtest.__dict__, stats.__dict__])
+                    for backtest, stats in backtests
+                ]
+                return combined_backtests
+
+    @staticmethod
+    def fetch_all_multistrat_backtests():
+        with LogExceptionContext():
+            with Session() as session:
+                backtests = (
+                    session.query(Backtest, BacktestStatistics)
+                    .join(
+                        BacktestStatistics,
+                        Backtest.id == BacktestStatistics.backtest_id,
+                    )
+                    .filter(Backtest.is_multistrategy_backtest == True)
                     .all()
                 )
                 combined_backtests = [

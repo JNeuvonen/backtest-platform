@@ -238,6 +238,7 @@ def run_rule_based_backtest_on_universe(log_event_queue, body: BodyRuleBasedOnUn
             "is_short_selling_strategy": body.is_short_selling_strategy,
             "allocation_per_symbol": body.allocation_per_symbol,
             "asset_universe_dataset_ids": json.dumps(dataset_ids),
+            "body_json_dump": json.dumps(body.model_dump()),
         }
 
         backtest_id = BacktestQuery.create_entry(backtest_dict)
