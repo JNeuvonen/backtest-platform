@@ -224,6 +224,10 @@ class URL:
         )
 
     @classmethod
+    def create_rule_based_multistrat_sim(cls):
+        return cls._backtest_route() + BacktestRoutePaths.RULE_BASED_MULTISTRAT
+
+    @classmethod
     def get_all_metadata_by_model_id(cls, model_id: int):
         return cls._models_route() + ModelRoutePaths.ALL_METADATA_BY_MODEL_NAME.format(
             id=model_id

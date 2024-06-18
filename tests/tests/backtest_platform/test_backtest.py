@@ -142,7 +142,7 @@ def test_ml_based_backtest(fixt_add_dataset_for_ml_based_backtest):
     Post.create_ml_based_backtest(body=body)
 
 
-@pytest.mark.dev
+@pytest.mark.acceptance
 def test_rule_based_on_universe(cleanup_db, fixt_add_blue_chip_1d_datasets):
     datasets = fixt_add_blue_chip_1d_datasets
     body = body_rule_based_on_universe_v1
@@ -159,7 +159,7 @@ def test_rule_based_on_universe(cleanup_db, fixt_add_blue_chip_1d_datasets):
     Post.run_rule_based_sim_on_universe(body=body)
 
 
-@pytest.mark.dev
+@pytest.mark.acceptance
 def test_rule_based_on_universe_issue_with_scalar_div(
     cleanup_db, fixt_add_blue_chip_1d_datasets
 ):
@@ -172,8 +172,8 @@ def test_rule_based_on_universe_issue_with_scalar_div(
     Post.run_rule_based_sim_on_universe(body=body)
 
 
-@pytest.mark.debug
-def test_rule_based_on_universe_issue_with_scalar_div(
+@pytest.mark.acceptance
+def test_rule_based_on_universe_issue_with_scalar_div_v2(
     cleanup_db, fixt_add_blue_chip_1d_datasets
 ):
     datasets = fixt_add_blue_chip_1d_datasets
@@ -183,3 +183,23 @@ def test_rule_based_on_universe_issue_with_scalar_div(
     data_transformation_ids = gen_cdl3_star_in_south_transformation(first_dataset.name)
     body["data_transformations"] = data_transformation_ids
     Post.run_rule_based_sim_on_universe(body=body)
+
+
+@pytest.mark.dev
+def test_rule_based_multistrategy(cleanup_db, fixt_add_blue_chip_1d_datasets):
+    datasets = fixt_add_blue_chip_1d_datasets
+    strat_1 = backtest_rule_based_debug_scalar_divide
+
+    first_dataset = datasets[0]
+    data_transformation_ids = gen_data_transformations(first_dataset.name)
+    strat_1["data_transformations"] = data_transformation_ids
+
+    datasets = fixt_add_blue_chip_1d_datasets
+    strat_2 = body_rule_based_on_universe_debug_crash
+
+    first_dataset = datasets[0]
+    data_transformation_ids = gen_cdl3_star_in_south_transformation(first_dataset.name)
+    strat_2["data_transformations"] = data_transformation_ids
+    body = {}
+    body["strategies"] = [strat_1, strat_2]
+    Post.run_rule_based_multistrat(body=body)
