@@ -1,10 +1,22 @@
 import multiprocessing
-from common_python.date import format_ms_to_human_readable, get_diff_in_ms
+from typing import Set
+from common_python.date import (
+    format_ms_to_human_readable,
+    get_diff_in_ms,
+    get_time_elapsed,
+)
+from common_python.math import get_cagr, ms_to_years
+from common_python.trading.utils import (
+    calc_max_drawdown,
+    calc_profit_factor,
+    get_trade_details,
+)
 import pandas as pd
 from backtest_utils import (
     BacktestOnUniverse,
     Strategy,
     TradingRules,
+    create_trade_entries_v2,
     fetch_transform_datasets_on_universe,
 )
 from constants import AppConstants
@@ -17,6 +29,9 @@ from mass_rule_based_backtest import (
     get_backtest_data_range_indexes,
     get_universe_longest_dataset_id,
 )
+from query_backtest import BacktestQuery
+from query_backtest_history import BacktestHistoryQuery
+from query_backtest_statistics import BacktestStatisticsQuery
 from query_dataset import DatasetQuery
 from request_types import BodyRuleBasedMultiStrategy
 
@@ -144,4 +159,55 @@ def run_rule_based_multistrat_backtest(
             idx += 1
             processed_bars += 1
 
-        print("hello world")
+        backtest_dict = {"name": body.name, "is_multistrategy_backtest": True}
+
+        backtest_id = BacktestQuery.create_entry(backtest_dict)
+
+        profit_factor = calc_profit_factor(backtest.get_all_trades())
+        strategy_max_drawdown = calc_max_drawdown(
+            [item["portfolio_worth"] for item in backtest.balance_history]
+        )
+        end_balance = backtest.nav
+
+        strategy_cagr = get_cagr(
+            end_balance, START_BALANCE, ms_to_years(backtest.cumulative_time_ms)
+        )
+
+        trade_count = len(backtest.get_all_trades())
+
+        trade_details_dict = get_trade_details(backtest.get_all_trades())
+
+        backtest_statistics_dict = {
+            "backtest_id": backtest_id,
+            "profit_factor": profit_factor,
+            "start_balance": START_BALANCE,
+            "end_balance": end_balance,
+            "result_perc": (end_balance / START_BALANCE - 1) * 100,
+            "best_trade_result_perc": trade_details_dict["best_trade_result_perc"],
+            "worst_trade_result_perc": trade_details_dict["worst_trade_result_perc"],
+            "mean_hold_time_sec": trade_details_dict["mean_hold_time_sec"],
+            "mean_return_perc": trade_details_dict["mean_return_perc"],
+            "share_of_winning_trades_perc": trade_details_dict[
+                "share_of_winning_trades_perc"
+            ],
+            "share_of_losing_trades_perc": trade_details_dict[
+                "share_of_losing_trades_perc"
+            ],
+            "max_drawdown_perc": strategy_max_drawdown,
+            "cagr": strategy_cagr,
+            "trade_count": trade_count,
+        }
+
+        for item in backtest.balance_history:
+            item["kline_open_time"] = int(item["kline_open_time"] / 1000)
+
+        BacktestStatisticsQuery.create_entry(backtest_statistics_dict)
+        BacktestHistoryQuery.create_many(backtest_id, backtest.balance_history)
+
+        create_trade_entries_v2(backtest_id, backtest.get_all_trades())
+
+        datetime_now = datetime.now()
+        time_elapsed = get_time_elapsed(sim_start_time, datetime_now)
+
+        log_msg = f"Simulation finished. Time elapsed: {time_elapsed}."
+        log_event_queue.put(log_msg)

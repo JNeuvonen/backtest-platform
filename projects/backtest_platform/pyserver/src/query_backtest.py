@@ -43,6 +43,7 @@ class Backtest(Base):
     is_ml_based_strategy = Column(Boolean)
     is_rule_based_mass_backtest = Column(Boolean)
     is_ran_on_asset_universe = Column(Boolean)
+    is_multistrategy_backtest = Column(Boolean)
 
     use_time_based_close = Column(Boolean)
     use_profit_based_close = Column(Boolean)

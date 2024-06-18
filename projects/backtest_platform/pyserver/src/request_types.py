@@ -148,6 +148,7 @@ class BodyRuleBasedOnUniverse(BaseModel):
 
 class BodyRuleBasedMultiStrategy(BaseModel):
     strategies: List[BodyRuleBasedOnUniverse]
+    name: Optional[str] = None
 
 
 class BodyMLBasedBacktest(BaseModel):
