@@ -279,7 +279,7 @@ export function useMultiStrategyBacktests(): UseQueryResult<
   unknown
 > {
   return useQuery<BacktestObject[], unknown>({
-    queryKey: [QUERY_KEYS.fetch_rule_based_mass_backtests],
+    queryKey: [QUERY_KEYS.fetch_multistrat_backtests],
     queryFn: () => fetchMultiStrategyBacktests(),
   });
 }
