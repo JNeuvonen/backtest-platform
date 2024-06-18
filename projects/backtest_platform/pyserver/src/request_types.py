@@ -146,6 +146,10 @@ class BodyRuleBasedOnUniverse(BaseModel):
         return value
 
 
+class BodyRuleBasedMultiStrategy(BaseModel):
+    strategies: List[BodyRuleBasedOnUniverse]
+
+
 class BodyMLBasedBacktest(BaseModel):
     backtest_data_range: List[int]
     fetch_latest_data: bool

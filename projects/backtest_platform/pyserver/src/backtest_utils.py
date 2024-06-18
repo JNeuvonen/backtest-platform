@@ -8,6 +8,7 @@ from common_python.trading.utils import (
     Trade,
 )
 from typing import Dict, List, Optional, Set
+from api_binance import non_async_save_historical_klines
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE, LOAD_MODEL_TEMPLATE
 from dataset import read_all_cols_matching_kline_open_times
 from db import candlesize_to_timedelta, exec_python
@@ -15,12 +16,12 @@ from math_utils import safe_divide
 from query_backtest import BacktestQuery
 from query_backtest_history import BacktestHistoryQuery
 from constants import BINANCE_BACKTEST_PRICE_COL, ONE_HOUR_IN_MS, CandleSize
-from query_data_transformation import DataTransformation
-from query_dataset import Dataset
+from query_data_transformation import DataTransformation, DataTransformationQuery
+from query_dataset import Dataset, DatasetQuery
 from query_pair_trade import PairTradeQuery
 from query_trade import TradeQuery
 from request_types import BodyMLBasedBacktest
-from utils import PythonCode
+from utils import PythonCode, get_binance_dataset_tablename
 
 
 START_BALANCE = 10000
@@ -1194,14 +1195,12 @@ class Strategy:
 class BacktestOnUniverse:
     def __init__(
         self,
-        trading_rules: TradingRules,
         starting_balance: float,
         benchmark_initial_state: Dict,
         candle_time_delta_ms: int,
         strategies: List[Strategy],
         max_margin_ratio: int = 1,
     ):
-        self.trading_rules = trading_rules
         self.starting_balance = starting_balance
         self.candle_time_delta_ms = candle_time_delta_ms
         self.cumulative_time_ms = 0
@@ -1408,3 +1407,51 @@ def create_trade_entries_v2(backtest_id: int, trades: List[Trade]):
         trade_dict["open_time"] = trade_dict["open_time"] / 1000
         trade_dict["close_time"] = trade_dict["close_time"] / 1000
         TradeQuery.create_entry(trade_dict)
+
+
+def fetch_transform_datasets_on_universe(
+    datasets: List[str],
+    data_transformations: List[int],
+    candle_interval: str,
+    fetch_latest_data: bool,
+):
+    dataset_table_names = []
+    dataset_table_name_to_id_map = {}
+    dataset_id_to_table_name_map = {}
+    dataset_table_name_to_timeseries_col_map = {}
+
+    for item in datasets:
+        table_name = get_binance_dataset_tablename(item, candle_interval)
+        dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+        if dataset is None or fetch_latest_data:
+            non_async_save_historical_klines(item, candle_interval, True)
+            dataset = DatasetQuery.fetch_dataset_by_name(table_name)
+
+        if dataset is not None:
+            dataset_name = dataset.dataset_name
+            dataset_table_name_to_id_map[dataset_name] = dataset.id
+            dataset_table_name_to_timeseries_col_map[
+                dataset_name
+            ] = dataset.timeseries_column
+            dataset_id_to_table_name_map[str(dataset.id)] = dataset.dataset_name
+            DatasetQuery.update_price_column(dataset_name, BINANCE_BACKTEST_PRICE_COL)
+            dataset_table_names.append(dataset_name)
+
+            for data_transform_id in data_transformations:
+                transformation = DataTransformationQuery.get_transformation_by_id(
+                    data_transform_id
+                )
+                python_program = PythonCode.on_dataset(
+                    dataset_name, transformation.transformation_code
+                )
+                try:
+                    exec_python(python_program)
+                except Exception:
+                    pass
+
+    return {
+        "dataset_table_names": dataset_table_names,
+        "dataset_table_name_to_id_map": dataset_table_name_to_id_map,
+        "dataset_id_to_table_name_map": dataset_id_to_table_name_map,
+        "dataset_table_name_to_timeseries_col_map": dataset_table_name_to_timeseries_col_map,
+    }

@@ -7,6 +7,7 @@ from backtest_utils import (
     Strategy,
     TradingRules,
     create_trade_entries_v2,
+    fetch_transform_datasets_on_universe,
 )
 from constants import BINANCE_BACKTEST_PRICE_COL, AppConstants, DomEventChannels
 from dataset import (
@@ -91,57 +92,8 @@ def get_backtest_data_range_indexes(
         return range_start_idx, range_end_idx + 1
 
 
-def fetch_transform_datasets_on_universe(
-    datasets: List[str],
-    data_transformations: List[int],
-    candle_interval: str,
-    fetch_latest_data: bool,
-):
-    dataset_table_names = []
-    dataset_table_name_to_id_map = {}
-    dataset_id_to_table_name_map = {}
-    dataset_table_name_to_timeseries_col_map = {}
-
-    for item in datasets:
-        table_name = get_binance_dataset_tablename(item, candle_interval)
-        dataset = DatasetQuery.fetch_dataset_by_name(table_name)
-        if dataset is None or fetch_latest_data:
-            non_async_save_historical_klines(item, candle_interval, True)
-            dataset = DatasetQuery.fetch_dataset_by_name(table_name)
-
-        if dataset is not None:
-            dataset_name = dataset.dataset_name
-            dataset_table_name_to_id_map[dataset_name] = dataset.id
-            dataset_table_name_to_timeseries_col_map[
-                dataset_name
-            ] = dataset.timeseries_column
-            dataset_id_to_table_name_map[str(dataset.id)] = dataset.dataset_name
-            DatasetQuery.update_price_column(dataset_name, BINANCE_BACKTEST_PRICE_COL)
-            dataset_table_names.append(dataset_name)
-
-            for data_transform_id in data_transformations:
-                transformation = DataTransformationQuery.get_transformation_by_id(
-                    data_transform_id
-                )
-                python_program = PythonCode.on_dataset(
-                    dataset_name, transformation.transformation_code
-                )
-                try:
-                    exec_python(python_program)
-                except Exception:
-                    pass
-
-    return {
-        "dataset_table_names": dataset_table_names,
-        "dataset_table_name_to_id_map": dataset_table_name_to_id_map,
-        "dataset_id_to_table_name_map": dataset_id_to_table_name_map,
-        "dataset_table_name_to_timeseries_col_map": dataset_table_name_to_timeseries_col_map,
-    }
-
-
 def run_rule_based_backtest_on_universe(log_event_queue, body: BodyRuleBasedOnUniverse):
     with LogExceptionContext():
-        logger = get_logger()
         result = fetch_transform_datasets_on_universe(
             body.datasets,
             body.data_transformations,
@@ -213,7 +165,6 @@ def run_rule_based_backtest_on_universe(log_event_queue, body: BodyRuleBasedOnUn
         START_BALANCE = 10000
 
         backtest = BacktestOnUniverse(
-            trading_rules=trading_rules,
             starting_balance=START_BALANCE,
             benchmark_initial_state=benchmark_initial_state,
             candle_time_delta_ms=candles_time_delta,

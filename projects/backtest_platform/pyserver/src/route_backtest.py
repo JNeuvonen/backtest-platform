@@ -38,8 +38,10 @@ from request_types import (
     BodyCreateManualBacktest,
     BodyCreateMassBacktest,
     BodyMLBasedBacktest,
+    BodyRuleBasedMultiStrategy,
     BodyRuleBasedOnUniverse,
 )
+from rule_based_multistrat import run_rule_based_multistrat_backtest
 from utils import base_model_to_dict, get_periods_per_year
 
 
@@ -65,6 +67,7 @@ class RoutePaths:
         "/mass-backtest/long-short/transformations/{backtest_id}"
     )
     RULE_BASED_BACKTEST_ON_UNIVERSE = "/rule-based-on-universe"
+    RULE_BASED_MULTISTRAT = "/rule-based-multi-strat"
     FETCH_RULE_BASED_MASSBACKTESTS = "/mass-backtest/rule-based/on-asset-universe"
 
 
@@ -352,3 +355,23 @@ async def route_fetch_rule_based_massbacktests():
     with HttpResponseContext():
         backtests = BacktestQuery.fetch_all_rule_based_mass_backtests()
         return {"data": backtests}
+
+
+@router.post(RoutePaths.RULE_BASED_MULTISTRAT)
+async def route_rule_based_multistrat(body: BodyRuleBasedMultiStrategy):
+    with HttpResponseContext():
+        if is_testing():
+            run_rule_based_multistrat_backtest(log_event_queue, body)
+        else:
+            process = Process(
+                target=run_rule_based_backtest_on_universe,
+                args=(
+                    log_event_queue,
+                    body,
+                ),
+            )
+            process.start()
+
+        return Response(
+            content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
+        )
