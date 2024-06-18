@@ -41,6 +41,7 @@ export const PATHS = {
     backtest: `/simulate/${PATH_KEYS.dataset}/backtest/${PATH_KEYS.backtest}`,
     machine_learning: `/simulate/${PATH_KEYS.dataset}/machine-learning`,
     bulk_long_short: "/simulate/bulk-sim/long-short",
+    multistrategy: "/multistrategy",
   },
   mass_backtest: {
     root: `/simulate/mass-backtests/${PATH_KEYS.backtest}`,

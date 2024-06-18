@@ -15,6 +15,7 @@ import {
   DatasetsResponse,
   EpochInfo,
   FetchModelByNameRes,
+  MultiStrategyBacktestBody,
   RuleBasedMassBacktestBody,
   TrainJob,
 } from "./queries/response-types";
@@ -771,4 +772,26 @@ export const fetchRuleBasedMassBacktests = async () => {
     return res.res["data"];
   }
   return [];
+};
+
+export const fetchMultiStrategyBacktests = async () => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchMultiStrategyBacktests(),
+  });
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};
+
+export const createMultiStrategyBacktest = async (
+  body: MultiStrategyBacktestBody
+) => {
+  const res = await buildRequest({
+    method: "POST",
+    url: LOCAL_API_URL.createMultiStrategyBacktest(),
+    payload: body,
+  });
+  return res;
 };

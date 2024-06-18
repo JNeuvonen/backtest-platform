@@ -22,6 +22,7 @@ import {
   fetchMassbacktestsById,
   fetchModelById,
   fetchModelTrainColumns,
+  fetchMultiStrategyBacktests,
   fetchNyseSymbols,
   fetchRuleBasedMassBacktests,
   fetchTrainjobBacktests,
@@ -270,5 +271,15 @@ export function useRuleBasedMassBacktests(): UseQueryResult<
   return useQuery<BacktestObject[], unknown>({
     queryKey: [QUERY_KEYS.fetch_rule_based_mass_backtests],
     queryFn: () => fetchRuleBasedMassBacktests(),
+  });
+}
+
+export function useMultiStrategyBacktests(): UseQueryResult<
+  BacktestObject[],
+  unknown
+> {
+  return useQuery<BacktestObject[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_rule_based_mass_backtests],
+    queryFn: () => fetchMultiStrategyBacktests(),
   });
 }

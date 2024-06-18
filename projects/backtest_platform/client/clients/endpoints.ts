@@ -193,6 +193,10 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI +
     LOCAL_API.backtest.root +
     "/mass-backtest/rule-based/on-asset-universe",
+  fetchMultiStrategyBacktests: () =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    "/mass-backtest/rule-based/multi-strat",
   fetchEpochValidationPreds: (trainJobId: number, epochNr: number) =>
     LOCAL_API_URI +
     LOCAL_API.model.root +
@@ -206,6 +210,8 @@ export const LOCAL_API_URL = {
   stocksSymbolList: () => LOCAL_API_URI + LOCAL_API.stocks.get_symbol_list,
   saveYfinanceKlines: (symbol: string) =>
     LOCAL_API_URI + LOCAL_API.stocks.root + "/yfinance/dataset/" + symbol,
+  createMultiStrategyBacktest: () =>
+    LOCAL_API_URI + LOCAL_API.backtest.root + "/rule-based-multi-strat",
 };
 
 export const PRED_SERVER_URLS = {

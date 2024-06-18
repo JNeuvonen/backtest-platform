@@ -193,6 +193,7 @@ export interface BacktestObject {
   model_id: number;
   model_train_epoch: number;
   dataset_name: string;
+  body_json_dump: string;
   open_trade_cond: string;
   candle_interval: string;
   close_trade_cond: string;
@@ -352,4 +353,9 @@ export interface RuleBasedMassBacktestBody {
   trading_fees_perc: number;
   slippage_perc: number;
   allocation_per_symbol: number;
+}
+
+export interface MultiStrategyBacktestBody {
+  name: string;
+  strategies: RuleBasedMassBacktestBody[];
 }

@@ -23,6 +23,7 @@ import { MLBasedBacktestProvider } from "./context/mlbasedbacktest";
 import { MLBasedBacktestPage } from "./pages/ml-based-backtest";
 import { RuleBasedSimOnUniverseBacktest } from "./pages/rule-based-on-universe-backtest";
 import { ViewRuleBasedMassBacktestPage } from "./pages/rule-based-on-universe-backtest/view-by-id";
+import { MultiStrategyBacktestPage } from "./pages/multistrategy";
 
 export const AppRoutes = () => {
   return (
@@ -40,7 +41,6 @@ export const AppRoutes = () => {
         path={PATHS.data.dataset.column}
         element={<DatasetColumnInfoPage />}
       />
-
       <Route path={PATHS.train} element={<TrainJobIndex />} />
       <Route path={PATHS.simulate.path} element={<SimulateSelectMode />} />
       <Route
@@ -79,7 +79,6 @@ export const AppRoutes = () => {
           </MassPairTradeProvider>
         }
       />
-
       <Route
         path={PATHS.simulate.machine_learning}
         element={
@@ -87,6 +86,10 @@ export const AppRoutes = () => {
             <MachineLearningBacktestPage />
           </MLBasedBacktestProvider>
         }
+      />
+      <Route
+        path={PATHS.simulate.multistrategy}
+        element={<MultiStrategyBacktestPage />}
       />
       <Route
         path={PATHS.mass_backtest.pairtrade}
