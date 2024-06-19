@@ -10,7 +10,6 @@ import { Field, Form, Formik } from "formik";
 import { WithLabel } from "./form/WithLabel";
 import { ChakraInput } from "./chakra/input";
 import { BACKTEST_FORM_LABELS } from "../utils/backtest";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { DataTransformationControls } from "./DataTransformationsControls";
 import { CodeEditor } from "./CodeEditor";
@@ -19,6 +18,7 @@ import { FormSubmitBar } from "./form/FormSubmitBar";
 import { ENTER_TRADE_DEFAULT, EXIT_LONG_TRADE_DEFAULT } from "../utils/code";
 import { DiskManager } from "common_js";
 import { DISK_KEYS } from "../utils/disk";
+import { FormikDatePicker } from "./FormikDataPicker";
 
 const backtestDiskManager = new DiskManager(DISK_KEYS.rule_based_mass_backtest);
 
@@ -104,17 +104,6 @@ const getFormInitialValues = () => {
       ? new Date(prevForm[formKeys.endDate])
       : null,
   };
-};
-
-const FormikDatePicker = ({ field, form, ...props }) => {
-  return (
-    <DatePicker
-      {...field}
-      {...props}
-      selected={(field.value && new Date(field.value)) || null}
-      onChange={(date) => form.setFieldValue(field.name, date)}
-    />
-  );
 };
 
 export const CreateMassRuleBasedSim = ({ drawerControls, onSubmit }: Props) => {

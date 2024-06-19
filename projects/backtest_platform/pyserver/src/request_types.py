@@ -147,6 +147,8 @@ class BodyRuleBasedOnUniverse(BaseModel):
 
 
 class BodyRuleBasedMultiStrategy(BaseModel):
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     strategies: List[BodyRuleBasedOnUniverse]
     name: Optional[str] = None
 

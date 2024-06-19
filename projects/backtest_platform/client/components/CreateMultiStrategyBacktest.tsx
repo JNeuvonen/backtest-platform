@@ -7,10 +7,13 @@ import { ChakraInput } from "./chakra/input";
 import { BACKTEST_FORM_LABELS } from "../utils/backtest";
 import { SelectMassSimStrategies } from "./SelectMassSimStrategies";
 import { FormSubmitBar } from "./form/FormSubmitBar";
+import { FormikDatePicker } from "./FormikDataPicker";
 
 export interface MultiStrategyBacktest {
   backtestName: string;
   selectedStrategyIds: number[];
+  startDate: Date | null;
+  endDate: Date | null;
 }
 
 interface Props {
@@ -21,12 +24,16 @@ interface Props {
 const formKeys = {
   backtestName: "backtestName",
   selectedStrategyIds: "selectedStrategyIds",
+  startDate: "startDate",
+  endDate: "endDate",
 };
 
 const getFormInitialValues = () => {
   return {
     [formKeys.backtestName]: "",
     [formKeys.selectedStrategyIds]: [] as number[],
+    [formKeys.startDate]: null,
+    [formKeys.endDate]: null,
   };
 };
 
@@ -64,6 +71,31 @@ export const CreateMultiStrategyBacktest = ({
                     );
                   }}
                 </Field>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginTop: "16px",
+                }}
+              >
+                <div>
+                  <WithLabel label={"Start date"}>
+                    <Field
+                      name={formKeys.startDate}
+                      component={FormikDatePicker}
+                    />
+                  </WithLabel>
+                </div>
+                <div>
+                  <WithLabel label={"End date"}>
+                    <Field
+                      name={formKeys.endDate}
+                      component={FormikDatePicker}
+                    />
+                  </WithLabel>
+                </div>
               </div>
               <div style={{ marginTop: "8px" }}>
                 <Field name={formKeys.selectedStrategyIds}>

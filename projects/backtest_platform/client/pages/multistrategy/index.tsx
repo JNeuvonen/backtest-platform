@@ -46,6 +46,8 @@ export const MultiStrategyBacktestPage = () => {
     const body: MultiStrategyBacktestBody = {
       name: values.backtestName,
       strategies: backtests,
+      start_date: values.startDate ? values.startDate.toISOString() : null,
+      end_date: values.endDate ? values.endDate.toISOString() : null,
     };
 
     const res = await createMultiStrategyBacktest(body);

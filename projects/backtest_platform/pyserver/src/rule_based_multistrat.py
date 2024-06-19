@@ -41,7 +41,6 @@ def run_rule_based_multistrat_backtest(
 ):
     with LogExceptionContext():
         strategies = []
-        loop_dataset_id = None
         dataset_candles_time_delta = 1_000_000_000
         benchmark_initial_state = {}
         dataset_timeseries_col = None
@@ -81,7 +80,6 @@ def run_rule_based_multistrat_backtest(
             )
 
             if candles_time_delta < dataset_candles_time_delta:
-                loop_dataset_id = longest_dataset_id
                 dataset_candles_time_delta = candles_time_delta
                 benchmark_initial_state = get_benchmark_initial_state(
                     table_names, dataset_table_name_to_timeseries_col_map
@@ -90,7 +88,7 @@ def run_rule_based_multistrat_backtest(
                     dataset_idx_range_start,
                     dataset_idx_range_end,
                 ) = get_backtest_data_range_indexes(
-                    kline_open_times, strategy.start_date, strategy.end_date
+                    kline_open_times, body.start_date, body.end_date
                 )
                 idx_range_start = dataset_idx_range_start
                 idx_range_end = dataset_idx_range_end

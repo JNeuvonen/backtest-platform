@@ -358,4 +358,6 @@ export interface RuleBasedMassBacktestBody {
 export interface MultiStrategyBacktestBody {
   name: string;
   strategies: RuleBasedMassBacktestBody[];
+  start_date: string | null;
+  end_date: string | null;
 }
