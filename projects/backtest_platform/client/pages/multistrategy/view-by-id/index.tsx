@@ -13,7 +13,7 @@ import { BacktestSummaryCard } from "../../simulate/dataset/backtest/SummaryCard
 import { ShareYAxisMultilineChart } from "../../../components/charts/ShareYAxisMultiline";
 import { Line } from "recharts";
 import { COLOR_BRAND_PRIMARY } from "../../../utils/colors";
-import { TradingCriteriaCard } from "../../simulate/dataset/backtest/TradingCriteriaCard";
+import { saveBacktestReportMassSim } from "../../../clients/requests";
 
 interface PathParams {
   backtestId: number;
@@ -31,6 +31,10 @@ export const MultiStrategyPageById = () => {
   if (!backtestQuery.data) return <Spinner />;
 
   const backtest = backtestQuery.data.data;
+
+  const downloadDetailedSummary = async () => {
+    await saveBacktestReportMassSim(Number(backtestId), "backtest_summary");
+  };
 
   if (backtest === undefined) {
     return null;
@@ -53,7 +57,7 @@ export const MultiStrategyPageById = () => {
 
       <div>
         <ChakraMenu menuButton={<MenuButton>File</MenuButton>}>
-          <MenuItem icon={<FaFileImport />} onClick={() => {}}>
+          <MenuItem icon={<FaFileImport />} onClick={downloadDetailedSummary}>
             Detailed summary
           </MenuItem>
         </ChakraMenu>

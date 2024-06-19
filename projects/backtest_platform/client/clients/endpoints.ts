@@ -148,6 +148,10 @@ export const LOCAL_API_URL = {
     LOCAL_API.backtest.root +
     `/${backtestId}` +
     "/detailed-summary",
+  downloadBacktestSummaryMassSim: (backtestId: number) =>
+    LOCAL_API_URI +
+    LOCAL_API.backtest.root +
+    `/multistrategy/detailed-summary/${backtestId}`,
   massBacktestsByBacktestId: (backtestId: number) =>
     LOCAL_API_URI +
     LOCAL_API.backtest.root +

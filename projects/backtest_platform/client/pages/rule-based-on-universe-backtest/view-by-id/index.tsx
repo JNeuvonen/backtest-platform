@@ -15,6 +15,7 @@ import { FetchBacktestByIdRes } from "../../../clients/queries/response-types";
 import { TradingCriteriaCard } from "../../simulate/dataset/backtest/TradingCriteriaCard";
 import { FaFileImport } from "react-icons/fa";
 import { ChakraMenu } from "../../../components/chakra/Menu";
+import { saveBacktestReport } from "../../../clients/requests";
 
 interface PathParams {
   backtestId: number;
@@ -46,6 +47,8 @@ export const ViewRuleBasedMassBacktestPage = () => {
       }
     }
   }, [backtestQuery.data]);
+
+  const downloadDetailedSummary = async () => {};
 
   if (!backtestQuery.data) return <Spinner />;
 
