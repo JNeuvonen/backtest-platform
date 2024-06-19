@@ -1276,14 +1276,14 @@ class BacktestOnUniverse:
     def close_trades(self, kline_open_time: int):
         for item in self.strategies:
             for position in item.positions:
-                should_close = False
-
                 enters = item.kline_state["enters"]
+                should_close = False
                 should_enter = False
 
-                for item in enters:
-                    if item == position.dataset_name:
+                for enter_dataset in enters:
+                    if enter_dataset == position.dataset_name:
                         should_enter = True
+                        break
 
                 if should_enter is True:
                     continue

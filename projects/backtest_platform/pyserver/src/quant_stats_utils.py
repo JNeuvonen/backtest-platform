@@ -30,7 +30,9 @@ def generate_quant_stats_report_html(balance_history, backtestInfo, periods_per_
         periods_per_year=periods_per_year,
         cagr_periods_per_year=365,
     )
-    update_backtest_report_html(backtestInfo)
+
+    if backtestInfo is not None:
+        update_backtest_report_html(backtestInfo)
 
 
 def get_df_returns(df, ret_col):

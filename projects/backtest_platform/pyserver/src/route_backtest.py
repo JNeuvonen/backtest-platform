@@ -57,6 +57,7 @@ class RoutePaths:
     BACKTEST_BY_ID = "/{backtest_id}"
     FETCH_BY_DATASET_ID = "/dataset/{dataset_id}"
     DETAILED_SUMMARY = "/{backtest_id}/detailed-summary"
+    MASS_SIM_DETAILED_SUMMARY = "/multistrategy/detailed-summary/{backtest_id}"
     MASS_BACKTEST_BY_BACKTEST_ID = "/mass-backtest/by-backtest/{backtest_id}"
     COMBINED_STRATEGY_SUMMARY = "/mass-backtest/combined/summary"
     LONG_SHORT_BACKTEST = "/long-short-backtest"
@@ -383,3 +384,21 @@ async def route_fetch_multistrat_backtests():
     with HttpResponseContext():
         backtests = BacktestQuery.fetch_all_multistrat_backtests()
         return {"data": backtests}
+
+
+@router.get(RoutePaths.MASS_SIM_DETAILED_SUMMARY)
+async def route_mass_sim_detailed_summary(backtest_id: int):
+    with HttpResponseContext():
+        balance_history = BacktestHistoryQuery.get_entries_by_backtest_id_sorted(
+            backtest_id
+        )
+        balance_history = [base_model_to_dict(entry) for entry in balance_history]
+        for item in balance_history:
+            item["kline_open_time"] = item["kline_open_time"] * 1000
+        generate_quant_stats_report_html(balance_history, None, 365)
+
+        return FileResponse(
+            path=BACKTEST_REPORT_HTML_PATH,
+            filename="backtest_report_test.html",
+            media_type="text/html",
+        )
