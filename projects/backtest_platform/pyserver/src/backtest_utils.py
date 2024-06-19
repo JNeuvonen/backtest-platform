@@ -1278,6 +1278,16 @@ class BacktestOnUniverse:
             for position in item.positions:
                 should_close = False
 
+                enters = item.kline_state["enters"]
+                should_enter = False
+
+                for item in enters:
+                    if item == position.dataset_name:
+                        should_enter = True
+
+                if should_enter is True:
+                    continue
+
                 if item.should_close_by_exit_cond(position) is True:
                     should_close = True
                 if item.should_close_by_stop_loss(position) is True:
