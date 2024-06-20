@@ -1199,7 +1199,7 @@ class BacktestOnUniverse:
         benchmark_initial_state: Dict,
         candle_time_delta_ms: int,
         strategies: List[Strategy],
-        max_margin_ratio: int = 1,
+        max_margin_ratio: float = 1.5,
     ):
         self.starting_balance = starting_balance
         self.candle_time_delta_ms = candle_time_delta_ms
@@ -1347,6 +1347,15 @@ class BacktestOnUniverse:
             return allocated_size
         return self.cash_balance
 
+    def update_margin_ratio(self):
+        total_liabilities = 0.0
+
+        for item in self.strategies:
+            if item.is_short_selling_strategy is True:
+                total_liabilities += item.get_liabilities()
+
+        self.current_margin_ratio = safe_divide(total_liabilities, self.nav, 0.0)
+
     def enter_trades(self, kline_open_time: int):
         for item in self.strategies:
             if item.is_no_data_on_curr_row is True:
@@ -1368,6 +1377,7 @@ class BacktestOnUniverse:
                             )
                             is True
                         ):
+                            self.update_margin_ratio()
                             self.cash_balance += (
                                 size * item.trading_fees_coeff_reduce_amount()
                             )
