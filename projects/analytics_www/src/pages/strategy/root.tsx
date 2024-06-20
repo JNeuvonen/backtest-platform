@@ -6,6 +6,7 @@ import {
   StatLabel,
   StatNumber,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   getDiffToPresentFormatted,
@@ -22,7 +23,10 @@ import {
   useStrategyGroupQuery,
 } from "src/http/queries";
 import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
-import { getReprodLiveTradesPath, getStrategySymbolsPath } from "src/utils";
+import { getStrategySymbolsPath } from "src/utils";
+import { ConfirmModal } from "src/components/ConfirmModal";
+import { disableAndCloseStratGroup } from "src/http";
+import { toast } from "react-toastify";
 
 export const StrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
@@ -30,6 +34,7 @@ export const StrategyPage = () => {
   const binancePriceQuery = useBinanceSpotPriceInfo();
   const balanceSnapShots = useBalanceSnapshotsQuery();
   const navigate = useNavigate();
+  const disableAndCloseConfirmModal = useDisclosure();
 
   if (
     strategyGroupQuery.isLoading ||
@@ -45,6 +50,18 @@ export const StrategyPage = () => {
     );
   }
 
+  const disableAndClosePositions = async () => {
+    const res = await disableAndCloseStratGroup(
+      strategyGroupQuery.data.strategy_group.id,
+    );
+
+    if (res.success) {
+      toast.success("Disabled strategy", { theme: "dark" });
+    } else {
+      toast.error("Failed to disable strategy", { theme: "dark" });
+    }
+  };
+
   const tradeInfoDict = getStrategyGroupTradeInfo(
     strategyGroupQuery.data.strategy_group,
     strategyGroupQuery.data.strategies,
@@ -57,6 +74,14 @@ export const StrategyPage = () => {
 
   return (
     <div>
+      <ConfirmModal
+        {...disableAndCloseConfirmModal}
+        onConfirm={disableAndClosePositions}
+        title={"Disable strategy"}
+        message={
+          "Are you sure you want to disable this strategy and close all positions?"
+        }
+      />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div>
           <Heading size={"lg"}>
@@ -180,16 +205,16 @@ export const StrategyPage = () => {
         }}
       >
         <Button
+          variant={BUTTON_VARIANTS.dangerNoFill}
+          onClick={() => disableAndCloseConfirmModal.onOpen()}
+        >
+          Disable and close positions
+        </Button>
+        <Button
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => navigate(getStrategySymbolsPath(strategyName))}
         >
           Tickers
-        </Button>
-        <Button
-          variant={BUTTON_VARIANTS.nofill}
-          onClick={() => navigate(getReprodLiveTradesPath(strategyName))}
-        >
-          Reproduce live trades
         </Button>
       </div>
     </div>

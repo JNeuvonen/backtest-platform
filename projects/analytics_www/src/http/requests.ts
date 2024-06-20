@@ -169,3 +169,15 @@ export const disableAndCloseLsStrat = async (id: number) => {
     return null;
   }
 };
+
+export const disableAndCloseStratGroup = async (groupId: number) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.strategyDisableAndClose(groupId),
+      method: "DELETE",
+    });
+    return res;
+  } catch {
+    return null;
+  }
+};

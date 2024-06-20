@@ -81,3 +81,16 @@ class StrategyGroupQuery:
                 if result and result.transformation_ids:
                     result.transformation_ids = json.loads(result.transformation_ids)
                 return result
+
+    @staticmethod
+    def get_by_id(strategy_group_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                result = (
+                    session.query(StrategyGroup)
+                    .filter(StrategyGroup.id == strategy_group_id)
+                    .first()
+                )
+                if result and result.transformation_ids:
+                    result.transformation_ids = json.loads(result.transformation_ids)
+                return result

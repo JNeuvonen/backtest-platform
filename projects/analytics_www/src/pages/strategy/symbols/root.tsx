@@ -56,6 +56,12 @@ const COLUMN_DEFS: any = [
     editable: false,
   },
   {
+    headerName: "Is enabled",
+    field: "isEnabled",
+    sortable: true,
+    editable: false,
+  },
+  {
     headerName: "In position",
     field: "inPosition",
     sortable: true,
@@ -216,6 +222,7 @@ export const StrategySymbolsPage = () => {
         shouldEnter: item.should_enter_trade,
         shouldClose: item.should_close_trade,
         activeTradeId: item.active_trade_id,
+        isEnabled: !item.is_disabled,
         inPosition: item.is_in_position,
         positionHeldTime: getDiffToPresentInHours(
           new Date(item.time_on_trade_open_ms),
