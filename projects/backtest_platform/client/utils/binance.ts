@@ -109,3 +109,43 @@ export async function getSymbolsWithPrecision(
 
   return result;
 }
+
+interface TickerData {
+  symbol: string;
+  lastPrice: string;
+  volume: string;
+}
+
+export async function getTopCoinsByUSDTVolume(
+  limit: number = 30
+): Promise<string[]> {
+  const url = "https://api.binance.com/api/v3/ticker/24hr";
+
+  try {
+    const response = await fetch(url);
+    const data: TickerData[] = await response.json();
+
+    const usdtPairs = data.filter((ticker) => ticker.symbol.endsWith("USDT"));
+
+    const sortedByMarketCap = usdtPairs
+      .map((ticker) => ({
+        ...ticker,
+        marketCap: parseFloat(ticker.volume) * parseFloat(ticker.lastPrice),
+      }))
+      .sort((a, b) => b.marketCap - a.marketCap);
+
+    const topCoins = sortedByMarketCap
+      .slice(0, limit)
+      .map((ticker) => ticker.symbol);
+
+    return topCoins.filter((item) => {
+      if (item === "USDCUSDT") {
+        return false;
+      }
+
+      return true;
+    });
+  } catch (error) {
+    throw new Error("Failed to fetch data from Binance API");
+  }
+}

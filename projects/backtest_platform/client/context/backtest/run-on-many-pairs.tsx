@@ -6,6 +6,7 @@ import {
   Button,
   FormControl,
   FormLabel,
+  Heading,
   Spinner,
   Switch,
   Tooltip,
@@ -22,6 +23,7 @@ import {
   useBacktestById,
   useBinanceTickersQuery,
   useNyseSymbolList,
+  useTopCoinsByVol,
 } from "../../clients/queries/queries";
 import { usePathParams } from "../../hooks/usePathParams";
 import { postMassBacktest } from "../../clients/requests";
@@ -65,6 +67,59 @@ interface PropsSelectBulkSimPairs {
 export const SelectBulkSimPairsBody = ({
   onSelect,
 }: PropsSelectBulkSimPairs) => {
+  const top20CoinsByVol = useTopCoinsByVol(25);
+  const top50CoinsByVol = useTopCoinsByVol(50);
+
+  const renderTopCoinsByVol = () => {
+    if (!top20CoinsByVol.data || !top50CoinsByVol.data) {
+      return <Spinner />;
+    }
+
+    return (
+      <div style={{ marginTop: "16px" }}>
+        <Heading size={"md"}>Real-time top list by vol.</Heading>
+        <div style={{ marginTop: "12px" }}>
+          <Tooltip label={top20CoinsByVol.data.map((pair) => pair).join(", ")}>
+            <Button
+              variant={BUTTON_VARIANTS.nofill}
+              onClick={() => {
+                onSelect(
+                  top20CoinsByVol.data.map((item) => {
+                    return {
+                      value: item,
+                      label: item,
+                    };
+                  })
+                );
+              }}
+            >
+              Top 20
+            </Button>
+          </Tooltip>
+        </div>
+        <div style={{ marginTop: "2px" }}>
+          <Tooltip label={top50CoinsByVol.data.map((pair) => pair).join(", ")}>
+            <Button
+              variant={BUTTON_VARIANTS.nofill}
+              onClick={() => {
+                onSelect(
+                  top50CoinsByVol.data.map((item) => {
+                    return {
+                      value: item,
+                      label: item,
+                    };
+                  })
+                );
+              }}
+            >
+              Top 50
+            </Button>
+          </Tooltip>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div>
       {BULK_SIM_PAIR_PRESETS.map((preset) => {
@@ -83,6 +138,7 @@ export const SelectBulkSimPairsBody = ({
           </div>
         );
       })}
+      {renderTopCoinsByVol()}
     </div>
   );
 };

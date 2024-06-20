@@ -44,6 +44,7 @@ import {
   MassBacktest,
 } from "./response-types";
 import { removeDuplicates } from "../../utils/number";
+import { getTopCoinsByUSDTVolume } from "../../utils/binance";
 
 export function useDatasetsQuery(): UseQueryResult<
   DatasetMetadata[] | null,
@@ -281,5 +282,14 @@ export function useMultiStrategyBacktests(): UseQueryResult<
   return useQuery<BacktestObject[], unknown>({
     queryKey: [QUERY_KEYS.fetch_multistrat_backtests],
     queryFn: () => fetchMultiStrategyBacktests(),
+  });
+}
+
+export function useTopCoinsByVol(
+  limit: number
+): UseQueryResult<string[], unknown> {
+  return useQuery<string[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_top_coins_by_vol, limit],
+    queryFn: () => getTopCoinsByUSDTVolume(limit),
   });
 }
