@@ -1,5 +1,7 @@
 import json
 from typing import Dict
+
+from sqlalchemy import func
 from common_python.log import LogExceptionContext
 from common_python.pred_serv_orm import Session, StrategyGroup
 
@@ -94,3 +96,15 @@ class StrategyGroupQuery:
                 if result and result.transformation_ids:
                     result.transformation_ids = json.loads(result.transformation_ids)
                 return result
+
+    @staticmethod
+    def update_last_adaptive_group_recalc(strategy_group_id: int):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(StrategyGroup).filter(
+                    StrategyGroup.id == strategy_group_id
+                ).update(
+                    {"last_adaptive_group_recalc": func.now()},
+                    synchronize_session=False,
+                )
+                session.commit()
