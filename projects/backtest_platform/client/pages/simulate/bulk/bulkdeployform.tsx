@@ -29,11 +29,7 @@ import { CODE_PRESET_CATEGORY } from "../../../utils/constants";
 import { ChakraNumberStepper } from "../../../components/ChakraNumberStepper";
 import { BUTTON_VARIANTS } from "../../../theme";
 import { useDatasetQuery } from "../../../clients/queries/queries";
-import {
-  deployStrategyGroup,
-  deployStrategyReq,
-  fetchDataset,
-} from "../../../clients/requests";
+import { deployStrategyGroup, fetchDataset } from "../../../clients/requests";
 import { SymbolDeployInfo } from "common_js";
 
 const backtestDiskManager = new DiskManager(
@@ -49,6 +45,7 @@ const formKeys = {
   klineSizeMs: "kline_size_ms",
   maximumKlinesHoldTime: "maximum_klines_hold_time",
   numReqKlines: "num_req_klines",
+  numSymbolsForAutoAdaptive: "num_symbols_for_auto_adaptive",
   allocatedSizePerc: "allocated_size_perc",
   takeProfitThresholdPerc: "take_profit_threshold_perc",
   stopLossThresholdPerc: "stop_loss_threshold_perc",
@@ -61,6 +58,7 @@ const formKeys = {
   isLeverageAllowed: "is_leverage_allowed",
   isShortSellingStrategy: "is_short_selling_strategy",
   isPaperTradeMode: "is_paper_trade_mode",
+  isAutoAdaptiveGroup: "is_auto_adaptive_group",
 };
 
 export interface BulkDeployDirectionalStratForm {
@@ -73,6 +71,7 @@ export interface BulkDeployDirectionalStratForm {
   kline_size_ms: number;
   maximum_klines_hold_time: number;
   num_req_klines: number;
+  num_symbols_for_auto_adaptive: number;
   allocated_size_perc: number;
   take_profit_threshold_perc: number;
   stop_loss_threshold_perc: number;
@@ -85,6 +84,7 @@ export interface BulkDeployDirectionalStratForm {
   is_leverage_allowed: boolean;
   is_short_selling_strategy: boolean;
   is_paper_trade_mode: boolean;
+  is_auto_adaptive_group: boolean;
   data_transformations: DataTransformation[];
 }
 
@@ -103,6 +103,7 @@ const getFormInitialValues = (
       kline_size_ms: getIntervalLengthInMs(backtest.candle_interval),
       maximum_klines_hold_time: backtest.klines_until_close,
       num_req_klines: 1000,
+      num_symbols_for_auto_adaptive: 25,
       allocated_size_perc: 25,
       take_profit_threshold_perc: backtest.take_profit_threshold_perc,
       stop_loss_threshold_perc: backtest.stop_loss_threshold_perc,
@@ -115,6 +116,7 @@ const getFormInitialValues = (
       is_leverage_allowed: false,
       is_short_selling_strategy: backtest.is_short_selling_strategy,
       is_paper_trade_mode: false,
+      is_auto_adaptive_group: true,
       data_transformations: [],
     };
   }
@@ -239,7 +241,7 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
           initialValues={getFormInitialValues(originalBacktest)}
           onSubmit={onSubmit}
         >
-          {() => {
+          {({ values }) => {
             return (
               <Form>
                 <div
@@ -532,6 +534,58 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
                       }}
                     </Field>
                   </div>
+                  <div>
+                    <Field name={formKeys.isAutoAdaptiveGroup}>
+                      {({ field, form }) => {
+                        return (
+                          <WithLabel label={"Use auto adaptive group"}>
+                            <Switch
+                              isChecked={field.value}
+                              onChange={() =>
+                                form.setFieldValue(
+                                  formKeys.isAutoAdaptiveGroup,
+                                  !field.value
+                                )
+                              }
+                            />
+                          </WithLabel>
+                        );
+                      }}
+                    </Field>
+                  </div>
+
+                  {values.is_auto_adaptive_group && (
+                    <div>
+                      <Field name={formKeys.numSymbolsForAutoAdaptive}>
+                        {({ field, form }) => {
+                          return (
+                            <WithLabel
+                              label={"Num symbols for auto adaptive group"}
+                              containerStyles={{
+                                maxWidth: "200px",
+                                marginTop: "16px",
+                              }}
+                            >
+                              <NumberInput
+                                step={1}
+                                min={0}
+                                value={field.value}
+                                onChange={(valueString) =>
+                                  form.setFieldValue(
+                                    formKeys.numSymbolsForAutoAdaptive,
+                                    parseInt(valueString)
+                                  )
+                                }
+                              >
+                                <NumberInputField />
+                                <ChakraNumberStepper />
+                              </NumberInput>
+                            </WithLabel>
+                          );
+                        }}
+                      </Field>
+                    </div>
+                  )}
                   <div>
                     <Field name={formKeys.useStopLossBasedClose}>
                       {({ field, form }) => {

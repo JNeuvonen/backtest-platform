@@ -143,6 +143,7 @@ export async function getTopCoinsByUSDTVolume(
         return false;
       }
 
+      if (item === "FDUSDUSDT") return false;
       return true;
     });
   } catch (error) {
