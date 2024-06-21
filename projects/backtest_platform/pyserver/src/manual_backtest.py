@@ -115,16 +115,20 @@ async def run_rule_based_mass_backtest(
                 "klines_until_close": original_backtest["klines_until_close"],
             }
 
-            backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
-            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
-
-            logger.log(
-                f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
-                logging.INFO,
-                True,
-                True,
-                DomEventChannels.REFETCH_COMPONENT.value,
-            )
+            try:
+                backtest = run_manual_backtest(
+                    BodyCreateManualBacktest(**backtest_body)
+                )
+                MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
+                logger.log(
+                    f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
+                    logging.INFO,
+                    True,
+                    True,
+                    DomEventChannels.REFETCH_COMPONENT.value,
+                )
+            except Exception:
+                pass
             curr_iter += 1
 
         for symbol in body.stock_market_symbols:
@@ -183,8 +187,8 @@ async def run_rule_based_mass_backtest(
             }
 
             backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
-            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
 
+            MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
             logger.log(
                 f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
                 logging.INFO,
@@ -192,6 +196,7 @@ async def run_rule_based_mass_backtest(
                 True,
                 DomEventChannels.REFETCH_COMPONENT.value,
             )
+
             curr_iter += 1
 
 
