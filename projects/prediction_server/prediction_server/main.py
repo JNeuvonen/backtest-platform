@@ -141,6 +141,7 @@ def rule_based_loop(stop_event):
             state_manager.update_local_state()
             state_manager.check_refetch_signal()
             state_manager.create_trade_info_ticks()
+            state_manager.update_strategy_groups()
 
             loop_complete_time_ms = (
                 get_current_timestamp_ms() - last_loop_complete_timestamp

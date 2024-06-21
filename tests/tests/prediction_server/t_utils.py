@@ -22,7 +22,7 @@ class Post:
     @staticmethod
     def create_strategy_group(api_key: str, body):
         with Req("post", URL.create_strategy_group(), api_key, json=body) as res:
-            return res
+            return res.text
 
     @staticmethod
     def create_long_short_strategy(api_key: str, body):

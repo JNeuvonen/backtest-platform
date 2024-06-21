@@ -6,7 +6,7 @@ from fixtures.trade import close_trade_body_test_case_1, trade_test_backend_sani
 from tests.prediction_server.fixtures.strategy_group import test_case_dump
 
 
-@pytest.mark.dev
+@pytest.mark.acceptance
 def test_setup_sanity(cleanup_db, create_api_key):
     res_strat = Post.create_strategy_group(create_api_key, body=test_case_dump)
     id = res_strat.text

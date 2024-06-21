@@ -17,6 +17,7 @@ from common_python.pred_serv_models.trade import TradeQuery
 from common_python.pred_serv_models.strategy_group import StrategyGroupQuery
 from log import get_logger
 from common_python.pred_serv_models.data_transformation import DataTransformationQuery
+from prediction_server.strategy import get_strategy_name
 from trade_utils import close_long_trade, close_short_trade, update_strategy_state
 
 
@@ -64,7 +65,30 @@ async def route_create_strategy_group(body: BodyCreateStrategyGroup):
         transformation_ids = []
 
         strategy_group_id = StrategyGroupQuery.create_entry(
-            {"name": body.strategy_group}
+            {
+                "name": body.strategy_group,
+                "is_auto_adaptive_group": body.is_auto_adaptive_group,
+                "num_symbols_for_auto_adaptive": body.num_symbols_for_auto_adaptive,
+                "enter_trade_code": body.enter_trade_code,
+                "exit_trade_code": body.exit_trade_code,
+                "fetch_datasources_code": body.fetch_datasources_code,
+                "candle_interval": body.candle_interval,
+                "priority": body.priority,
+                "num_req_klines": body.num_req_klines,
+                "kline_size_ms": body.kline_size_ms,
+                "minimum_time_between_trades_ms": body.minimum_time_between_trades_ms,
+                "maximum_klines_hold_time": body.maximum_klines_hold_time,
+                "allocated_size_perc": body.allocated_size_perc,
+                "take_profit_threshold_perc": body.take_profit_threshold_perc,
+                "stop_loss_threshold_perc": body.stop_loss_threshold_perc,
+                "use_time_based_close": body.use_time_based_close,
+                "use_profit_based_close": body.use_profit_based_close,
+                "use_stop_loss_based_close": body.use_stop_loss_based_close,
+                "use_taker_order": body.use_taker_order,
+                "should_calc_stops_on_pred_serv": body.should_calc_stops_on_pred_serv,
+                "is_leverage_allowed": body.is_leverage_allowed,
+                "is_short_selling_strategy": body.is_short_selling_strategy,
+            }
         )
         for item in data_transformations:
             id = DataTransformationQuery.create_transformation(
@@ -77,12 +101,21 @@ async def route_create_strategy_group(body: BodyCreateStrategyGroup):
 
         symbols = body.symbols
 
-        body_copy = body.model_dump(exclude={"data_transformations", "symbols"})
+        body_copy = body.model_dump(
+            exclude={
+                "data_transformations",
+                "symbols",
+                "num_symbols_for_auto_adaptive",
+                "is_auto_adaptive_group",
+            }
+        )
 
         for item in symbols:
             try:
                 body_copy_clone = copy.deepcopy(body_copy)
-                body_copy_clone["name"] = f"{body.strategy_group}_{item.symbol}".upper()
+                body_copy_clone["name"] = get_strategy_name(
+                    body.strategy_group, item.symbol
+                )
                 body_copy_clone["symbol"] = item.symbol
                 body_copy_clone["base_asset"] = item.base_asset
                 body_copy_clone["quote_asset"] = item.quote_asset

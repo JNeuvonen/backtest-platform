@@ -1,11 +1,13 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import List, Optional
+from datetime import datetime
 
 from common_python.pred_serv_models.refetch_strategy_signal import (
     RefetchStrategySignalQuery,
 )
 from common_python.pred_serv_models.trade_info_tick import TradeInfoTickQuery
 from log import LogExceptionContext
+from prediction_server.strategy import refresh_adaptive_strategy_group
 from utils import get_current_timestamp_ms
 import pandas as pd
 from common_python.pred_serv_models.data_transformation import (
@@ -125,6 +127,14 @@ class RuleBasedLoopManager:
             )
 
         self.datasets[item.name] = local_dataset
+
+    def update_strategy_groups(self):
+        for item in self.strategy_groups:
+            now = datetime.now()
+            difference = now - item.last_adaptive_group_recalc
+
+            if difference.days >= item.num_days_for_group_recalc:
+                refresh_adaptive_strategy_group(item)
 
     def create_new_dataset_objs(self):
         for item in self.strategies:

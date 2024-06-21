@@ -114,6 +114,7 @@ class BodyCreateStrategyGroup(BaseModel):
     fetch_datasources_code: str
     candle_interval: str
 
+    num_symbols_for_auto_adaptive: Optional[int] = 0
     priority: int
     kline_size_ms: int
     maximum_klines_hold_time: int
@@ -134,6 +135,7 @@ class BodyCreateStrategyGroup(BaseModel):
 
     is_leverage_allowed: bool
     is_short_selling_strategy: bool
+    is_auto_adaptive_group: bool
 
     symbols: List[SymbolInfo] = Field(default_factory=list)
     data_transformations: List[DataTransformation] = Field(default_factory=list)
