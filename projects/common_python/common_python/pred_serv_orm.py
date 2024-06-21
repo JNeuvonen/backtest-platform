@@ -60,10 +60,34 @@ class StrategyGroup(Base):
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    last_adaptive_group_recalc = Column(DateTime, default=func.now())
 
     transformation_ids = Column(String)
     is_disabled = Column(Boolean, default=True)
     is_close_only = Column(Boolean, default=False)
+    is_auto_adaptive_group = Column(Boolean, default=False)
+    num_symbols_for_auto_adaptive = Column(Integer, default=0)
+    num_days_for_group_recalc = Column(Integer, default=7)
+
+    enter_trade_code = Column(String, nullable=False)
+    exit_trade_code = Column(String, nullable=False)
+    fetch_datasources_code = Column(String, nullable=False)
+    candle_interval = Column(String)
+    priority = Column(Integer, nullable=False)
+    num_req_klines = Column(Integer, nullable=False)
+    kline_size_ms = Column(Integer)
+    minimum_time_between_trades_ms = Column(Integer)
+    maximum_klines_hold_time = Column(Integer, nullable=True)
+    allocated_size_perc = Column(Float)
+    take_profit_threshold_perc = Column(Float)
+    stop_loss_threshold_perc = Column(Float)
+    use_time_based_close = Column(Boolean, nullable=False)
+    use_profit_based_close = Column(Boolean, nullable=False)
+    use_stop_loss_based_close = Column(Boolean, nullable=False)
+    use_taker_order = Column(Boolean)
+    should_calc_stops_on_pred_serv = Column(Boolean, default=False)
+    is_leverage_allowed = Column(Boolean, default=False)
+    is_short_selling_strategy = Column(Boolean, nullable=False)
 
 
 def db_delete_all_data():
