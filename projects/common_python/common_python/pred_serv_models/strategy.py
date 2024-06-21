@@ -226,3 +226,21 @@ class StrategyQuery:
                     .filter(Strategy.strategy_group_id == strategy_group_id)
                     .all()
                 )
+
+    @staticmethod
+    def create_many(entries: List[Dict]):
+        with LogExceptionContext():
+            with Session() as session:
+                strategy_entries = [Strategy(**fields) for fields in entries]
+                session.add_all(strategy_entries)
+                session.commit()
+                return [entry.id for entry in strategy_entries]
+
+    @staticmethod
+    def delete_strategies_by_ids(strategy_ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Strategy).filter(Strategy.id.in_(strategy_ids)).delete(
+                    synchronize_session=False
+                )
+                session.commit()
