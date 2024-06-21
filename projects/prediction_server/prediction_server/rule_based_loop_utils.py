@@ -130,6 +130,9 @@ class RuleBasedLoopManager:
 
     def update_strategy_groups(self):
         for item in self.strategy_groups:
+            if item.is_auto_adaptive_group is False:
+                continue
+
             now = datetime.now()
             difference = now - item.last_adaptive_group_recalc
 
