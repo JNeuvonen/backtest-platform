@@ -2,17 +2,15 @@ from logging.config import fileConfig
 from alembic import context
 from dotenv import load_dotenv
 import os
-import sys
 
 
-sys.path.append("src")
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-import main
 import common_python.pred_serv_orm as orm
-import common_python.pred_serv_models.user
+import prediction_server.main
+import analytics_server.main
 
 
 load_dotenv()
