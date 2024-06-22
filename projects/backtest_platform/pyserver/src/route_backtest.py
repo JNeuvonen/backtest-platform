@@ -126,11 +126,17 @@ async def route_mass_backtest(body: BodyCreateMassBacktest):
             {"original_backtest_id": body.original_backtest_id}
         )
 
-        asyncio.create_task(
-            run_rule_based_mass_backtest(
-                mass_backtest_id, body, candle_size, original_backtest
-            )
+        process = Process(
+            target=run_rule_based_mass_backtest,
+            args=(
+                log_event_queue,
+                mass_backtest_id,
+                body,
+                candle_size,
+                original_backtest,
+            ),
         )
+        process.start()
 
         return Response(
             content=str(mass_backtest_id),

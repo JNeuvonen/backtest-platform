@@ -1,7 +1,7 @@
 import logging
 import math
 from typing import Dict, List
-from api_binance import save_historical_klines
+from api_binance import non_async_save_historical_klines, save_historical_klines
 from query_backtest_history import BacktestHistoryQuery
 from backtest_utils import (
     find_max_drawdown,
@@ -42,14 +42,14 @@ from utils import PythonCode, get_binance_dataset_tablename
 START_BALANCE = 10000
 
 
-async def run_rule_based_mass_backtest(
+def run_rule_based_mass_backtest(
+    log_event_queue,
     mass_backtest_id: int,
     body: BodyCreateMassBacktest,
     interval,
     original_backtest: Dict,
 ):
     with LogExceptionContext():
-        logger = get_logger()
         n_symbols = len(body.crypto_symbols) + len(body.stock_market_symbols)
         curr_iter = 1
 
@@ -66,7 +66,7 @@ async def run_rule_based_mass_backtest(
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             if symbol_dataset is None or body.fetch_latest_data is True:
-                await save_historical_klines(symbol, interval, True)
+                non_async_save_historical_klines(symbol, interval, True)
                 symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
@@ -120,12 +120,8 @@ async def run_rule_based_mass_backtest(
                     BodyCreateManualBacktest(**backtest_body)
                 )
                 MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
-                logger.log(
+                log_event_queue.put(
                     f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
-                    logging.INFO,
-                    True,
-                    True,
-                    DomEventChannels.REFETCH_COMPONENT.value,
                 )
             except Exception:
                 pass
@@ -189,12 +185,8 @@ async def run_rule_based_mass_backtest(
             backtest = run_manual_backtest(BodyCreateManualBacktest(**backtest_body))
 
             MassBacktestQuery.add_backtest_id(mass_backtest_id, backtest["id"])
-            logger.log(
-                f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}",
-                logging.INFO,
-                True,
-                True,
-                DomEventChannels.REFETCH_COMPONENT.value,
+            log_event_queue.put(
+                f"Finished backtest ({curr_iter}/{n_symbols}) on {symbol}"
             )
 
             curr_iter += 1
