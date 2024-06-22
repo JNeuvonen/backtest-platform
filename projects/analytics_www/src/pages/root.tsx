@@ -151,6 +151,7 @@ export const RootPage = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            flexWrap: "wrap",
           }}
         >
           <Heading size={"lg"}>Live dashboard</Heading>

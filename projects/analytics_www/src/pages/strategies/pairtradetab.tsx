@@ -218,7 +218,8 @@ export const PairTradeTab = ({
     let cumulativeValueInOpenShorts = 0;
     let openTrades = 0;
     let cumulativePosHoldTimeMs = 0;
-    let totalCompletedTrades = strategiesRes.completed_longshort_trades.length;
+    let totalCompletedTrades =
+      strategiesRes.completed_longshort_trades?.length || 0;
     let cumulativeMeanTradeResPerc = 0;
 
     strategiesRes.completed_longshort_trades.forEach((item) => {

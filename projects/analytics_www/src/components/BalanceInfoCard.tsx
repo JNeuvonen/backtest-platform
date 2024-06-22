@@ -30,6 +30,7 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
           display: "flex",
           alignItems: "center",
           gap: "16px",
+          flexWrap: "wrap",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -68,7 +69,14 @@ const BalanceInfoCard: React.FC<InfoCardProps> = ({
           </div>
         </div>
         {!showOnlyNav && (
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Debt</StatLabel>

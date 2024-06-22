@@ -96,7 +96,7 @@ export const SideNav = () => {
       {hideSidenav && (
         <IconButton
           icon={<RxHamburgerMenu />}
-          style={{ position: "fixed" }}
+          style={{ position: "fixed", zIndex: 10000 }}
           onClick={() => setHideSidenav(false)}
           aria-label={"Menu button"}
           marginLeft={"8px"}

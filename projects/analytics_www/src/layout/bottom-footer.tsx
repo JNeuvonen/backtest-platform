@@ -127,7 +127,9 @@ export const BottomInfoFooter = () => {
         bottom: 0,
         position: "fixed",
         height: "35px",
-        width: `calc(100vw - ${SIDENAV_DEFAULT_WIDTH}px - 15px)`,
+        width: `calc(100vw - ${
+          isMobileLayout ? 0 : SIDENAV_DEFAULT_WIDTH
+        }px - 15px)`,
         left: isMobileLayout ? 0 : SIDENAV_DEFAULT_WIDTH,
         background: COLOR_BG_PRIMARY,
         justifyContent: "space-between",
@@ -145,43 +147,52 @@ export const BottomInfoFooter = () => {
             </StatLabel>
           </Stat>
         </div>
-        <div>
-          <Stat color={COLOR_CONTENT_PRIMARY}>
-            <StatLabel>
-              Longs:{" "}
-              {roundNumberFloor(
-                safeDivide(
-                  infoDict.totalLongs * 100,
-                  latestSnapshotQuery.data.value,
-                  0,
-                ),
-                2,
-              )}
-              %
-            </StatLabel>
-          </Stat>
-        </div>
-        <div>
-          <Stat color={COLOR_CONTENT_PRIMARY}>
-            <StatLabel>
-              Shorts:{" "}
-              {roundNumberFloor(
-                safeDivide(
-                  infoDict.totalShorts * 100,
-                  latestSnapshotQuery.data.value,
-                  0,
-                ),
-                2,
-              )}
-              %
-            </StatLabel>
-          </Stat>
-        </div>
-        <div>
-          <Stat color={COLOR_CONTENT_PRIMARY}>
-            <StatLabel>Trades past 24h: {infoDict.tradesPast24h}</StatLabel>
-          </Stat>
-        </div>
+
+        {!isMobileLayout && (
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>
+                Longs:{" "}
+                {roundNumberFloor(
+                  safeDivide(
+                    infoDict.totalLongs * 100,
+                    latestSnapshotQuery.data.value,
+                    0,
+                  ),
+                  2,
+                )}
+                %
+              </StatLabel>
+            </Stat>
+          </div>
+        )}
+
+        {!isMobileLayout && (
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>
+                Shorts:{" "}
+                {roundNumberFloor(
+                  safeDivide(
+                    infoDict.totalShorts * 100,
+                    latestSnapshotQuery.data.value,
+                    0,
+                  ),
+                  2,
+                )}
+                %
+              </StatLabel>
+            </Stat>
+          </div>
+        )}
+
+        {!isMobileLayout && (
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Trades past 24h: {infoDict.tradesPast24h}</StatLabel>
+            </Stat>
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", gap: "8px" }}>
         <div>

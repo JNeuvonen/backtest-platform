@@ -111,13 +111,34 @@ export interface TradeInfoTick {
 export interface StrategyGroup {
   id: number;
   name: string;
-
   created_at: Date;
   updated_at: Date;
-
+  last_adaptive_group_recalc: Date;
   transformation_ids: string;
   is_disabled: boolean;
   is_close_only: boolean;
+  is_auto_adaptive_group: boolean;
+  num_symbols_for_auto_adaptive: number;
+  num_days_for_group_recalc: number;
+  enter_trade_code?: string;
+  exit_trade_code?: string;
+  fetch_datasources_code?: string;
+  candle_interval: string;
+  priority?: number;
+  num_req_klines?: number;
+  kline_size_ms: number;
+  minimum_time_between_trades_ms: number;
+  maximum_klines_hold_time?: number;
+  allocated_size_perc: number;
+  take_profit_threshold_perc: number;
+  stop_loss_threshold_perc: number;
+  use_time_based_close?: boolean;
+  use_profit_based_close?: boolean;
+  use_stop_loss_based_close?: boolean;
+  use_taker_order: boolean;
+  should_calc_stops_on_pred_serv: boolean;
+  is_leverage_allowed: boolean;
+  is_short_selling_strategy?: boolean;
 }
 
 export interface LongShortTicker {
