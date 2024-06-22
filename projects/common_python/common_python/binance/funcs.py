@@ -133,3 +133,22 @@ def get_trade_quantities_precision(symbols: List[str]):
         if symbol not in precisions:
             raise ValueError(f"Symbol {symbol} does not exist")
     return precisions
+
+
+def infer_assets(symbol: str) -> dict:
+    if symbol.endswith("USDT"):
+        quote_asset = "USDT"
+        base_asset = symbol[:-4]
+    elif symbol.endswith("BTC"):
+        quote_asset = "BTC"
+        base_asset = symbol[:-3]
+    elif symbol.endswith("ETH"):
+        quote_asset = "ETH"
+        base_asset = symbol[:-3]
+    elif symbol.endswith("BNB"):
+        quote_asset = "BNB"
+        base_asset = symbol[:-3]
+    else:
+        raise ValueError("Unsupported quote asset.")
+
+    return {"baseAsset": base_asset, "quoteAsset": quote_asset}
