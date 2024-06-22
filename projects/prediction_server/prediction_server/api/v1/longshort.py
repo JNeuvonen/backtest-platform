@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Depends, Response, status
 
-from middleware import api_key_auth
-from api.v1.request_types import (
+from prediction_server.middleware import api_key_auth
+from prediction_server.api.v1.request_types import (
     BodyCreateLongShortStrategy,
     EnterLongShortPairBody,
     ExitLongShortPairBody,
     UpdateLongShortPairBody,
 )
-from context import HttpResponseContext
-from trade_utils import enter_longshort_trade, exit_longshort_trade
+from prediction_server.context import HttpResponseContext
+from prediction_server.trade_utils import enter_longshort_trade, exit_longshort_trade
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 from common_python.pred_serv_models.data_transformation import DataTransformationQuery
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
-from binance_utils import infer_assets
+from prediction_server.binance_utils import infer_assets
 
 
 router = APIRouter()

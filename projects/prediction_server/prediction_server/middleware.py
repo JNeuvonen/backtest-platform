@@ -1,5 +1,5 @@
 from fastapi.security import APIKeyHeader
-from config import is_dev
+from prediction_server.config import is_dev
 from common_python.pred_serv_models.api_key import APIKeyQuery
 from common_python.pred_serv_models.whitelisted_ip import WhiteListedIPQuery
 from fastapi import Request, Security, HTTPException

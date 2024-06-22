@@ -3,11 +3,11 @@ import logging
 from contextlib import contextmanager
 import os
 
-from config import is_dev, LOG_FILE
+from prediction_server.config import is_dev, LOG_FILE
 from logging.handlers import RotatingFileHandler
 
 from common_python.pred_serv_models.cloudlog import create_log
-from constants import LogLevel
+from prediction_server.constants import LogLevel
 
 
 def capture_stack_frame(func_name, params):

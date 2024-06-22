@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, Response, status
 
-from middleware import api_key_auth
-from context import HttpResponseContext
+from prediction_server.middleware import api_key_auth
+from prediction_server.context import HttpResponseContext
 from common_python.pred_serv_models.cloudlog import CloudLogQuery, create_log
 from datetime import timedelta
 
-from api.v1.request_types import BodyCreateCloudLog
+from prediction_server.api.v1.request_types import BodyCreateCloudLog
 
 router = APIRouter()
 

@@ -1,14 +1,20 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import List, Optional
 from datetime import datetime
+from common_python.array import rm_items_from_list
+from common_python.binance.funcs import (
+    get_top_coins_by_usdt_volume,
+    get_trade_quantities_precision,
+)
 
 from common_python.pred_serv_models.refetch_strategy_signal import (
     RefetchStrategySignalQuery,
 )
 from common_python.pred_serv_models.trade_info_tick import TradeInfoTickQuery
-from log import LogExceptionContext
-from prediction_server.strategy import refresh_adaptive_strategy_group
-from utils import get_current_timestamp_ms
+from common_python.binance.funcs import infer_assets
+from prediction_server.log import LogExceptionContext
+
+from prediction_server.utils import get_current_timestamp_ms
 import pandas as pd
 from common_python.pred_serv_models.data_transformation import (
     DataTransformation,
@@ -46,6 +52,76 @@ class LocalDataset:
         self.should_close_trade = strategy.should_close_trade
         self.is_on_pred_serv_err = strategy.is_on_pred_serv_err
         self.updated_fields = {}
+
+
+def get_strategy_name(group_name: str, symbol: str):
+    return f"{group_name}_{symbol}".upper()
+
+
+def refresh_adaptive_strategy_group(strategy_group: StrategyGroup):
+    old_strategies = StrategyQuery.get_strategies_by_strategy_group_id(
+        strategy_group.id
+    )
+
+    top_coins_by_usdt_vol = get_top_coins_by_usdt_volume(
+        strategy_group.num_symbols_for_auto_adaptive
+    )
+
+    strategies_to_be_deleted = []
+    found_symbols = []
+
+    for item in old_strategies:
+        if item.symbol not in top_coins_by_usdt_vol and item.is_in_position is False:
+            strategies_to_be_deleted.append(item.id)
+        else:
+            found_symbols.append(item.symbol)
+
+    top_coins_by_usdt_vol = rm_items_from_list(top_coins_by_usdt_vol, found_symbols)
+    precisions = get_trade_quantities_precision(top_coins_by_usdt_vol)
+
+    strategy_symbols_info = []
+
+    for item in top_coins_by_usdt_vol:
+        assets = infer_assets(item)
+        precision = precisions[item]
+
+        strategy_symbols_info.append(
+            {
+                "name": get_strategy_name(strategy_group.name, item),
+                "strategy_group_id": strategy_group.id,
+                "symbol": item,
+                "base_asset": assets["baseAsset"],
+                "quote_asset": assets["quoteAsset"],
+                "trade_quantity_precision": precision,
+                "enter_trade_code": strategy_group.enter_trade_code,
+                "exit_trade_code": strategy_group.exit_trade_code,
+                "fetch_datasources_code": strategy_group.fetch_datasources_code,
+                "candle_interval": strategy_group.candle_interval,
+                "priority": strategy_group.priority,
+                "num_req_klines": strategy_group.num_req_klines,
+                "kline_size_ms": strategy_group.kline_size_ms,
+                "minimum_time_between_trades_ms": strategy_group.minimum_time_between_trades_ms,
+                "maximum_klines_hold_time": strategy_group.maximum_klines_hold_time,
+                "allocated_size_perc": strategy_group.allocated_size_perc,
+                "take_profit_threshold_perc": strategy_group.take_profit_threshold_perc,
+                "stop_loss_threshold_perc": strategy_group.stop_loss_threshold_perc,
+                "use_time_based_close": strategy_group.use_time_based_close,
+                "use_profit_based_close": strategy_group.use_profit_based_close,
+                "use_stop_loss_based_close": strategy_group.use_stop_loss_based_close,
+                "use_taker_order": strategy_group.use_taker_order,
+                "should_calc_stops_on_pred_serv": strategy_group.should_calc_stops_on_pred_serv,
+                "is_leverage_allowed": strategy_group.is_leverage_allowed,
+                "is_short_selling_strategy": strategy_group.is_short_selling_strategy,
+            }
+        )
+
+    if len(strategies_to_be_deleted) > 0:
+        StrategyQuery.delete_strategies_by_ids(strategies_to_be_deleted)
+
+    if len(strategy_symbols_info) > 0:
+        StrategyQuery.create_many(strategy_symbols_info)
+
+    StrategyGroupQuery.update_last_adaptive_group_recalc(strategy_group.id)
 
 
 def find_transformations_by_group(

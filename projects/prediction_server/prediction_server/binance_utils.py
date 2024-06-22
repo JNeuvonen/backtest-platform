@@ -2,19 +2,19 @@ from typing import List
 from common_python.log import LogLevel, create_log
 import pandas as pd
 from binance import Client
-from log import LogExceptionContext
+from prediction_server.log import LogExceptionContext
 from common_python.pred_serv_orm import engine
-from dataset_utils import read_dataset_to_mem, read_latest_row
-from code_gen_templates import CodeTemplates
+from prediction_server.dataset_utils import read_dataset_to_mem, read_latest_row
+from prediction_server.code_gen_templates import CodeTemplates
 from common_python.pred_serv_models.data_transformation import (
     DataTransformationQuery,
 )
 from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
-from rule_based_loop_utils import LocalDataset, RuleBasedLoopManager
+from prediction_server.rule_based_loop_utils import LocalDataset, RuleBasedLoopManager
 
-from utils import (
+from prediction_server.utils import (
     NUM_REQ_KLINES_BUFFER,
     calculate_timestamp_for_kline_fetch,
     gen_data_transformations_code,

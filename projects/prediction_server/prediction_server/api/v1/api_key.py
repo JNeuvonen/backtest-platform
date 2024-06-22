@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from common_python.pred_serv_models.api_key import APIKeyQuery
-from context import HttpResponseContext
+from prediction_server.context import HttpResponseContext
 
 
 router = APIRouter()

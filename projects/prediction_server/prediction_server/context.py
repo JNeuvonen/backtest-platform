@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from fastapi import HTTPException
-from log import get_logger
+from prediction_server.log import get_logger
 
 
 @contextmanager

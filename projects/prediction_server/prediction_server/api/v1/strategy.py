@@ -3,22 +3,26 @@ from common_python.pred_serv_models.refetch_strategy_signal import (
     RefetchStrategySignalQuery,
 )
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from context import HttpResponseContext
-from api.v1.request_types import (
+from prediction_server.context import HttpResponseContext
+from prediction_server.api.v1.request_types import (
     BodyCreateStrategy,
     BodyCreateStrategyGroup,
     BodyPutStrategy,
     BodyUpdateStrategy,
     BodyUpdateTradeClose,
 )
-from middleware import api_key_auth
+from prediction_server.middleware import api_key_auth
 from common_python.pred_serv_models.strategy import StrategyQuery
 from common_python.pred_serv_models.trade import TradeQuery
 from common_python.pred_serv_models.strategy_group import StrategyGroupQuery
-from log import get_logger
+from prediction_server.log import get_logger
 from common_python.pred_serv_models.data_transformation import DataTransformationQuery
-from prediction_server.strategy import get_strategy_name
-from trade_utils import close_long_trade, close_short_trade, update_strategy_state
+from prediction_server.rule_based_loop_utils import get_strategy_name
+from prediction_server.trade_utils import (
+    close_long_trade,
+    close_short_trade,
+    update_strategy_state,
+)
 
 
 router = APIRouter()

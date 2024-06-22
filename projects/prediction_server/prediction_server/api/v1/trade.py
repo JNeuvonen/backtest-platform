@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response, status
-from context import HttpResponseContext
-from api.v1.request_types import BodyCreateTrade, BodyPutTrade
-from middleware import api_key_auth
+from prediction_server.context import HttpResponseContext
+from prediction_server.api.v1.request_types import BodyCreateTrade, BodyPutTrade
+from prediction_server.middleware import api_key_auth
 from common_python.pred_serv_models.cloudlog import slack_log_enter_trade_notif
 from common_python.pred_serv_models.trade import TradeQuery
 from common_python.pred_serv_models.refetch_strategy_signal import (

@@ -17,25 +17,25 @@ from common_python.pred_serv_models.refetch_strategy_signal import (
 from common_python.pred_serv_models.longshortgroup import LongShortGroupQuery
 from common_python.server_config import get_service_port
 
-from config import get_auto_whitelisted_ip, run_background_processes
+from prediction_server.config import get_auto_whitelisted_ip, run_background_processes
 from fastapi import FastAPI, Response, status
-from log import LogExceptionContext, get_logger
-from api.v1.strategy import router as v1_strategy_router
-from api.v1.log import router as v1_cloudlogs_router
-from api.v1.account import router as v1_account_router
-from api.v1.trade import router as v1_trade_router
-from api.v1.api_key import router as v1_api_key_router
-from api.v1.longshort import router as v1_longshort
-from middleware import ValidateIPMiddleware
-from constants import LogLevel
-from binance_utils import (
+from prediction_server.log import LogExceptionContext, get_logger
+from prediction_server.api.v1.strategy import router as v1_strategy_router
+from prediction_server.api.v1.log import router as v1_cloudlogs_router
+from prediction_server.api.v1.account import router as v1_account_router
+from prediction_server.api.v1.trade import router as v1_trade_router
+from prediction_server.api.v1.api_key import router as v1_api_key_router
+from prediction_server.api.v1.longshort import router as v1_longshort
+from prediction_server.middleware import ValidateIPMiddleware
+from prediction_server.constants import LogLevel
+from prediction_server.binance_utils import (
     gen_trading_decisions,
     update_long_short_enters,
     update_long_short_exits,
 )
-from rule_based_loop_utils import RuleBasedLoopManager
-from utils import get_current_timestamp_ms
-from strategy import (
+from prediction_server.rule_based_loop_utils import RuleBasedLoopManager
+from prediction_server.utils import get_current_timestamp_ms
+from prediction_server.strategy import (
     format_pair_trade_loop_msg,
     format_pred_loop_log_msg,
     update_strategies_state_dict,

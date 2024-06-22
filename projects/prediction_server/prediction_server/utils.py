@@ -5,7 +5,7 @@ import threading
 from typing import List
 import pandas as pd
 
-from code_gen_templates import PyCode
+from prediction_server.code_gen_templates import PyCode
 
 
 NUM_REQ_KLINES_BUFFER = 5

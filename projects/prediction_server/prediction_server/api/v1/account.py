@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Response, status
-from context import HttpResponseContext
-from middleware import api_key_auth
+from prediction_server.context import HttpResponseContext
+from prediction_server.middleware import api_key_auth
 from common_python.pred_serv_models.account import AccountQuery
-from api.v1.request_types import BodyCreateAccount
+from prediction_server.api.v1.request_types import BodyCreateAccount
 
 
 router = APIRouter()

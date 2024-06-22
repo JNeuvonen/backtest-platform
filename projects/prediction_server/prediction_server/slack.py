@@ -1,7 +1,7 @@
 import threading
 import requests
 
-from constants import LogLevel
+from prediction_server.constants import LogLevel
 
 
 def post_slack_message(uri, message, message_type=None):
