@@ -651,23 +651,25 @@ calculate_aroon(dataset, column=column, periods=periods)
 AROON_CONVENTIONAL = """
 import numpy as np
 import pandas as pd
-def calculate_aroon(df, column='close_price', periods=25):
-    # Calculate the rolling max and min for the given periods
-    rolling_max = df[column].rolling(window=periods, min_periods=0).apply(lambda x: x.max())
-    rolling_min = df[column].rolling(window=periods, min_periods=0).apply(lambda x: x.min())
 
-    # Identify the time since the last high and low within the window
-    aroon_up = 100 * (periods - df[column].rolling(window=periods, min_periods=0).apply(
-        lambda x: np.where(x[::-1] == x.max())[0][0] + 1)) / periods
-    aroon_down = 100 * (periods - df[column].rolling(window=periods, min_periods=0).apply(
-        lambda x: np.where(x[::-1] == x.min())[0][0] + 1)) / periods
+def calculate_aroon(df, column='close_price', periods=[25]):
+    for period in periods:
+        # Calculate the rolling max and min for the given period
+        rolling_max = df[column].rolling(window=period, min_periods=0).apply(lambda x: x.max())
+        rolling_min = df[column].rolling(window=period, min_periods=0).apply(lambda x: x.min())
 
-    # Store the results in the dataframe
-    df[f'AROON_UP_CONV_{periods}_{column}'] = aroon_up
-    df[f'AROON_DOWN_CONV{periods}_{column}'] = aroon_down
+        # Identify the time since the last high and low within the window
+        aroon_up = 100 * (period - df[column].rolling(window=period, min_periods=0).apply(
+            lambda x: np.where(x[::-1] == x.max())[0][0] + 1)) / period
+        aroon_down = 100 * (period - df[column].rolling(window=period, min_periods=0).apply(
+            lambda x: np.where(x[::-1] == x.min())[0][0] + 1)) / period
 
-    return df
-periods = 25
+        # Store the results in the dataframe
+        df[f'AROON_UP_{period}_{column}'] = aroon_up
+        df[f'AROON_DOWN_{period}_{column}'] = aroon_down
+
+# Example usage:
+periods = [14, 25, 50]
 column = "close_price"
 calculate_aroon(dataset, column=column, periods=periods)
 """
@@ -3910,6 +3912,28 @@ position = 'top'
 calculate_top_bottom_percent(dataset, column=column, lookback_period=lookback_period, percentile=percentile, position=position)
 """
 
+IS_NTH_DAY_OF_MONTH = """
+import pandas as pd
+
+def calculate_nth_day_of_month(df, date_col='kline_open_time', nth_day=5):
+    # Convert the timestamp to datetime format
+    df["temp_col"] = pd.to_datetime(df[date_col], unit='ms')
+    
+    # Extract the day of the month
+    df['day_of_month'] = df["temp_col"].dt.day
+    
+    # Create a boolean indicator for the nth day of the month
+    df[f'is_{nth_day}th_day_of_month'] = (df['day_of_month'] == nth_day).astype(int)
+    
+    # Drop the helper columns
+    df.drop(['day_of_month', "temp_col"], axis=1, inplace=True)
+
+# Usage example:
+date_col = "kline_open_time"
+nth_day = 5
+calculate_nth_day_of_month(dataset, date_col=date_col, nth_day=nth_day)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -4940,6 +4964,13 @@ DEFAULT_CODE_PRESETS = [
         category=CodePresetCategories.INDICATOR,
         description="Top/Bottom Percentile Indicator: This function calculates whether the current value of a specified column is within the top or bottom percentile of values over a given lookback period. This can be useful for identifying periods when the price is at a relatively extreme level compared to its recent history.",
         labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=IS_NTH_DAY_OF_MONTH,
+        name="IS_NTH_DAY_OF_MONTH",
+        category=CodePresetCategories.INDICATOR,
+        description="Binary indicator that states whether the current day is the nth day of the month.",
+        labels=CodePresetLabels.SEASONAL,
     ),
 ]
 
