@@ -158,6 +158,20 @@ export const fetchUserAssets = async () => {
   }
 };
 
+export const fetchUncompletedTrades = async () => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.fetchUncompletedTrades(),
+    });
+    if (res.success) {
+      return res.data.data;
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
+
 export const disableAndCloseLsStrat = async (id: number) => {
   try {
     const res = await httpReq({

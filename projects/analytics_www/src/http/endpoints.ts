@@ -6,6 +6,7 @@ export const ANALYTICS_SERV_ROUTES = {
   v1_user: "/v1/user",
   v1_balance_snapshot: "/v1/balance-snapshot",
   v1_strategy: "/v1/strategy",
+  v1_trade: "/v1/trade",
 };
 
 export const ANALYTICS_SERV_API = {
@@ -47,4 +48,6 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_strategy +
     `/strategy-group/${id}/disable`,
+  fetchUncompletedTrades: () =>
+    ANALYTICS_SERV_BASE_URL + ANALYTICS_SERV_ROUTES.v1_trade + "/uncompleted",
 };

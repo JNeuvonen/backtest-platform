@@ -3,6 +3,7 @@ import { AgGridReact } from "ag-grid-react";
 import {
   ASSETS,
   findCurrentPrice,
+  findNumOpenPositions,
   findSymbolPriceChangeTicker,
   includeLwrCase,
   roundNumberFloor,
@@ -15,6 +16,7 @@ import {
   useBinanceAssets,
   useBinanceSpotPriceInfo,
   useLatestBalanceSnapshot,
+  useUncompletedTradesQuery,
 } from "src/http/queries";
 import {
   percColumnCellRenderer,
@@ -61,6 +63,12 @@ const COLUMN_DEFS: any = [
     editable: false,
     cellRenderer: percColumnCellRenderer,
   },
+  {
+    headerName: "Open trades",
+    field: "openTrades",
+    sortable: true,
+    editable: false,
+  },
 ];
 
 export const AssetsPage = () => {
@@ -68,6 +76,8 @@ export const AssetsPage = () => {
   const binancePrices = useBinanceSpotPriceInfo();
   const latestBalanceSnapshot = useLatestBalanceSnapshot();
   const binancePriceChanges = useBinance24hPriceChanges();
+  const uncompletedTrades = useUncompletedTradesQuery();
+
   const [assetFilterInput, setAssetFilterInput] = useState("");
 
   if (
@@ -126,6 +136,10 @@ export const AssetsPage = () => {
         priceChange24h: priceChange
           ? roundNumberFloor(Number(priceChange.priceChangePercent), 2)
           : undefined,
+        openTrades: findNumOpenPositions(
+          item.asset,
+          uncompletedTrades.data || [],
+        ),
       });
     });
     return ret.sort((a, b) => b.netAsset - a.netAsset);

@@ -7,6 +7,7 @@ import {
   LongShortGroupResponse,
   StrategiesResponse,
   StrategyGroupResponse,
+  Trade,
 } from "src/common_js";
 import { QUERY_KEYS } from "src/utils";
 import {
@@ -18,6 +19,7 @@ import {
   fetchLongShortGroup,
   fetchStrategies,
   fetchStrategyGroup,
+  fetchUncompletedTrades,
   fetchUserAssets,
 } from "./requests";
 
@@ -47,6 +49,14 @@ export function useStrategyGroupQuery(
   return useQuery<StrategyGroupResponse, unknown>({
     queryKey: [QUERY_KEYS.fetch_strategy_group, groupName],
     queryFn: () => fetchStrategyGroup(groupName.toUpperCase()) as any,
+    staleTime: 0,
+  });
+}
+
+export function useUncompletedTradesQuery(): UseQueryResult<Trade[], unknown> {
+  return useQuery<Trade[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_uncompleted_trades],
+    queryFn: () => fetchUncompletedTrades(),
     staleTime: 0,
   });
 }
