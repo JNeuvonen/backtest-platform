@@ -65,3 +65,14 @@ export const findNumOpenPositions = (baseAsset: string, trades: Trade[]) => {
   });
   return numOpenTrades;
 };
+
+export const findIdsOfOpenPositions = (baseAsset: string, trades: Trade[]) => {
+  let openPositions = [];
+  trades.forEach((item) => {
+    const assets = inferAssets(item.symbol);
+    if (assets["baseAsset"] === baseAsset) {
+      openPositions.push(item.id);
+    }
+  });
+  return openPositions;
+};
