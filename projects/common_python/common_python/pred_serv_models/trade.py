@@ -120,3 +120,21 @@ class TradeQuery:
                     non_null_update_fields, synchronize_session=False
                 )
                 session.commit()
+
+    @staticmethod
+    def get_completed_trades() -> List[Trade]:
+        with LogExceptionContext():
+            with Session() as session:
+                completed_trades = (
+                    session.query(Trade).filter(Trade.close_price != None).all()
+                )
+                return completed_trades
+
+    @staticmethod
+    def get_uncompleted_trades() -> List[Trade]:
+        with LogExceptionContext():
+            with Session() as session:
+                uncompleted_trades = (
+                    session.query(Trade).filter(Trade.close_price == None).all()
+                )
+                return uncompleted_trades

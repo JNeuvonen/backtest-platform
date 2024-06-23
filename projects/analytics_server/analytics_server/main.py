@@ -10,6 +10,7 @@ from analytics_server.api.v1.balance_snapshot import (
     router as v1_balance_snapshot_router,
 )
 from analytics_server.api.v1.strategies import router as v1_strategy_router
+from analytics_server.api.v1.trade import router as v1_trade_router
 from fastapi.middleware.cors import CORSMiddleware
 from common_python.server_config import get_service_port
 
@@ -46,6 +47,7 @@ class Routers:
     V1_USER = "/v1/user"
     V1_BALANCE_SNAPSHOT = "/v1/balance-snapshot"
     V1_STRATEGY = "/v1/strategy"
+    V1_TRADE = "/v1/trade"
 
 
 @asynccontextmanager
@@ -68,6 +70,7 @@ app.add_middleware(
 app.include_router(v1_user_router, prefix=Routers.V1_USER)
 app.include_router(v1_balance_snapshot_router, prefix=Routers.V1_BALANCE_SNAPSHOT)
 app.include_router(v1_strategy_router, prefix=Routers.V1_STRATEGY)
+app.include_router(v1_trade_router, prefix=Routers.V1_TRADE)
 
 data_collection_service = DataCollectionSservice()
 
