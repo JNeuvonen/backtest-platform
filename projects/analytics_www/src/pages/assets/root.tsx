@@ -3,7 +3,6 @@ import { AgGridReact } from "ag-grid-react";
 import {
   ASSETS,
   findCurrentPrice,
-  findIdsOfOpenPositions,
   findNumOpenPositions,
   findSymbolPriceChangeTicker,
   includeLwrCase,
@@ -23,7 +22,6 @@ import {
   percColumnCellRenderer,
   profitColumnCellRenderer,
 } from "../strategies";
-import { ICellRendererParams } from "ag-grid-community";
 
 const COLUMN_DEFS: any = [
   {
@@ -138,7 +136,6 @@ export const AssetsPage = () => {
         priceChange24h: priceChange
           ? roundNumberFloor(Number(priceChange.priceChangePercent), 2)
           : undefined,
-
         openTrades: findNumOpenPositions(
           item.asset,
           uncompletedTrades.data || [],

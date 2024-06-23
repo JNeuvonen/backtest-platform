@@ -41,6 +41,7 @@ import { disableAndCloseStratGroup } from "src/http";
 import { toast } from "react-toastify";
 import { ReadOnlyEditor } from "src/components/ReadOnlyEditor";
 import { WithLabel } from "src/components/WithLabel";
+import { OpenTradesTable } from "src/components/OpenTradesTable";
 
 export const ViewStrategyGroupSettings = ({ strategyGroup }) => {
   return (
@@ -425,7 +426,13 @@ export const StrategyPage = () => {
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => navigate(getStrategySymbolsPath(strategyName))}
         >
-          Tickers
+          Strategy symbols
+        </Button>
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={() => navigate(getStrategySymbolsPath(strategyName))}
+        >
+          Completed trades
         </Button>
       </div>
 
@@ -453,6 +460,11 @@ export const StrategyPage = () => {
           strategyGroup={strategyGroupQuery.data.strategy_group}
         />
       </ChakraAccordion>
+
+      <div style={{ marginTop: "16px" }}>
+        <Heading size={"md"}>Open positions</Heading>
+        <OpenTradesTable trades={strategyGroupQuery.data.trades} />
+      </div>
     </div>
   );
 };

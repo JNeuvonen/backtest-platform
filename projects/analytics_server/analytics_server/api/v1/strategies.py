@@ -60,7 +60,7 @@ async def get_strategies_by_group(
         strategies = StrategyQuery.get_strategies_by_strategy_group_id(
             strategy_group.id
         )
-        trades = TradeQuery.get_trades()
+        trades = TradeQuery.fetch_by_strategy_group_id(strategy_group.id)
         return {
             "strategy_group": strategy_group,
             "strategies": strategies,

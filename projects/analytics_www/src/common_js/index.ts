@@ -9,3 +9,4 @@ export * from "./finance_html_utils";
 export * from "./formatting";
 export * from "./longshort_utils";
 export * from "./string";
+export * from "./trade_utils";

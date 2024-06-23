@@ -1,6 +1,8 @@
 import React, { CSSProperties } from "react";
 import { TabList, Tab, Tabs, TabPanels, TabPanel } from "@chakra-ui/react";
 import { MARGIN_TOP_TABS } from "src/layout";
+import { useAppContext } from "src/context";
+import { TOP_BAR_HEIGHT } from "src/utils";
 
 interface Props {
   labels: string[];
@@ -17,13 +19,14 @@ export const ChakraTabs = ({
   defaultTab = 0,
   top = 0,
 }: Props) => {
+  const { isMobileLayout } = useAppContext();
   return (
     <div style={style}>
       <Tabs defaultIndex={defaultTab}>
         <div
           style={{
             position: "fixed",
-            top: 0,
+            top: isMobileLayout ? TOP_BAR_HEIGHT : 0,
             paddingTop: top,
             paddingBottom: top,
             width: "100%",

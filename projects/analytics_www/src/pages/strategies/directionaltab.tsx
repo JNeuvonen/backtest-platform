@@ -290,7 +290,14 @@ export const DirectionalStrategiesTab = ({
       <Heading size={"lg"}>Strategies</Heading>
       <div style={{ marginTop: "16px" }}>
         <ChakraCard heading={<Heading size={"md"}>Breakdown</Heading>}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
             <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Realized profit</StatLabel>
