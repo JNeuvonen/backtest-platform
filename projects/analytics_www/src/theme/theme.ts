@@ -1,5 +1,9 @@
 import { extendTheme } from "@chakra-ui/react";
-import { COLOR_BG_PRIMARY_SHADE_ONE, COLOR_CONTENT_PRIMARY } from ".";
+import {
+  accordionTheme,
+  COLOR_BG_PRIMARY_SHADE_ONE,
+  COLOR_CONTENT_PRIMARY,
+} from ".";
 import { buttonTheme } from "./button";
 import { cardTheme } from "./card";
 import { headingTheme } from "./heading";
@@ -15,6 +19,7 @@ export const customChakraTheme = extendTheme({
     },
   },
   components: {
+    ...accordionTheme,
     ...headingTheme,
     ...cardTheme,
     ...buttonTheme,

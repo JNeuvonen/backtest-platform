@@ -6,3 +6,4 @@ export * from "./Menu";
 export * from "./NumberStepper";
 export * from "./Drawer";
 export * from "./Modal";
+export * from "./Accordion";

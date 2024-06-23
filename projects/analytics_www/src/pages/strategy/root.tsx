@@ -19,6 +19,7 @@ import {
 } from "src/common_js";
 import { useNavigate } from "react-router-dom";
 import {
+  ChakraAccordion,
   ChakraCard,
   ChakraInput,
   ChakraNumberStepper,
@@ -29,14 +30,206 @@ import {
   useBinanceSpotPriceInfo,
   useStrategyGroupQuery,
 } from "src/http/queries";
-import { BUTTON_VARIANTS, COLOR_CONTENT_PRIMARY } from "src/theme";
+import {
+  BUTTON_VARIANTS,
+  COLOR_BG_TERTIARY,
+  COLOR_CONTENT_PRIMARY,
+} from "src/theme";
 import { getStrategySymbolsPath } from "src/utils";
 import { ConfirmModal } from "src/components/ConfirmModal";
 import { disableAndCloseStratGroup } from "src/http";
 import { toast } from "react-toastify";
-import { Editor } from "@monaco-editor/react";
 import { ReadOnlyEditor } from "src/components/ReadOnlyEditor";
 import { WithLabel } from "src/components/WithLabel";
+
+export const ViewStrategyGroupSettings = ({ strategyGroup }) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "16px",
+        marginTop: "16px",
+      }}
+    >
+      <div>
+        <WithLabel label={"Is enabled"}>
+          <Switch isChecked={!strategyGroup.is_disabled} isDisabled={true} />
+        </WithLabel>
+      </div>
+      <div>
+        <WithLabel label={"Is auto adaptive group"}>
+          <Switch
+            isChecked={strategyGroup.is_auto_adaptive_group}
+            isDisabled={true}
+          />
+        </WithLabel>
+      </div>
+
+      {strategyGroup.is_auto_adaptive_group && (
+        <>
+          <div>
+            <WithLabel
+              label={"Num symbols for auto adaptive"}
+              containerStyles={{
+                maxWidth: "200px",
+              }}
+            >
+              <NumberInput
+                isDisabled={true}
+                value={strategyGroup.num_symbols_for_auto_adaptive}
+              >
+                <NumberInputField />
+                <ChakraNumberStepper />
+              </NumberInput>
+            </WithLabel>
+          </div>
+          <div>
+            <WithLabel
+              label={"Num days for group symbols refresh"}
+              containerStyles={{
+                maxWidth: "200px",
+              }}
+            >
+              <NumberInput
+                isDisabled={true}
+                value={strategyGroup.num_days_for_group_recalc}
+              >
+                <NumberInputField />
+                <ChakraNumberStepper />
+              </NumberInput>
+            </WithLabel>
+          </div>
+        </>
+      )}
+      <div>
+        <WithLabel label={"Calc stops on pred server"}>
+          <Switch
+            isChecked={strategyGroup.should_calc_stops_on_pred_serv}
+            isDisabled={true}
+          />
+        </WithLabel>
+      </div>
+      <div>
+        <WithLabel label={"Use stop loss"}>
+          <Switch
+            isChecked={strategyGroup.use_stop_loss_based_close}
+            isDisabled={true}
+          />
+        </WithLabel>
+      </div>
+
+      {strategyGroup.use_stop_loss_based_close && (
+        <div>
+          <WithLabel
+            label={"Stop loss threshold (%)"}
+            containerStyles={{
+              maxWidth: "200px",
+            }}
+          >
+            <NumberInput
+              isDisabled={true}
+              value={strategyGroup.stop_loss_threshold_perc}
+            >
+              <NumberInputField />
+              <ChakraNumberStepper />
+            </NumberInput>
+          </WithLabel>
+        </div>
+      )}
+
+      <div>
+        <WithLabel label={"Use profit based close"}>
+          <Switch
+            isChecked={strategyGroup.use_profit_based_close}
+            isDisabled={true}
+          />
+        </WithLabel>
+      </div>
+
+      {strategyGroup.use_profit_based_close && (
+        <div>
+          <WithLabel
+            label={"Stop loss threshold (%)"}
+            containerStyles={{
+              maxWidth: "200px",
+            }}
+          >
+            <NumberInput
+              isDisabled={true}
+              value={strategyGroup.take_profit_threshold_perc}
+            >
+              <NumberInputField />
+              <ChakraNumberStepper />
+            </NumberInput>
+          </WithLabel>
+        </div>
+      )}
+
+      <div>
+        <WithLabel label={"Use time based close"}>
+          <Switch
+            isChecked={strategyGroup.use_time_based_close}
+            isDisabled={true}
+          />
+        </WithLabel>
+      </div>
+
+      {strategyGroup.use_time_based_close && (
+        <div>
+          <WithLabel
+            label={"Maximum candles hold time"}
+            containerStyles={{
+              maxWidth: "200px",
+            }}
+          >
+            <NumberInput
+              isDisabled={true}
+              value={strategyGroup.maximum_klines_hold_time}
+            >
+              <NumberInputField />
+              <ChakraNumberStepper />
+            </NumberInput>
+          </WithLabel>
+        </div>
+      )}
+      <div>
+        <ChakraInput
+          label={"Candle interval"}
+          value={strategyGroup.candle_interval}
+          disabled={true}
+        />
+      </div>
+      <div>
+        <WithLabel
+          label={"Num req klines"}
+          containerStyles={{
+            maxWidth: "200px",
+          }}
+        >
+          <NumberInput isDisabled={true} value={strategyGroup.num_req_klines}>
+            <NumberInputField />
+            <ChakraNumberStepper />
+          </NumberInput>
+        </WithLabel>
+      </div>
+      <div>
+        <WithLabel label={"Is leverage allowed"}>
+          <Switch
+            isChecked={strategyGroup.is_leverage_allowed}
+            isDisabled={true}
+          />
+        </WithLabel>
+      </div>
+      <div>
+        <WithLabel label={"Use taker order"}>
+          <Switch isChecked={strategyGroup.use_taker_order} isDisabled={true} />
+        </WithLabel>
+      </div>
+    </div>
+  );
+};
 
 export const StrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
@@ -82,8 +275,6 @@ export const StrategyPage = () => {
 
   const lastBalanceSnapshot =
     balanceSnapShots.data[balanceSnapShots.data.length - 1];
-
-  console.log(strategyGroupQuery.data);
 
   return (
     <div>
@@ -254,228 +445,14 @@ export const StrategyPage = () => {
           height={150}
         />
       </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "16px",
-          marginTop: "16px",
-        }}
+      <ChakraAccordion
+        heading="Settings"
+        containerStyles={{ marginTop: "10px", border: COLOR_BG_TERTIARY }}
       >
-        <div>
-          <WithLabel label={"Is enabled"}>
-            <Switch
-              isChecked={!strategyGroupQuery.data.strategy_group.is_disabled}
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-        <div>
-          <WithLabel label={"Is auto adaptive group"}>
-            <Switch
-              isChecked={
-                strategyGroupQuery.data.strategy_group.is_auto_adaptive_group
-              }
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-
-        {strategyGroupQuery.data.strategy_group.is_auto_adaptive_group && (
-          <>
-            <div>
-              <WithLabel
-                label={"Num symbols for auto adaptive"}
-                containerStyles={{
-                  maxWidth: "200px",
-                }}
-              >
-                <NumberInput
-                  isDisabled={true}
-                  value={
-                    strategyGroupQuery.data.strategy_group
-                      .num_symbols_for_auto_adaptive
-                  }
-                >
-                  <NumberInputField />
-                  <ChakraNumberStepper />
-                </NumberInput>
-              </WithLabel>
-            </div>
-            <div>
-              <WithLabel
-                label={"Num days for group symbols refresh"}
-                containerStyles={{
-                  maxWidth: "200px",
-                }}
-              >
-                <NumberInput
-                  isDisabled={true}
-                  value={
-                    strategyGroupQuery.data.strategy_group
-                      .num_days_for_group_recalc
-                  }
-                >
-                  <NumberInputField />
-                  <ChakraNumberStepper />
-                </NumberInput>
-              </WithLabel>
-            </div>
-          </>
-        )}
-        <div>
-          <WithLabel label={"Calc stops on pred server"}>
-            <Switch
-              isChecked={
-                strategyGroupQuery.data.strategy_group
-                  .should_calc_stops_on_pred_serv
-              }
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-        <div>
-          <WithLabel label={"Use stop loss"}>
-            <Switch
-              isChecked={
-                strategyGroupQuery.data.strategy_group.use_stop_loss_based_close
-              }
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-
-        {strategyGroupQuery.data.strategy_group.use_stop_loss_based_close && (
-          <div>
-            <WithLabel
-              label={"Stop loss threshold (%)"}
-              containerStyles={{
-                maxWidth: "200px",
-              }}
-            >
-              <NumberInput
-                isDisabled={true}
-                value={
-                  strategyGroupQuery.data.strategy_group
-                    .stop_loss_threshold_perc
-                }
-              >
-                <NumberInputField />
-                <ChakraNumberStepper />
-              </NumberInput>
-            </WithLabel>
-          </div>
-        )}
-
-        <div>
-          <WithLabel label={"Use profit based close"}>
-            <Switch
-              isChecked={
-                strategyGroupQuery.data.strategy_group.use_profit_based_close
-              }
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-
-        {strategyGroupQuery.data.strategy_group.use_profit_based_close && (
-          <div>
-            <WithLabel
-              label={"Stop loss threshold (%)"}
-              containerStyles={{
-                maxWidth: "200px",
-              }}
-            >
-              <NumberInput
-                isDisabled={true}
-                value={
-                  strategyGroupQuery.data.strategy_group
-                    .take_profit_threshold_perc
-                }
-              >
-                <NumberInputField />
-                <ChakraNumberStepper />
-              </NumberInput>
-            </WithLabel>
-          </div>
-        )}
-
-        <div>
-          <WithLabel label={"Use time based close"}>
-            <Switch
-              isChecked={
-                strategyGroupQuery.data.strategy_group.use_time_based_close
-              }
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-
-        {strategyGroupQuery.data.strategy_group.use_time_based_close && (
-          <div>
-            <WithLabel
-              label={"Maximum candles hold time"}
-              containerStyles={{
-                maxWidth: "200px",
-              }}
-            >
-              <NumberInput
-                isDisabled={true}
-                value={
-                  strategyGroupQuery.data.strategy_group
-                    .maximum_klines_hold_time
-                }
-              >
-                <NumberInputField />
-                <ChakraNumberStepper />
-              </NumberInput>
-            </WithLabel>
-          </div>
-        )}
-        <div>
-          <ChakraInput
-            label={"Candle interval"}
-            value={strategyGroupQuery.data.strategy_group.candle_interval}
-            disabled={true}
-          />
-        </div>
-        <div>
-          <WithLabel
-            label={"Num req klines"}
-            containerStyles={{
-              maxWidth: "200px",
-            }}
-          >
-            <NumberInput
-              isDisabled={true}
-              value={strategyGroupQuery.data.strategy_group.num_req_klines}
-            >
-              <NumberInputField />
-              <ChakraNumberStepper />
-            </NumberInput>
-          </WithLabel>
-        </div>
-        <div>
-          <WithLabel label={"Is leverage allowed"}>
-            <Switch
-              isChecked={
-                strategyGroupQuery.data.strategy_group.is_leverage_allowed
-              }
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-        <div>
-          <WithLabel label={"Use taker order"}>
-            <Switch
-              isChecked={strategyGroupQuery.data.strategy_group.use_taker_order}
-              isDisabled={true}
-            />
-          </WithLabel>
-        </div>
-      </div>
+        <ViewStrategyGroupSettings
+          strategyGroup={strategyGroupQuery.data.strategy_group}
+        />
+      </ChakraAccordion>
     </div>
   );
 };
