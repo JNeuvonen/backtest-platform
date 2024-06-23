@@ -138,3 +138,14 @@ class TradeQuery:
                     session.query(Trade).filter(Trade.close_price == None).all()
                 )
                 return uncompleted_trades
+
+    @staticmethod
+    def fetch_by_strategy_group_id(strategy_group_id: int) -> List[Trade]:
+        with LogExceptionContext():
+            with Session() as session:
+                trades = (
+                    session.query(Trade)
+                    .filter(Trade.strategy_group_id == strategy_group_id)
+                    .all()
+                )
+                return trades
