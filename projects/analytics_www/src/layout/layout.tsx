@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppContext } from "src/context";
-import { SIDENAV_DEFAULT_WIDTH } from "src/utils";
+import { SIDENAV_DEFAULT_WIDTH, TOP_BAR_HEIGHT } from "src/utils";
 import { SideNav } from ".";
 import { BottomInfoFooter } from "./bottom-footer";
 

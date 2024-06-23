@@ -1,4 +1,4 @@
-import { MOBILE_WIDTH_CUTOFF, PATHS } from "../utils";
+import { MOBILE_WIDTH_CUTOFF, PATHS, TOP_BAR_HEIGHT } from "../utils";
 import { MdDashboardCustomize } from "react-icons/md";
 import { FaChartLine, FaUserCircle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,7 +8,11 @@ import { IconButton } from "@chakra-ui/react";
 import { Blur } from "src/components";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useAuth0 } from "@auth0/auth0-react";
-import { COLOR_BG_SECONDARY_SHADE_ONE } from "src/theme";
+import {
+  COLOR_BG_PRIMARY,
+  COLOR_BG_SECONDARY_SHADE_ONE,
+  COLOR_BG_TERTIARY,
+} from "src/theme";
 import { BsCashStack } from "react-icons/bs";
 
 const SIDE_NAV_ITEMS = [
@@ -94,14 +98,28 @@ export const SideNav = () => {
       />
 
       {hideSidenav && (
-        <IconButton
-          icon={<RxHamburgerMenu />}
-          style={{ position: "fixed", zIndex: 10000 }}
-          onClick={() => setHideSidenav(false)}
-          aria-label={"Menu button"}
-          marginLeft={"8px"}
-          marginTop={"8px"}
-        />
+        <div
+          style={{
+            position: "sticky",
+            top: "0px",
+            width: "100%",
+            background: COLOR_BG_PRIMARY,
+            height: TOP_BAR_HEIGHT,
+            display: "flex",
+            alignItems: "center",
+            paddingLeft: "8px",
+            zIndex: 1000,
+          }}
+        >
+          <IconButton
+            icon={<RxHamburgerMenu />}
+            aria-label={"Menu button"}
+            height={"30px"}
+            width={"30px"}
+            background={COLOR_BG_TERTIARY}
+            onClick={() => setHideSidenav(false)}
+          />
+        </div>
       )}
 
       {!hideSidenav && (

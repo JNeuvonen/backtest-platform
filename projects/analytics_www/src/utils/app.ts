@@ -29,4 +29,5 @@ export const PATHS = {
 };
 
 export const SIDENAV_DEFAULT_WIDTH = 140;
+export const TOP_BAR_HEIGHT = 45;
 export const MOBILE_WIDTH_CUTOFF = 1000;
