@@ -136,7 +136,13 @@ export async function getTopCoinsByUSDTVolume(
 
     const topCoins = sortedByMarketCap
       .slice(0, limit)
-      .map((ticker) => ticker.symbol);
+      .map((ticker) => ticker.symbol)
+      .filter((item) => {
+        if (item === "1000SATSUSDT") {
+          return false;
+        }
+        return true;
+      });
 
     return topCoins.filter((item) => {
       if (item === "USDCUSDT") {
