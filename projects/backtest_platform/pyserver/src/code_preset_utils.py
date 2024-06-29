@@ -1,4 +1,3 @@
-import json
 from query_code_preset import CodePresetQuery
 
 
@@ -3934,6 +3933,67 @@ nth_day = 5
 calculate_nth_day_of_month(dataset, date_col=date_col, nth_day=nth_day)
 """
 
+AGGREGATE_COLS = """
+import pandas as pd
+
+def aggregate_ohlcv(df, N=24, time_col='kline_open_time', open_col='open_price', high_col='high_price', low_col='low_price', close_col='close_price', volume_col='volume'):
+    df = df.copy()
+
+    # Rolling aggregation for each OHLCV column
+    df[f'agg_{N}_{open_col}'] = df[open_col].rolling(window=N).apply(lambda x: x.iloc[0])
+    df[f'agg_{N}_{high_col}'] = df[high_col].rolling(window=N).max()
+    df[f'agg_{N}_{low_col}'] = df[low_col].rolling(window=N).min()
+    df[f'agg_{N}_{close_col}'] = df[close_col].rolling(window=N).apply(lambda x: x.iloc[-1])
+    df[f'agg_{N}_{volume_col}'] = df[volume_col].rolling(window=N).sum()
+
+    return df
+
+# Usage example:
+N = 24
+time_col = 'kline_open_time'
+open_col = 'open_price'
+high_col = 'high_price'
+low_col = 'low_price'
+close_col = 'close_price'
+volume_col = 'volume'
+dataset = aggregate_ohlcv(dataset, N=N, time_col=time_col, open_col=open_col, high_col=high_col, low_col=low_col, close_col=close_col, volume_col=volume_col)
+"""
+
+CORREL = """
+import pandas as pd
+
+def calculate_correlation(df, column1='close_price', column2='volume'):
+    correlation_label = f"correlation_{column1}_{column2}_full"
+    df[correlation_label] = df[column1].expanding().corr(df[column2])
+
+column1 = 'close_price'
+column2 = 'volume'
+calculate_correlation(dataset, column1=column1, column2=column2)
+"""
+
+WINNING_CANDLES_PERC = """
+import pandas as pd
+
+def calculate_ratio_of_winning_candles(df, column='close_price', look_back_periods=[20]):
+    win_label = "winning_candle"
+    
+    # Calculate winning candles
+    df[win_label] = (df[column] > df[column].shift(1)).astype(int)
+    
+    # Calculate the ratio of winning candles for each look-back period
+    for look_back_period in look_back_periods:
+        ratio_label = f"ratio_of_winning_candles_{look_back_period}"
+        df[ratio_label] = df[win_label].rolling(window=look_back_period).mean() * 100
+    
+    # Drop the helper column
+    df.drop(columns=[win_label], inplace=True)
+
+# Example usage
+column = "close_price"
+look_back_periods = [24]
+calculate_ratio_of_winning_candles(dataset, column=column, look_back_periods=look_back_periods)
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -4971,6 +5031,27 @@ DEFAULT_CODE_PRESETS = [
         category=CodePresetCategories.INDICATOR,
         description="Binary indicator that states whether the current day is the nth day of the month.",
         labels=CodePresetLabels.SEASONAL,
+    ),
+    CodePreset(
+        code=AGGREGATE_COLS,
+        name="AGG_COLS",
+        category=CodePresetCategories.INDICATOR,
+        description="Aggregate OHLCV columns to form larger time interval OHLCV columns. E.g, allows for having 1 hour update interval on 24h candles.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=CORREL,
+        name="CORREL",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates the Pearson's Correlation Coefficient (r) between two columns for all available data up to the present tick to measure the linear relationship between the two variables over the entire dataset.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=WINNING_CANDLES_PERC,
+        name="WINNING_CANDLES_PERC",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator calculates the percentage of winning candles (i.e., candles where the closing price is higher than the previous closing price) over specified look-back periods. It helps in understanding the recent trend strength and market sentiment over different timeframes.",
+        labels=CodePresetLabels.CUSTOM,
     ),
 ]
 
