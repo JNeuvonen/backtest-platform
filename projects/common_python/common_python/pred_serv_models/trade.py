@@ -149,3 +149,12 @@ class TradeQuery:
                     .all()
                 )
                 return trades
+
+    @staticmethod
+    def set_strategy_id_to_none(strategy_ids: List[int]):
+        with LogExceptionContext():
+            with Session() as session:
+                session.query(Trade).filter(Trade.strategy_id.in_(strategy_ids)).update(
+                    {Trade.strategy_id: None}, synchronize_session=False
+                )
+                session.commit()

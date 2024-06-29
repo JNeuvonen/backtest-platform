@@ -116,6 +116,7 @@ def refresh_adaptive_strategy_group(strategy_group: StrategyGroup):
         )
 
     if len(strategies_to_be_deleted) > 0:
+        TradeQuery.set_strategy_id_to_none(strategies_to_be_deleted)
         StrategyQuery.delete_strategies_by_ids(strategies_to_be_deleted)
 
     if len(strategy_symbols_info) > 0:
@@ -205,15 +206,16 @@ class RuleBasedLoopManager:
         self.datasets[item.name] = local_dataset
 
     def update_strategy_groups(self):
-        for item in self.strategy_groups:
-            if item.is_auto_adaptive_group is False:
-                continue
+        with LogExceptionContext(re_raise=False):
+            for item in self.strategy_groups:
+                if item.is_auto_adaptive_group is False:
+                    continue
 
-            now = datetime.now()
-            difference = now - item.last_adaptive_group_recalc
+                now = datetime.now()
+                difference = now - item.last_adaptive_group_recalc
 
-            if difference.days >= item.num_days_for_group_recalc:
-                refresh_adaptive_strategy_group(item)
+                if difference.days >= item.num_days_for_group_recalc:
+                    refresh_adaptive_strategy_group(item)
 
     def create_new_dataset_objs(self):
         for item in self.strategies:
