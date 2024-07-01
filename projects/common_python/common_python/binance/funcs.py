@@ -1,6 +1,7 @@
 from typing import List
 import requests
 from common_python.binance.client import client
+from binance.exceptions import BinanceAPIException
 from common_python.binance.types import BinanceUserAsset
 
 
@@ -152,3 +153,51 @@ def infer_assets(symbol: str) -> dict:
         raise ValueError("Unsupported quote asset.")
 
     return {"baseAsset": base_asset, "quoteAsset": quote_asset}
+
+
+def repay_loan_with_available_balance(asset: str):
+    try:
+        margin_account_info = client.get_margin_account()
+
+        for item in margin_account_info["userAssets"]:
+            if item["asset"] == asset:
+                free_balance = float(item["free"])
+                borrowed_amount = float(item["borrowed"])
+
+                if borrowed_amount > 0:
+                    repay_amount = min(free_balance, borrowed_amount)
+
+                    if repay_amount > 0:
+                        precision = (
+                            get_trade_quantity_precision(f"{asset}USDT")
+                            if asset != "USDT"
+                            else 1
+                        )
+                        repay_amount = round(repay_amount, precision)
+                        repay_response = client.repay_margin_loan(
+                            asset=asset, amount=str(repay_amount)
+                        )
+                        return {
+                            "status": "success",
+                            "repay_amount": repay_amount,
+                            "asset": asset,
+                            "transaction": repay_response,
+                        }
+                    else:
+                        return {
+                            "status": "failed",
+                            "reason": "Insufficient balance to repay the loan.",
+                        }
+                else:
+                    return {
+                        "status": "failed",
+                        "reason": "No borrowed amount to repay for the asset.",
+                    }
+
+        return {
+            "status": "failed",
+            "reason": f"Asset {asset} not found in margin account.",
+        }
+
+    except BinanceAPIException as e:
+        return {"status": "failed", "reason": str(e)}
