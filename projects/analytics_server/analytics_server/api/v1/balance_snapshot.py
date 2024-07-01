@@ -1,7 +1,10 @@
 from common_python.auth.oauth2 import verify_access_token
 from common_python.http_utils import HttpResponse
 from common_python.pred_serv_models.balance_snapshot import BalanceSnapshotQuery
-from common_python.binance.funcs import get_account_assets_state
+from common_python.binance.funcs import (
+    get_account_assets_state,
+    repay_loan_with_available_balance,
+)
 from fastapi import APIRouter, Depends
 
 
@@ -13,6 +16,7 @@ class RoutePaths:
     LATEST = "/latest"
     ONE_DAY_INTERVAL = "/1d-inteval"
     ASSETS = "/assets"
+    REPAY_LOAN = "/assets/repay/{asset}"
 
 
 @router.get(RoutePaths.ROOT)
