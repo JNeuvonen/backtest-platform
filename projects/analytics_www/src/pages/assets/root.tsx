@@ -1,4 +1,4 @@
-import { Heading, Spinner } from "@chakra-ui/react";
+import { Button, Heading, Spinner } from "@chakra-ui/react";
 import { AgGridReact } from "ag-grid-react";
 import {
   ASSETS,
@@ -22,6 +22,33 @@ import {
   percColumnCellRenderer,
   profitColumnCellRenderer,
 } from "../strategies";
+import { ICellRendererParams } from "ag-grid-community";
+import { BUTTON_VARIANTS } from "src/theme";
+import { repayMarginLoanRequest } from "src/http";
+import { toast } from "react-toastify";
+
+export const payOffLoanCellRenderer = (params: ICellRendererParams) => {
+  if (params.value === 0 || params.data.openTrades > 0) {
+    return null;
+  }
+
+  const postRequest = async () => {
+    const res = await repayMarginLoanRequest(params.data.asset);
+    if (res.success) {
+      toast.success(`Repaid margin loan on: ${params.data.asset}`, {
+        theme: "dark",
+      });
+    } else {
+      toast.error("Failed to repay margin loan", { theme: "dark" });
+    }
+  };
+
+  return (
+    <Button variant={BUTTON_VARIANTS.nofill} onClick={postRequest}>
+      Repay loan
+    </Button>
+  );
+};
 
 const COLUMN_DEFS: any = [
   {
@@ -68,6 +95,13 @@ const COLUMN_DEFS: any = [
     field: "openTrades",
     sortable: true,
     editable: false,
+  },
+  {
+    headerName: "Pay off loan",
+    field: "debtOfNav",
+    sortable: false,
+    editable: false,
+    cellRenderer: payOffLoanCellRenderer,
   },
 ];
 

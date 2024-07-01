@@ -195,3 +195,15 @@ export const disableAndCloseStratGroup = async (groupId: number) => {
     return null;
   }
 };
+
+export const repayMarginLoanRequest = async (asset: string) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.repayMarginLoan(asset),
+      method: "POST",
+    });
+    return res;
+  } catch {
+    return null;
+  }
+};
