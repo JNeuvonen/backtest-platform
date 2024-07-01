@@ -1190,15 +1190,15 @@ ULTOSC = """
 import pandas as pd
 
 def calculate_ultosc(df, high_col='high_price', low_col='low_price', close_col='close_price', periods=[7, 14, 28]):
-    bp = df[close_col] - df[[low_col, close_col.shift()]].min(axis=1)
+    bp = df[close_col] - df[[low_col, close_col]].shift().min(axis=1)
     tr = df[high_col] - df[low_col]
     tr = pd.concat([tr, (df[high_col] - df[close_col].shift()).abs(), (df[low_col] - df[close_col].shift()).abs()], axis=1).max(axis=1)
     
     avg_bp = {p: bp.rolling(window=p).sum() for p in periods}
     avg_tr = {p: tr.rolling(window=p).sum() for p in periods}
     
-    ultosc = (4 * avg_bp[7] / avg_tr[7] + 2 * avg_bp[14] / avg_tr[14] + avg_bp[28] / avg_tr[28]) / (4 + 2 + 1) * 100
-    df['ULTOSC'] = ultosc
+    ultosc_label = f"ULTOSC_{periods[0]}_{periods[1]}_{periods[2]}"
+    df[ultosc_label] = (4 * avg_bp[periods[0]] / avg_tr[periods[0]] + 2 * avg_bp[periods[1]] / avg_tr[periods[1]] + avg_bp[periods[2]] / avg_tr[periods[2]]) / (4 + 2 + 1) * 100
 
 # Define the columns and periods for your dataset
 high_col = 'high_price'
@@ -1297,9 +1297,8 @@ HT_DCPHASE = """
 import numpy as np
 import pandas as pd
 
-def calculate_ht_dcphase(df, column='close_price'):
+def calculate_ht_dcphase(df, column='close_price', period=168):
     # Calculate the Hilbert Transform - Dominant Cycle Phase
-    period = 32
     cycle_period = np.zeros(len(df))
     inst_period = np.zeros(len(df))
     dc_phase = np.zeros(len(df))
@@ -1326,12 +1325,13 @@ def calculate_ht_dcphase(df, column='close_price'):
         # Dominant cycle phase
         dc_phase[i] = np.arctan2(Q2, I2) * (180 / np.pi)
 
-    df_label = f'HT_DCPHASE_{column}'
+    df_label = f'HT_DCPHASE_{column}_{period}'
     df[df_label] = dc_phase
 
 # Usage example:
 column = "close_price"
-calculate_ht_dcphase(dataset, column=column)
+period = 168
+calculate_ht_dcphase(dataset, column=column, period=period)
 """
 
 HT_PHASOR = """
