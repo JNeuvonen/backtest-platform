@@ -11,7 +11,7 @@ $inner-side-nav: 120px;
   min-height: 100vh;
   position: fixed;
   border-right: 1px solid $bg-primary-shade-two;
-  z-index: 1000;
+  z-index: 100000 !important;
   display: flex;
   justify-content: space-between;
   flex-direction: column;

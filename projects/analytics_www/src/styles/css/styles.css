@@ -16,7 +16,7 @@
   min-height: 100vh;
   position: fixed;
   border-right: 1px solid #3c3c3c;
-  z-index: 1000;
+  z-index: 100000 !important;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
