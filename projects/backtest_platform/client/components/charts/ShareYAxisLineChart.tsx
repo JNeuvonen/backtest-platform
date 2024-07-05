@@ -1,6 +1,5 @@
 import React, { CSSProperties } from "react";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -24,6 +23,8 @@ interface TwoLineChartProps {
   displayTradeEntersAndExits?: boolean;
   xAxisTickFormatter?: any;
   yAxisTickFormatter?: any;
+  tooltipFormatter?: any;
+  tooltipLabelFormatter?: any;
 }
 
 export const ShareYAxisTwoLineChart = ({
@@ -37,13 +38,18 @@ export const ShareYAxisTwoLineChart = ({
   displayTradeEntersAndExits = false,
   yAxisTickFormatter,
   xAxisTickFormatter,
+  tooltipFormatter,
+  tooltipLabelFormatter,
 }: TwoLineChartProps) => (
   <ResponsiveContainer width={"100%"} height={height} style={containerStyles}>
     <ComposedChart data={data}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey={xKey} tickFormatter={xAxisTickFormatter} />
       <YAxis tickFormatter={yAxisTickFormatter} />
-      <Tooltip />
+      <Tooltip
+        formatter={tooltipFormatter}
+        labelFormatter={tooltipLabelFormatter}
+      />
       <Legend />
       <Line
         type="monotone"

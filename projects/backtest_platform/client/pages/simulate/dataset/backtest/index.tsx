@@ -225,6 +225,14 @@ export const DatasetBacktestPage = () => {
               month: "short",
             })
           }
+          tooltipFormatter={(value: number, name: string) => {
+            return name === "kline_open_time"
+              ? new Date(value).toLocaleString()
+              : value;
+          }}
+          tooltipLabelFormatter={(label: any) =>
+            new Date(label).toLocaleString()
+          }
         />
 
         <Heading size={"md"}>Trade results</Heading>
