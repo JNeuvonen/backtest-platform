@@ -9,7 +9,7 @@ import {
 import { useBinance24hPriceChanges, useBinanceSpotPriceInfo } from "src/http";
 import { getDiffToPresentFormatted } from "src/common_js";
 import { roundNumberFloor } from "src/common_js";
-import { percColumnCellRenderer } from "src/pages";
+import { PercColumnCellRenderer, SymbolCellRenderer } from "./data-grid";
 
 const COLUMN_DEFS: any = [
   {
@@ -17,6 +17,7 @@ const COLUMN_DEFS: any = [
     field: "symbol",
     sortable: true,
     editable: false,
+    cellRenderer: SymbolCellRenderer,
   },
   {
     headerName: "Time open",
@@ -47,7 +48,7 @@ const COLUMN_DEFS: any = [
     field: "profitPerc",
     sortable: true,
     editable: false,
-    cellRenderer: percColumnCellRenderer,
+    cellRenderer: PercColumnCellRenderer,
   },
   {
     headerName: "24h price change (%)",

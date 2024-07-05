@@ -13,7 +13,7 @@ const TRADE_PATH = "/trade";
 const VIEW_TRADE_PATH = TRADE_PATH + `/${PATH_KEYS.id}`;
 const STRATEGY_SYMBOLS_PATH = STRATEGY_PATH + `/strategies`;
 const LS_TICKERS_PATH = LS_STRATEGY_PATH + "/tickers";
-const STRATEGY_GROUP_COMPLETED_TRADES = `/strategy/${PATH_KEYS.strategyName}/completed-trades`;
+const STRATEGY_GROUP_COMPLETED_TRADES = `/strategy/${PATH_KEYS.strategyName}/trades`;
 
 export const PATHS = {
   root: "/",

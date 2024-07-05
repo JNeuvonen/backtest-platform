@@ -4,7 +4,6 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  Text,
 } from "@chakra-ui/react";
 import { ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
@@ -28,6 +27,7 @@ import {
 } from "src/http/queries";
 import { COLOR_CONTENT_PRIMARY } from "src/theme";
 import { getStrategyPath } from "src/utils";
+import { ProfitColumnCellRenderer } from "src/components/data-grid/cells";
 
 const strategyNameCellRenderer = (params: ICellRendererParams) => {
   if (!params.value) {
@@ -40,26 +40,6 @@ const strategyNameCellRenderer = (params: ICellRendererParams) => {
     >
       {params.value}
     </Link>
-  );
-};
-
-export const profitColumnCellRenderer = (params: ICellRendererParams) => {
-  return (
-    <Text color={getNumberDisplayColor(params.value, COLOR_CONTENT_PRIMARY)}>
-      {roundNumberFloor(params.value, 2)}$
-    </Text>
-  );
-};
-
-export const percColumnCellRenderer = (params: ICellRendererParams) => {
-  if (!params.value) {
-    return null;
-  }
-
-  return (
-    <Text color={getNumberDisplayColor(params.value, COLOR_CONTENT_PRIMARY)}>
-      {roundNumberFloor(params.value, 2)}%
-    </Text>
   );
 };
 
@@ -94,14 +74,14 @@ const COLUMN_DEFS = [
     field: "netResult",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
   },
   {
     headerName: "Unrealized profit",
     field: "cumulativeUnrealizedProfit",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
   },
   {
     headerName: "Mean trade (%)",

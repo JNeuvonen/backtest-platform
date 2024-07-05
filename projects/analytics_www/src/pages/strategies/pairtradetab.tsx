@@ -29,7 +29,7 @@ import {
 } from "src/http/queries";
 import { COLOR_CONTENT_PRIMARY } from "src/theme";
 import { getLsStrategyPath } from "src/utils";
-import { profitColumnCellRenderer } from "./directionaltab";
+import { ProfitColumnCellRenderer } from "src/components";
 
 const strategyNameCellRenderer = (params: ICellRendererParams) => {
   return (
@@ -82,7 +82,7 @@ const COLUMN_DEFS: ColDef[] = [
     field: "netResult",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
     aggFunc: "sum",
   },
   {
@@ -90,7 +90,7 @@ const COLUMN_DEFS: ColDef[] = [
     field: "cumulativeUnrealizedProfit",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
     aggFunc: "sum",
   },
   {

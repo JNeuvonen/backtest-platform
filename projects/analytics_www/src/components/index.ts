@@ -7,3 +7,4 @@ export * from "./WithLabel";
 export * from "./ReadOnlyEditor";
 export * from "./FormSubmitBar";
 export * from "./ClosedTradesTable";
+export * from "./data-grid";

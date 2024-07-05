@@ -1,26 +1,17 @@
-import { ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { CSSProperties } from "react";
-import { Link } from "react-router-dom";
 import {
   getDiffToPresentFormatted,
   getTradeCurrentProfitPerc,
   roundNumberFloor,
   Trade,
 } from "src/common_js";
-import { percColumnCellRenderer, profitColumnCellRenderer } from "src/pages";
-import { getTradeViewPath } from "src/utils";
-
-const idCellRenderer = (params: ICellRendererParams) => {
-  if (!params.value) {
-    return null;
-  }
-  return (
-    <Link to={getTradeViewPath(params.value)} className={"link-default"}>
-      {params.value}
-    </Link>
-  );
-};
+import {
+  PercColumnCellRenderer,
+  ProfitColumnCellRenderer,
+  SymbolCellRenderer,
+  TradeIdCellRenderer,
+} from "./data-grid";
 
 const COLUMN_DEFS: any = [
   {
@@ -28,13 +19,14 @@ const COLUMN_DEFS: any = [
     field: "tradeId",
     sortable: true,
     editable: false,
-    cellRenderer: idCellRenderer,
+    cellRenderer: TradeIdCellRenderer,
   },
   {
     headerName: "Symbol",
     field: "symbol",
     sortable: true,
     editable: false,
+    cellRenderer: SymbolCellRenderer,
   },
   {
     headerName: "Trade direction",
@@ -65,14 +57,14 @@ const COLUMN_DEFS: any = [
     field: "profitPerc",
     sortable: true,
     editable: false,
-    cellRenderer: percColumnCellRenderer,
+    cellRenderer: PercColumnCellRenderer,
   },
   {
     headerName: "Profit nominal",
     field: "profitNominal",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
   },
 ];
 

@@ -435,7 +435,7 @@ export const StrategyPage = () => {
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => navigate(getStrategyCompletedTradesPath(strategyName))}
         >
-          Completed trades
+          View trades
         </Button>
       </div>
 

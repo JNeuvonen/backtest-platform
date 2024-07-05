@@ -2,12 +2,9 @@ import {
   Heading,
   MenuButton,
   MenuItem,
-  NumberInput,
-  NumberInputField,
   Spinner,
   useDisclosure,
 } from "@chakra-ui/react";
-import { ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { MdOutlineDataArray } from "react-icons/md";
 import { CgSync } from "react-icons/cg";
@@ -22,31 +19,20 @@ import {
   TRADE_DIRECTIONS,
 } from "src/common_js";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { ChakraInput, ChakraMenu } from "src/components/chakra";
 import { useForceUpdate, usePathParams } from "src/hooks";
 import {
   useBinanceSpotPriceInfo,
   useStrategyGroupQuery,
 } from "src/http/queries";
-import { profitColumnCellRenderer } from "src/pages/strategies";
-import { getTradeViewPath } from "src/utils";
 import { ChakraDrawer } from "src/components/chakra/Drawer";
 import { BulkUpdateRowsForm } from "./bulkupdaterowsform";
 import { updateManyStrategies } from "src/http";
 import { toast } from "react-toastify";
-
-const idCellRenderer = (params: ICellRendererParams) => {
-  if (!params.value) {
-    return null;
-  }
-
-  return (
-    <Link to={getTradeViewPath(params.value)} className={"link-default"}>
-      {params.value}
-    </Link>
-  );
-};
+import {
+  ProfitColumnCellRenderer,
+  TradeIdCellRenderer,
+} from "src/components/data-grid/cells";
 
 const COLUMN_DEFS: any = [
   {
@@ -72,7 +58,7 @@ const COLUMN_DEFS: any = [
     field: "activeTradeId",
     sortable: true,
     editable: false,
-    cellRenderer: idCellRenderer,
+    cellRenderer: TradeIdCellRenderer,
   },
   {
     headerName: "Trades",
@@ -85,14 +71,14 @@ const COLUMN_DEFS: any = [
     field: "realizedProfit",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
   },
   {
     headerName: "Unrealized",
     field: "unrealizedProfit",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
   },
   {
     headerName: "Value at risk",

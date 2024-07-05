@@ -19,36 +19,10 @@ import {
   useUncompletedTradesQuery,
 } from "src/http/queries";
 import {
-  percColumnCellRenderer,
-  profitColumnCellRenderer,
-} from "../strategies";
-import { ICellRendererParams } from "ag-grid-community";
-import { BUTTON_VARIANTS } from "src/theme";
-import { repayMarginLoanRequest } from "src/http";
-import { toast } from "react-toastify";
-
-export const payOffLoanCellRenderer = (params: ICellRendererParams) => {
-  if (params.value === 0 || params.data.openTrades > 0) {
-    return null;
-  }
-
-  const postRequest = async () => {
-    const res = await repayMarginLoanRequest(params.data.asset);
-    if (res.success) {
-      toast.success(`Repaid margin loan on: ${params.data.asset}`, {
-        theme: "dark",
-      });
-    } else {
-      toast.error("Failed to repay margin loan", { theme: "dark" });
-    }
-  };
-
-  return (
-    <Button variant={BUTTON_VARIANTS.nofill} onClick={postRequest}>
-      Repay loan
-    </Button>
-  );
-};
+  PayOffLoanCellRenderer,
+  PercColumnCellRenderer,
+  ProfitColumnCellRenderer,
+} from "src/components/data-grid/cells";
 
 const COLUMN_DEFS: any = [
   {
@@ -62,14 +36,14 @@ const COLUMN_DEFS: any = [
     field: "netAsset",
     sortable: true,
     editable: false,
-    cellRenderer: profitColumnCellRenderer,
+    cellRenderer: ProfitColumnCellRenderer,
   },
   {
     headerName: "Net asset (%)",
     field: "netAssetPerc",
     sortable: true,
     editable: false,
-    cellRenderer: percColumnCellRenderer,
+    cellRenderer: PercColumnCellRenderer,
   },
   {
     headerName: "Free (% of NAV)",
@@ -88,7 +62,7 @@ const COLUMN_DEFS: any = [
     field: "priceChange24h",
     sortable: true,
     editable: false,
-    cellRenderer: percColumnCellRenderer,
+    cellRenderer: PercColumnCellRenderer,
   },
   {
     headerName: "Open trades",
@@ -101,7 +75,7 @@ const COLUMN_DEFS: any = [
     field: "debtOfNav",
     sortable: false,
     editable: false,
-    cellRenderer: payOffLoanCellRenderer,
+    cellRenderer: PayOffLoanCellRenderer,
   },
 ];
 

@@ -1,10 +1,17 @@
-import { Heading, Stat, StatLabel, StatNumber } from "@chakra-ui/react";
+import {
+  Heading,
+  Spinner,
+  Stat,
+  StatLabel,
+  StatNumber,
+} from "@chakra-ui/react";
 import {
   getNumberDisplayColor,
   roundNumberFloor,
   safeDivide,
 } from "src/common_js";
 import { ChakraCard, ClosedTradesTable } from "src/components";
+import { OpenTradesTable } from "src/components/OpenTradesTable";
 import { usePathParams } from "src/hooks";
 import { useStrategyGroupQuery } from "src/http";
 import { COLOR_CONTENT_PRIMARY } from "src/theme";
@@ -13,13 +20,23 @@ export const StratGroupCompletedTradesPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
   const strategyGroupQuery = useStrategyGroupQuery(strategyName);
 
+  if (!strategyGroupQuery.data) {
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
+  }
+
   const getInfoDict = () => {
     let realizedProfit = 0;
+    let cumulativeRealizedProfitPerc = 0;
     let numTrades = 0;
 
     strategyGroupQuery.data.trades.forEach((item) => {
       if (item.close_price) {
         realizedProfit += item.net_result;
+        cumulativeRealizedProfitPerc += item.percent_result;
         numTrades += 1;
       }
     });
@@ -27,7 +44,7 @@ export const StratGroupCompletedTradesPage = () => {
     return {
       realizedProfit,
       numTrades,
-      meanResult: safeDivide(realizedProfit, numTrades, null),
+      meanResultPerc: safeDivide(cumulativeRealizedProfitPerc, numTrades, 0),
     };
   };
 
@@ -94,6 +111,14 @@ export const StratGroupCompletedTradesPage = () => {
               <StatNumber>{infoDict.numTrades}</StatNumber>
             </Stat>
           </div>
+          <div>
+            <Stat color={COLOR_CONTENT_PRIMARY}>
+              <StatLabel>Mean trade (%)</StatLabel>
+              <StatNumber>
+                {roundNumberFloor(infoDict.meanResultPerc, 2)}%
+              </StatNumber>
+            </Stat>
+          </div>
         </div>
       </ChakraCard>
       <div style={{ marginTop: "16px" }}>
@@ -101,6 +126,14 @@ export const StratGroupCompletedTradesPage = () => {
         <ClosedTradesTable
           trades={strategyGroupQuery.data.trades.filter(
             (item) => item.close_price !== null,
+          )}
+        />
+      </div>
+      <div style={{ marginTop: "16px" }}>
+        <Heading size={"md"}>Open positions</Heading>
+        <OpenTradesTable
+          trades={strategyGroupQuery.data.trades.filter(
+            (item) => item.close_price === null,
           )}
         />
       </div>
