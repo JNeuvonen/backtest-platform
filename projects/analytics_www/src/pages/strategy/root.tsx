@@ -416,6 +416,7 @@ export const StrategyPage = () => {
           marginTop: "16px",
           display: "flex",
           alignItems: "center",
+          flexWrap: "wrap",
           gap: "8px",
         }}
       >
