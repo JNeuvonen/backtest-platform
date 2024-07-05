@@ -14,6 +14,7 @@ link_common_js() {
 }
 
 cd projects/common_js
+npm install
 npm run build
 npm link
 cd - > /dev/null
