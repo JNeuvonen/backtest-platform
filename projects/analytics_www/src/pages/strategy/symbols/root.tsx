@@ -31,6 +31,7 @@ import { updateManyStrategies } from "src/http";
 import { toast } from "react-toastify";
 import {
   ProfitColumnCellRenderer,
+  SymbolCellRenderer,
   TradeIdCellRenderer,
 } from "src/components/data-grid/cells";
 
@@ -40,6 +41,7 @@ const COLUMN_DEFS: any = [
     field: "symbol",
     sortable: true,
     editable: false,
+    cellRenderer: SymbolCellRenderer,
   },
   {
     headerName: "Is enabled",
