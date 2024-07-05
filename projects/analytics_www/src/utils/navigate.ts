@@ -12,6 +12,13 @@ export const getStrategySymbolsPath = (strategyName: string) => {
   return PATHS.strategySymbols.replace(PATH_KEYS.strategyName, strategyName);
 };
 
+export const getStrategyCompletedTradesPath = (strategyName: string) => {
+  return PATHS.strategyGroupCompletedTrades.replace(
+    PATH_KEYS.strategyName,
+    strategyName,
+  );
+};
+
 export const getReprodLiveTradesPath = (strategyName: string) => {
   return PATHS.reproduceLiveTradesPath.replace(
     PATH_KEYS.strategyName,

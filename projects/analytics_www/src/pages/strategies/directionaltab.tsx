@@ -420,15 +420,14 @@ export const DirectionalStrategiesTab = ({
         className="ag-theme-alpine-dark"
         style={{
           width: "100%",
-          height: "calc(100vh - 330px)",
           marginTop: "16px",
         }}
       >
         <AgGridReact
-          pagination={true}
+          pagination={false}
           columnDefs={COLUMN_DEFS as any}
-          paginationAutoPageSize={true}
           rowData={getDirectionalStrategies()}
+          domLayout={"autoHeight"}
         />
       </div>
     </div>

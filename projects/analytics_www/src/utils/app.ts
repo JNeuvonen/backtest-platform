@@ -13,6 +13,7 @@ const TRADE_PATH = "/trade";
 const VIEW_TRADE_PATH = TRADE_PATH + `/${PATH_KEYS.id}`;
 const STRATEGY_SYMBOLS_PATH = STRATEGY_PATH + `/strategies`;
 const LS_TICKERS_PATH = LS_STRATEGY_PATH + "/tickers";
+const STRATEGY_GROUP_COMPLETED_TRADES = `/strategy/${PATH_KEYS.strategyName}/completed-trades`;
 
 export const PATHS = {
   root: "/",
@@ -26,6 +27,7 @@ export const PATHS = {
   strategySymbols: STRATEGY_SYMBOLS_PATH,
   viewTradePath: VIEW_TRADE_PATH,
   reproduceLiveTradesPath: REPROD_LIVE_TRADES_PATH,
+  strategyGroupCompletedTrades: STRATEGY_GROUP_COMPLETED_TRADES,
 };
 
 export const SIDENAV_DEFAULT_WIDTH = 140;

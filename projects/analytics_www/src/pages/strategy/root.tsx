@@ -35,7 +35,10 @@ import {
   COLOR_BG_TERTIARY,
   COLOR_CONTENT_PRIMARY,
 } from "src/theme";
-import { getStrategySymbolsPath } from "src/utils";
+import {
+  getStrategyCompletedTradesPath,
+  getStrategySymbolsPath,
+} from "src/utils";
 import { ConfirmModal } from "src/components/ConfirmModal";
 import { disableAndCloseStratGroup } from "src/http";
 import { toast } from "react-toastify";
@@ -430,7 +433,7 @@ export const StrategyPage = () => {
         </Button>
         <Button
           variant={BUTTON_VARIANTS.nofill}
-          onClick={() => navigate(getStrategySymbolsPath(strategyName))}
+          onClick={() => navigate(getStrategyCompletedTradesPath(strategyName))}
         >
           Completed trades
         </Button>
@@ -463,7 +466,11 @@ export const StrategyPage = () => {
 
       <div style={{ marginTop: "16px" }}>
         <Heading size={"md"}>Open positions</Heading>
-        <OpenTradesTable trades={strategyGroupQuery.data.trades} />
+        <OpenTradesTable
+          trades={strategyGroupQuery.data.trades.filter(
+            (item) => item.close_price === null,
+          )}
+        />
       </div>
     </div>
   );

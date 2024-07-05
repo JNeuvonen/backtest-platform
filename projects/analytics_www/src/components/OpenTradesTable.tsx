@@ -50,7 +50,7 @@ const COLUMN_DEFS: any = [
     cellRenderer: percColumnCellRenderer,
   },
   {
-    headerName: "24h price change",
+    headerName: "24h price change (%)",
     field: "priceChange24h",
     sortable: true,
     editable: false,
