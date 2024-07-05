@@ -1,5 +1,6 @@
 setup.py
 common_python/__init__.py
+common_python/array.py
 common_python/constants.py
 common_python/date.py
 common_python/file.py

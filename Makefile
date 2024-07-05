@@ -74,6 +74,9 @@ pred-service-run-migr-file:
 
 #UTILITY
 
+install-local-python-packages:
+	chmod +x ./scripts/install_local_python_packages.sh && ./scripts/install_local_python_packages.sh
+
 close-all-positions:
 	./scripts/close_all_positions.sh -k $(API_KEY) -s $(API_SECRET)
 
