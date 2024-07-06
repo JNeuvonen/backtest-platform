@@ -20,7 +20,9 @@ export const generateChartMarkers = (
 ) => {
   const markers: SeriesMarker<Time>[] = [];
 
-  trades.forEach((item) => {
+  const sortedTrades = trades.sort((a, b) => a.open_time - b.open_time);
+
+  sortedTrades.forEach((item) => {
     const openDateObj = convertMillisToDateDict(item.open_time);
     const closeDateObj = convertMillisToDateDict(item.close_time);
 

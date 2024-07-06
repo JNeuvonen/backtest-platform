@@ -10,11 +10,7 @@ import {
 } from "lightweight-charts";
 import { generateChartMarkers } from "../../utils/lightweight-charts";
 import { DeepPartial } from "@chakra-ui/react";
-import {
-  COLOR_BRAND_PRIMARY,
-  COLOR_BRAND_SECONDARY,
-  COLOR_CONTENT_PRIMARY,
-} from "../../utils/colors";
+import { COLOR_CONTENT_PRIMARY } from "../../utils/colors";
 
 interface Props {
   trades: Trade[];
@@ -77,7 +73,7 @@ export const TradesCandleStickChart = ({
       borderVisible: false,
       wickUpColor: "rgb(8,153,129)",
       wickDownColor: "rgb(242,54,69)",
-      priceScaleId: "leftPriceScale",
+      priceScaleId: "right",
     });
 
     const data: CandlestickData<Time>[] = [];
@@ -85,7 +81,7 @@ export const TradesCandleStickChart = ({
     const lineSeries = chart.addLineSeries({
       color: "#98a7d9",
       lineWidth: 1,
-      priceScaleId: "right",
+      priceScaleId: "left",
     });
 
     if (useAltData) {
@@ -94,12 +90,15 @@ export const TradesCandleStickChart = ({
         rightPriceScale: {
           visible: true,
           borderColor: "rgba(197, 203, 206, 1)",
+          textColor: COLOR_CONTENT_PRIMARY,
         },
         leftPriceScale: {
-          visible: false,
+          visible: true,
           borderColor: "rgba(197, 203, 206, 1)",
+          textColor: COLOR_CONTENT_PRIMARY,
         },
       });
+    } else {
     }
 
     ohlcvData.forEach((item) => {

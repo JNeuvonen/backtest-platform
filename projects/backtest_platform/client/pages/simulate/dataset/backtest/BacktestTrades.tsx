@@ -7,7 +7,13 @@ import {
   useDatasetQuery,
 } from "../../../../clients/queries/queries";
 import { TradesCandleStickChart } from "../../../../components/charts/TradesCandleStickChart";
-import { Button, Spinner, Switch, useDisclosure } from "@chakra-ui/react";
+import {
+  Button,
+  Heading,
+  Spinner,
+  Switch,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { WithLabel } from "../../../../components/form/WithLabel";
 import { BUTTON_VARIANTS } from "../../../../theme";
 import { ChakraPopover } from "../../../../components/chakra/popover";
@@ -47,7 +53,10 @@ export const BacktestTradesPage = () => {
       const dateObj = convertMillisToDateDict(
         columnDetailedQuery.data.res.column.kline_open_time[idx]
       );
-      ticks.push({ time: dateObj, value: item });
+
+      if (item !== null) {
+        ticks.push({ time: dateObj, value: item });
+      }
     });
 
     return ticks;
@@ -55,18 +64,32 @@ export const BacktestTradesPage = () => {
 
   return (
     <div>
-      <TradesCandleStickChart
-        trades={backtestQuery.data.trades}
-        ohlcvData={ohlcvColsData.data}
-        isShortSellingTrades={backtestQuery.data.data.is_short_selling_strategy}
-        hideTexts={!showPriceTexts}
-        hideEnters={!showEnters}
-        hideExits={!showExits}
-        useAltData={columnDetailedQuery.data && showCustomColumn ? true : false}
-        getAltDataTicks={
-          columnDetailedQuery.data && showCustomColumn ? getAltDataTicks : null
-        }
-      />
+      <div style={{ marginBottom: "32px" }}>
+        <Heading size={"md"}>Backtest trades</Heading>
+      </div>
+
+      {!ohlcvColsData.isLoading && (
+        <TradesCandleStickChart
+          trades={backtestQuery.data.trades}
+          ohlcvData={ohlcvColsData.data.sort(
+            (a, b) => a.kline_open_time - b.kline_open_time
+          )}
+          isShortSellingTrades={
+            backtestQuery.data.data.is_short_selling_strategy
+          }
+          hideTexts={!showPriceTexts}
+          hideEnters={!showEnters}
+          hideExits={!showExits}
+          useAltData={
+            columnDetailedQuery.data && showCustomColumn ? true : false
+          }
+          getAltDataTicks={
+            columnDetailedQuery.data && showCustomColumn
+              ? getAltDataTicks
+              : null
+          }
+        />
+      )}
       <div
         style={{
           marginTop: "16px",
