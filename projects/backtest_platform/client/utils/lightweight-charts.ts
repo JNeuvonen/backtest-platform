@@ -1,5 +1,6 @@
 import { SeriesMarker, Time } from "lightweight-charts";
 import { Trade } from "../clients/queries/response-types";
+import { COLOR_BRAND_SECONDARY } from "./colors";
 
 export interface ChartMarkerTick {
   time: object;
@@ -28,7 +29,7 @@ export const generateChartMarkers = (
       const markerOpen = {
         time: openDateObj,
         position: "aboveBar",
-        color: "#9de67c",
+        color: COLOR_BRAND_SECONDARY,
         shape: "arrowDown",
         text: hideTexts ? "" : `Sell @ ${item.open_price}`,
       };
@@ -58,7 +59,7 @@ export const generateChartMarkers = (
       const markerClose = {
         time: closeDateObj,
         position: "aboveBar",
-        color: "#c93c43",
+        color: COLOR_BRAND_SECONDARY,
         shape: "arrowDown",
         text: hideTexts ? "" : `Sell @ ${item.close_price}`,
       };
