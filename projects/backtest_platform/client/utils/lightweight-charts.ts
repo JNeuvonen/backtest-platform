@@ -12,7 +12,10 @@ export interface ChartMarkerTick {
 
 export const generateChartMarkers = (
   trades: Trade[],
-  isShortStrategy: boolean
+  isShortStrategy: boolean,
+  hideTexts: boolean,
+  hideEnters: boolean,
+  hideExits: boolean
 ) => {
   const markers: SeriesMarker<Time>[] = [];
 
@@ -26,34 +29,46 @@ export const generateChartMarkers = (
         position: "aboveBar",
         color: "#e91e63",
         shape: "arrowDown",
-        text: `Sell @ ${item.open_price}`,
+        text: hideTexts ? "" : `Sell @ ${item.open_price}`,
       };
       const markerClose = {
         time: closeDateObj,
         position: "belowBar",
         color: "#2196F3",
         shape: "arrowUp",
-        text: `Buy @ ${item.close_price}`,
+        text: hideTexts ? "" : `Buy @ ${item.close_price}`,
       };
-      markers.push(markerOpen);
-      markers.push(markerClose);
+
+      if (!hideEnters) {
+        markers.push(markerOpen);
+      }
+
+      if (!hideExits) {
+        markers.push(markerClose);
+      }
     } else {
       const markerOpen = {
         time: openDateObj,
         position: "belowBar",
         color: "#2196F3",
         shape: "arrowUp",
-        text: `Buy @ ${item.open_price}`,
+        text: hideTexts ? "" : `Buy @ ${item.open_price}`,
       };
       const markerClose = {
         time: closeDateObj,
         position: "aboveBar",
         color: "#e91e63",
         shape: "arrowDown",
-        text: `Sell @ ${item.close_price}`,
+        text: hideTexts ? "" : `Sell @ ${item.close_price}`,
       };
-      markers.push(markerOpen);
-      markers.push(markerClose);
+
+      if (!hideEnters) {
+        markers.push(markerOpen);
+      }
+
+      if (!hideExits) {
+        markers.push(markerClose);
+      }
     }
   });
 
