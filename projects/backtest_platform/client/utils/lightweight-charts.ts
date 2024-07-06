@@ -1,12 +1,5 @@
 import { SeriesMarker, Time } from "lightweight-charts";
 import { Trade } from "../clients/queries/response-types";
-import { convertMillisToDateDict } from "./date";
-import {
-  COLOR_BRAND_PRIMARY,
-  COLOR_BRAND_PRIMARY_HIGHLIGHT,
-  COLOR_BRAND_SECONDARY,
-  COLOR_BRAND_SECONDARY_SHADE_ONE,
-} from "./colors";
 
 export interface ChartMarkerTick {
   time: object;
