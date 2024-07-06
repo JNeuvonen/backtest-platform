@@ -47,7 +47,7 @@ const COLUMN_DEFS: any = [
     headerName: "Is enabled",
     field: "isEnabled",
     sortable: true,
-    editable: false,
+    editable: true,
   },
   {
     headerName: "In position",
@@ -296,6 +296,7 @@ export const StrategySymbolsPage = () => {
         should_close_trade: item.shouldClose,
         is_in_close_only: item.closeOnly,
         stop_processing_new_candles: item.stopProcessingNewCandles,
+        is_disabled: !item.isEnabled,
       };
       payload.push(strategyInfo);
     });
