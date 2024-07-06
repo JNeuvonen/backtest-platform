@@ -22,6 +22,8 @@ interface Props {
   hideExits?: boolean;
   getAltDataTicks?: () => LineData<Time>[];
   useAltData?: boolean;
+  showBacktestResult?: boolean;
+  getBacktestResultTicks?: () => LineData<Time>[];
 }
 
 export const TradesCandleStickChart = ({
@@ -40,6 +42,8 @@ export const TradesCandleStickChart = ({
   hideExits = false,
   useAltData = false,
   getAltDataTicks = null,
+  showBacktestResult = false,
+  getBacktestResultTicks = null,
 }: Props) => {
   const chartContainerRef = useRef();
   const [visibleRange, setVisibleRange] = useState(null);
@@ -83,8 +87,15 @@ export const TradesCandleStickChart = ({
       priceScaleId: "left",
     });
 
-    if (useAltData) {
-      lineSeries.setData(getAltDataTicks ? getAltDataTicks() : []);
+    if (useAltData || showBacktestResult) {
+      if (showBacktestResult) {
+        lineSeries.setData(
+          getBacktestResultTicks ? getBacktestResultTicks() : []
+        );
+      } else if (getAltDataTicks) {
+        lineSeries.setData(getAltDataTicks ? getAltDataTicks() : []);
+      }
+
       chart.applyOptions({
         rightPriceScale: {
           visible: true,
@@ -147,6 +158,8 @@ export const TradesCandleStickChart = ({
     hideExits,
     useAltData,
     getAltDataTicks,
+    showBacktestResult,
+    getBacktestResultTicks,
   ]);
 
   return (

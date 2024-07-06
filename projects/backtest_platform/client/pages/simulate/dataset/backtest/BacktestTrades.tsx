@@ -36,6 +36,7 @@ export const BacktestTradesPage = () => {
   const [showExits, setShowExits] = useState(true);
   const [showPriceTexts, setShowPriceTexts] = useState(false);
   const [showCustomColumn, setShowCustomColumn] = useState(true);
+  const [showBacktestResult, setShowBacktestResult] = useState(false);
   const columnDetailedQuery = useColumnQuery(datasetName, selectedColumnName);
 
   if (!backtestQuery.data || !ohlcvColsData.data) {
@@ -56,6 +57,19 @@ export const BacktestTradesPage = () => {
       if (item !== null) {
         ticks.push({ time: klineOpenTime / 1000, value: item });
       }
+    });
+
+    return ticks;
+  };
+
+  const getBacktestResultTicks = () => {
+    const ticks = [];
+
+    backtestQuery.data?.balance_history.forEach((item) => {
+      ticks.push({
+        time: item.kline_open_time / 1000,
+        value: item.portfolio_worth,
+      });
     });
 
     return ticks;
@@ -89,6 +103,12 @@ export const BacktestTradesPage = () => {
               ? getAltDataTicks
               : null
           }
+          getBacktestResultTicks={
+            backtestQuery.data && showBacktestResult
+              ? getBacktestResultTicks
+              : null
+          }
+          showBacktestResult={showBacktestResult}
         />
       )}
       <div
@@ -129,6 +149,17 @@ export const BacktestTradesPage = () => {
             <Switch
               isChecked={showExits}
               onChange={() => setShowExits(!showExits)}
+            />
+          </WithLabel>
+        </div>
+        <div>
+          <WithLabel
+            label={"Show equity curve"}
+            containerStyles={{ width: "max-content" }}
+          >
+            <Switch
+              isChecked={showBacktestResult}
+              onChange={() => setShowBacktestResult(!showBacktestResult)}
             />
           </WithLabel>
         </div>
