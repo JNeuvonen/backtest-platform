@@ -1,6 +1,7 @@
 import { SeriesMarker, Time } from "lightweight-charts";
 import { Trade } from "../clients/queries/response-types";
 import { convertMillisToDateDict } from "./date";
+import { COLOR_BRAND_PRIMARY, COLOR_BRAND_SECONDARY } from "./colors";
 
 export interface ChartMarkerTick {
   time: object;
@@ -27,14 +28,14 @@ export const generateChartMarkers = (
       const markerOpen = {
         time: openDateObj,
         position: "aboveBar",
-        color: "#e91e63",
+        color: COLOR_BRAND_PRIMARY,
         shape: "arrowDown",
         text: hideTexts ? "" : `Sell @ ${item.open_price}`,
       };
       const markerClose = {
         time: closeDateObj,
         position: "belowBar",
-        color: "#2196F3",
+        color: COLOR_BRAND_SECONDARY,
         shape: "arrowUp",
         text: hideTexts ? "" : `Buy @ ${item.close_price}`,
       };

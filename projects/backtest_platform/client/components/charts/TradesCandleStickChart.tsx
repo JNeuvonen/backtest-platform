@@ -10,6 +10,11 @@ import {
 } from "lightweight-charts";
 import { generateChartMarkers } from "../../utils/lightweight-charts";
 import { DeepPartial } from "@chakra-ui/react";
+import {
+  COLOR_BRAND_PRIMARY,
+  COLOR_BRAND_SECONDARY,
+  COLOR_CONTENT_PRIMARY,
+} from "../../utils/colors";
 
 interface Props {
   trades: Trade[];
@@ -47,8 +52,16 @@ export const TradesCandleStickChart = ({
   useEffect(() => {
     const chartOptions: DeepPartial<ChartOptions> = {
       layout: {
-        textColor: "black",
-        background: { type: "solid", color: "white" },
+        textColor: COLOR_CONTENT_PRIMARY,
+        background: { type: "solid", color: "#161A25" },
+      },
+      grid: {
+        vertLines: {
+          color: "#232632",
+        },
+        horzLines: {
+          color: "#232632",
+        },
       },
     };
 
@@ -59,18 +72,18 @@ export const TradesCandleStickChart = ({
     const chart = createChart(chartContainerRef.current, chartOptions);
 
     const series = chart.addCandlestickSeries({
-      upColor: "#26a69a",
-      downColor: "#ef5350",
+      upColor: "rgb(8,153,129)",
+      downColor: "rgb(242,54,69)",
       borderVisible: false,
-      wickUpColor: "#26a69a",
-      wickDownColor: "#ef5350",
+      wickUpColor: "rgb(8,153,129)",
+      wickDownColor: "rgb(242,54,69)",
       priceScaleId: "leftPriceScale",
     });
 
     const data: CandlestickData<Time>[] = [];
 
     const lineSeries = chart.addLineSeries({
-      color: "blue",
+      color: "#98a7d9",
       lineWidth: 1,
       priceScaleId: "right",
     });
@@ -83,7 +96,7 @@ export const TradesCandleStickChart = ({
           borderColor: "rgba(197, 203, 206, 1)",
         },
         leftPriceScale: {
-          visible: true,
+          visible: false,
           borderColor: "rgba(197, 203, 206, 1)",
         },
       });
