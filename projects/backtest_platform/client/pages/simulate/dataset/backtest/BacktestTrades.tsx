@@ -18,7 +18,8 @@ import { WithLabel } from "../../../../components/form/WithLabel";
 import { BUTTON_VARIANTS } from "../../../../theme";
 import { ChakraPopover } from "../../../../components/chakra/popover";
 import { OverflopTooltip } from "../../../../components/OverflowTooltip";
-import { convertMillisToDateDict } from "../../../../utils/date";
+import { Range, Time } from "lightweight-charts";
+import { TradesByYearTable } from "../../../../components/TradesByYearTable";
 
 interface PathParams {
   datasetName: string;
@@ -31,12 +32,15 @@ export const BacktestTradesPage = () => {
   const datasetQuery = useDatasetQuery(datasetName);
   const ohlcvColsData = useDatasetOhlcvCols(datasetName);
   const selectColumnPopover = useDisclosure();
+  const [forceChartRedraw, setForceChartRedraw] = useState(Math.random());
   const [selectedColumnName, setSelectedColumnName] = useState("");
   const [showEnters, setShowEnters] = useState(true);
   const [showExits, setShowExits] = useState(true);
   const [showPriceTexts, setShowPriceTexts] = useState(false);
   const [showCustomColumn, setShowCustomColumn] = useState(true);
   const [showBacktestResult, setShowBacktestResult] = useState(false);
+  const [chartVisibleRange, setChartVisibleRange] =
+    useState<Range<Time> | null>(null);
   const columnDetailedQuery = useColumnQuery(datasetName, selectedColumnName);
 
   if (!backtestQuery.data || !ohlcvColsData.data) {
@@ -109,6 +113,9 @@ export const BacktestTradesPage = () => {
               : null
           }
           showBacktestResult={showBacktestResult}
+          visibleRange={chartVisibleRange}
+          setVisibleRange={setChartVisibleRange}
+          redrawChart={forceChartRedraw}
         />
       )}
       <div
@@ -206,6 +213,22 @@ export const BacktestTradesPage = () => {
             </WithLabel>
           </div>
         )}
+      </div>
+
+      <div style={{ marginTop: "32px" }}>
+        <Heading size={"md"}>Trades by year</Heading>
+        <TradesByYearTable
+          trades={backtestQuery.data.trades}
+          onTradeClickCallback={(trade) => {
+            setChartVisibleRange({
+              from: trade.open_time / 1000,
+              to: trade.close_time / 1000,
+            });
+            setForceChartRedraw(Math.random());
+            window.scrollTo(0, 0);
+          }}
+          style={{ marginTop: "16px" }}
+        />
       </div>
     </div>
   );

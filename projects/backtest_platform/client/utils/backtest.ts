@@ -1,5 +1,5 @@
 import { off } from "process";
-import { FetchBulkBacktests } from "../clients/queries/response-types";
+import { FetchBulkBacktests, Trade } from "../clients/queries/response-types";
 import { binarySearch } from "./algo";
 import { getKeysCount } from "./object";
 import { DisplayPairsItem } from "../pages/mass-backtest/backtest";
@@ -396,6 +396,20 @@ export const getMedianTotalReturn = (totalReturnsDict: object) => {
   if (totalReturns.length === 0) return null;
   totalReturns.sort((a, b) => a - b);
   return (totalReturns[Math.floor(totalReturns.length / 2)] - 1) * 100;
+};
+
+export const findTradesByYear = (trades: Trade[], targetYear: number) => {
+  const ret: Trade[] = [];
+
+  trades.forEach((item) => {
+    const year = new Date(item.open_time).getUTCFullYear();
+
+    if (targetYear === year) {
+      ret.push(item);
+    }
+  });
+
+  return ret;
 };
 
 export const getBacktestFormDefaults = () => {

@@ -4,6 +4,7 @@ import {
   CandlestickData,
   ChartOptions,
   LineData,
+  Range,
   Time,
   createChart,
 } from "lightweight-charts";
@@ -23,7 +24,11 @@ interface Props {
   getAltDataTicks?: () => LineData<Time>[];
   useAltData?: boolean;
   showBacktestResult?: boolean;
+  reDrawChart?: number;
   getBacktestResultTicks?: () => LineData<Time>[];
+  visibleRange: Range<Time> | null;
+  setVisibleRange: React.SetStateAction<React.Dispatch<Range<Time> | null>>;
+  redrawChart?: number;
 }
 
 export const TradesCandleStickChart = ({
@@ -44,9 +49,11 @@ export const TradesCandleStickChart = ({
   getAltDataTicks = null,
   showBacktestResult = false,
   getBacktestResultTicks = null,
+  visibleRange,
+  setVisibleRange,
+  redrawChart = 0,
 }: Props) => {
   const chartContainerRef = useRef();
-  const [visibleRange, setVisibleRange] = useState(null);
 
   useEffect(() => {
     const chartOptions: DeepPartial<ChartOptions> = {
@@ -157,9 +164,8 @@ export const TradesCandleStickChart = ({
     hideEnters,
     hideExits,
     useAltData,
-    getAltDataTicks,
     showBacktestResult,
-    getBacktestResultTicks,
+    redrawChart,
   ]);
 
   return (
