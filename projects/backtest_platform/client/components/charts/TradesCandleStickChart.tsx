@@ -4,6 +4,7 @@ import { convertMillisToDateDict } from "../../utils/date";
 import {
   CandlestickData,
   ChartOptions,
+  LineData,
   Time,
   createChart,
 } from "lightweight-charts";
@@ -19,6 +20,8 @@ interface Props {
   hideTexts?: boolean;
   hideEnters?: boolean;
   hideExits?: boolean;
+  getAltDataTicks?: () => LineData<Time>[];
+  useAltData?: boolean;
 }
 
 export const TradesCandleStickChart = ({
@@ -35,6 +38,8 @@ export const TradesCandleStickChart = ({
   hideTexts = true,
   hideEnters = false,
   hideExits = false,
+  useAltData = false,
+  getAltDataTicks = null,
 }: Props) => {
   const chartContainerRef = useRef();
   const [visibleRange, setVisibleRange] = useState(null);
@@ -59,9 +64,30 @@ export const TradesCandleStickChart = ({
       borderVisible: false,
       wickUpColor: "#26a69a",
       wickDownColor: "#ef5350",
+      priceScaleId: "leftPriceScale",
     });
 
     const data: CandlestickData<Time>[] = [];
+
+    const lineSeries = chart.addLineSeries({
+      color: "blue",
+      lineWidth: 1,
+      priceScaleId: "right",
+    });
+
+    if (useAltData) {
+      lineSeries.setData(getAltDataTicks ? getAltDataTicks() : []);
+      chart.applyOptions({
+        rightPriceScale: {
+          visible: true,
+          borderColor: "rgba(197, 203, 206, 1)",
+        },
+        leftPriceScale: {
+          visible: true,
+          borderColor: "rgba(197, 203, 206, 1)",
+        },
+      });
+    }
 
     ohlcvData.forEach((item) => {
       data.push({
@@ -95,7 +121,12 @@ export const TradesCandleStickChart = ({
     } else {
       chart.timeScale().fitContent();
     }
-    return () => chart.remove();
+    return () => {
+      chart
+        .timeScale()
+        .unsubscribeVisibleTimeRangeChange(handleVisibleRangeChange);
+      chart.remove();
+    };
   }, [
     trades,
     ohlcvData,
@@ -103,6 +134,8 @@ export const TradesCandleStickChart = ({
     hideTexts,
     hideEnters,
     hideExits,
+    useAltData,
+    getAltDataTicks,
   ]);
 
   return (

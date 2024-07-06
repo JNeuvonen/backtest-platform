@@ -84,6 +84,7 @@ export function useColumnQuery(
   return useQuery<ColumnResponse, unknown>({
     queryKey: [QUERY_KEYS.fetch_column, datasetName, columnName],
     queryFn: () => fetchColumn(datasetName, columnName),
+    enabled: columnName !== "",
   });
 }
 
