@@ -50,12 +50,11 @@ export const BacktestTradesPage = () => {
     const ticks = [];
 
     columnDetailedQuery.data?.res.column.rows.forEach((item, idx) => {
-      const dateObj = convertMillisToDateDict(
-        columnDetailedQuery.data.res.column.kline_open_time[idx]
-      );
+      const klineOpenTime =
+        columnDetailedQuery.data.res.column.kline_open_time[idx];
 
       if (item !== null) {
-        ticks.push({ time: dateObj, value: item });
+        ticks.push({ time: klineOpenTime / 1000, value: item });
       }
     });
 
@@ -70,7 +69,9 @@ export const BacktestTradesPage = () => {
 
       {!ohlcvColsData.isLoading && (
         <TradesCandleStickChart
-          trades={backtestQuery.data.trades}
+          trades={backtestQuery.data.trades.sort(
+            (a, b) => a.open_time - b.open_time
+          )}
           ohlcvData={ohlcvColsData.data.sort(
             (a, b) => a.kline_open_time - b.kline_open_time
           )}

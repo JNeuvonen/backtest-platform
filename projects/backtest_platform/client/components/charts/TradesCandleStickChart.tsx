@@ -1,6 +1,5 @@
 import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { OhlcvTick, Trade } from "../../clients/queries/response-types";
-import { convertMillisToDateDict } from "../../utils/date";
 import {
   CandlestickData,
   ChartOptions,
@@ -107,7 +106,7 @@ export const TradesCandleStickChart = ({
         high: item.high_price,
         low: item.low_price,
         close: item.close_price,
-        time: convertMillisToDateDict(item.kline_open_time),
+        time: item.kline_open_time / 1000,
       });
     });
 
