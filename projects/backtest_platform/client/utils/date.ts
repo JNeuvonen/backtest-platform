@@ -19,3 +19,12 @@ export function formatSecondsIntoTime(seconds: number): string {
   }
   return result.trim();
 }
+
+export function convertMillisToDateDict(kline_open_time: number) {
+  const date = new Date(kline_open_time);
+  return {
+    year: date.getUTCFullYear(),
+    month: date.getUTCMonth() + 1,
+    day: date.getUTCDate(),
+  };
+}

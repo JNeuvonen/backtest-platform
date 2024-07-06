@@ -361,3 +361,21 @@ export interface MultiStrategyBacktestBody {
   start_date: string | null;
   end_date: string | null;
 }
+
+export interface OhlcvTick {
+  open_price: number;
+  high_price: number;
+  low_price: number;
+  close_price: number;
+  volume: number;
+  kline_open_time: number;
+}
+
+export interface LightWeightChartOhlcvTick {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
+  time: object;
+}

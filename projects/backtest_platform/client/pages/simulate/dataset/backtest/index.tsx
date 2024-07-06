@@ -20,6 +20,7 @@ import { IoIosDownload } from "react-icons/io";
 import { saveBacktestReport } from "../../../../clients/requests";
 import { useNavigate } from "react-router-dom";
 import {
+  getBacktestTradesPath,
   getDatasetInfoPagePath,
   getMassbacktestTablesPath,
 } from "../../../../utils/navigate";
@@ -207,6 +208,16 @@ export const DatasetBacktestPage = () => {
           </div>
         </div>
         <BacktestSummaryCard backtest={backtest} />
+        <Button
+          style={{ marginTop: "16px" }}
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={() => {
+            console.log(getBacktestTradesPath(datasetName, backtest.id));
+            navigate(getBacktestTradesPath(datasetName, backtest.id));
+          }}
+        >
+          View trades
+        </Button>
         <Heading size={"md"} marginTop={"16px"}>
           Backtest balance growth
         </Heading>

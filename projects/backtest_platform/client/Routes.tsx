@@ -25,6 +25,7 @@ import { RuleBasedSimOnUniverseBacktest } from "./pages/rule-based-on-universe-b
 import { ViewRuleBasedMassBacktestPage } from "./pages/rule-based-on-universe-backtest/view-by-id";
 import { MultiStrategyBacktestPage } from "./pages/multistrategy";
 import { MultiStrategyPageById } from "./pages/multistrategy/view-by-id";
+import { BacktestTradesPage } from "./pages/simulate/dataset/backtest/BacktestTrades";
 
 export const AppRoutes = () => {
   return (
@@ -47,6 +48,14 @@ export const AppRoutes = () => {
       <Route
         path={PATHS.simulate.select_dataset}
         element={<SimulateSelectDataset />}
+      />
+      <Route
+        path={PATHS.simulate.backtest_trades}
+        element={
+          <BacktestProvider>
+            <BacktestTradesPage />
+          </BacktestProvider>
+        }
       />
       <Route
         path={PATHS.simulate.dataset}

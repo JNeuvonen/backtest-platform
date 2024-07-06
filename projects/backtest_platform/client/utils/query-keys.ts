@@ -24,4 +24,5 @@ export const QUERY_KEYS = {
   fetch_rule_based_mass_backtests: "fetch_rule_based_mass_backtests",
   fetch_multistrat_backtests: "fetch_multistrat_backtests",
   fetch_top_coins_by_vol: "fetch_top_coins_by_vol",
+  fetch_dataset_ohlcv_cols: "fetch_dataset_ohlcv_cols",
 };

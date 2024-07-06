@@ -10,6 +10,7 @@ from constants import (
     BINANCE_BACKTEST_PRICE_COL,
     STREAMING_DEFAULT_CHUNK_SIZE,
     AppConstants,
+    BinanceDataCols,
     NullFillStrategy,
 )
 from context import HttpResponseContext
@@ -19,7 +20,7 @@ from data_transformation import (
     clone_indicators_to_existing_datasets,
     clone_indicators_to_new_datasets,
 )
-from dataset import df_fill_nulls_on_all_cols, read_dataset_to_mem
+from dataset import df_fill_nulls_on_all_cols, read_columns_to_mem, read_dataset_to_mem
 from db import (
     add_columns_to_table,
     create_copy,
@@ -82,6 +83,7 @@ class RoutePaths:
     GET_DATASET_ROW_PAGINATION = "/{dataset_name}/pagination/{page}/{page_size}"
     DOWNLOAD = "/{dataset_name}/download"
     CLONE_INDICATORS = "/{dataset_name}/clone-indicators"
+    OHLCV_COLUMNS = "/{dataset_name}/ohlcv-columns"
 
 
 @router.post(RoutePaths.EXEC_PYTHON_ON_COL)
@@ -352,3 +354,26 @@ async def route_clone_indicators(dataset_name, body: BodyCloneIndicators):
         return Response(
             content="OK", status_code=status.HTTP_200_OK, media_type="text/plain"
         )
+
+
+@router.get(RoutePaths.OHLCV_COLUMNS)
+async def route_get_ohlcv_columns(dataset_name: str):
+    with HttpResponseContext():
+        dataset = read_columns_to_mem(
+            AppConstants.DB_DATASETS,
+            dataset_name,
+            [
+                BinanceDataCols.OPEN_PRICE,
+                BinanceDataCols.CLOSE_PRICE,
+                BinanceDataCols.HIGH_PRICE,
+                BinanceDataCols.LOW_PRICE,
+                BinanceDataCols.VOLUME,
+                BinanceDataCols.KLINE_OPEN_TIME,
+            ],
+        )
+
+        if dataset is None:
+            raise Exception("Invalid dataset name")
+
+        dataset_json = dataset.to_dict(orient="records")
+        return {"data": dataset_json}

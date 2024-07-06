@@ -216,6 +216,8 @@ export const LOCAL_API_URL = {
     LOCAL_API_URI + LOCAL_API.stocks.root + "/yfinance/dataset/" + symbol,
   createMultiStrategyBacktest: () =>
     LOCAL_API_URI + LOCAL_API.backtest.root + "/rule-based-multi-strat",
+  fetchDatasetOhlcvCols: (datasetName: string) =>
+    LOCAL_API_URI + LOCAL_API.dataset.root + `/${datasetName}/ohlcv-columns`,
 };
 
 export const PRED_SERVER_URLS = {

@@ -31,6 +31,15 @@ export const getModelInfoPath = (datasetName: string, modelId: number) => {
     .replace(PATH_KEYS.model, String(modelId));
 };
 
+export const getBacktestTradesPath = (
+  datasetName: string,
+  backtestId: number
+) => {
+  return PATHS.simulate.backtest_trades
+    .replace(PATH_KEYS.dataset, datasetName)
+    .replace(PATH_KEYS.backtest, String(backtestId));
+};
+
 export const getMassbacktestTablesPath = (backtestId: string) => {
   return PATHS.mass_backtest.root.replace(PATH_KEYS.backtest, backtestId);
 };

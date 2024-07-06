@@ -12,6 +12,7 @@ import {
   fetchDataTransformations,
   fetchDataset,
   fetchDatasetModels,
+  fetchDatasetOhlcvCols,
   fetchDatasets,
   fetchEpochValidationPreds,
   fetchLongShortBacktests,
@@ -42,6 +43,7 @@ import {
   FetchBacktestByIdRes,
   FetchBulkBacktests,
   MassBacktest,
+  OhlcvTick,
 } from "./response-types";
 import { removeDuplicates } from "../../utils/number";
 import { getTopCoinsByUSDTVolume } from "../../utils/binance";
@@ -291,5 +293,14 @@ export function useTopCoinsByVol(
   return useQuery<string[], unknown>({
     queryKey: [QUERY_KEYS.fetch_top_coins_by_vol, limit],
     queryFn: () => getTopCoinsByUSDTVolume(limit),
+  });
+}
+
+export function useDatasetOhlcvCols(
+  datasetName: string
+): UseQueryResult<OhlcvTick[], unknown> {
+  return useQuery<OhlcvTick[], unknown>({
+    queryKey: [QUERY_KEYS.fetch_dataset_ohlcv_cols, datasetName],
+    queryFn: () => fetchDatasetOhlcvCols(datasetName),
   });
 }

@@ -818,3 +818,15 @@ export const createMultiStrategyBacktest = async (
   });
   return res;
 };
+
+export const fetchDatasetOhlcvCols = async (datasetName: string) => {
+  const res = await buildRequest({
+    method: "GET",
+    url: LOCAL_API_URL.fetchDatasetOhlcvCols(datasetName),
+  });
+
+  if (res.status === 200) {
+    return res.res["data"];
+  }
+  return [];
+};
