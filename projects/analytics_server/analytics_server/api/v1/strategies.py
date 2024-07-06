@@ -106,6 +106,7 @@ async def put_update_many(
             update_dict[item.id]["allocated_size_perc"] = item.allocation_size_perc
             update_dict[item.id]["should_close_trade"] = bool(item.should_close_trade)
             update_dict[item.id]["is_in_close_only"] = bool(item.is_in_close_only)
+            update_dict[item.id]["is_disabled"] = bool(item.is_disabled)
             update_dict[item.id]["stop_processing_new_candles"] = bool(
                 item.stop_processing_new_candles
             )

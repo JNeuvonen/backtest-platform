@@ -7,6 +7,7 @@ class StrategyAnalyticsServUpdate(BaseModel):
     allocation_size_perc: Optional[float] = None
     should_close_trade: Optional[float] = None
     is_in_close_only: Optional[float] = None
+    is_disabled: Optional[float] = None
     stop_processing_new_candles: Optional[float] = None
 
 
