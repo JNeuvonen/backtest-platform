@@ -61,7 +61,6 @@ def run_rule_based_mass_backtest(
         )
 
         for symbol in body.crypto_symbols:
-            print(symbol)
             table_name = get_binance_dataset_tablename(symbol, interval)
             symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
@@ -77,12 +76,14 @@ def run_rule_based_mass_backtest(
                         table_name, transformation.transformation_code
                     )
                     exec_python(python_program)
-                    DataTransformationQuery.create_entry(
-                        {
-                            "transformation_code": transformation.transformation_code,
-                            "dataset_id": symbol_dataset.id,
-                        }
-                    )
+
+                    if symbol_dataset.id != original_dataset.id:
+                        DataTransformationQuery.create_entry(
+                            {
+                                "transformation_code": transformation.transformation_code,
+                                "dataset_id": symbol_dataset.id,
+                            }
+                        )
             except Exception:
                 continue
 
