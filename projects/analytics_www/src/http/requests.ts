@@ -207,3 +207,15 @@ export const repayMarginLoanRequest = async (asset: string) => {
     return null;
   }
 };
+
+export const enableStratGroupRequest = async (groupId: number) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.strategyEnable(groupId),
+      method: "POST",
+    });
+    return res;
+  } catch {
+    return null;
+  }
+};

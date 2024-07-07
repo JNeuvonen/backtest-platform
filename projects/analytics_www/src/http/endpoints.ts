@@ -55,4 +55,8 @@ export const ANALYTICS_SERV_API = {
     ANALYTICS_SERV_BASE_URL +
     ANALYTICS_SERV_ROUTES.v1_account +
     `/assets/repay/${asset}`,
+  strategyEnable: (id: number) =>
+    ANALYTICS_SERV_BASE_URL +
+    ANALYTICS_SERV_ROUTES.v1_strategy +
+    `/strategy-group/${id}/enable`,
 };

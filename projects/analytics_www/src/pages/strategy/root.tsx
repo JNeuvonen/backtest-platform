@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Heading,
   NumberInput,
@@ -40,7 +41,7 @@ import {
   getStrategySymbolsPath,
 } from "src/utils";
 import { ConfirmModal } from "src/components/ConfirmModal";
-import { disableAndCloseStratGroup } from "src/http";
+import { disableAndCloseStratGroup, enableStratGroupRequest } from "src/http";
 import { toast } from "react-toastify";
 import { ReadOnlyEditor } from "src/components/ReadOnlyEditor";
 import { WithLabel } from "src/components/WithLabel";
@@ -242,6 +243,7 @@ export const StrategyPage = () => {
   const balanceSnapShots = useBalanceSnapshotsQuery();
   const navigate = useNavigate();
   const disableAndCloseConfirmModal = useDisclosure();
+  const enableConfirmModal = useDisclosure();
 
   if (
     strategyGroupQuery.isLoading ||
@@ -270,6 +272,26 @@ export const StrategyPage = () => {
     }
   };
 
+  const enableStrategyGroup = async () => {
+    const res = await enableStratGroupRequest(
+      strategyGroupQuery.data.strategy_group.id,
+    );
+
+    if (res.success) {
+      toast.success("Enabled strategy", { theme: "dark" });
+      strategyGroupQuery.refetch();
+    } else {
+      toast.error("Failed to disable strategy", { theme: "dark" });
+    }
+  };
+
+  const renderStratEnabledBadge = () => {
+    if (strategyGroupQuery.data.strategy_group.is_disabled) {
+      return <Badge colorScheme="red">Disabled</Badge>;
+    }
+    return <Badge colorScheme="green">Enabled</Badge>;
+  };
+
   const tradeInfoDict = getStrategyGroupTradeInfo(
     strategyGroupQuery.data.strategy_group,
     strategyGroupQuery.data.strategies,
@@ -290,6 +312,12 @@ export const StrategyPage = () => {
           "Are you sure you want to disable this strategy and close all positions?"
         }
       />
+      <ConfirmModal
+        {...enableConfirmModal}
+        onConfirm={enableStrategyGroup}
+        title={"Disable strategy"}
+        message={"Are you sure you want to enable this strategy?"}
+      />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div>
           <Heading size={"lg"}>
@@ -303,6 +331,8 @@ export const StrategyPage = () => {
             ago
           </Text>
         </div>
+
+        <div>{renderStratEnabledBadge()}</div>
       </div>
       <div style={{ marginTop: "8px" }}>
         <ChakraCard>
@@ -426,6 +456,16 @@ export const StrategyPage = () => {
         >
           Disable and close positions
         </Button>
+        {strategyGroupQuery.data.strategy_group.is_disabled && (
+          <div>
+            <Button
+              variant={BUTTON_VARIANTS.dangerNoFill}
+              onClick={() => enableConfirmModal.onOpen()}
+            >
+              Enable
+            </Button>
+          </div>
+        )}
         <Button
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => navigate(getStrategySymbolsPath(strategyName))}
