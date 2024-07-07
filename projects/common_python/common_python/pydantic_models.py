@@ -13,3 +13,9 @@ class StrategyAnalyticsServUpdate(BaseModel):
 
 class BodyAnalyticsServiceUpdate(BaseModel):
     strategies: List[StrategyAnalyticsServUpdate]
+
+
+class BodyUpdateStratGroupRiskParams(BaseModel):
+    num_symbols_for_auto_adaptive: int
+    num_days_for_group_recalc: int
+    allocated_size_perc: float

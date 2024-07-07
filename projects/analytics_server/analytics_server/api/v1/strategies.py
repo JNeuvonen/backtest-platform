@@ -9,7 +9,10 @@ from common_python.pred_serv_models.longshortticker import LongShortTickerQuery
 from common_python.pred_serv_models.strategy_group import StrategyGroupQuery
 from common_python.pred_serv_models.longshortpair import LongShortPairQuery
 from common_python.pred_serv_models.longshorttrade import LongShortTradeQuery
-from common_python.pydantic_models import BodyAnalyticsServiceUpdate
+from common_python.pydantic_models import (
+    BodyAnalyticsServiceUpdate,
+    BodyUpdateStratGroupRiskParams,
+)
 from fastapi import APIRouter, Depends, Response, status
 
 
@@ -24,6 +27,7 @@ class RoutePaths:
     DISABLE_STRATEGY = "/strategy-group/{strategy_group_id}/disable"
     ENABLE_STRATEGY = "/strategy-group/{strategy_group_id}/enable"
     UPDATE_MANY = "/update-many"
+    UPDATE_GROUP_RISK_PARAMS = "/strategy-group/{strategy_group_id}/update-risk-params"
 
 
 @router.get(RoutePaths.ROOT)
@@ -168,6 +172,40 @@ async def route_strategy_enable(strategy_group_id: int, user: User = Depends(get
 
         StrategyQuery.update_multiple_strategies(update_dict)
         StrategyGroupQuery.update(strategy_group_id, {"is_disabled": False})
+        return Response(
+            content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
+        )
+
+
+@router.put(RoutePaths.UPDATE_GROUP_RISK_PARAMS)
+async def route_update_risk_params(
+    strategy_group_id: int,
+    body: BodyUpdateStratGroupRiskParams,
+    user: User = Depends(get_user),
+):
+    with HttpResponse():
+        if user.access_level < 10:
+            raise Exception("Authorization failed")
+
+        strategies = StrategyQuery.get_strategies_by_strategy_group_id(
+            strategy_group_id
+        )
+        update_dict = {}
+
+        for item in strategies:
+            update_dict[item.id] = {"allocated_size_perc": body.allocated_size_perc}
+
+        StrategyQuery.update_multiple_strategies(update_dict)
+
+        StrategyGroupQuery.update(
+            strategy_group_id,
+            {
+                "num_symbols_for_auto_adaptive": body.num_symbols_for_auto_adaptive,
+                "num_days_for_group_recalc": body.num_days_for_group_recalc,
+                "allocated_size_perc": body.allocated_size_perc,
+            },
+        )
+
         return Response(
             content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
         )
