@@ -1,5 +1,6 @@
 export const DISK_KEYS = {
   access_token: "ACCESS_TOKEN",
+  strategies_table_filters: "STRATEGIES_TABLE_FILTERS",
 };
 
 export const QUERY_KEYS = {

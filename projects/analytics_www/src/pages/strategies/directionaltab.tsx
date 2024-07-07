@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   Heading,
   Spinner,
   Stat,
@@ -18,6 +19,7 @@ import {
   StrategyGroup,
   Trade,
   formatSecondsIntoTime,
+  DiskManager,
 } from "src/common_js";
 import { Link } from "react-router-dom";
 import { ChakraCard } from "src/components/chakra";
@@ -26,8 +28,25 @@ import {
   useLatestBalanceSnapshot,
 } from "src/http/queries";
 import { COLOR_CONTENT_PRIMARY } from "src/theme";
-import { getStrategyPath } from "src/utils";
+import { DISK_KEYS, getStrategyPath } from "src/utils";
 import { ProfitColumnCellRenderer } from "src/components/data-grid/cells";
+import { WithLabel } from "src/components";
+import { useEffect, useRef, useState } from "react";
+import {
+  filterFormattedStrategiesRows,
+  filterStrategiesRows,
+} from "src/utils/strategies";
+
+export interface StrategiesTableFilters {
+  enabledStrategies: boolean;
+  disabledStrategies: boolean;
+  longStrategies: boolean;
+  shortStrategies: boolean;
+  strategiesInPosition: boolean;
+  strategiesOutOfPosition: boolean;
+}
+
+const filtersDiskManager = new DiskManager(DISK_KEYS.strategies_table_filters);
 
 const strategyNameCellRenderer = (params: ICellRendererParams) => {
   if (!params.value) {
@@ -183,8 +202,62 @@ export const DirectionalStrategiesTab = ({
 }: {
   strategiesRes: StrategiesResponse | undefined;
 }) => {
+  const filtersState = useRef(
+    filtersDiskManager.read() !== null
+      ? filtersDiskManager.read()
+      : {
+          enabledStrategies: true,
+          disabledStrategies: true,
+          longStrategies: true,
+          shortStrategies: true,
+          strategiesInPosition: true,
+          strategiesOutOfPosition: true,
+        },
+  );
+
   const binancePriceQuery = useBinanceSpotPriceInfo();
   const latestSnapshotQuery = useLatestBalanceSnapshot();
+
+  const [showEnabledStrategies, setShowEnabledStrategies] = useState(
+    filtersState.current.enabledStrategies,
+  );
+  const [showDisabledStrategies, setShowDisabledStrategies] = useState(
+    filtersState.current.disabledStrategies,
+  );
+  const [showLongStrategies, setShowLongStrategies] = useState(
+    filtersState.current.longStrategies,
+  );
+  const [showShortStrategies, setShowShortStrategies] = useState(
+    filtersState.current.shortStrategies,
+  );
+  const [showStrategiesInPos, setShowStrategiesInPos] = useState(
+    filtersState.current.strategiesInPosition,
+  );
+  const [showStrategiesOutOfPos, setShowStrategiesOutOfPos] = useState(
+    filtersState.current.strategiesOutOfPosition,
+  );
+
+  const diskSyncFilters = () => {
+    filtersDiskManager.save({
+      enabledStrategies: showEnabledStrategies,
+      disabledStrategies: showDisabledStrategies,
+      longStrategies: showLongStrategies,
+      shortStrategies: showShortStrategies,
+      strategiesInPosition: showStrategiesInPos,
+      strategiesOutOfPosition: showStrategiesOutOfPos,
+    });
+  };
+
+  useEffect(() => {
+    diskSyncFilters();
+  }, [
+    showEnabledStrategies,
+    showDisabledStrategies,
+    showLongStrategies,
+    showShortStrategies,
+    showStrategiesInPos,
+    showStrategiesOutOfPos,
+  ]);
 
   if (!strategiesRes || !binancePriceQuery.data || !latestSnapshotQuery.data) {
     return <Spinner />;
@@ -198,6 +271,16 @@ export const DirectionalStrategiesTab = ({
     }
 
     return ret
+      .filter((item) => {
+        return filterStrategiesRows(item, {
+          enabledStrategies: showEnabledStrategies,
+          disabledStrategies: showDisabledStrategies,
+          longStrategies: showLongStrategies,
+          shortStrategies: showShortStrategies,
+          strategiesInPosition: showStrategiesInPos,
+          strategiesOutOfPosition: showStrategiesOutOfPos,
+        });
+      })
       .map((item: StrategyGroup) => {
         return {
           name: item.name,
@@ -208,6 +291,16 @@ export const DirectionalStrategiesTab = ({
             binancePriceQuery.data || [],
           ),
         };
+      })
+      .filter((item) => {
+        return filterFormattedStrategiesRows(item, {
+          enabledStrategies: showEnabledStrategies,
+          disabledStrategies: showDisabledStrategies,
+          longStrategies: showLongStrategies,
+          shortStrategies: showShortStrategies,
+          strategiesInPosition: showStrategiesInPos,
+          strategiesOutOfPosition: showStrategiesOutOfPos,
+        });
       })
       .sort((a, b) => b.netResult - a.netResult);
   };
@@ -395,6 +488,76 @@ export const DirectionalStrategiesTab = ({
             </div>
           </div>
         </ChakraCard>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "16px",
+          marginTop: "16px",
+        }}
+      >
+        <div>
+          <WithLabel label={"Enabled strategies"}>
+            <Checkbox
+              isChecked={showEnabledStrategies}
+              onChange={() => {
+                setShowEnabledStrategies(!showEnabledStrategies);
+              }}
+            />
+          </WithLabel>
+        </div>
+        <div>
+          <WithLabel label={"Disabled strategies"}>
+            <Checkbox
+              isChecked={showDisabledStrategies}
+              onChange={() => {
+                setShowDisabledStrategies(!showDisabledStrategies);
+              }}
+            />
+          </WithLabel>
+        </div>
+        <div>
+          <WithLabel label={"Long strategies "}>
+            <Checkbox
+              isChecked={showLongStrategies}
+              onChange={() => {
+                setShowLongStrategies(!showLongStrategies);
+              }}
+            />
+          </WithLabel>
+        </div>
+        <div>
+          <WithLabel label={"Short strategies"}>
+            <Checkbox
+              isChecked={showShortStrategies}
+              onChange={() => {
+                setShowShortStrategies(!showShortStrategies);
+              }}
+            />
+          </WithLabel>
+        </div>
+        <div>
+          <WithLabel label={"Strategies in position"}>
+            <Checkbox
+              isChecked={showStrategiesInPos}
+              onChange={() => {
+                setShowStrategiesInPos(!showStrategiesInPos);
+              }}
+            />
+          </WithLabel>
+        </div>
+        <div>
+          <WithLabel label={"Strategies out of position"}>
+            <Checkbox
+              isChecked={showStrategiesOutOfPos}
+              onChange={() => {
+                setShowStrategiesOutOfPos(!showStrategiesOutOfPos);
+              }}
+            />
+          </WithLabel>
+        </div>
       </div>
       <div
         className="ag-theme-alpine-dark"
