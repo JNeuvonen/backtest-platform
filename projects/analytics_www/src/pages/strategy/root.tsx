@@ -441,7 +441,7 @@ export const StrategyPage = () => {
             {strategyGroupQuery.data.strategy_group.is_auto_adaptive_group && (
               <div>
                 <Stat color={COLOR_CONTENT_PRIMARY}>
-                  <StatLabel>Last group symbols recalculation</StatLabel>
+                  <StatLabel>Group symbols last updated</StatLabel>
                   <StatNumber>
                     {getDiffToPresentFormatted(
                       new Date(
