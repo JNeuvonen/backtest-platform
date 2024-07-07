@@ -145,6 +145,7 @@ async def route_strategy_disable_and_close(
             update_dict[item.id] = {"is_disabled": True}
 
         StrategyQuery.update_multiple_strategies(update_dict)
+        StrategyGroupQuery.update(strategy_group_id, {"is_disabled": True})
         return Response(
             content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
         )
