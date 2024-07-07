@@ -3994,6 +3994,43 @@ look_back_periods = [24]
 calculate_ratio_of_winning_candles(dataset, column=column, look_back_periods=look_back_periods)
 """
 
+ABSOLUTE_INCREASE = """
+def calculate_absolute_increase(df, column='close_price', lookback_periods=[5]):
+    for period in lookback_periods:
+        increase_label = f"absolute_increase_{period}_{column}"
+        df[increase_label] = df[column] - df[column].shift(period)
+
+# Usage example:
+lookback_periods = [5, 10, 20]
+column = "close_price"
+calculate_absolute_increase(dataset, column=column, lookback_periods=lookback_periods)
+"""
+
+ABSOLUTE_DECREASE = """
+def calculate_absolute_decrease(df, column='close_price', lookback_periods=[5]):
+    for period in lookback_periods:
+        decrease_label = f"absolute_decrease_{period}_{column}"
+        df[decrease_label] = df[column].shift(period) - df[column]
+
+# Usage example:
+lookback_periods = [5, 10, 20]
+column = "close_price"
+calculate_absolute_decrease(dataset, column=column, lookback_periods=lookback_periods)
+"""
+
+WAS_TRUE_EXACTLY_ON_N_LOOBACK = """
+import pandas as pd
+
+def check_indicator_exactly_n_backwards(df, indicator_column='signal', periods=[3, 5, 10]):
+    for period in periods:
+        label = f"{indicator_column}_was_1_exactly_{period}_rows_ago"
+        df[label] = df[indicator_column].shift(period).fillna(0).astype(int)
+
+# Usage example:
+indicator_column = 'signal'
+periods = [3, 5, 10]
+"""
+
 
 DEFAULT_CODE_PRESETS = [
     CodePreset(
@@ -5051,6 +5088,27 @@ DEFAULT_CODE_PRESETS = [
         name="WINNING_CANDLES_PERC",
         category=CodePresetCategories.INDICATOR,
         description="This indicator calculates the percentage of winning candles (i.e., candles where the closing price is higher than the previous closing price) over specified look-back periods. It helps in understanding the recent trend strength and market sentiment over different timeframes.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=ABSOLUTE_INCREASE,
+        name="ABS_INCREASE",
+        category=CodePresetCategories.INDICATOR,
+        description="This function calculates the absolute increase in the specified column over the given lookback periods. It creates a new column for each lookback period, indicating the absolute increase in value from that many periods ago.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=ABSOLUTE_DECREASE,
+        name="ABS_DECREASE",
+        category=CodePresetCategories.INDICATOR,
+        description="This function calculates the absolute decrease in the specified column over the given lookback periods. It creates a new column for each lookback period, indicating the absolute decrease in value from that many periods ago.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=WAS_TRUE_EXACTLY_ON_N_LOOBACK,
+        name="TRUE_EXACTLY_N_LOOKBACK",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator checks if a specified boolean indicator column (signal) was 1 exactly N rows backwards, where N is specified in the periods list. For each period, it creates a new column in the dataframe indicating whether the condition was met exactly N rows ago.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]
