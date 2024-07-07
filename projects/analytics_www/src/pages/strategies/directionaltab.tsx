@@ -376,6 +376,8 @@ export const DirectionalStrategiesTab = ({
                 <StatLabel>Num strategies</StatLabel>
                 <StatNumber>{getDirectionalStrategies().length}</StatNumber>
               </Stat>
+            </div>
+            <div>
               <Stat color={COLOR_CONTENT_PRIMARY}>
                 <StatLabel>Realized profit</StatLabel>
                 <StatNumber
