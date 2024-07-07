@@ -22,6 +22,7 @@ class RoutePaths:
     LONGSHORT_BY_GROUP = "/longshort-group/{group_name}"
     DISABLE_LONG_SHORT_STRATEGY = "/longshort-group/{id}/disable"
     DISABLE_STRATEGY = "/strategy-group/{strategy_group_id}/disable"
+    ENABLE_STRATEGY = "/strategy-group/{strategy_group_id}/enable"
     UPDATE_MANY = "/update-many"
 
 
@@ -146,6 +147,27 @@ async def route_strategy_disable_and_close(
 
         StrategyQuery.update_multiple_strategies(update_dict)
         StrategyGroupQuery.update(strategy_group_id, {"is_disabled": True})
+        return Response(
+            content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
+        )
+
+
+@router.post(RoutePaths.ENABLE_STRATEGY)
+async def route_strategy_enable(strategy_group_id: int, user: User = Depends(get_user)):
+    with HttpResponse():
+        if user.access_level < 10:
+            raise Exception("Authorization failed")
+
+        strategies = StrategyQuery.get_strategies_by_strategy_group_id(
+            strategy_group_id
+        )
+        update_dict = {}
+
+        for item in strategies:
+            update_dict[item.id] = {"is_disabled": False}
+
+        StrategyQuery.update_multiple_strategies(update_dict)
+        StrategyGroupQuery.update(strategy_group_id, {"is_disabled": False})
         return Response(
             content="OK", media_type="text/plain", status_code=status.HTTP_200_OK
         )
