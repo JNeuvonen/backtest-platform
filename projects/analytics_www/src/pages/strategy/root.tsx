@@ -437,6 +437,22 @@ export const StrategyPage = () => {
                 </Stat>
               </div>
             )}
+
+            {strategyGroupQuery.data.strategy_group.is_auto_adaptive_group && (
+              <div>
+                <Stat color={COLOR_CONTENT_PRIMARY}>
+                  <StatLabel>Last group symbols recalculation</StatLabel>
+                  <StatNumber>
+                    {getDiffToPresentFormatted(
+                      new Date(
+                        strategyGroupQuery.data.strategy_group.last_adaptive_group_recalc,
+                      ),
+                    )}
+                    {" ago"}
+                  </StatNumber>
+                </Stat>
+              </div>
+            )}
           </div>
         </ChakraCard>
       </div>
