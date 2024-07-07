@@ -34,6 +34,7 @@ import {
   SymbolCellRenderer,
   TradeIdCellRenderer,
 } from "src/components/data-grid/cells";
+import { useAppContext } from "src/context";
 
 const COLUMN_DEFS: any = [
   {
@@ -135,6 +136,7 @@ export const StrategySymbolsPage = () => {
   const [rowDataCopy, setRowDataCopy] = useState<any[]>([]);
   const [rowDataInitiated, setRowDataInitiated] = useState(false);
   const [isRowDataChanged, setIsRowDataChanged] = useState(false);
+  const { isMobileLayout } = useAppContext();
   const filterDrawer = useDisclosure();
   const bulkUpdateStrategies = useDisclosure();
   const forceUpdate = useForceUpdate();
@@ -331,7 +333,10 @@ export const StrategySymbolsPage = () => {
       <ChakraDrawer
         {...bulkUpdateStrategies}
         title={"Bulk update strategies"}
-        drawerContentStyles={{ maxWidth: "40%" }}
+        drawerContentStyles={{
+          maxWidth: isMobileLayout ? "90%" : "40%",
+          minWidth: "300px",
+        }}
       >
         <BulkUpdateRowsForm
           onSubmit={(values) => {
