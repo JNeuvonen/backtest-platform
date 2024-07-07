@@ -484,7 +484,7 @@ export const StrategyPage = () => {
           }}
         />
       </ChakraDrawer>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap:  "16px", flexWrap: "wrap" }}>
         <div>
           <Heading size={"lg"}>
             {strategyGroupQuery.data.strategy_group.name}
