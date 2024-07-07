@@ -437,7 +437,7 @@ class ManualBacktest:
 
         if (
             should_open_trade is False
-            and self.pos_open_klines >= self.max_klines_until_close
+            and self.pos_open_klines >= self.max_klines_until_close - 1
             and self.use_time_based_close
         ):
             # auto close positions if time threshold is met
