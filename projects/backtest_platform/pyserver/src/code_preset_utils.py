@@ -4029,6 +4029,7 @@ def check_indicator_exactly_n_backwards(df, indicator_column='signal', periods=[
 # Usage example:
 indicator_column = 'signal'
 periods = [3, 5, 10]
+check_indicator_exactly_n_backwards(dataset, indicator_column, periods)
 """
 
 
