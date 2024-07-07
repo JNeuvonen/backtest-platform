@@ -219,3 +219,19 @@ export const enableStratGroupRequest = async (groupId: number) => {
     return null;
   }
 };
+
+export const updateStratGroupRiskParams = async (
+  groupId: number,
+  formValues: object,
+) => {
+  try {
+    const res = await httpReq({
+      url: ANALYTICS_SERV_API.updateStratGroupRiskParams(groupId),
+      method: "PUT",
+      data: formValues,
+    });
+    return res;
+  } catch {
+    return null;
+  }
+};

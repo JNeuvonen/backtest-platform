@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ChakraAccordion,
   ChakraCard,
+  ChakraDrawer,
   ChakraInput,
   ChakraNumberStepper,
 } from "src/components/chakra";
@@ -41,11 +42,161 @@ import {
   getStrategySymbolsPath,
 } from "src/utils";
 import { ConfirmModal } from "src/components/ConfirmModal";
-import { disableAndCloseStratGroup, enableStratGroupRequest } from "src/http";
+import {
+  disableAndCloseStratGroup,
+  enableStratGroupRequest,
+  updateStratGroupRiskParams,
+} from "src/http";
 import { toast } from "react-toastify";
 import { ReadOnlyEditor } from "src/components/ReadOnlyEditor";
 import { WithLabel } from "src/components/WithLabel";
 import { OpenTradesTable } from "src/components/OpenTradesTable";
+import { StrategyGroup } from "src/common_js";
+import { Field, Form, Formik } from "formik";
+import { FormSubmitBar } from "src/components";
+
+const EDIT_STRAT_GROUP_FORM_KEYS = {
+  numSymbolsForAutoAdaptive: "numSymbolsForAutoAdaptive",
+  adaptiveGroupsRefreshPeriod: "adaptiveGroupsRefreshPeriod",
+  allocationPerSymbol: "allocationPerSymbol",
+};
+
+interface FormValues {
+  numSymbolsForAutoAdaptive: number;
+  adaptiveGroupsRefreshPeriod: number;
+  allocationPerSymbol: number;
+}
+
+export const EditStratGroupSettingsDrawer = ({
+  strategyGroup,
+  onSuccessCallback,
+}: {
+  strategyGroup: StrategyGroup;
+  onSuccessCallback: () => void;
+}) => {
+  const submit = async (values: FormValues) => {
+    const res = await updateStratGroupRiskParams(strategyGroup.id, {
+      num_symbols_for_auto_adaptive: values.numSymbolsForAutoAdaptive,
+      num_days_for_group_recalc: values.adaptiveGroupsRefreshPeriod,
+      allocated_size_perc: values.allocationPerSymbol,
+    });
+
+    if (res.success) {
+      toast.success("Updated strategy group", { theme: "dark" });
+      onSuccessCallback();
+    } else {
+      toast.error("Failed to update strategy group", { theme: "dark" });
+    }
+  };
+
+  return (
+    <div>
+      <Formik
+        initialValues={{
+          numSymbolsForAutoAdaptive:
+            strategyGroup.num_symbols_for_auto_adaptive,
+          adaptiveGroupsRefreshPeriod: strategyGroup.num_days_for_group_recalc,
+          allocationPerSymbol: strategyGroup.allocated_size_perc,
+        }}
+        onSubmit={(values) => {
+          submit(values);
+        }}
+      >
+        <Form>
+          <div>
+            <div style={{ marginTop: "16px" }}>
+              <Field
+                name={EDIT_STRAT_GROUP_FORM_KEYS.allocationPerSymbol}
+                component={({ field, form }) => {
+                  return (
+                    <WithLabel
+                      label={"Allocation per symbol"}
+                      containerStyles={{
+                        maxWidth: "200px",
+                      }}
+                    >
+                      <NumberInput
+                        step={0.25}
+                        min={0}
+                        max={100}
+                        value={field.value}
+                        onChange={(value) => {
+                          form.setFieldValue(field.name, parseFloat(value));
+                        }}
+                      >
+                        <NumberInputField />
+                        <ChakraNumberStepper />
+                      </NumberInput>
+                    </WithLabel>
+                  );
+                }}
+              />
+            </div>
+
+            <div style={{ marginTop: "16px" }}>
+              <Field
+                name={EDIT_STRAT_GROUP_FORM_KEYS.adaptiveGroupsRefreshPeriod}
+                component={({ field, form }) => {
+                  return (
+                    <WithLabel
+                      label={"Number of days to update group symbols"}
+                      containerStyles={{
+                        maxWidth: "200px",
+                      }}
+                    >
+                      <NumberInput
+                        step={1}
+                        min={0}
+                        max={365}
+                        value={field.value}
+                        onChange={(value) => {
+                          form.setFieldValue(field.name, parseInt(value));
+                        }}
+                      >
+                        <NumberInputField />
+                        <ChakraNumberStepper />
+                      </NumberInput>
+                    </WithLabel>
+                  );
+                }}
+              />
+            </div>
+
+            <div style={{ marginTop: "16px" }}>
+              <Field
+                name={EDIT_STRAT_GROUP_FORM_KEYS.numSymbolsForAutoAdaptive}
+                component={({ field, form }) => {
+                  return (
+                    <WithLabel
+                      label={"Number of symbols in group"}
+                      containerStyles={{
+                        maxWidth: "200px",
+                      }}
+                    >
+                      <NumberInput
+                        step={1}
+                        min={0}
+                        max={365}
+                        value={field.value}
+                        onChange={(value) => {
+                          form.setFieldValue(field.name, parseInt(value));
+                        }}
+                      >
+                        <NumberInputField />
+                        <ChakraNumberStepper />
+                      </NumberInput>
+                    </WithLabel>
+                  );
+                }}
+              />
+            </div>
+            <FormSubmitBar style={{ marginTop: "16px" }} />
+          </div>
+        </Form>
+      </Formik>
+    </div>
+  );
+};
 
 export const ViewStrategyGroupSettings = ({ strategyGroup }) => {
   return (
@@ -244,6 +395,7 @@ export const StrategyPage = () => {
   const navigate = useNavigate();
   const disableAndCloseConfirmModal = useDisclosure();
   const enableConfirmModal = useDisclosure();
+  const editGroupSettingsDrawer = useDisclosure();
 
   if (
     strategyGroupQuery.isLoading ||
@@ -318,6 +470,20 @@ export const StrategyPage = () => {
         title={"Disable strategy"}
         message={"Are you sure you want to enable this strategy?"}
       />
+
+      <ChakraDrawer
+        {...editGroupSettingsDrawer}
+        title={"Edit group settings"}
+        drawerContentStyles={{ maxWidth: "40%" }}
+      >
+        <EditStratGroupSettingsDrawer
+          strategyGroup={strategyGroupQuery.data.strategy_group}
+          onSuccessCallback={() => {
+            strategyGroupQuery.refetch();
+            editGroupSettingsDrawer.onClose();
+          }}
+        />
+      </ChakraDrawer>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div>
           <Heading size={"lg"}>
@@ -494,6 +660,13 @@ export const StrategyPage = () => {
         >
           View trades
         </Button>
+
+        <Button
+          variant={BUTTON_VARIANTS.nofill}
+          onClick={editGroupSettingsDrawer.onOpen}
+        >
+          Edit group settings
+        </Button>
       </div>
 
       <div>
@@ -513,7 +686,7 @@ export const StrategyPage = () => {
         />
       </div>
       <ChakraAccordion
-        heading="Settings"
+        heading="Strategy parameters"
         containerStyles={{ marginTop: "10px", border: COLOR_BG_TERTIARY }}
       >
         <ViewStrategyGroupSettings
