@@ -54,6 +54,7 @@ import { OpenTradesTable } from "src/components/OpenTradesTable";
 import { StrategyGroup } from "src/common_js";
 import { Field, Form, Formik } from "formik";
 import { FormSubmitBar } from "src/components";
+import { useAppContext } from "src/context";
 
 const EDIT_STRAT_GROUP_FORM_KEYS = {
   numSymbolsForAutoAdaptive: "numSymbolsForAutoAdaptive",
@@ -389,6 +390,7 @@ export const ViewStrategyGroupSettings = ({ strategyGroup }) => {
 
 export const StrategyPage = () => {
   const { strategyName } = usePathParams<{ strategyName: string }>();
+  const { isMobileLayout } = useAppContext();
   const strategyGroupQuery = useStrategyGroupQuery(strategyName);
   const binancePriceQuery = useBinanceSpotPriceInfo();
   const balanceSnapShots = useBalanceSnapshotsQuery();
@@ -474,7 +476,10 @@ export const StrategyPage = () => {
       <ChakraDrawer
         {...editGroupSettingsDrawer}
         title={"Edit group settings"}
-        drawerContentStyles={{ maxWidth: "40%" }}
+        drawerContentStyles={{
+          maxWidth: isMobileLayout ? "90%" : "40%",
+          minWidth: "300px",
+        }}
       >
         <EditStratGroupSettingsDrawer
           strategyGroup={strategyGroupQuery.data.strategy_group}
@@ -484,7 +489,14 @@ export const StrategyPage = () => {
           }}
         />
       </ChakraDrawer>
-      <div style={{ display: "flex", justifyContent: "space-between", gap:  "16px", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "16px",
+          flexWrap: "wrap",
+        }}
+      >
         <div>
           <Heading size={"lg"}>
             {strategyGroupQuery.data.strategy_group.name}
