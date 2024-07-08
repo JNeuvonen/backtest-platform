@@ -123,7 +123,7 @@ export const TradesCandleStickChart = ({
         high: item.high_price,
         low: item.low_price,
         close: item.close_price,
-        time: item.kline_open_time / 1000,
+        time: (item.kline_open_time / 1000) as Time,
       });
     });
 
