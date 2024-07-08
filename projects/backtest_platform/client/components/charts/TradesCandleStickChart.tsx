@@ -24,7 +24,6 @@ interface Props {
   getAltDataTicks?: () => LineData<Time>[];
   useAltData?: boolean;
   showBacktestResult?: boolean;
-  reDrawChart?: number;
   getBacktestResultTicks?: () => LineData<Time>[];
   visibleRange: Range<Time> | null;
   setVisibleRange: React.SetStateAction<React.Dispatch<Range<Time> | null>>;
