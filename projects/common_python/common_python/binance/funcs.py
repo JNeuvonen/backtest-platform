@@ -30,11 +30,12 @@ def get_binance_acc_balance_snapshot():
     margin_level = float(margin_account_info[MarginAccResKeys.MARGIN_LEVEL])
 
     btc_price = get_btc_price()
+    acc_usdt_amount = get_account_asset_state("USDT")
 
     return {
         "nav_usdt": netAssetInBtc * btc_price,
         "liability_usdt": liabilityInBtc * btc_price,
-        "total_asset_usdt": totalAssetInBtc * btc_price,
+        "total_asset_usdt": (totalAssetInBtc * btc_price) - acc_usdt_amount["free"],
         "margin_level": margin_level,
         "btc_price": btc_price,
     }
@@ -63,6 +64,28 @@ def get_account_assets_state():
             ret.append(user_asset)
 
     return ret
+
+
+def get_account_asset_state(asset: str):
+    margin_account_info = client.get_margin_account()
+
+    for item in margin_account_info["userAssets"]:
+        free = float(item["free"])
+        locked = float(item["locked"])
+        borrowed = float(item["borrowed"])
+        interest = float(item["interest"])
+        netAsset = float(item["netAsset"])
+
+        if item["asset"] == asset:
+            return {
+                "free": free,
+                "locked": locked,
+                "borrowed": borrowed,
+                "interest": interest,
+                "netAsset": netAsset,
+            }
+
+    return None
 
 
 def get_top_coins_by_usdt_volume(limit=30):
