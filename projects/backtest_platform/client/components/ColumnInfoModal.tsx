@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useColumnQuery } from "../clients/queries/queries";
+import {
+  useColumnQuery,
+  useDatasetOhlcvCols,
+} from "../clients/queries/queries";
 import { ChakraCard } from "./chakra/Card";
 import {
   Box,
@@ -21,6 +24,9 @@ import { WithLabel } from "./form/WithLabel";
 import { GenericBarChart } from "./charts/BarChart";
 import { parseJson } from "../utils/str";
 import { usePlotImage } from "../hooks/usePlotImages";
+import { ColumnPriceDataCandleStickChart } from "./charts/ColumnPriceDataCandleStick";
+import { IChartApi, LineData, Range, Time } from "lightweight-charts";
+import { addColumnsToDataset } from "../clients/requests";
 
 interface Props {
   datasetName: string;
@@ -29,7 +35,10 @@ interface Props {
 
 export const ColumnInfoModal = (props: Props) => {
   const { datasetName, columnName } = props;
+  const [chartVisibleRange, setChartVisibleRange] =
+    useState<Range<Time> | null>(null);
   const columnDetailedQuery = useColumnQuery(datasetName, columnName);
+  const ohlcvColsData = useDatasetOhlcvCols(datasetName);
 
   const linearRegrPltSrc = usePlotImage({
     apiQuery: columnDetailedQuery.data?.res || {},
@@ -47,7 +56,28 @@ export const ColumnInfoModal = (props: Props) => {
 
   const columnData = columnDetailedQuery.data?.res.column;
 
-  if (!columnData) return <Spinner />;
+  const addDataToCandleStickChart = (chartAPI: IChartApi) => {
+    const rows = columnDetailedQuery.data?.res.column.rows;
+    const timeRows = columnDetailedQuery.data?.res.column.kline_open_time;
+
+    if (!timeRows) return;
+
+    const lineSeries = chartAPI.addLineSeries({
+      color: "#98a7d9",
+      lineWidth: 1,
+      priceScaleId: "left",
+    });
+
+    const data: LineData<Time>[] = [];
+
+    rows?.forEach((item, idx) => {
+      data.push({ time: (timeRows[idx] / 1000) as Time, value: item });
+    });
+
+    lineSeries.setData(data);
+  };
+
+  if (!columnData || !ohlcvColsData.data) return <Spinner />;
 
   const linearRegrSummary = columnDetailedQuery.data?.res.linear_regr_summary;
   const linearRegrParams = parseJson(
@@ -164,6 +194,15 @@ export const ColumnInfoModal = (props: Props) => {
           </Box>
         </Box>
       </ChakraCard>
+
+      <Box marginTop={"32px"}>
+        <ColumnPriceDataCandleStickChart
+          ohlcvData={ohlcvColsData.data}
+          visibleRange={chartVisibleRange}
+          setVisibleRange={setChartVisibleRange}
+          setColumnDataTicks={addDataToCandleStickChart}
+        />
+      </Box>
 
       <Box style={{ width: "max-content", margin: "16px auto" }}>
         {linearRegrPltSrc && (
