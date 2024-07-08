@@ -3,7 +3,7 @@ export const getDiffToPresentFormatted = (date: Date) => {
     throw new Error("The provided value is not a valid Date object.");
   }
 
-  const now = new Date();
+  const now = getUTCDate();
   const diffInMilliseconds = now.getTime() - date.getTime();
 
   const millisecondsInSecond = 1000;
@@ -29,6 +29,11 @@ export const getDiffToPresentFormatted = (date: Date) => {
     return `${weeks} ${weeks === 1 ? "week" : "weeks"}`;
   }
 };
+
+export function getUTCDate(): Date {
+  const now = new Date();
+  return new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+}
 
 export const isSameMonth = (date1: Date, date2: Date) => {
   if (date1.getFullYear() !== date2.getFullYear()) {
