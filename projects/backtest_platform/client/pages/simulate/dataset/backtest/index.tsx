@@ -212,7 +212,6 @@ export const DatasetBacktestPage = () => {
           style={{ marginTop: "16px" }}
           variant={BUTTON_VARIANTS.nofill}
           onClick={() => {
-            console.log(getBacktestTradesPath(datasetName, backtest.id));
             navigate(getBacktestTradesPath(datasetName, backtest.id));
           }}
         >
