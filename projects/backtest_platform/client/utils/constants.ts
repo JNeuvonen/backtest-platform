@@ -1,3 +1,5 @@
+import { COLOR_CONTENT_PRIMARY } from "./colors";
+
 export const PATH_KEYS = {
   dataset: ":datasetName",
   column: ":columnName",
@@ -196,4 +198,34 @@ export class CodeHelper {
 export const formatValidationSplit = (valSplit: string): [number, number] => {
   const parts = valSplit.split(",");
   return [Number(parts[0]), Number(parts[1])];
+};
+
+export const CANDLE_STICK_CHART_DEFAULTS = {
+  upColor: "rgb(8,153,129)",
+  downColor: "rgb(242,54,69)",
+  borderVisible: false,
+  wickUpColor: "rgb(8,153,129)",
+  wickDownColor: "rgb(242,54,69)",
+  priceScaleId: "right",
+};
+
+export const CANDLE_STICK_CHART_OPTIONS = {
+  layout: {
+    textColor: COLOR_CONTENT_PRIMARY,
+    background: { type: "solid", color: "#161A25" },
+  },
+  grid: {
+    vertLines: {
+      color: "#232632",
+    },
+    horzLines: {
+      color: "#232632",
+    },
+  },
+};
+
+export const CANDLE_STICK_PRICE_SCALE_DEFAULTS = {
+  visible: true,
+  borderColor: "rgba(197, 203, 206, 1)",
+  textColor: COLOR_CONTENT_PRIMARY,
 };
