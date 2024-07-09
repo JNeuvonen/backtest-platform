@@ -35,6 +35,17 @@ export const BULK_SIM_PAIR_PRESETS = [
     ],
   },
   {
+    label: "Meme basket",
+    pairs: [
+      genOptiontype("DOGEUSDT"),
+      genOptiontype("SHIBUSDT"),
+      genOptiontype("PEPEUSDT"),
+      genOptiontype("FLOKIUSDT"),
+      genOptiontype("BONKUSDT"),
+      genOptiontype("WIFUSDT"),
+    ],
+  },
+  {
     label: "Speculative - weak altcoins",
     pairs: [
       genOptiontype("FARMUSDT"),
