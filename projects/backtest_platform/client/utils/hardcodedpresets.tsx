@@ -43,6 +43,10 @@ export const BULK_SIM_PAIR_PRESETS = [
       genOptiontype("FLOKIUSDT"),
       genOptiontype("BONKUSDT"),
       genOptiontype("WIFUSDT"),
+      genOptiontype("ORDIUSDT"),
+      genOptiontype("BOMEUSDT"),
+      genOptiontype("MEMEUSDT"),
+      genOptiontype("PEOPLEUSDT"),
     ],
   },
   {
