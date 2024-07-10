@@ -22,6 +22,7 @@ from data_transformation import (
 )
 from dataset import df_fill_nulls_on_all_cols, read_columns_to_mem, read_dataset_to_mem
 from db import (
+    ColumnsToDataset,
     add_columns_to_table,
     create_copy,
     delete_dataset_cols,
@@ -164,11 +165,6 @@ async def route_get_dataset_col_info(dataset_name: str, column_name: str) -> dic
             "price_col": price_col,
             **analysis_dict,
         }
-
-
-class ColumnsToDataset(BaseModel):
-    table_name: str
-    columns: List[str]
 
 
 @router.post(RoutePaths.ADD_COLUMNS)

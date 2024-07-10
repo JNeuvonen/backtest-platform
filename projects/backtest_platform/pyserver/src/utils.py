@@ -177,10 +177,14 @@ def is_string(var):
 def get_binance_dataset_tablename(symbol: str, interval: str, use_futures=False):
     interval = "1mo" if interval == "1M" else interval
 
-    if use_futures is True:
+    if use_futures:
         table_name = symbol.lower() + "_fut_" + interval
     else:
         table_name = symbol.lower() + "_" + interval
+
+    if table_name[0].isdigit():
+        table_name = "a_" + table_name
+
     return table_name
 
 

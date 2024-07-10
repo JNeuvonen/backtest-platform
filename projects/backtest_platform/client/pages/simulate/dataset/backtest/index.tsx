@@ -23,6 +23,7 @@ import {
   getBacktestTradesPath,
   getDatasetInfoPagePath,
   getMassbacktestTablesPath,
+  getBacktestDefaultPage,
 } from "../../../../utils/navigate";
 import ExternalLink from "../../../../components/ExternalLink";
 
@@ -175,6 +176,10 @@ export const DatasetBacktestPage = () => {
             {datasetName} {!backtestQuery.data.data.name}
           </Heading>
           <div style={{ display: "flex", gap: "8px" }}>
+            <ExternalLink
+              to={getBacktestDefaultPage(datasetName)}
+              linkText={"Backtests"}
+            />
             <ExternalLink
               to={getDatasetInfoPagePath(datasetName)}
               linkText={"Dataset"}

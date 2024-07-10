@@ -1,12 +1,14 @@
+import json
 import logging
 from typing import List
 from api_binance import non_async_save_historical_klines
-from constants import DomEventChannels
-from db import exec_python
+from constants import AppConstants, DomEventChannels, NullFillStrategy
+from db import ColumnsToDataset, add_columns_to_table_non_async, exec_python
 from log import get_logger
 from query_data_transformation import DataTransformationQuery
 
 from query_dataset import DatasetQuery
+from query_dataset_combine import DatasetCombineQuery
 from request_types import BodyCloneIndicators
 from utils import PythonCode, get_binance_dataset_tablename
 
@@ -24,8 +26,24 @@ def clone_indicators_to_existing_datasets(
         base_dataset.id
     )
 
+    dataset_combines = DatasetCombineQuery.fetch_by_dataset_id(base_dataset.id)
+
     for dataset_name in existing_datasets:
         dataset = DatasetQuery.fetch_dataset_by_name(dataset_name)
+
+        for item in dataset_combines:
+            add_columns_to_table_non_async(
+                AppConstants.DB_DATASETS,
+                dataset_name,
+                [
+                    ColumnsToDataset(
+                        table_name=item.source_dataset_table_name,
+                        columns=json.loads(item.added_columns),
+                    )
+                ],
+                NullFillStrategy["NONE"],
+            )
+
         for transformation in data_transformations:
             transformation_code = transformation.transformation_code
             python_program = PythonCode.on_dataset(dataset_name, transformation_code)
@@ -65,6 +83,8 @@ def clone_indicators_to_new_datasets(
     data_transformations = DataTransformationQuery.get_transformations_by_dataset(
         base_dataset.id
     )
+    dataset_combines = DatasetCombineQuery.fetch_by_dataset_id(base_dataset.id)
+
     for symbol_name in body.new_datasets:
         if body.candle_interval is None:
             raise Exception("Candle interval is not set")
@@ -80,6 +100,19 @@ def clone_indicators_to_new_datasets(
             symbol_name, body.candle_interval, body.use_futures
         )
         dataset = DatasetQuery.fetch_dataset_by_name(dataset_name)
+
+        for item in dataset_combines:
+            add_columns_to_table_non_async(
+                AppConstants.DB_DATASETS,
+                dataset_name,
+                [
+                    ColumnsToDataset(
+                        table_name=item.source_dataset_table_name,
+                        columns=json.loads(item.added_columns),
+                    )
+                ],
+                NullFillStrategy["NONE"],
+            )
         for transformation in data_transformations:
             transformation_code = transformation.transformation_code
 
