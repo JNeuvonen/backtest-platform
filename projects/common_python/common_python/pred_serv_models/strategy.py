@@ -57,6 +57,7 @@ class Strategy(Base):
     use_stop_loss_based_close = Column(Boolean, nullable=False)
     use_taker_order = Column(Boolean)
 
+    force_num_required_klines = Column(Boolean, default=False)
     should_enter_trade = Column(Boolean, default=False)
     should_close_trade = Column(Boolean, default=False)
     should_calc_stops_on_pred_serv = Column(Boolean, default=False)

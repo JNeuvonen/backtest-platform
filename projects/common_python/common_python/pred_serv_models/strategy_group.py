@@ -71,13 +71,15 @@ class StrategyGroupQuery:
                 ).update(non_null_update_fields, synchronize_session=False)
                 session.commit()
 
+
+
     @staticmethod
     def get_by_name(name: str):
         with LogExceptionContext():
             with Session() as session:
                 result = (
                     session.query(StrategyGroup)
-                    .filter(StrategyGroup.name == name)
+                    .filter(func.lower(StrategyGroup.name) == func.lower(name))
                     .first()
                 )
                 if result and result.transformation_ids:
