@@ -8,6 +8,7 @@ from typing import List, Optional
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from query_model_columns import ModelColumnsQuery
 from query_model_scalers import ModelScalerQuery
+from common_python.dataframe import drop_common_cols_from_join_df
 
 from constants import (
     AppConstants,
@@ -119,6 +120,11 @@ def combine_datasets(
         prefix = get_col_prefix(join_table_name)
         join_df = join_df.add_prefix(prefix)
         join_df_column = prefix + join_df_column
+
+    drop_common_cols_from_join_df(base_df, join_df)
+
+    if join_df.empty:
+        return base_df
 
     merged_df = pd.merge(
         base_df,

@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 from typing import Dict, List
@@ -14,11 +15,20 @@ from code_gen_template import BACKTEST_MANUAL_TEMPLATE
 from constants import (
     BINANCE_BACKTEST_PRICE_COL,
     YEAR_IN_MS,
+    AppConstants,
     BinanceDataCols,
     DomEventChannels,
+    NullFillStrategy,
 )
 from dataset import read_dataset_to_mem
-from db import exec_python, get_df_candle_size, ms_to_years
+from db import (
+    ColumnsToDataset,
+    add_columns_to_table,
+    add_columns_to_table_non_async,
+    exec_python,
+    get_df_candle_size,
+    ms_to_years,
+)
 from log import LogExceptionContext, get_logger
 from math_utils import calculate_avg_trade_hold_time_ms, calculate_psr, calculate_sr
 from model_backtest import Positions
@@ -26,6 +36,7 @@ from query_backtest import BacktestQuery
 from query_backtest_statistics import BacktestStatisticsQuery
 from query_data_transformation import DataTransformationQuery
 from query_dataset import DatasetQuery
+from query_dataset_combine import DatasetCombineQuery
 from query_mass_backtest import MassBacktestQuery
 from query_trade import TradeQuery
 from request_types import (
@@ -59,6 +70,7 @@ def run_rule_based_mass_backtest(
         data_transformations = DataTransformationQuery.get_transformations_by_dataset(
             original_dataset.id
         )
+        dataset_combines = DatasetCombineQuery.fetch_by_dataset_id(original_dataset.id)
 
         for symbol in body.crypto_symbols:
             table_name = get_binance_dataset_tablename(symbol, interval)
@@ -69,6 +81,25 @@ def run_rule_based_mass_backtest(
                 symbol_dataset = DatasetQuery.fetch_dataset_by_name(table_name)
 
             DatasetQuery.update_price_column(table_name, BINANCE_BACKTEST_PRICE_COL)
+
+            if original_dataset.target_column:
+                DatasetQuery.update_target_column(
+                    table_name, original_dataset.target_column
+                )
+
+            for item in dataset_combines:
+                if symbol_dataset.id != original_dataset.id:
+                    add_columns_to_table_non_async(
+                        AppConstants.DB_DATASETS,
+                        table_name,
+                        [
+                            ColumnsToDataset(
+                                table_name=item.source_dataset_table_name,
+                                columns=json.loads(item.added_columns),
+                            )
+                        ],
+                        NullFillStrategy["NONE"],
+                    )
 
             try:
                 for transformation in data_transformations:

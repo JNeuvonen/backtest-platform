@@ -69,9 +69,16 @@ export const SelectBulkSimPairsBody = ({
 }: PropsSelectBulkSimPairs) => {
   const top20CoinsByVol = useTopCoinsByVol(25);
   const top50CoinsByVol = useTopCoinsByVol(50);
+  const top100CoinsByVol = useTopCoinsByVol(100);
+  const top200CoinsByVol = useTopCoinsByVol(200);
 
   const renderTopCoinsByVol = () => {
-    if (!top20CoinsByVol.data || !top50CoinsByVol.data) {
+    if (
+      !top20CoinsByVol.data ||
+      !top50CoinsByVol.data ||
+      !top100CoinsByVol.data ||
+      !top200CoinsByVol.data
+    ) {
       return <Spinner />;
     }
 
@@ -113,6 +120,45 @@ export const SelectBulkSimPairsBody = ({
               }}
             >
               Top 50
+            </Button>
+          </Tooltip>
+        </div>
+
+        <div style={{ marginTop: "2px" }}>
+          <Tooltip label={top100CoinsByVol.data.map((pair) => pair).join(", ")}>
+            <Button
+              variant={BUTTON_VARIANTS.nofill}
+              onClick={() => {
+                onSelect(
+                  top100CoinsByVol.data.map((item) => {
+                    return {
+                      value: item,
+                      label: item,
+                    };
+                  })
+                );
+              }}
+            >
+              Top 100
+            </Button>
+          </Tooltip>
+        </div>
+        <div style={{ marginTop: "2px" }}>
+          <Tooltip label={top200CoinsByVol.data.map((pair) => pair).join(", ")}>
+            <Button
+              variant={BUTTON_VARIANTS.nofill}
+              onClick={() => {
+                onSelect(
+                  top200CoinsByVol.data.map((item) => {
+                    return {
+                      value: item,
+                      label: item,
+                    };
+                  })
+                );
+              }}
+            >
+              Top 200
             </Button>
           </Tooltip>
         </div>

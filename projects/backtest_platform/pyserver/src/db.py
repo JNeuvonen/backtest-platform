@@ -1,10 +1,14 @@
 import base64
 import contextlib
 import io
+import json
 import logging
 import sqlite3
 import math
+
+from pydantic import BaseModel
 from query_data_transformation import DataTransformationQuery
+from query_dataset_combine import DatasetCombineQuery
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from typing import List
@@ -204,17 +208,33 @@ def get_first_last_five_rows(cursor: sqlite3.Cursor, table_name: str):
     return first_five, last_five
 
 
-async def add_columns_to_table(
+class ColumnsToDataset(BaseModel):
+    table_name: str
+    columns: List[str]
+
+
+def add_columns_to_table_non_async(
     db_path: str, dataset_name: str, new_cols_arr, null_fill_strat: NullFillStrategy
 ):
     with LogExceptionContext(notification_duration=60000):
         base_df = read_dataset_to_mem(dataset_name)
         if base_df is None:
             return False
-        base_df_timeseries_col = DatasetQuery.get_timeseries_col(dataset_name)
+
+        base_dataset = DatasetQuery.fetch_dataset_by_name(dataset_name)
+
+        if base_dataset is None:
+            return
+
+        base_df_timeseries_col = base_dataset.timeseries_column
         with sqlite3.connect(db_path) as conn:
             for item in new_cols_arr:
-                timeseries_col = DatasetQuery.get_timeseries_col(item.table_name)
+                dataset_entry = DatasetQuery.fetch_dataset_by_name(item.table_name)
+
+                if dataset_entry is None:
+                    raise Exception(f"Dataset {item.table_name} was not found")
+
+                timeseries_col = dataset_entry.timeseries_column
                 if timeseries_col is None:
                     continue
                 df = read_columns_to_mem(
@@ -233,6 +253,77 @@ async def add_columns_to_table(
                     for col in item.columns:
                         col_prefixed = col_prefix + col
                         df_fill_nulls(base_df, col_prefixed, null_fill_strat)
+
+                    DatasetCombineQuery.create_entry(
+                        {
+                            "source_dataset_id": dataset_entry.id,
+                            "added_columns": json.dumps(item.columns),
+                            "dataset_id": base_dataset.id,
+                            "source_dataset_table_name": dataset_entry.dataset_name,
+                        }
+                    )
+
+            base_df.to_sql(dataset_name, conn, if_exists="replace", index=False)
+            logger = get_logger()
+            logger.log(
+                message=f"Succesfully added new columns to dataset {dataset_name}",
+                log_level=logging.INFO,
+                display_in_ui=True,
+                should_refetch=True,
+                notification_duration=5000,
+                ui_dom_event=DomEventChannels.REFETCH_ALL_DATASETS.value,
+            )
+
+
+async def add_columns_to_table(
+    db_path: str, dataset_name: str, new_cols_arr, null_fill_strat: NullFillStrategy
+):
+    with LogExceptionContext(notification_duration=60000):
+        base_df = read_dataset_to_mem(dataset_name)
+        if base_df is None:
+            return False
+
+        base_dataset = DatasetQuery.fetch_dataset_by_name(dataset_name)
+
+        if base_dataset is None:
+            return
+
+        base_df_timeseries_col = base_dataset.timeseries_column
+        with sqlite3.connect(db_path) as conn:
+            for item in new_cols_arr:
+                dataset_entry = DatasetQuery.fetch_dataset_by_name(item.table_name)
+
+                if dataset_entry is None:
+                    raise Exception(f"Dataset {item.table_name} was not found")
+
+                timeseries_col = dataset_entry.timeseries_column
+                if timeseries_col is None:
+                    continue
+                df = read_columns_to_mem(
+                    db_path, item.table_name, item.columns + [timeseries_col]
+                )
+                if df is not None:
+                    base_df = combine_datasets(
+                        base_df,
+                        df,
+                        item.table_name,
+                        base_df_timeseries_col,
+                        timeseries_col,
+                    )
+
+                    col_prefix = get_col_prefix(item.table_name)
+                    for col in item.columns:
+                        col_prefixed = col_prefix + col
+                        df_fill_nulls(base_df, col_prefixed, null_fill_strat)
+
+                    DatasetCombineQuery.create_entry(
+                        {
+                            "source_dataset_id": dataset_entry.id,
+                            "added_columns": json.dumps(item.columns),
+                            "dataset_id": base_dataset.id,
+                            "source_dataset_table_name": dataset_entry.dataset_name,
+                        }
+                    )
 
             base_df.to_sql(dataset_name, conn, if_exists="replace", index=False)
             logger = get_logger()

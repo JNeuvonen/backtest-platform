@@ -7,6 +7,7 @@ from common_python.trading.utils import (
     calc_trade_perc_result,
     Trade,
 )
+from common_python.math import get_interval_length_in_ms, get_klines_required_for_1d
 from typing import Dict, List, Optional, Set
 from api_binance import non_async_save_historical_klines
 from code_gen_template import BACKTEST_MANUAL_TEMPLATE, LOAD_MODEL_TEMPLATE
@@ -350,17 +351,17 @@ def get_mass_sim_backtests_equity_curves(list_of_ids: List[int], candle_interval
         first_kline_open_time_ms = min(first_kline_open_time_ms, first_kline)
         last_kline_open_time_ms = max(last_kline_open_time_ms, last_kline)
 
-    start_date = datetime.utcfromtimestamp(first_kline_open_time_ms / 1000)
-    start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_date = datetime.utcfromtimestamp(last_kline_open_time_ms / 1000)
+    start_date = first_kline_open_time_ms
+    end_date = last_kline_open_time_ms
+    interval_length_in_ms = get_interval_length_in_ms(candle_interval)
+    klines_req_for_1d = get_klines_required_for_1d(interval_length_in_ms)
     current_date = start_date
 
     kline_open_times = []
 
     while current_date <= end_date:
-        kline_open_time_ms = int(current_date.timestamp() * 1000)
-        kline_open_times.append(kline_open_time_ms)
-        current_date += timedelta(days=1)
+        current_date += int(interval_length_in_ms * klines_req_for_1d)
+        kline_open_times.append(current_date)
 
     for item in list_of_ids:
         if candle_interval == CandleSize.ONE_DAY:

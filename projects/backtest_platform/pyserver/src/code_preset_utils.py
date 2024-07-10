@@ -4033,6 +4033,74 @@ check_indicator_exactly_n_backwards(dataset, indicator_column, periods)
 """
 
 
+OFF_ATH = """
+import pandas as pd
+
+def calculate_off_ath(df, column='close_price'):
+    # Calculate the all-time high up to each point
+    df['all_time_high'] = df[column].cummax()
+
+    # Calculate how much the current price is off the all-time high
+    off_ath_label = f"off_ath_{column}"
+    df[off_ath_label] = (df['all_time_high'] - df[column]) / df['all_time_high'] * 100
+
+    # Drop the helper column
+    df.drop(columns=['all_time_high'], inplace=True)
+
+column = 'close_price'
+calculate_off_ath(dataset, column=column)
+"""
+
+OFF_HIGH_LOOKBACK = """
+import pandas as pd
+
+def calculate_off_high(df, column='close_price', lookback_period=20):
+    # Calculate the high price over the lookback period
+    df['lookback_high'] = df[column].rolling(window=lookback_period, min_periods=1).max()
+
+    # Calculate how much the current price is off the high price over the lookback period
+    off_high_label = f"off_{lookback_period}_high_{column}"
+    df[off_high_label] = (df['lookback_high'] - df[column]) / df['lookback_high'] * 100
+
+    # Drop the helper column
+    df.drop(columns=['lookback_high'], inplace=True)
+
+column = 'close_price'
+lookback_period = 20
+calculate_off_high(dataset, column=column, lookback_period=lookback_period)
+"""
+
+
+CORREL_ON_LOOKBACK = """
+import pandas as pd
+
+def calculate_correlation(df, column1='close_price', column2='volume', lookback=30):
+    correlation_label = f"correlation_{column1}_{column2}_lookback_{lookback}"
+    
+    # Initialize the correlation column with NaN
+    df[correlation_label] = pd.Series([None] * len(df))
+    
+    # Calculate correlation for the first few rows using available data
+    for i in range(lookback):
+        if i < len(df):
+            df.loc[i, correlation_label] = df[column1].iloc[:i+1].corr(df[column2].iloc[:i+1])
+    
+    # Calculate the rolling correlation for the remaining rows
+    for i in range(lookback, len(df)):
+        df.loc[i, correlation_label] = df[column1].iloc[i-lookback+1:i+1].corr(df[column2].iloc[i-lookback+1:i+1])
+    
+    return df
+
+# Define parameters
+column1 = 'ROCP_8_quote_asset_volume'
+column2 = 'target_4'
+lookback = 6 * 365
+
+# Call the function
+calculate_correlation(dataset, column1=column1, column2=column2, lookback=lookback)
+"""
+
+
 DEFAULT_CODE_PRESETS = [
     CodePreset(
         code=GEN_RSI_CODE,
@@ -5110,6 +5178,27 @@ DEFAULT_CODE_PRESETS = [
         name="TRUE_EXACTLY_N_LOOKBACK",
         category=CodePresetCategories.INDICATOR,
         description="This indicator checks if a specified boolean indicator column (signal) was 1 exactly N rows backwards, where N is specified in the periods list. For each period, it creates a new column in the dataframe indicating whether the condition was met exactly N rows ago.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=OFF_ATH,
+        name="OFF_ATH",
+        category=CodePresetCategories.INDICATOR,
+        description="Off All-Time High (ATH): This indicator calculates how much the current price is off the all-time high in percentage terms, showing the deviation of the current price from its historical peak.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=OFF_HIGH_LOOKBACK,
+        name="OFF_HIGH_LOOKBACK",
+        category=CodePresetCategories.INDICATOR,
+        description="Off Lookback Period High: This indicator calculates how much the current price is off from the highest price within a specified lookback period, expressed as a percentage. This helps in identifying the relative decline of the current price from recent peaks.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=CORREL_ON_LOOKBACK,
+        name="CORREL_ON_LOOKBACK",
+        category=CodePresetCategories.INDICATOR,
+        description="Calculates correlation between two columns on some specified lookback period.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]

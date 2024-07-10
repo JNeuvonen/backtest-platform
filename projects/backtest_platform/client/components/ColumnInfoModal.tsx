@@ -26,7 +26,6 @@ import { parseJson } from "../utils/str";
 import { usePlotImage } from "../hooks/usePlotImages";
 import { ColumnPriceDataCandleStickChart } from "./charts/ColumnPriceDataCandleStick";
 import { IChartApi, LineData, Range, Time } from "lightweight-charts";
-import { addColumnsToDataset } from "../clients/requests";
 
 interface Props {
   datasetName: string;
@@ -71,6 +70,9 @@ export const ColumnInfoModal = (props: Props) => {
     const data: LineData<Time>[] = [];
 
     rows?.forEach((item, idx) => {
+      if (item === null) {
+        return;
+      }
       data.push({ time: (timeRows[idx] / 1000) as Time, value: item });
     });
 

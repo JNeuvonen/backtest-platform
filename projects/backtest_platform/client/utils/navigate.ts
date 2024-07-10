@@ -21,6 +21,10 @@ export const getDatasetColumnInfoPath = (
     .replace(PATH_KEYS.column, columnName);
 };
 
+export const getBacktestDefaultPage = (datasetName: string) => {
+  return PATHS.simulate.dataset.replace(PATH_KEYS.dataset, datasetName);
+};
+
 export const getDatasetInfoPagePath = (datasetName: string) => {
   return PATHS.data.dataset.index.replace(PATH_KEYS.dataset, datasetName);
 };

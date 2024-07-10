@@ -40,6 +40,7 @@ class LongShortGroup(Base):
     kline_size_ms = Column(Integer)
     loan_retry_wait_time_ms = Column(Integer)
 
+    force_num_required_klines = Column(Boolean, default=False)
     max_leverage_ratio = Column(Float)
     take_profit_threshold_perc = Column(Float)
     stop_loss_threshold_perc = Column(Float)
