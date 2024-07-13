@@ -85,7 +85,10 @@ def get_last_kline_open_time(klines_df):
 
 
 def transform_and_predict(strategy, df, local_dataset: LocalDataset):
-    if strategy.num_req_klines > df.shape[0]:
+    if (
+        strategy.num_req_klines > df.shape[0]
+        and strategy.force_num_required_klines is True
+    ):
         return {
             "should_enter_trade": False,
             "should_close_trade": False,

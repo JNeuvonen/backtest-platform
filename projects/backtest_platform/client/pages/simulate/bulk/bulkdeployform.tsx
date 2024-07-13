@@ -3,7 +3,6 @@ import { DISK_KEYS, DiskManager } from "../../../utils/disk";
 import {
   BacktestObject,
   DataTransformation,
-  Dataset,
 } from "../../../clients/queries/response-types";
 import {
   getIntervalLengthInMs,
@@ -51,6 +50,7 @@ const formKeys = {
   stopLossThresholdPerc: "stop_loss_threshold_perc",
   minimumTimeBetweenTradesMs: "minimum_time_between_trades_ms",
   shouldCalcStopsOnPredServ: "should_calc_stops_on_pred_serv",
+  forceNumRequiredKlines: "dontForceNumRequiredKlines",
   useTimeBasedClose: "use_time_based_close",
   useProfitBasedClose: "use_profit_based_close",
   useStopLossBasedClose: "use_stop_loss_based_close",
@@ -86,6 +86,7 @@ export interface BulkDeployDirectionalStratForm {
   is_paper_trade_mode: boolean;
   is_auto_adaptive_group: boolean;
   data_transformations: DataTransformation[];
+  force_num_required_klines: boolean;
 }
 
 const getFormInitialValues = (
@@ -112,6 +113,7 @@ const getFormInitialValues = (
       use_time_based_close: backtest.use_time_based_close,
       use_profit_based_close: backtest.use_profit_based_close,
       use_stop_loss_based_close: backtest.use_stop_loss_based_close,
+      force_num_required_klines: true,
       use_taker_order: true,
       is_leverage_allowed: false,
       is_short_selling_strategy: backtest.is_short_selling_strategy,
@@ -123,6 +125,7 @@ const getFormInitialValues = (
 
   return {
     ...prevForm,
+    force_num_required_klines: true,
     kline_size_ms: getIntervalLengthInMs(backtest.candle_interval),
     candle_interval: backtest.candle_interval,
     enter_trade_code: backtest.open_trade_cond,
@@ -525,6 +528,25 @@ export const BulkDeployDirectionalStratForm = (props: Props) => {
                               onChange={() =>
                                 form.setFieldValue(
                                   formKeys.shouldCalcStopsOnPredServ,
+                                  !field.value
+                                )
+                              }
+                            />
+                          </WithLabel>
+                        );
+                      }}
+                    </Field>
+                  </div>
+                  <div>
+                    <Field name={formKeys.forceNumRequiredKlines}>
+                      {({ field, form }) => {
+                        return (
+                          <WithLabel label={"Force num required klines"}>
+                            <Switch
+                              isChecked={field.value}
+                              onChange={() =>
+                                form.setFieldValue(
+                                  formKeys.forceNumRequiredKlines,
                                   !field.value
                                 )
                               }

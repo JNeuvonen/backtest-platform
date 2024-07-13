@@ -40,7 +40,7 @@ class LongShortGroup(Base):
     kline_size_ms = Column(Integer)
     loan_retry_wait_time_ms = Column(Integer)
 
-    force_num_required_klines = Column(Boolean, default=False)
+    force_num_required_klines = Column(Boolean, default=True)
     max_leverage_ratio = Column(Float)
     take_profit_threshold_perc = Column(Float)
     stop_loss_threshold_perc = Column(Float)
@@ -70,6 +70,7 @@ class StrategyGroup(Base):
     num_symbols_for_auto_adaptive = Column(Integer, default=0)
     num_days_for_group_recalc = Column(Integer, default=7)
 
+    force_num_required_klines = Column(Boolean, default=True)
     enter_trade_code = Column(String, nullable=True)
     exit_trade_code = Column(String, nullable=True)
     fetch_datasources_code = Column(String, nullable=True)

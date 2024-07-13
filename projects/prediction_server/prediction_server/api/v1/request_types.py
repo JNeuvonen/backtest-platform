@@ -131,6 +131,7 @@ class BodyCreateStrategyGroup(BaseModel):
     use_stop_loss_based_close: bool
     use_taker_order: bool
 
+    force_num_required_klines: bool
     should_calc_stops_on_pred_serv: bool
 
     is_leverage_allowed: bool

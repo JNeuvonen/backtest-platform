@@ -3982,7 +3982,7 @@ def calculate_ratio_of_winning_candles(df, column='close_price', look_back_perio
     
     # Calculate the ratio of winning candles for each look-back period
     for look_back_period in look_back_periods:
-        ratio_label = f"ratio_of_winning_candles_{look_back_period}"
+        ratio_label = f"ratio_of_winning_candles_{column}_{look_back_period}"
         df[ratio_label] = df[win_label].rolling(window=look_back_period).mean() * 100
     
     # Drop the helper column
@@ -4098,6 +4098,166 @@ lookback = 6 * 365
 
 # Call the function
 calculate_correlation(dataset, column1=column1, column2=column2, lookback=lookback)
+"""
+
+
+ALL_TIME_MAXDRAW_EXCEEDS_FLAG = """
+import pandas as pd
+
+def calculate_persistent_drawdown_flag(df, column='close_price', drawdown_percentage=10):
+    # Calculate the all-time high up to each point
+    df['all_time_high'] = df[column].cummax()
+
+    # Calculate the drawdown from the all-time high
+    df['drawdown'] = (df['all_time_high'] - df[column]) / df['all_time_high'] * 100
+
+    # Create a binary column indicating if the drawdown has ever exceeded the specified percentage
+    drawdown_flag_label = f"all_time_drawdown_exceeds_{drawdown_percentage}_percent"
+    df[drawdown_flag_label] = (df['drawdown'] >= drawdown_percentage).astype(int).cummax()
+
+    # Drop the helper columns
+    df.drop(columns=['all_time_high', 'drawdown'], inplace=True)
+
+column = 'close_price'
+drawdown_percentage = 10
+calculate_persistent_drawdown_flag(dataset, column=column, drawdown_percentage=drawdown_percentage)
+"""
+
+LARGEST_CANDLE_DROP_DISTANCE = """
+import pandas as pd
+
+def calculate_largest_downward_candle(df, close_col='close_price', lookback_period=14):
+    # Calculate the percentage drop for each candle
+    df['percentage_drop'] = df[close_col].pct_change().fillna(0) * 100
+
+    # Identify the largest downward candle (most negative percentage drop) within the lookback period
+    df['largest_downward_candle_idx'] = df['percentage_drop'].rolling(window=lookback_period).apply(lambda x: x.argmin(), raw=False)
+
+    # Calculate the distance of the largest downward candle from the end of the lookback period
+    df['largest_downward_candle_distance'] = lookback_period - df['largest_downward_candle_idx']
+
+    # Scale the distance to a range of 0 to 100
+    df[f'largest_downward_candle_distance_{close_col}_{lookback_period}'] = (df['largest_downward_candle_distance'] / lookback_period) * 100
+
+    # Drop helper columns
+    df.drop(columns=['percentage_drop', 'largest_downward_candle_idx', 'largest_downward_candle_distance'], inplace=True)
+
+# Usage example:
+close_col = "close_price"
+lookback_period = 14
+calculate_largest_downward_candle(dataset, close_col=close_col, lookback_period=lookback_period)
+"""
+
+DOWNTURN_NORMALIZED_SLOPE = """
+import pandas as pd
+import numpy as np
+
+def calculate_downturn_steepness_speed(df, column='close_price', window=14):
+    # Calculate the percentage change
+    df['pct_change'] = df[column].pct_change()
+
+    # Calculate the slope of the linear regression (steepness)
+    def calculate_slope(series):
+        x = np.arange(len(series))
+        y = series.values
+        if len(y) == 0 or np.all(np.isnan(y)):
+            return np.nan
+        A = np.vstack([x, np.ones(len(x))]).T
+        m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+        return m
+
+    df['slope'] = df[column].rolling(window=window).apply(calculate_slope, raw=False)
+
+    # Calculate the standard deviation of the percentage change (speed)
+    df['speed'] = df['pct_change'].rolling(window=window).std()
+
+    # Normalize the slope and speed
+    slope_mean = df['slope'].mean()
+    slope_std = df['slope'].std()
+    speed_mean = df['speed'].mean()
+    speed_std = df['speed'].std()
+
+    df['normalized_slope'] = (df['slope'] - slope_mean) / slope_std
+    df['normalized_speed'] = (df['speed'] - speed_mean) / speed_std
+
+    # Combine normalized slope and speed to get a downturn severity measure
+    df[f'dip_slope_{column}_{window}'] = df.apply(
+        lambda row: row['normalized_slope'] * row['normalized_speed'] if row['normalized_slope'] < 0 else 0,
+        axis=1
+    )
+
+    # Drop helper columns
+    df.drop(columns=['pct_change', 'slope', 'speed', 'normalized_slope', 'normalized_speed'], inplace=True)
+
+# Usage example
+window = 50 * 6
+column = "close_price"
+calculate_downturn_steepness_speed(dataset, column=column, window=window)
+"""
+
+UPSWING_NORMALIZED_SLOPE = """
+import pandas as pd
+import numpy as np
+
+def calculate_upswing_steepness_speed(df, column='close_price', window=14):
+    # Calculate the percentage change
+    df['pct_change'] = df[column].pct_change()
+
+    # Calculate the slope of the linear regression (steepness)
+    def calculate_slope(series):
+        x = np.arange(len(series))
+        y = series.values
+        if len(y) == 0 or np.all(np.isnan(y)):
+            return np.nan
+        A = np.vstack([x, np.ones(len(x))]).T
+        m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+        return m
+
+    df['slope'] = df[column].rolling(window=window).apply(calculate_slope, raw=False)
+
+    # Calculate the standard deviation of the percentage change (speed)
+    df['speed'] = df['pct_change'].rolling(window=window).std()
+
+    # Normalize the slope and speed
+    slope_mean = df['slope'].mean()
+    slope_std = df['slope'].std()
+    speed_mean = df['speed'].mean()
+    speed_std = df['speed'].std()
+
+    df['normalized_slope'] = (df['slope'] - slope_mean) / slope_std
+    df['normalized_speed'] = (df['speed'] - speed_mean) / speed_std
+
+    # Combine normalized slope and speed to get an upswing severity measure
+    df[f'upswing_slope_{column}_{window}'] = df.apply(
+        lambda row: row['normalized_slope'] * row['normalized_speed'] if row['normalized_slope'] > 0 else 0,
+        axis=1
+    )
+
+    # Drop helper columns
+    df.drop(columns=['pct_change', 'slope', 'speed', 'normalized_slope', 'normalized_speed'], inplace=True)
+
+# Usage example
+window = 14
+column = "close_price"
+calculate_upswing_steepness_speed(dataset, column=column, window=window)
+"""
+
+OBV_CUSTOM = """
+def calculate_obv(df, price_col='open_price', volume_col='volume'):
+    obv_label = f"OBV_{price_col}"
+    df[obv_label] = 0
+    for i in range(1, len(df)):
+        if df[price_col][i] > df[price_col][i-1]:
+            df[obv_label][i] = df[obv_label][i-1] + df[volume_col][i]
+        elif df[price_col][i] < df[price_col][i-1]:
+            df[obv_label][i] = df[obv_label][i-1] - df[volume_col][i]
+        else:
+            df[obv_label][i] = df[obv_label][i-1]
+
+# Usage example:
+price_col = "close_price"
+volume_col = "volume"
+calculate_obv(dataset, price_col=price_col, volume_col=volume_col)
 """
 
 
@@ -5199,6 +5359,41 @@ DEFAULT_CODE_PRESETS = [
         name="CORREL_ON_LOOKBACK",
         category=CodePresetCategories.INDICATOR,
         description="Calculates correlation between two columns on some specified lookback period.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=ALL_TIME_MAXDRAW_EXCEEDS_FLAG,
+        name="ALL_TIME_MAXDRAW_EXCEEDS_FLAG",
+        category=CodePresetCategories.INDICATOR,
+        description="This code snippet creates a binary column in the dataset indicating whether the asset has ever reached a drawdown of at least a specified percentage from its all-time high at any point in its history. The drawdown is calculated as the percentage decline from the highest value observed up to that point. If the drawdown has ever exceeded the specified percentage, the binary column will be set to 1 for all subsequent points; otherwise, it will be set to 0.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=LARGEST_CANDLE_DROP_DISTANCE,
+        name="LARGEST_CANDLE_DROP_DISTANCE",
+        category=CodePresetCategories.INDICATOR,
+        description="This indicator calculates the distance of the largest downward candle, measured by the most significant percentage drop in the close price, within a specified lookback period. The result is scaled from 0 to 100, where 0 indicates the largest downward candle is at the end of the lookback period, and 100 indicates it is at the start of the lookback period. This helps in identifying the most substantial price drop in recent periods and its position within the lookback period.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=DOWNTURN_NORMALIZED_SLOPE,
+        name="DOWNTURN_NORMALIZED_SLOPE",
+        category=CodePresetCategories.INDICATOR,
+        description="Normalized Downturn Steepness and Speed: This indicator calculates how steep and fast a recent downturn has been, normalized to provide comparable values across different assets. The steepness is determined by the slope of the linear regression of the closing prices over a given window, and the speed is measured by the standard deviation of the percentage changes in the closing prices over the same window. Both the slope and speed are normalized by subtracting their means and dividing by their standard deviations. The resulting downturn severity measure combines the normalized slope and speed, calculated only when the slope is negative, indicating a downturn.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=UPSWING_NORMALIZED_SLOPE,
+        name="UPSWING_NORMALIZED_SLOPE",
+        category=CodePresetCategories.INDICATOR,
+        description="Normalized Upswing Steepness and Speed: This indicator calculates how steep and fast a recent upswing has been, normalized to provide comparable values across different assets. The steepness is determined by the slope of the linear regression of the closing prices over a given window, and the speed is measured by the standard deviation of the percentage changes in the closing prices over the same window. Both the slope and speed are normalized by subtracting their means and dividing by their standard deviations. The resulting upswing severity measure combines the normalized slope and speed, calculated only when the slope is positive, indicating an upswing.",
+        labels=CodePresetLabels.CUSTOM,
+    ),
+    CodePreset(
+        code=OBV_CUSTOM,
+        name="OBV_CUSTOM",
+        category=CodePresetCategories.INDICATOR,
+        description="Custom variation of OBV where the price column and target column can be passed in from which the indicator OBV is calculated.",
         labels=CodePresetLabels.CUSTOM,
     ),
 ]

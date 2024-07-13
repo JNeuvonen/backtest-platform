@@ -112,6 +112,7 @@ def refresh_adaptive_strategy_group(strategy_group: StrategyGroup):
                 "should_calc_stops_on_pred_serv": strategy_group.should_calc_stops_on_pred_serv,
                 "is_leverage_allowed": strategy_group.is_leverage_allowed,
                 "is_short_selling_strategy": strategy_group.is_short_selling_strategy,
+                "force_num_required_klines": strategy_group.force_num_required_klines,
             }
         )
 

@@ -92,6 +92,7 @@ async def route_create_strategy_group(body: BodyCreateStrategyGroup):
                 "should_calc_stops_on_pred_serv": body.should_calc_stops_on_pred_serv,
                 "is_leverage_allowed": body.is_leverage_allowed,
                 "is_short_selling_strategy": body.is_short_selling_strategy,
+                "force_num_required_klines": body.force_num_required_klines,
             }
         )
         for item in data_transformations:
