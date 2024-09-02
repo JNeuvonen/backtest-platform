@@ -1,4 +1,4 @@
-import { UseDisclosureReturn, useDisclosure } from "@chakra-ui/react";
+import { UseDisclosureReturn } from "@chakra-ui/react";
 import React from "react";
 import { ChakraDrawer } from "./chakra/Drawer";
 import { Field, Form, Formik } from "formik";
@@ -7,7 +7,7 @@ import { ChakraInput } from "./chakra/input";
 import { BACKTEST_FORM_LABELS } from "../utils/backtest";
 import { SelectMassSimStrategies } from "./SelectMassSimStrategies";
 import { FormSubmitBar } from "./form/FormSubmitBar";
-import { FormikDatePicker } from "./FormikDataPicker";
+import { FormikDatePicker } from "./DatePicker";
 
 export interface MultiStrategyBacktest {
   backtestName: string;

@@ -18,7 +18,7 @@ import { FormSubmitBar } from "./form/FormSubmitBar";
 import { ENTER_TRADE_DEFAULT, EXIT_LONG_TRADE_DEFAULT } from "../utils/code";
 import { DiskManager } from "common_js";
 import { DISK_KEYS } from "../utils/disk";
-import { FormikDatePicker } from "./FormikDataPicker";
+import { FormikDatePicker } from "./DatePicker";
 
 const backtestDiskManager = new DiskManager(DISK_KEYS.rule_based_mass_backtest);
 

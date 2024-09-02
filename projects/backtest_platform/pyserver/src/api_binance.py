@@ -10,14 +10,17 @@ from db import create_connection
 from log import LogExceptionContext, get_logger
 from query_dataset import DatasetQuery
 from utils import get_binance_dataset_tablename
+from common_python.date import iso_to_timestamp_ms
 
 
 APP_DATA_PATH = os.getenv("APP_DATA_PATH", "")
 
 
-async def get_historical_klines(symbol, interval, use_futures=False):
+async def get_historical_klines(
+    symbol, interval, use_futures=False, start_date_ts=None, end_date_ts=None
+):
     client = Client()
-    start_time = "1 Jan, 2017"
+    start_time = start_date_ts if start_date_ts is not None else "1 Jan, 2017"
     klines = []
 
     while True:
@@ -28,12 +31,18 @@ async def get_historical_klines(symbol, interval, use_futures=False):
             start_str=start_time,
             limit=1000,
             klines_type=HistoricalKlinesType.FUTURES
-            if use_futures is True
+            if use_futures
             else HistoricalKlinesType.SPOT,
         )
 
         if not new_klines:
             break
+
+        if end_date_ts is not None:
+            new_klines = [kline for kline in new_klines if kline[0] <= end_date_ts]
+            if new_klines and new_klines[-1][0] >= end_date_ts:
+                klines += new_klines
+                break
 
         klines += new_klines
         start_time = int(new_klines[-1][0]) + 1
@@ -83,12 +92,23 @@ def non_async_get_historical_klines(symbol, interval, use_futures):
 
 
 async def save_historical_klines(
-    symbol, interval, send_msg_to_fe=True, use_futures=False
+    symbol,
+    interval,
+    send_msg_to_fe=True,
+    use_futures=False,
+    start_date_iso=None,
+    end_date_iso=None,
 ):
     with LogExceptionContext(notification_duration=60000):
         logger = get_logger()
         datasets_conn = create_connection(AppConstants.DB_DATASETS)
-        klines = await get_historical_klines(symbol, interval, use_futures)
+        klines = await get_historical_klines(
+            symbol,
+            interval,
+            use_futures,
+            iso_to_timestamp_ms(start_date_iso) if start_date_iso is not None else None,
+            iso_to_timestamp_ms(end_date_iso) if end_date_iso is not None else None,
+        )
         table_name = get_binance_dataset_tablename(symbol, interval, use_futures)
 
         table_exists_query = (

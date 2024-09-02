@@ -44,3 +44,10 @@ def format_ms_to_human_readable(milliseconds: int) -> str:
         days = milliseconds / 86400000
         result = f"{days:.2f} days"
     return result
+
+
+def iso_to_timestamp_ms(iso_string: str):
+    dt = datetime.fromisoformat(iso_string)
+    timestamp_s = dt.timestamp()
+    timestamp_ms = int(timestamp_s * 1000)
+    return timestamp_ms

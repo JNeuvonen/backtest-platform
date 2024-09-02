@@ -33,6 +33,7 @@ import { BUTTON_VARIANTS } from "../theme";
 import { removeDatasets, saveYfinanceKlines } from "../clients/requests";
 import { ConfirmModal } from "../components/form/Confirm";
 import { WithLabel } from "../components/form/WithLabel";
+import { FormikDatePicker } from "../components/DatePicker";
 
 const DATA_PROVIDERS = [
   {
@@ -86,6 +87,8 @@ export const binanceTickSelectOptions = (tickers: BinanceBasicTicker[]) => {
 interface BinanceFormValues {
   selectedTickers: OptionType[];
   interval: string;
+  start_date: Date | null;
+  end_date: Date | null;
 }
 
 interface FormStateBinanceProps {
@@ -105,7 +108,7 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
   }
 
   const submitForm = async (values: BinanceFormValues) => {
-    const interval = values.interval;
+    const { interval, start_date, end_date } = values;
     const symbols = values.selectedTickers;
 
     const promises: Promise<ApiResponse>[] = [];
@@ -116,6 +119,8 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
         symbol: item.value,
         interval,
         use_futures: useFutures,
+        start_date_iso: start_date ? start_date.toISOString() : null,
+        end_date_iso: end_date ? end_date.toISOString() : null,
       };
       const req = buildRequest({
         method: "POST",
@@ -148,7 +153,12 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
   };
   return (
     <Formik
-      initialValues={{ selectedTickers: [], interval: "1h" }}
+      initialValues={{
+        selectedTickers: [],
+        interval: "1h",
+        start_date: null,
+        end_date: null,
+      }}
       onSubmit={(values: BinanceFormValues, actions) => {
         actions.setSubmitting(true);
         submitForm(values);
@@ -182,6 +192,19 @@ const FormStateBinance = ({ modalClose }: FormStateBinanceProps) => {
                 ))}
               </Field>
             </FormControl>
+
+            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+              <div>
+                <WithLabel label={"Start date"}>
+                  <Field name={"start_date"} component={FormikDatePicker} />
+                </WithLabel>
+              </div>
+              <div>
+                <WithLabel label={"End date"}>
+                  <Field name={"end_date"} component={FormikDatePicker} />
+                </WithLabel>
+              </div>
+            </div>
 
             <WithLabel
               label={"Use futures data"}

@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 from context import HttpResponseContext
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -15,6 +16,8 @@ class FetchKlinesRequest(BaseModel):
     symbol: str
     interval: str
     use_futures: bool
+    start_date_iso: Optional[str]
+    end_date_iso: Optional[str]
 
 
 @router.post("/fetch-klines")
@@ -22,7 +25,12 @@ async def get_binance_klines(request: FetchKlinesRequest):
     with HttpResponseContext():
         asyncio.create_task(
             save_historical_klines(
-                request.symbol, request.interval, True, request.use_futures
+                request.symbol,
+                request.interval,
+                True,
+                request.use_futures,
+                request.start_date_iso,
+                request.end_date_iso,
             )
         )
         return {"symbol": request.symbol}
